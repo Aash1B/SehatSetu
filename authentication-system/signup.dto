@@ -1,0 +1,24 @@
+Signup.dto · TS
+import { IsEmail, IsEnum, IsString, MinLength, IsBoolean, Equals } from 'class-validator';
+import { Role } from '@prisma/client';
+ 
+export class SignupDto {
+  @IsEmail()
+  email: string;
+ 
+  @IsString()
+  @MinLength(8, { message: 'Password must be at least 8 characters' })
+  password: string;
+ 
+  @IsString()
+  fullName: string;
+ 
+  @IsEnum(Role)
+  role: Role;
+ 
+  // DPDP Act 2023: explicit consent required at signup, not implied.
+  @IsBoolean()
+  @Equals(true, { message: 'You must consent to data storage to create an account' })
+  dataConsent: boolean;
+}
+ 
