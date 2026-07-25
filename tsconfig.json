@@ -8,5 +8,6 @@
     "baseUrl": "./",
     "strictNullChecks": true,
     "skipLibCheck": true
-  }
+  },
+  "exclude": ["authentication-system", "node_modules"]
 }

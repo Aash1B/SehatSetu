@@ -1,4 +1,4 @@
-Signup.dto · TS
+
 import { IsEmail, IsEnum, IsString, MinLength, IsBoolean, Equals } from 'class-validator';
 import { Role } from '@prisma/client';
  
