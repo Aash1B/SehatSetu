@@ -9,5 +9,12 @@
     "strictNullChecks": true,
     "skipLibCheck": true
   },
-  "exclude": ["authentication-system", "node_modules"]
+  "exclude": [
+    "authentication-system",
+    "frontend",
+    "node_modules",
+    "dist",
+    "vite.config.ts",
+    "eslint.config.js"
+  ]
 }
