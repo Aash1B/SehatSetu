@@ -5,9 +5,8 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "outDir": "./dist",
-    "baseUrl": "./",
     "strictNullChecks": true,
     "skipLibCheck": true
   },
-  "exclude": ["authentication-system", "node_modules"]
+  "include": ["src/**/*"]
 }
