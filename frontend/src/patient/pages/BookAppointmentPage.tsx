@@ -22,25 +22,32 @@ interface BookingFormData {
   patientName: string;
   patientAge: string;
   patientGender: string;
+  patientHeight: string;
+  patientWeight: string;
+  patientBloodGroup: string;
   patientPhone: string;
   patientEmail: string;
 }
 
 const ALL_SYMPTOMS = [
-  'Fever', 'Headache', 'Chest Pain', 'Shortness of Breath',
-  'Joint Pain', 'Skin Rash', 'Fatigue', 'Anxiety', 'Cough',
-  'Back Pain', 'Nausea', 'Dizziness'
+  'Fever', 'Cough', 'Headache', 'Fatigue', 'Sore Throat',
+  'Chest Pain', 'Shortness of Breath', 'Joint Pain', 'Skin Rash',
+  'Anxiety', 'Back Pain', 'Nausea', 'Dizziness'
 ];
 
 const BookAppointmentPage: React.FC = () => {
   const dispatch = useDispatch();
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [symptomSearch, setSymptomSearch] = useState<string>('');
+  const [showMoreSymptoms, setShowMoreSymptoms] = useState<boolean>(false);
+  const [isDurationDropdownOpen, setIsDurationDropdownOpen] = useState<boolean>(false);
   const [step2SearchTerm, setStep2SearchTerm] = useState<string>('');
   const [step2Specialty, setStep2Specialty] = useState<string>('All');
+  const [showAllSpecialties, setShowAllSpecialties] = useState<boolean>(false);
   const [showHelpModal, setShowHelpModal] = useState<boolean>(false);
   const [bookingConfirmed, setBookingConfirmed] = useState<boolean>(false);
   const [paymentMethod, setPaymentMethod] = useState<'upi' | 'card' | 'netbanking' | 'wallets'>('upi');
+  const [step4Error, setStep4Error] = useState<string>('');
 
   const [formData, setFormData] = useState<BookingFormData>({
     healthConcern: 'specific-symptoms',
@@ -56,6 +63,9 @@ const BookAppointmentPage: React.FC = () => {
     patientName: 'Ananya Sharma',
     patientAge: '28',
     patientGender: 'Female',
+    patientHeight: '165',
+    patientWeight: '62',
+    patientBloodGroup: 'O+',
     patientPhone: '+91 98765 43210',
     patientEmail: 'ananya.sharma@example.com',
   });
@@ -84,18 +94,24 @@ const BookAppointmentPage: React.FC = () => {
     });
   };
 
-  const calculateProgress = () => {
-    switch (currentStep) {
-      case 1: return 40;
-      case 2: return 60;
-      case 3: return 80;
-      case 4: return 95;
-      case 5: return 100;
-      default: return 40;
-    }
-  };
 
   const handleNextStep = () => {
+    if (currentStep === 4) {
+      if (!formData.patientName.trim()) {
+        setStep4Error('Please enter full name.');
+        return;
+      }
+      if (!formData.patientAge.trim()) {
+        setStep4Error('Please enter age.');
+        return;
+      }
+      if (!formData.patientPhone.trim()) {
+        setStep4Error('Please enter phone number.');
+        return;
+      }
+    }
+
+    setStep4Error('');
     if (currentStep < 5) {
       setCurrentStep(prev => prev + 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -263,6 +279,10 @@ const BookAppointmentPage: React.FC = () => {
                   <span className="detail-val">{formData.patientAge} Yrs, {formData.patientGender}</span>
                 </div>
                 <div>
+                  <span className="detail-label">Vitals (Height / Weight)</span>
+                  <span className="detail-val">{formData.patientHeight} cm, {formData.patientWeight} kg{formData.patientBloodGroup ? ` (${formData.patientBloodGroup})` : ''}</span>
+                </div>
+                <div>
                   <span className="detail-label">Consultation Mode</span>
                   <span className="detail-val">{formData.consultMode}</span>
                 </div>
@@ -289,223 +309,224 @@ const BookAppointmentPage: React.FC = () => {
             <div className="booking-form-card">
               {currentStep === 1 && (
                 <>
-                  {/* Title Header */}
-                  <div className="form-card-header">
-                    <div className="header-icon-badge">
-                      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#F97316" strokeWidth="2">
-                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                      </svg>
+                  {/* Title Header with Date Badge */}
+                  <div className="form-card-header-v2">
+                    <div className="header-left-group">
+                      <div className="header-icon-badge-pink">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#EF4444" strokeWidth="2">
+                          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                          <path d="M12 7v6m-3-3h6" stroke="#EF4444" strokeWidth="2" strokeLinecap="round"/>
+                        </svg>
+                      </div>
+                      <div>
+                        <h1 className="form-main-title">What brings you in today?</h1>
+                        <p className="form-main-subtitle">Help us match you with the right specialist.</p>
+                      </div>
                     </div>
-                    <div>
-                      <h1 className="form-main-title">What brings you in today?</h1>
-                      <p className="form-main-subtitle">Help us match you with the right specialist.</p>
-                    </div>
-                  </div>
 
-                  {/* Q1: Describe health concern */}
-                  <div className="form-question-block">
-                    <label className="question-label">How would you describe your health concern?</label>
-                    <div className="concern-options-grid">
-                      <button
-                        type="button"
-                        className={`concern-card ${formData.healthConcern === 'specific-symptoms' ? 'selected' : ''}`}
-                        onClick={() => setFormData({ ...formData, healthConcern: 'specific-symptoms' })}
-                      >
-                        <div className="concern-card-icon">+</div>
-                        <div className="concern-card-text">
-                          <span className="concern-title">I have specific symptoms</span>
-                          <span className="concern-sub">Something feels different</span>
-                        </div>
-                        {formData.healthConcern === 'specific-symptoms' && <span className="checkmark">✓</span>}
-                      </button>
-
-                      <button
-                        type="button"
-                        className={`concern-card ${formData.healthConcern === 'routine-checkup' ? 'selected' : ''}`}
-                        onClick={() => setFormData({ ...formData, healthConcern: 'routine-checkup' })}
-                      >
-                        <div className="concern-card-icon">🩺</div>
-                        <div className="concern-card-text">
-                          <span className="concern-title">Routine check-up or follow-up</span>
-                          <span className="concern-sub">Stay on top of your health</span>
-                        </div>
-                        {formData.healthConcern === 'routine-checkup' && <span className="checkmark">✓</span>}
-                      </button>
-
-                      <button
-                        type="button"
-                        className={`concern-card ${formData.healthConcern === 'second-opinion' ? 'selected' : ''}`}
-                        onClick={() => setFormData({ ...formData, healthConcern: 'second-opinion' })}
-                      >
-                        <div className="concern-card-icon">💡</div>
-                        <div className="concern-card-text">
-                          <span className="concern-title">I need a second opinion</span>
-                          <span className="concern-sub">A fresh perspective helps</span>
-                        </div>
-                        {formData.healthConcern === 'second-opinion' && <span className="checkmark">✓</span>}
-                      </button>
-
-                      <button
-                        type="button"
-                        className={`concern-card ${formData.healthConcern === 'talk-to-someone' ? 'selected' : ''}`}
-                        onClick={() => setFormData({ ...formData, healthConcern: 'talk-to-someone' })}
-                      >
-                        <div className="concern-card-icon">💙</div>
-                        <div className="concern-card-text">
-                          <span className="concern-title">I want to talk to someone</span>
-                          <span className="concern-sub">Mental health & wellbeing</span>
-                        </div>
-                        {formData.healthConcern === 'talk-to-someone' && <span className="checkmark">✓</span>}
-                      </button>
+                    <div className="header-date-badge">
+                      <div className="date-icon-box">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#2563EB" strokeWidth="2">
+                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                          <line x1="16" y1="2" x2="16" y2="6"/>
+                          <line x1="8" y1="2" x2="8" y2="6"/>
+                          <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                      </div>
+                      <div className="date-text-wrap">
+                        <span className="date-sub-label">Date</span>
+                        <span className="date-val-text">{new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Q2: Symptoms experiencing */}
+                  {/* Q1: What symptoms are you experiencing? */}
                   <div className="form-question-block">
                     <label className="question-label">What symptoms are you experiencing?</label>
-                    <div className="symptom-search-bar">
+                    <div className="symptom-search-bar-v2">
                       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#94A3B8" strokeWidth="2">
                         <circle cx="11" cy="11" r="8"/>
                         <path d="M21 21l-4.35-4.35"/>
                       </svg>
                       <input 
                         type="text" 
-                        placeholder="Search or type a symptom"
+                        placeholder="Search or type a symptom (e.g., fever, cough, headache)"
                         value={symptomSearch}
                         onChange={(e) => setSymptomSearch(e.target.value)}
                       />
                     </div>
-                    <div className="symptoms-pills-row">
-                      {filteredSymptoms.map(symptom => {
-                        const isSelected = formData.symptoms.includes(symptom);
+
+                    {/* Popular Symptoms */}
+                    <div className="symptom-subsection">
+                      <span className="subsection-label">Popular symptoms</span>
+                      <div className="popular-symptoms-grid">
+                        {[
+                          { name: 'Fever', icon: '🌡️' },
+                          { name: 'Cough', icon: '🫁' },
+                          { name: 'Headache', icon: '🧠' },
+                          { name: 'Fatigue', icon: '🔋' },
+                          { name: 'Sore Throat', icon: '🗣️' },
+                        ].map(item => {
+                          const isSelected = formData.symptoms.includes(item.name);
+                          return (
+                            <button
+                              key={item.name}
+                              type="button"
+                              className={`popular-symptom-card ${isSelected ? 'selected' : ''}`}
+                              onClick={() => toggleSymptom(item.name)}
+                            >
+                              <span className="popular-icon">{item.icon}</span>
+                              <span className="popular-name">{item.name}</span>
+                            </button>
+                          );
+                        })}
+                        <button
+                          type="button"
+                          className="btn-more-symptoms-pill"
+                          onClick={() => setShowMoreSymptoms(!showMoreSymptoms)}
+                        >
+                          {showMoreSymptoms ? '- Less' : '+ More'}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Expanded Symptoms Pills Row */}
+                    {(showMoreSymptoms || symptomSearch.trim()) && (
+                      <div className="symptoms-pills-row" style={{ marginTop: '12px' }}>
+                        {filteredSymptoms.map(symptom => {
+                          const isSelected = formData.symptoms.includes(symptom);
+                          return (
+                            <button
+                              key={symptom}
+                              type="button"
+                              className={`symptom-pill ${isSelected ? 'active' : ''}`}
+                              onClick={() => toggleSymptom(symptom)}
+                            >
+                              {symptom}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Selected Symptoms tags */}
+                    {formData.symptoms.length > 0 && (
+                      <div className="symptom-subsection" style={{ marginTop: '16px' }}>
+                        <span className="subsection-label">Selected symptoms ({formData.symptoms.length})</span>
+                        <div className="selected-symptoms-row">
+                          {formData.symptoms.map(s => (
+                            <span key={s} className="selected-symptom-tag">
+                              {s}
+                              <button
+                                type="button"
+                                className="btn-remove-symptom"
+                                onClick={() => toggleSymptom(s)}
+                                title={`Remove ${s}`}
+                              >
+                                ✕
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Q2: How long have you been experiencing this? */}
+                  <div className="form-question-block" style={{ position: 'relative' }}>
+                    <label className="question-label">How long have you been experiencing this?</label>
+                    <div className="custom-dropdown-container">
+                      <button
+                        type="button"
+                        className={`custom-dropdown-trigger ${isDurationDropdownOpen ? 'open' : ''}`}
+                        onClick={() => setIsDurationDropdownOpen(!isDurationDropdownOpen)}
+                      >
+                        <div className="trigger-left">
+                          <div className="trigger-icon-box">📅</div>
+                          <span className="trigger-label-val">{formData.duration}</span>
+                        </div>
+                        <svg 
+                          className={`chevron-icon ${isDurationDropdownOpen ? 'rotate' : ''}`} 
+                          viewBox="0 0 24 24" 
+                          width="18" 
+                          height="18" 
+                          fill="none" 
+                          stroke="#64748B" 
+                          strokeWidth="2.5"
+                        >
+                          <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                      </button>
+
+                      {isDurationDropdownOpen && (
+                        <div className="custom-dropdown-menu">
+                          {[
+                            { label: 'Less than a day', sub: 'Just started', icon: '⚡' },
+                            { label: '1-3 days', sub: 'Recent onset', icon: '🗓️' },
+                            { label: '4-7 days', sub: 'About a week', icon: '⏱️' },
+                            { label: '1-3 weeks', sub: 'Ongoing', icon: '📅' },
+                            { label: 'More than a month', sub: 'Persistent / chronic', icon: '⏳' },
+                          ].map(opt => {
+                            const isSelected = formData.duration === opt.label;
+                            return (
+                              <div
+                                key={opt.label}
+                                className={`custom-dropdown-item ${isSelected ? 'selected' : ''}`}
+                                onClick={() => {
+                                  setFormData({ ...formData, duration: opt.label });
+                                  setIsDurationDropdownOpen(false);
+                                }}
+                              >
+                                <div className="item-icon-circle">{opt.icon}</div>
+                                <div className="item-text-group">
+                                  <span className="item-main-label">{opt.label}</span>
+                                  <span className="item-sub-label">{opt.sub}</span>
+                                </div>
+                                {isSelected && <span className="item-check-mark">✓</span>}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Q3: When do you need to see a doctor? */}
+                  <div className="form-question-block">
+                    <label className="question-label">When do you need to see a doctor?</label>
+                    <div className="urgency-radio-grid">
+                      {['Today (ASAP)', 'Tomorrow', 'This Week', 'Flexible'].map(u => {
+                        const isSelected = formData.urgency === u;
                         return (
                           <button
-                            key={symptom}
+                            key={u}
                             type="button"
-                            className={`symptom-pill ${isSelected ? 'active' : ''}`}
-                            onClick={() => toggleSymptom(symptom)}
+                            className={`urgency-radio-card ${isSelected ? 'selected' : ''}`}
+                            onClick={() => setFormData({ ...formData, urgency: u })}
                           >
-                            {symptom}
+                            <span className={`radio-dot ${isSelected ? 'checked' : ''}`} />
+                            <span className="urgency-label">{u}</span>
                           </button>
                         );
                       })}
                     </div>
                   </div>
 
-                  {/* Q3: Duration */}
-                  <div className="form-question-block">
-                    <label className="question-label">How long have you been experiencing this?</label>
-                    <div className="duration-pills-row">
-                      {['Less than a day', '1-3 days', '4-7 days', '1-3 weeks', 'More than a month'].map(d => (
-                        <button
-                          key={d}
-                          type="button"
-                          className={`duration-pill ${formData.duration === d ? 'active' : ''}`}
-                          onClick={() => setFormData({ ...formData, duration: d })}
-                        >
-                          {d}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Q4: Severity Scale */}
-                  <div className="form-question-block">
-                    <label className="question-label">How severe are your symptoms?</label>
-                    <div className="severity-emoji-row">
-                      {[
-                        { level: 'Mild', emoji: '😊', color: '#22C55E' },
-                        { level: 'Moderate', emoji: '😐', color: '#EAB308' },
-                        { level: 'Uncomfortable', emoji: '😟', color: '#F97316' },
-                        { level: 'Severe', emoji: '😫', color: '#EF4444' },
-                        { level: 'Emergency', emoji: '😵', color: '#991B1B' },
-                      ].map(item => (
-                        <button
-                          key={item.level}
-                          type="button"
-                          className={`severity-card ${formData.severity === item.level ? 'selected' : ''}`}
-                          onClick={() => setFormData({ ...formData, severity: item.level as any })}
-                        >
-                          <span className="severity-emoji">{item.emoji}</span>
-                          <span className="severity-title" style={{ color: formData.severity === item.level ? item.color : '' }}>
-                            {item.level}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                    <div className="severity-track-bar"></div>
-                    <p className="emergency-notice-text">For emergencies, please call 112 or 108.</p>
-                  </div>
-
-                  {/* Q5: Consultation Mode */}
-                  <div className="form-question-block">
-                    <label className="question-label">How would you like to consult?</label>
-                    <div className="consult-mode-grid">
-                      <button
-                        type="button"
-                        className={`consult-mode-card ${formData.consultMode === 'Video Consultation' ? 'selected' : ''}`}
-                        onClick={() => setFormData({ ...formData, consultMode: 'Video Consultation' })}
-                      >
-                        <div className="popular-badge">Popular</div>
-                        <div className="mode-icon">📹</div>
-                        <span className="mode-title">Video Consultation</span>
-                        <span className="mode-sub">Online from home</span>
-                        {formData.consultMode === 'Video Consultation' && <span className="checkmark">✓</span>}
-                      </button>
-
-                      <button
-                        type="button"
-                        className={`consult-mode-card ${formData.consultMode === 'In-Person Visit' ? 'selected' : ''}`}
-                        onClick={() => setFormData({ ...formData, consultMode: 'In-Person Visit' })}
-                      >
-                        <div className="mode-icon">👨‍⚕️</div>
-                        <span className="mode-title">In-Person Visit</span>
-                        <span className="mode-sub">Visit clinic</span>
-                        {formData.consultMode === 'In-Person Visit' && <span className="checkmark">✓</span>}
-                      </button>
-
-                      <button
-                        type="button"
-                        className={`consult-mode-card ${formData.consultMode === 'Chat / Message' ? 'selected' : ''}`}
-                        onClick={() => setFormData({ ...formData, consultMode: 'Chat / Message' })}
-                      >
-                        <div className="mode-icon">💬</div>
-                        <span className="mode-title">Chat / Message</span>
-                        <span className="mode-sub">Text-based async</span>
-                        {formData.consultMode === 'Chat / Message' && <span className="checkmark">✓</span>}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Q6: When do you need to see a doctor? */}
-                  <div className="form-question-block">
-                    <label className="question-label">When do you need to see a doctor?</label>
-                    <div className="urgency-pills-row">
-                      {['Today (ASAP)', 'Tomorrow', 'This Week', 'Flexible'].map(u => (
-                        <button
-                          key={u}
-                          type="button"
-                          className={`urgency-pill ${formData.urgency === u ? 'active' : ''}`}
-                          onClick={() => setFormData({ ...formData, urgency: u })}
-                        >
-                          {u}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Q7: Additional Details */}
+                  {/* Q4: Additional Details */}
                   <div className="form-question-block">
                     <label className="question-label">Any additional details for the doctor? (Optional)</label>
-                    <div className="notes-textarea-wrapper">
+                    <div className="notes-textarea-card">
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#94A3B8" strokeWidth="2" className="notes-icon">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                      </svg>
                       <textarea
                         rows={3}
-                        maxLength={300}
+                        maxLength={500}
                         placeholder="Share anything that might help your doctor prepare..."
                         value={formData.notes}
                         onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                       />
-                      <span className="char-count">{formData.notes.length}/300</span>
+                      <span className="char-count-badge">{formData.notes.length}/500</span>
                     </div>
                   </div>
                 </>
@@ -552,18 +573,14 @@ const BookAppointmentPage: React.FC = () => {
                           </svg>
                         </button>
                       </div>
-
-                      <button type="button" className="btn-filter-pill">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
-                          <path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>
-                        </svg>
-                        Filters
-                      </button>
                     </div>
 
                     {/* Specialty Chips */}
-                    <div className="specialty-chips-row">
-                      {['All', 'General Physician', 'Dermatologist', 'Pediatrician', 'Gynecologist', 'Cardiologist'].map(spec => (
+                    <div className={`specialty-chips-row ${showAllSpecialties ? 'expanded' : ''}`}>
+                      {(showAllSpecialties 
+                        ? ['All', 'General Physician', 'Dermatologist', 'Pediatrician', 'Gynecologist', 'Cardiologist', 'Neurologist', 'Orthopedic', 'Dentist', 'Psychiatrist', 'ENT Specialist', 'Ophthalmologist', 'Pulmonologist', 'Gastroenterologist', 'Urologist']
+                        : ['All', 'General Physician', 'Dermatologist', 'Pediatrician', 'Gynecologist', 'Cardiologist']
+                      ).map(spec => (
                         <button
                           key={spec}
                           type="button"
@@ -573,8 +590,12 @@ const BookAppointmentPage: React.FC = () => {
                           {spec}
                         </button>
                       ))}
-                      <button type="button" className="specialty-chip more-chip">
-                        More ∨
+                      <button 
+                        type="button" 
+                        className={`specialty-chip more-chip ${showAllSpecialties ? 'active' : ''}`}
+                        onClick={() => setShowAllSpecialties(!showAllSpecialties)}
+                      >
+                        {showAllSpecialties ? 'Less' : 'More'}
                       </button>
                     </div>
                   </div>
@@ -721,28 +742,114 @@ const BookAppointmentPage: React.FC = () => {
               {currentStep === 4 && (
                 <div className="step-4-wrapper">
                   <h2 className="form-main-title">Patient Details</h2>
-                  <p className="form-main-subtitle">Enter details for the consultation record. This gives your doctor vital context about your health.</p>
+                  <p className="form-main-subtitle">Enter details for the consultation record. Height and Weight give your doctor vital context about your health.</p>
+
+                  {step4Error && (
+                    <div className="form-error-alert" style={{
+                      padding: '12px 16px',
+                      borderRadius: '12px',
+                      backgroundColor: '#FEF2F2',
+                      border: '1px solid #FCA5A5',
+                      color: '#991B1B',
+                      marginBottom: '16px',
+                      fontSize: '0.9rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <span>⚠️</span>
+                      <span>{step4Error}</span>
+                    </div>
+                  )}
 
                   <div className="patient-form-grid">
                     <div className="input-field-group">
-                      <label className="field-label">Full Name</label>
+                      <label className="field-label">Full Name <span style={{ color: '#EF4444' }}>*</span></label>
                       <input 
                         type="text" 
                         className="form-control-input"
                         placeholder="e.g. Ananya Sharma"
                         value={formData.patientName} 
-                        onChange={(e) => setFormData({ ...formData, patientName: e.target.value })}
+                        onChange={(e) => {
+                          setStep4Error('');
+                          setFormData({ ...formData, patientName: e.target.value });
+                        }}
                       />
                     </div>
 
                     <div className="input-field-group">
-                      <label className="field-label">Age (Years)</label>
+                      <label className="field-label">Age (Years) <span style={{ color: '#EF4444' }}>*</span></label>
                       <input 
                         type="number" 
                         className="form-control-input"
                         placeholder="e.g. 28"
                         value={formData.patientAge} 
-                        onChange={(e) => setFormData({ ...formData, patientAge: e.target.value })}
+                        onChange={(e) => {
+                          setStep4Error('');
+                          setFormData({ ...formData, patientAge: e.target.value });
+                        }}
+                      />
+                    </div>
+
+                    <div className="input-field-group">
+                      <label className="field-label">Height (cm) <span style={{ color: '#64748B', fontWeight: 400, fontSize: '0.82rem' }}>(Optional)</span></label>
+                      <input 
+                        type="number" 
+                        className="form-control-input"
+                        placeholder="e.g. 165"
+                        value={formData.patientHeight} 
+                        onChange={(e) => {
+                          setStep4Error('');
+                          setFormData({ ...formData, patientHeight: e.target.value });
+                        }}
+                      />
+                    </div>
+
+                    <div className="input-field-group">
+                      <label className="field-label">Weight (kg) <span style={{ color: '#64748B', fontWeight: 400, fontSize: '0.82rem' }}>(Optional)</span></label>
+                      <input 
+                        type="number" 
+                        className="form-control-input"
+                        placeholder="e.g. 62"
+                        value={formData.patientWeight} 
+                        onChange={(e) => {
+                          setStep4Error('');
+                          setFormData({ ...formData, patientWeight: e.target.value });
+                        }}
+                      />
+                    </div>
+
+                    <div className="input-field-group">
+                      <label className="field-label">Blood Group <span style={{ color: '#64748B', fontWeight: 400, fontSize: '0.82rem' }}>(Optional)</span></label>
+                      <select 
+                        className="form-control-input"
+                        value={formData.patientBloodGroup}
+                        onChange={(e) => setFormData({ ...formData, patientBloodGroup: e.target.value })}
+                      >
+                        <option value="">Select Blood Group (Optional)</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="Unknown">Don't know / Unknown</option>
+                      </select>
+                    </div>
+
+                    <div className="input-field-group">
+                      <label className="field-label">Phone Number <span style={{ color: '#EF4444' }}>*</span></label>
+                      <input 
+                        type="text" 
+                        className="form-control-input"
+                        placeholder="+91 98765 43210"
+                        value={formData.patientPhone} 
+                        onChange={(e) => {
+                          setStep4Error('');
+                          setFormData({ ...formData, patientPhone: e.target.value });
+                        }}
                       />
                     </div>
 
@@ -753,7 +860,6 @@ const BookAppointmentPage: React.FC = () => {
                           { id: 'Female', label: 'Female', icon: '👩' },
                           { id: 'Male', label: 'Male', icon: '👨' },
                           { id: 'Other', label: 'Other', icon: '🧑' },
-                          { id: 'Prefer not to say', label: 'Prefer not to say', icon: '🔒' },
                         ].map((g) => {
                           const isSelected = formData.patientGender === g.id;
                           return (
@@ -772,23 +878,12 @@ const BookAppointmentPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="input-field-group">
-                      <label className="field-label">Phone Number</label>
-                      <input 
-                        type="text" 
-                        className="form-control-input"
-                        placeholder="+91 98765 43210"
-                        value={formData.patientPhone} 
-                        onChange={(e) => setFormData({ ...formData, patientPhone: e.target.value })}
-                      />
-                    </div>
-
-                    <div className="input-field-group">
-                      <label className="field-label">Email Address</label>
+                    <div className="input-field-group full-width-field">
+                      <label className="field-label">Email Address <span style={{ color: '#64748B', fontWeight: 400, fontSize: '0.82rem' }}>(Optional)</span></label>
                       <input 
                         type="email" 
                         className="form-control-input"
-                        placeholder="ananya@example.com"
+                        placeholder="ananya@example.com (Optional)"
                         value={formData.patientEmail} 
                         onChange={(e) => setFormData({ ...formData, patientEmail: e.target.value })}
                       />
@@ -877,13 +972,17 @@ const BookAppointmentPage: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Row 5: Patient */}
+                      {/* Row 5: Patient & Vitals */}
                       <div className="app-detail-item">
                         <div className="item-icon-box pink-box">👤</div>
                         <div className="item-content">
-                          <span className="item-label">Patient</span>
+                          <span className="item-label">Patient & Vitals</span>
                           <span className="item-value">{formData.patientName}, {formData.patientAge} yrs, {formData.patientGender}</span>
-                          <span className="item-sub">{formData.patientPhone} • {formData.patientEmail}</span>
+                          <span className="item-sub">
+                            Height: {formData.patientHeight || '--'} cm • Weight: {formData.patientWeight || '--'} kg
+                            {formData.patientBloodGroup ? ` • Blood Group: ${formData.patientBloodGroup}` : ''}
+                          </span>
+                          <span className="item-sub">{formData.patientPhone}{formData.patientEmail ? ` • ${formData.patientEmail}` : ''}</span>
                         </div>
                       </div>
                     </div>
@@ -1092,55 +1191,6 @@ const BookAppointmentPage: React.FC = () => {
                 </div>
               ) : (
                 <>
-                  {/* Card 1: Appointment Summary & Stepper */}
-                  <div className="summary-card">
-                    <div className="summary-card-header">
-                      <h3 className="summary-title">Appointment Summary</h3>
-                      <div className="progress-badge">{calculateProgress()}%</div>
-                    </div>
-
-                    <div className="summary-stepper-list">
-                      <div className="stepper-item completed">
-                        <span className="step-circle green">✓</span>
-                        <div className="step-text">
-                          <span className="step-title">Health Concern</span>
-                          <span className="step-desc">Specific Symptoms</span>
-                        </div>
-                      </div>
-
-                      <div className={`stepper-item ${currentStep >= 2 ? 'completed' : 'pending'}`}>
-                        <span className="step-circle green">✓</span>
-                        <div className="step-text">
-                          <span className="step-title">Select Doctor</span>
-                          <span className="step-desc">{formData.selectedDoctor ? formData.selectedDoctor.name : 'Choose specialist'}</span>
-                        </div>
-                      </div>
-
-                      <div className={`stepper-item ${currentStep === 3 ? 'active-blue' : currentStep > 3 ? 'completed' : 'pending'}`}>
-                        <span className="step-circle num">3</span>
-                        <div className="step-text">
-                          <span className="step-title">Choose Slot</span>
-                          <span className="step-desc">Select date & time</span>
-                        </div>
-                      </div>
-
-                      <div className={`stepper-item ${currentStep === 4 ? 'active-blue' : currentStep > 4 ? 'completed' : 'pending'}`}>
-                        <span className="step-circle num">4</span>
-                        <div className="step-text">
-                          <span className="step-title">Patient Info</span>
-                          <span className="step-desc">Your details</span>
-                        </div>
-                      </div>
-
-                      <div className={`stepper-item ${currentStep === 5 ? 'active-blue' : bookingConfirmed ? 'completed' : 'pending'}`}>
-                        <span className="step-circle num">5</span>
-                        <div className="step-text">
-                          <span className="step-title">Confirm & Pay</span>
-                          <span className="step-desc">Review & pay</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
 
                   {/* Card 2: Selected Doctor Card Preview */}
                   {formData.selectedDoctor && (

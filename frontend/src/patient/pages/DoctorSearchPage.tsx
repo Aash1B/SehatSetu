@@ -5,7 +5,7 @@ import Sidebar from '../components/Sidebar';
 import Footer from '../components/Footer';
 import FloatingEmergencyButton from '../components/FloatingEmergencyButton';
 import CustomSelect, { type OptionItem } from '../components/CustomSelect';
-import { doctorsData, PRIORITY_CONFIG, type Doctor, type PriorityLevel } from '../data/doctorsData';
+import { doctorsData, PRIORITY_CONFIG, type Doctor } from '../data/doctorsData';
 import { setCurrentPage } from '../store/uiSlice';
 
 const SPECIALTY_OPTIONS: OptionItem[] = [
@@ -192,7 +192,6 @@ const DoctorSearchPage: React.FC = () => {
               {filteredAndSortedDoctors.map((doctor) => {
                 const priorityMeta = PRIORITY_CONFIG[doctor.priorityLevel] || PRIORITY_CONFIG.P4;
                 const isFav = favorites.includes(doctor.id);
-                const isGeneralPhysician = doctor.specialty.toLowerCase().includes('general physician');
 
                 return (
                   <div 

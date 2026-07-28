@@ -62,7 +62,7 @@ const DashboardPage: React.FC = () => {
   const dispatch = useDispatch();
   const currentPage = useSelector((state: RootState) => state.ui.currentPage);
   const activeTab = useSelector((state: RootState) => state.ui.dashboardTab);
-  const [activeSubTab, setActiveSubTab] = useState<'consultations' | 'prescriptions'>('consultations');
+  const [activeSubTab, setActiveSubTab] = useState<'consultations' | 'prescriptions'>('prescriptions');
   const [showEmergencyModal, setShowEmergencyModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState<ConsultationItem | null>(null);
 
@@ -198,30 +198,6 @@ const DashboardPage: React.FC = () => {
             </nav>
           </div>
 
-          {/* Section 3: Emergency Card */}
-          <div className="sidebar-emergency-card">
-            <div className="emergency-card-header">
-              <div className="emergency-icon-pulse">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M12 2v20M2 12h20" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              <div>
-                <span className="emergency-card-title">24/7 Emergency Line</span>
-                <span className="emergency-card-subtitle">Immediate Assistance</span>
-              </div>
-            </div>
-            <button 
-              type="button" 
-              className="emergency-call-btn"
-              onClick={() => setShowEmergencyModal(true)}
-            >
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-              </svg>
-              <span>Call Emergency (108)</span>
-            </button>
-          </div>
 
           {/* Section 4: Settings & Support */}
           <div className="sidebar-group">
@@ -316,8 +292,8 @@ const DashboardPage: React.FC = () => {
             <p className="greeting-subtitle">Here's your health summary of today.</p>
           </div>
 
-          {/* Quick Action Cards Grid (4 Cards) */}
-          <div className="quick-actions-4grid">
+          {/* Quick Action Cards Grid */}
+          <div className="quick-actions-2grid">
             {/* Card 1: Book Appointment */}
             <div className="action-card" onClick={() => dispatch(setCurrentPage('book-appointment'))}>
               <div className="card-icon-badge blue-badge">
@@ -337,22 +313,7 @@ const DashboardPage: React.FC = () => {
               <span className="arrow-link blue-arrow">→</span>
             </div>
 
-            {/* Card 2: Video Consultation */}
-            <div className="action-card" onClick={() => handleTabClick('video')}>
-              <div className="card-icon-badge green-badge">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#16A34A" strokeWidth="2.2" strokeLinecap="round">
-                  <polygon points="23 7 16 12 23 17 23 7"/>
-                  <rect x="1" y="5" width="15" height="14" rx="2"/>
-                </svg>
-              </div>
-              <div className="action-card-text">
-                <h3 className="card-heading">Video Consultation</h3>
-                <p className="card-desc">Consult with doctors from anywhere</p>
-              </div>
-              <span className="arrow-link blue-arrow">→</span>
-            </div>
-
-            {/* Card 3: Upload Reports */}
+            {/* Card 2: Upload Reports */}
             <div className="action-card" onClick={() => handleTabClick('records')}>
               <div className="card-icon-badge purple-badge">
                 <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#9333EA" strokeWidth="2.2" strokeLinecap="round">
@@ -365,20 +326,6 @@ const DashboardPage: React.FC = () => {
               <div className="action-card-text">
                 <h3 className="card-heading">Upload Reports</h3>
                 <p className="card-desc">Upload and share your medical reports</p>
-              </div>
-              <span className="arrow-link blue-arrow">→</span>
-            </div>
-
-            {/* Card 4: Health Checkup */}
-            <div className="action-card" onClick={() => dispatch(setCurrentPage('doctors'))}>
-              <div className="card-icon-badge pink-badge">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#E11D48" strokeWidth="2.2" strokeLinecap="round">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                </svg>
-              </div>
-              <div className="action-card-text">
-                <h3 className="card-heading">Health Checkup</h3>
-                <p className="card-desc">Schedule labs & health checkups</p>
               </div>
               <span className="arrow-link blue-arrow">→</span>
             </div>
@@ -453,17 +400,17 @@ const DashboardPage: React.FC = () => {
                   <div className="tab-buttons-row">
                     <button 
                       type="button" 
-                      className={`tab-sub-btn ${activeSubTab === 'consultations' ? 'active' : ''}`}
-                      onClick={() => setActiveSubTab('consultations')}
-                    >
-                      Recent Consultations
-                    </button>
-                    <button 
-                      type="button" 
                       className={`tab-sub-btn ${activeSubTab === 'prescriptions' ? 'active' : ''}`}
                       onClick={() => setActiveSubTab('prescriptions')}
                     >
                       Recent Prescriptions
+                    </button>
+                    <button 
+                      type="button" 
+                      className={`tab-sub-btn ${activeSubTab === 'consultations' ? 'active' : ''}`}
+                      onClick={() => setActiveSubTab('consultations')}
+                    >
+                      Recent Consultations
                     </button>
                   </div>
                 </div>
@@ -547,44 +494,7 @@ const DashboardPage: React.FC = () => {
 
             {/* RIGHT COLUMN: Health Overview, Reminders, Emergency Widget */}
             <div className="dash-right-col">
-              {/* Widget 1: Health Overview */}
-              <div className="dash-widget-card">
-                <div className="widget-header">
-                  <h3 className="widget-title">Health Overview</h3>
-                  <button type="button" className="widget-link" onClick={() => handleTabClick('records')}>
-                    View Reports
-                  </button>
-                </div>
 
-                <div className="health-metrics-list">
-                  <div className="metric-row">
-                    <div className="metric-icon-box pink">❤️</div>
-                    <div className="metric-info">
-                      <span className="metric-name">Blood Pressure</span>
-                      <span className="metric-val">120/80 <small>mmHg</small></span>
-                    </div>
-                    <span className="metric-badge green">Normal</span>
-                  </div>
-
-                  <div className="metric-row">
-                    <div className="metric-icon-box blue">💧</div>
-                    <div className="metric-info">
-                      <span className="metric-name">Blood Sugar</span>
-                      <span className="metric-val">98 <small>mg/dL</small></span>
-                    </div>
-                    <span className="metric-badge green">Normal</span>
-                  </div>
-
-                  <div className="metric-row">
-                    <div className="metric-icon-box orange">📈</div>
-                    <div className="metric-info">
-                      <span className="metric-name">Weight</span>
-                      <span className="metric-val">58 <small>kg</small></span>
-                    </div>
-                    <span className="metric-badge green">Healthy</span>
-                  </div>
-                </div>
-              </div>
 
               {/* Widget 2: Health Reminders */}
               <div className="dash-widget-card">
