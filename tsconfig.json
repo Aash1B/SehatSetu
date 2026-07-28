@@ -8,10 +8,5 @@
     "strictNullChecks": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*"],
-  "exclude": [
-    "frontend",
-    "node_modules",
-    "dist"
-  ]
+  "exclude": ["authentication-system", "node_modules", "frontend", "vite.config.ts"]
 }

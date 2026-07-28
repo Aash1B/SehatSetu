@@ -3,14 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "workspaces": [
+    "frontend"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build:frontend": "tsc -p tsconfig.app.json && vite build",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "dev:backend": "nest start --watch",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "build:frontend": "npm --prefix frontend run build",
     "build:backend": "nest build",
-    "start:backend": "nest start",
-    "start:backend:dev": "nest start --watch",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "build": "nest build",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@nestjs/common": "^10.4.0",
@@ -36,8 +41,11 @@
     "rxjs": "^7.8.1"
   },
   "devDependencies": {
-"@types/passport-jwt": "^4.0.1",
+    "@nestjs/cli": "^10.4.5",
+    "@types/node": "^24.13.2",
+    "@types/passport-jwt": "^4.0.1",
     "@types/pg": "^8.20.0",
+    "concurrently": "^10.0.4",
     "dotenv": "^17.4.2",
     "typescript": "^5.5.4"
   }
