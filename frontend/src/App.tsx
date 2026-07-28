@@ -1,7 +1,8 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store } from './patient/store';
 import './Patient.css';
+import './App.css';
 
 const PatientLayout = () => (
   <div className="patient-portal min-h-screen">
@@ -27,6 +28,7 @@ import DoctorSearchPage from './patient/pages/DoctorSearchPage';
 import BookAppointmentPage from './patient/pages/BookAppointmentPage';
 import HealthQuestionnairePage from './patient/pages/HealthQuestionnairePage';
 import AppointmentsPage from './patient/pages/AppointmentsPage';
+import ProfileSettingsPage from './patient/pages/ProfileSettingsPage';
 import VideoConsultationPage from './patient/pages/VideoConsultationPage';
 
 function App() {
@@ -46,6 +48,7 @@ function App() {
             <Route path="/patient/book/:id" element={<BookAppointmentPage />} />
             <Route path="/patient/questionnaire/:id" element={<HealthQuestionnairePage />} />
             <Route path="/patient/appointments" element={<AppointmentsPage />} />
+            <Route path="/patient/profile" element={<ProfileSettingsPage />} />
             <Route path="/patient/consultation/:id" element={<VideoConsultationPage />} />
           </Route>
 

@@ -162,8 +162,8 @@ const DashboardPage: React.FC = () => {
 
               <button 
                 type="button" 
-                className={`sidebar-item ${currentPage === 'dashboard' && activeTab === 'video' ? 'active' : ''}`}
-                onClick={() => handleTabClick('video')}
+                className={`sidebar-item ${currentPage === 'video-call' ? 'active' : ''}`}
+                onClick={() => dispatch(setCurrentPage('video-call'))}
               >
                 <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polygon points="23 7 16 12 23 17 23 7"></polygon>
@@ -388,7 +388,7 @@ const DashboardPage: React.FC = () => {
                       <button 
                         type="button" 
                         className="btn-join-consultation"
-                        onClick={() => navigate('/patient/consultation/1')}
+                        onClick={() => { dispatch(setCurrentPage('video-call')); navigate('/patient/consultation/1'); }}
                       >
                         Join Consultation
                       </button>
