@@ -1,4 +1,4 @@
-import { IsEmail, IsString, MinLength, IsEnum } from 'class-validator';
+import { IsEmail, IsString, MinLength, IsEnum, IsBoolean, Equals } from 'class-validator';
 
 export enum RoleInput {
   PATIENT = 'PATIENT',
@@ -18,4 +18,8 @@ export class SignupDto {
 
   @IsEnum(RoleInput)
   role: RoleInput;
+
+  @IsBoolean()
+  @Equals(true, { message: 'You must consent to data storage to create an account' })
+  dataConsent: boolean;
 }

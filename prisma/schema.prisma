@@ -7,12 +7,14 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  passwordHash String
-  fullName     String
-  role         Role
-  createdAt    DateTime @default(now())
+  id               String   @id @default(uuid())
+  email            String   @unique
+  passwordHash     String
+  fullName         String
+  role             Role
+  createdAt        DateTime @default(now())
+  dataConsentGiven Boolean  @default(false)
+  dataConsentAt    DateTime?
 }
 
 enum Role {
