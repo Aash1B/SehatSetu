@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CalendarCheck, CheckCircle2, Stethoscope, ChevronRight, Activity, CalendarPlus, Phone, FileText, ActivityIcon } from 'lucide-react';
 
@@ -90,6 +90,49 @@ const dashboardData: DashboardResponse = {
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const [consultations, setConsultations] = useState(dashboardData.todayConsultations);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        const res = await fetch('/api/appointments/doctor/d1');
+        if (res.ok) {
+          const dbAppointments = await res.json();
+          // Map DB appointments to the frontend Consultation structure
+          const formatted = dbAppointments.map((app: any) => ({
+            id: app.id,
+            patient: { 
+              id: app.id, 
+              name: app.patientName, 
+              initials: app.patientName.split(' ').map((n: string) => n[0]).join('').substring(0, 2), 
+              age: parseInt(app.patientAge) || 30, 
+              gender: app.patientGender === 'Male' ? 'M' : 'F', 
+              avatarColorClass: "bg-blue-50 text-blue-600" 
+            },
+            tags: [
+              { label: app.healthConcern === 'specific-symptoms' && app.symptoms && app.symptoms.length > 0 ? app.symptoms[0] : 'Consultation', variant: "default" },
+              { label: app.status === 'WAITING' ? "Scheduled" : app.status, variant: "primary" }
+            ],
+            time: app.timeSlot,
+            chiefComplaint: app.healthConcern === 'specific-symptoms' && app.symptoms && app.symptoms.length > 0 ? app.symptoms.join(', ') : 'General Consultation',
+            status: ConsultationStatus.WAITING,
+            priority: app.priority === 'URGENT' ? Priority.URGENT : Priority.ROUTINE
+          }));
+          
+          // Prepend new appointments to mock ones for demo purposes
+          setConsultations([...formatted, ...dashboardData.todayConsultations]);
+        }
+      } catch (err) {
+        console.error("Failed to fetch appointments", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchAppointments();
+  }, []);
+
   return (
     <div className="flex h-screen bg-luster-white font-sans text-deadly-depths">
       <DoctorSidebar />
@@ -105,7 +148,7 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <StatCard 
             title="Today's Appointments" 
-            value={<span className="text-habanero">{dashboardData.stats.todayAppointments}</span>} 
+            value={<span className="text-habanero">{consultations.length}</span>} 
             subtitle="Scheduled today" 
             icon={CalendarCheck} 
           />
@@ -151,13 +194,17 @@ const Dashboard = () => {
             </div>
 
             <div className="space-y-4">
-              {dashboardData.todayConsultations.map((consultation) => (
-                <ConsultationCard
-                  key={consultation.id}
-                  consultation={consultation}
-                  onViewPatient={() => navigate(`/doctor/patient/${consultation.patient.id}`)}
-                />
-              ))}
+              {loading ? (
+                <div className="text-center py-8 text-gray-500">Loading appointments...</div>
+              ) : (
+                consultations.map((consultation) => (
+                  <ConsultationCard
+                    key={consultation.id}
+                    consultation={consultation}
+                    onViewPatient={() => navigate(`/doctor/patient/${consultation.patient.id}`)}
+                  />
+                ))
+              )}
             </div>
           </div>
 

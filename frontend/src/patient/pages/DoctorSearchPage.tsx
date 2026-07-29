@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import Footer from '../components/Footer';
@@ -33,6 +34,7 @@ const LOCATION_OPTIONS: OptionItem[] = [
 
 const DoctorSearchPage: React.FC = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [specialtyFilter, setSpecialtyFilter] = useState('All');
   const [locationFilter, setLocationFilter] = useState('All');
@@ -89,7 +91,7 @@ const DoctorSearchPage: React.FC = () => {
             <button 
               type="button" 
               className="breadcrumb-back-btn"
-              onClick={() => dispatch(setCurrentPage('landing'))}
+              onClick={() => navigate('/')}
             >
               ← Back to Home
             </button>
@@ -269,7 +271,7 @@ const DoctorSearchPage: React.FC = () => {
                         <button
                           type="button"
                           className="btn-full-book-now"
-                          onClick={() => dispatch(setCurrentPage('book-appointment'))}
+                          onClick={() => navigate(`/patient/book/${doctor.id}`)}
                         >
                           Book Appointment
                         </button>

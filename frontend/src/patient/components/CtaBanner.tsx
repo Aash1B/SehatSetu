@@ -1,9 +1,10 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
-import { setCurrentPage } from '../store/uiSlice';
+import { useNavigate } from 'react-router-dom';
 
 const CtaBanner: React.FC = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   return (
     <section className="cta-banner-section">
@@ -19,7 +20,7 @@ const CtaBanner: React.FC = () => {
         <button 
           type="button" 
           className="btn-cta-orange"
-          onClick={() => dispatch(setCurrentPage('book-appointment'))}
+          onClick={() => navigate('/patient/book/new')}
         >
           Get Started Today →
         </button>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../store';
 import { setCurrentPage, setDashboardTab, type DashboardTabType } from '../store/uiSlice';
+import { useNavigate } from 'react-router-dom';
 
 interface ConsultationItem {
   id: string;
@@ -60,6 +61,7 @@ const recentPrescriptionsData = [
 
 const DashboardPage: React.FC = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const currentPage = useSelector((state: RootState) => state.ui.currentPage);
   const activeTab = useSelector((state: RootState) => state.ui.dashboardTab);
   const [activeSubTab, setActiveSubTab] = useState<'consultations' | 'prescriptions'>('prescriptions');
@@ -76,7 +78,7 @@ const DashboardPage: React.FC = () => {
       <aside className="sehat-dashboard-sidebar">
         {/* Header */}
         <div className="sidebar-header">
-          <div className="sidebar-brand" onClick={() => dispatch(setCurrentPage('landing'))} style={{ cursor: 'pointer' }}>
+          <div className="sidebar-brand" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
             <div className="sidebar-logo-icon">
               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#F97316"/>
@@ -101,7 +103,7 @@ const DashboardPage: React.FC = () => {
               <button 
                 type="button" 
                 className={`sidebar-item ${currentPage === 'landing' ? 'active' : ''}`}
-                onClick={() => dispatch(setCurrentPage('landing'))}
+                onClick={() => navigate('/')}
               >
                 <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
@@ -127,7 +129,7 @@ const DashboardPage: React.FC = () => {
               <button 
                 type="button" 
                 className={`sidebar-item ${currentPage === 'doctors' ? 'active' : ''}`}
-                onClick={() => dispatch(setCurrentPage('doctors'))}
+                onClick={() => navigate('/patient/search')}
               >
                 <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -238,7 +240,7 @@ const DashboardPage: React.FC = () => {
             type="button" 
             className="user-logout-btn" 
             title="Sign Out"
-            onClick={() => dispatch(setCurrentPage('landing'))}
+            onClick={() => navigate('/')}
           >
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -284,6 +286,8 @@ const DashboardPage: React.FC = () => {
 
         {/* Dashboard Content Container (Full Page Width) */}
         <main className="sehat-dash-content">
+          {activeTab === 'overview' && (
+            <>
           {/* Greeting Header */}
           <div className="dash-greeting-header">
             <h1 className="greeting-title">
@@ -295,7 +299,7 @@ const DashboardPage: React.FC = () => {
           {/* Quick Action Cards Grid */}
           <div className="quick-actions-2grid">
             {/* Card 1: Book Appointment */}
-            <div className="action-card" onClick={() => dispatch(setCurrentPage('book-appointment'))}>
+            <div className="action-card" onClick={() => navigate('/patient/book/new')}>
               <div className="card-icon-badge blue-badge">
                 <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#2563EB" strokeWidth="2.2" strokeLinecap="round">
                   <rect x="3" y="4" width="18" height="18" rx="2"/>
@@ -377,14 +381,14 @@ const DashboardPage: React.FC = () => {
                       <button 
                         type="button" 
                         className="btn-reschedule"
-                        onClick={() => dispatch(setCurrentPage('book-appointment'))}
+                        onClick={() => navigate('/patient/book/new')}
                       >
                         Reschedule
                       </button>
                       <button 
                         type="button" 
                         className="btn-join-consultation"
-                        onClick={() => alert('Joining consultation with Dr. Ananya Sharma...')}
+                        onClick={() => navigate('/patient/consultation/1')}
                       >
                         Join Consultation
                       </button>
@@ -552,6 +556,63 @@ const DashboardPage: React.FC = () => {
               </div>
             </div>
           </div>
+            </>
+          )}
+
+          {activeTab === 'appointments' && (
+            <div className="appointments-tab-content" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div className="tab-section-header">
+                <div>
+                  <h2 className="tab-title">My Appointments</h2>
+                  <p className="tab-subtitle">Manage your upcoming and past consultations.</p>
+                </div>
+              </div>
+              
+              <div className="appointments-filter-bar">
+                <button type="button" className="filter-btn active">Upcoming</button>
+                <button type="button" className="filter-btn">Past</button>
+                <button type="button" className="filter-btn">Cancelled</button>
+              </div>
+
+              <div className="appointments-cards-grid">
+                {recentConsultationsData.map((item) => (
+                  <div key={item.id} className="appointment-card-item">
+                    <div className="appt-card-top">
+                      <div className="doc-profile-left">
+                        <img src={item.avatar} alt={item.doctorName} className="appt-doc-img" />
+                        <div>
+                          <h3 className="appt-doc-name">{item.doctorName}</h3>
+                          <span className="appt-doc-spec">{item.specialty}</span>
+                          <span className="appt-id-code">ID: {item.id}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="appt-card-details">
+                      <div className="detail-chip highlight">
+                        <span>📅</span> {item.date}
+                      </div>
+                      <div className="detail-chip">
+                        <span>🕒</span> {item.time}
+                      </div>
+                      <div className="detail-chip">
+                        <span>🎥</span> {item.mode}
+                      </div>
+                    </div>
+
+                    <div className="appt-card-footer">
+                      <button type="button" className="btn-join-video-sm" onClick={() => alert(`Joining ${item.mode}...`)}>
+                        Join Consultation
+                      </button>
+                      <button type="button" className="btn-card-secondary">
+                        Reschedule
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </main>
       </div>
 
