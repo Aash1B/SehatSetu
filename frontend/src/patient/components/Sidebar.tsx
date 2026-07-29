@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import type { RootState } from '../store';
 import { closeSidebar } from '../store/uiSlice';
 import { useNavigate } from 'react-router-dom';
@@ -33,8 +34,10 @@ const Sidebar: React.FC = () => {
     };
   }, [isOpen]);
 
-  const handleNavClick = () => {
+  const handleNav = (page: string, path: string) => {
+    dispatch(setCurrentPage(page as any));
     dispatch(closeSidebar());
+    navigate(path);
   };
 
   return (
@@ -83,57 +86,59 @@ const Sidebar: React.FC = () => {
           <div className="sidebar-group">
             <span className="sidebar-group-title">Main Navigation</span>
             <nav className="sidebar-menu">
-              <a href="#home" className={`sidebar-item ${currentPage === 'landing' ? 'active' : ''}`} onClick={() => { navigate('/'); dispatch(closeSidebar()); }}>
+              <button 
+                type="button"
+                className={`sidebar-item text-left w-full ${currentPage === 'landing' ? 'active' : ''}`} 
+                onClick={() => handleNav('landing', '/')}
+              >
                 <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                   <polyline points="9 22 9 12 15 12 15 22"></polyline>
                 </svg>
                 <span>Home</span>
-              </a>
-              <a href="#services" className="sidebar-item" onClick={handleNavClick}>
+              </button>
+
+              <button 
+                type="button"
+                className={`sidebar-item text-left w-full ${currentPage === 'dashboard' ? 'active' : ''}`} 
+                onClick={() => handleNav('dashboard', '/patient/dashboard')}
+              >
                 <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="14" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
                 </svg>
-                <span>Our Services</span>
-              </a>
-              <a href="#how-it-works" className="sidebar-item" onClick={handleNavClick}>
+                <span>Patient Dashboard</span>
+              </button>
+
+              <button 
+                type="button"
+                className={`sidebar-item text-left w-full ${currentPage === 'doctors' ? 'active' : ''}`} 
+                onClick={() => handleNav('doctors', '/patient/search')}
+              >
                 <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                 </svg>
-                <span>How It Works</span>
-              </a>
-              <a href="#testimonials" className="sidebar-item" onClick={handleNavClick}>
-                <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                </svg>
-                <span>Patient Reviews</span>
-              </a>
+                <span>Find Doctors</span>
+              </button>
             </nav>
           </div>
-
 
           {/* Section 4: Settings & Support */}
           <div className="sidebar-group">
             <span className="sidebar-group-title">Account & Support</span>
             <nav className="sidebar-menu">
-              <a href="#profile" className="sidebar-item" onClick={handleNavClick}>
+              <button type="button" className="sidebar-item text-left w-full" onClick={() => handleNav('dashboard', '/patient/dashboard')}>
                 <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
                 <span>Profile & Settings</span>
-              </a>
-              <a href="#help" className="sidebar-item" onClick={handleNavClick}>
-                <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                </svg>
-                <span>Help & FAQs</span>
-              </a>
+              </button>
             </nav>
           </div>
         </div>
@@ -154,7 +159,7 @@ const Sidebar: React.FC = () => {
             type="button" 
             className="user-logout-btn" 
             title="Sign Out"
-            onClick={handleNavClick}
+            onClick={() => handleNav('login', '/patient/login')}
           >
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>

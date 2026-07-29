@@ -91,7 +91,7 @@ const DoctorSearchPage: React.FC = () => {
             <button 
               type="button" 
               className="breadcrumb-back-btn"
-              onClick={() => navigate('/')}
+              onClick={() => { dispatch(setCurrentPage('landing')); navigate('/'); }}
             >
               ← Back to Home
             </button>

@@ -18,8 +18,9 @@ import PatientDetails from './doctor/pages/PatientDetails';
 import DoctorPrescription from './doctor/pages/DoctorPrescription';
 import VideoConsultation from './doctor/pages/VideoConsultation';
 
-// Landing Page
-import LandingPage from './patient/pages/LandingPage';
+// Landing Pages
+import PatientLandingPage from './patient/pages/LandingPage';
+import PortalSelectorPage from './LandingPage';
 
 // Patient Pages
 import LoginPage from './patient/pages/LoginPage';
@@ -36,21 +37,19 @@ function App() {
     <Provider store={store}>
       <Router>
         <Routes>
-          {/* Patient Portal Layout */}
-          <Route element={<PatientLayout />}>
-            {/* Landing Page */}
-            <Route path="/" element={<LandingPage />} />
+          {/* Patient Main Home Page */}
+          <Route path="/" element={<PatientLandingPage />} />
+          <Route path="/patient" element={<PatientLandingPage />} />
+          <Route path="/portals" element={<PortalSelectorPage />} />
 
-            {/* Patient Routes */}
-            <Route path="/patient/login" element={<LoginPage />} />
-            <Route path="/patient/dashboard" element={<DashboardPage />} />
-            <Route path="/patient/search" element={<DoctorSearchPage />} />
-            <Route path="/patient/book/:id" element={<BookAppointmentPage />} />
-            <Route path="/patient/questionnaire/:id" element={<HealthQuestionnairePage />} />
-            <Route path="/patient/appointments" element={<AppointmentsPage />} />
-            <Route path="/patient/profile" element={<ProfileSettingsPage />} />
-            <Route path="/patient/consultation/:id" element={<VideoConsultationPage />} />
-          </Route>
+          {/* Patient Sub-routes */}
+          <Route path="/patient/login" element={<LoginPage />} />
+          <Route path="/patient/dashboard" element={<DashboardPage />} />
+          <Route path="/patient/search" element={<DoctorSearchPage />} />
+          <Route path="/patient/book/:id" element={<BookAppointmentPage />} />
+          <Route path="/patient/questionnaire/:id" element={<HealthQuestionnairePage />} />
+          <Route path="/patient/appointments" element={<AppointmentsPage />} />
+          <Route path="/patient/consultation/:id" element={<VideoConsultationPage />} />
 
           {/* Doctor Routes */}
           <Route path="/doctor/login" element={<DoctorLogin />} />

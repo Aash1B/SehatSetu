@@ -1,10 +1,16 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { setCurrentPage } from '../store/uiSlice';
 
 const HeroSection: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const handleBookAppointment = () => {
+    dispatch(setCurrentPage('doctors'));
+    navigate('/patient/search');
+  };
 
   return (
     <section id="home" className="hero-section">
@@ -29,20 +35,24 @@ const HeroSection: React.FC = () => {
             <button 
               type="button"
               className="btn-primary-orange"
-              onClick={() => navigate('/patient/book/new')}
+              onClick={handleBookAppointment}
             >
               Book Appointment
               <svg className="btn-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M5 12h14M12 5l7 7-7 7"/>
               </svg>
             </button>
-            <a href="#doctors" className="btn-secondary-outline">
+            <button 
+              type="button"
+              className="btn-secondary-outline"
+              onClick={handleBookAppointment}
+            >
               Find a Doctor
               <svg className="btn-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <circle cx="11" cy="11" r="8"/>
                 <path d="M21 21l-4.35-4.35"/>
               </svg>
-            </a>
+            </button>
           </div>
 
           {/* Social Proof Stack */}

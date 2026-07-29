@@ -1,6 +1,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { toggleSidebar } from '../store/uiSlice';
+import { useNavigate } from 'react-router-dom';
+import { toggleSidebar, setCurrentPage } from '../store/uiSlice';
 import type { RootState } from '../store';
 import { useNavigate } from 'react-router-dom';
 
@@ -8,6 +9,11 @@ const Navbar: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const currentPage = useSelector((state: RootState) => state.ui.currentPage);
+
+  const handleNav = (page: string, path: string) => {
+    dispatch(setCurrentPage(page as any));
+    navigate(path);
+  };
 
   return (
     <header className="navbar-header">
@@ -32,7 +38,7 @@ const Navbar: React.FC = () => {
           <button 
             type="button" 
             className="brand-logo btn-logo-reset"
-            onClick={() => navigate('/')}
+            onClick={() => handleNav('landing', '/')}
           >
             <div className="logo-badge">
               <svg viewBox="0 0 24 24" fill="none" className="logo-icon" xmlns="http://www.w3.org/2000/svg">
@@ -51,7 +57,7 @@ const Navbar: React.FC = () => {
           <button 
             type="button" 
             className={`nav-link ${currentPage === 'landing' ? 'active' : ''}`}
-            onClick={() => navigate('/')}
+            onClick={() => handleNav('landing', '/')}
           >
             Home
           </button>
@@ -59,7 +65,7 @@ const Navbar: React.FC = () => {
           <button 
             type="button" 
             className={`nav-link ${currentPage === 'doctors' ? 'active' : ''}`}
-            onClick={() => navigate('/patient/search')}
+            onClick={() => handleNav('doctors', '/patient/search')}
           >
             Doctors
           </button>
@@ -69,10 +75,18 @@ const Navbar: React.FC = () => {
 
         {/* Actions */}
         <div className="nav-actions">
-          <button type="button" className="btn-sign-in">
+          <button 
+            type="button" 
+            className="btn-sign-in"
+            onClick={() => handleNav('login', '/patient/login')}
+          >
             Sign In
           </button>
-          <button type="button" className="btn-get-started" onClick={() => navigate('/patient/dashboard')}>
+          <button 
+            type="button" 
+            className="btn-get-started" 
+            onClick={() => handleNav('dashboard', '/patient/dashboard')}
+          >
             Dashboard
           </button>
           <button 

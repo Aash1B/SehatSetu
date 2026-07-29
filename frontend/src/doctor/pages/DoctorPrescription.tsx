@@ -48,7 +48,7 @@ const DoctorPrescription: React.FC = () => {
           <h2 className="text-xl font-semibold text-gray-700 mb-4">Medications</h2>
           
           <div className="space-y-4">
-            {medications.map((med, index) => (
+            {medications.map((_, index) => (
               <div key={index} className="grid grid-cols-2 gap-4 p-4 border border-gray-100 rounded-lg bg-gray-50">
                 <input 
                   type="text" 

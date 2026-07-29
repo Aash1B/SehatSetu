@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./App.css";
 
 html, body, #root {
   width: 100%;
@@ -16,11 +17,11 @@ html, body, #root {
 
 @theme {
   --color-luster-white: #F4F1EC;
-  --color-aster-blue: #9BACD8;
-  --color-habanero: #F98513;
+  --color-aster-blue: #4C70E8;
+  --color-habanero: #F0541E;
   --color-jodhpur-tan: #DAD1C8;
   --color-deep-space: #223382;
-  --color-deadly-depths: #111144;
+  --color-deadly-depths: #0B0F19;
 }
 
 @layer base {

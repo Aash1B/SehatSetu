@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Activity, Droplets, Ruler, Weight } from 'lucide-react';
+import { Activity, Droplets, Ruler, Weight } from 'lucide-react';
 import type { PatientProfile } from '../../types';
 
 interface PatientMiniCardProps {

@@ -1714,14 +1714,15 @@ button {
   width: 320px;
   max-width: 85vw;
   height: 100vh;
-  background: #FFFFFF;
+  background: linear-gradient(180deg, #1E3A8A 0%, #2563EB 100%);
+  color: #FFFFFF;
   z-index: 999;
   display: flex;
   flex-direction: column;
-  box-shadow: 10px 0 30px rgba(15, 23, 42, 0.15);
+  box-shadow: 10px 0 30px rgba(15, 23, 42, 0.25);
   transform: translateX(-100%);
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  border-right: 1px solid var(--color-border);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .sidebar-drawer.open {
@@ -1734,8 +1735,8 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--color-border);
-  background: #FAFAFA;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.15);
 }
 
 .sidebar-brand {
@@ -1763,7 +1764,7 @@ button {
 .sidebar-brand-title {
   font-size: 1.25rem;
   font-weight: 800;
-  color: var(--color-navy-dark);
+  color: #FFFFFF;
   display: block;
   line-height: 1.2;
 }
@@ -1773,29 +1774,29 @@ button {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--color-orange-primary);
-  background: var(--color-orange-light);
+  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.2);
   padding: 2px 8px;
   border-radius: var(--radius-pill);
 }
 
 .sidebar-close-btn {
   background: transparent;
-  border: 1px solid var(--color-border);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   width: 34px;
   height: 34px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-muted);
+  color: #FFFFFF;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .sidebar-close-btn:hover {
-  background: #F1F5F9;
-  color: var(--color-navy-dark);
+  background: rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
   transform: rotate(90deg);
 }
 
@@ -1820,7 +1821,7 @@ button {
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.8px;
-  color: var(--color-text-light);
+  color: rgba(255, 255, 255, 0.65);
   padding-left: 10px;
   margin-bottom: 4px;
 }
@@ -1835,11 +1836,11 @@ button {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 10px;
+  padding: 10px 12px;
   background: transparent;
   border: none;
   outline: none;
-  color: #475569;
+  color: rgba(255, 255, 255, 0.88);
   font-size: 0.92rem;
   font-weight: 500;
   text-decoration: none;
@@ -1849,20 +1850,21 @@ button {
   text-align: left;
   cursor: pointer;
   font-family: inherit;
-  border-left: 3px solid transparent;
+  border-left: 4px solid transparent;
+  border-radius: 0 8px 8px 0;
 }
 
 .sidebar-item:hover {
-  background: transparent;
-  color: var(--color-orange-primary);
+  background: rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
   transform: translateX(4px);
 }
 
 .sidebar-item.active {
-  background: transparent;
-  color: var(--color-orange-primary);
+  background: rgba(255, 255, 255, 0.18);
+  color: #FFFFFF;
   font-weight: 700;
-  border-left: 3px solid var(--color-orange-primary);
+  border-left: 4px solid var(--color-habanero);
 }
 
 .sidebar-icon {
@@ -1970,8 +1972,8 @@ button {
 /* Sidebar Footer User Profile */
 .sidebar-footer {
   padding: 16px 20px;
-  border-top: 1px solid var(--color-border);
-  background: #FAFAFA;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.18);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1981,6 +1983,28 @@ button {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.sidebar-user-info .user-name {
+  color: #FFFFFF;
+}
+
+.sidebar-user-info .user-id {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.user-logout-btn {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
+  border-radius: 8px;
+  padding: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.user-logout-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
 }
 
 .user-avatar {
@@ -6955,8 +6979,9 @@ button {
 .sehat-dashboard-sidebar {
   width: 320px;
   height: 100vh;
-  background: #FFFFFF;
-  border-right: 1px solid var(--color-border);
+  background: linear-gradient(180deg, #1E3A8A 0%, #2563EB 100%);
+  color: #FFFFFF;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -6969,8 +6994,8 @@ button {
 
 .sehat-dashboard-sidebar .sidebar-header {
   padding: 20px 24px;
-  background: #FAFAFA;
-  border-bottom: 1px solid var(--color-border);
+  background: rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .sehat-dashboard-sidebar .sidebar-content {

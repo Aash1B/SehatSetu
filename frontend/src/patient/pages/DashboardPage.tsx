@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import type { RootState } from '../store';
 import { setCurrentPage, setDashboardTab, type DashboardTabType } from '../store/uiSlice';
 import { useNavigate } from 'react-router-dom';
@@ -78,7 +79,7 @@ const DashboardPage: React.FC = () => {
       <aside className="sehat-dashboard-sidebar">
         {/* Header */}
         <div className="sidebar-header">
-          <div className="sidebar-brand" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+          <div className="sidebar-brand" onClick={() => { dispatch(setCurrentPage('landing')); navigate('/'); }} style={{ cursor: 'pointer' }}>
             <div className="sidebar-logo-icon">
               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#F97316"/>
@@ -103,7 +104,7 @@ const DashboardPage: React.FC = () => {
               <button 
                 type="button" 
                 className={`sidebar-item ${currentPage === 'landing' ? 'active' : ''}`}
-                onClick={() => navigate('/')}
+                onClick={() => { dispatch(setCurrentPage('landing')); navigate('/'); }}
               >
                 <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
@@ -129,7 +130,7 @@ const DashboardPage: React.FC = () => {
               <button 
                 type="button" 
                 className={`sidebar-item ${currentPage === 'doctors' ? 'active' : ''}`}
-                onClick={() => navigate('/patient/search')}
+                onClick={() => { dispatch(setCurrentPage('doctors')); navigate('/patient/search'); }}
               >
                 <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -163,7 +164,7 @@ const DashboardPage: React.FC = () => {
               <button 
                 type="button" 
                 className={`sidebar-item ${currentPage === 'video-call' ? 'active' : ''}`}
-                onClick={() => dispatch(setCurrentPage('video-call'))}
+                onClick={() => { dispatch(setCurrentPage('video-call')); navigate('/patient/consultation/CONS-001'); }}
               >
                 <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polygon points="23 7 16 12 23 17 23 7"></polygon>
@@ -240,7 +241,7 @@ const DashboardPage: React.FC = () => {
             type="button" 
             className="user-logout-btn" 
             title="Sign Out"
-            onClick={() => navigate('/')}
+            onClick={() => { dispatch(setCurrentPage('landing')); navigate('/patient/login'); }}
           >
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>

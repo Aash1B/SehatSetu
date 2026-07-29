@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Users, Calendar, Bell, User } from 'lucide-react';
+import { Home, Users, User } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 
