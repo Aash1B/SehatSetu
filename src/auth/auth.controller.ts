@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards, Req } from '@nestjs/common';
+import { Body, Controller, Post, Delete, UseGuards, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
@@ -10,7 +10,7 @@ export class AuthController {
 
   @Post('signup')
   signup(@Body() dto: SignupDto) {
-    return this.authService.signup(dto.email, dto.password, dto.fullName, dto.role);
+    return this.authService.signup(dto.email, dto.password, dto.fullName, dto.role, dto.dataConsent);
   }
 
   @Post('login')
@@ -22,5 +22,11 @@ export class AuthController {
   @Post('whoami')
   whoAmI(@Req() req: any) {
     return req.user;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('account')
+  deleteAccount(@Req() req: any) {
+    return this.authService.deleteAccount(req.user.userId);
   }
 }
