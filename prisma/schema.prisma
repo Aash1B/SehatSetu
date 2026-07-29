@@ -15,6 +15,8 @@ model User {
   createdAt        DateTime @default(now())
   dataConsentGiven Boolean  @default(false)
   dataConsentAt    DateTime?
+  patient Patient?
+  doctor  Doctor?
 }
 
 enum Role {
@@ -22,12 +24,56 @@ enum Role {
   DOCTOR
 }
 
+enum AppointmentStatus {
+  SCHEDULED
+  WAITING
+  COMPLETED
+  CANCELLED
+}
+
+model Patient {
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id])
+  gender            String?
+  dateOfBirth       DateTime?
+  allergies         String[]
+  chronicConditions String[]
+
+  appointments  Appointment[]
+  ehrRecords    EhrRecord[]
+  prescriptions Prescription[]
+  payments      Payment[]
+}
+
+model Doctor {
+  id              String  @id @default(uuid())
+  userId          String  @unique
+  user            User    @relation(fields: [userId], references: [id])
+  specialty       String
+  consultationFee Int?
+
+  appointments  Appointment[]
+  prescriptions Prescription[]
+}
+
 model Appointment {
   id                String   @id @default(uuid())
+  
+  // Relational fields (Incoming branch)
+  patientId         String?
+  patient           Patient? @relation(fields: [patientId], references: [id])
   doctorId          String
-  patientName       String
-  patientAge        String
-  patientGender     String
+  doctor            Doctor?  @relation(fields: [doctorId], references: [id])
+  scheduledAt       DateTime?
+  status            String   @default("WAITING") 
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt @default(now())
+
+  // Flat fields from booking flow (HEAD)
+  patientName       String?
+  patientAge        String?
+  patientGender     String?
   patientHeight     String?
   patientWeight     String?
   patientBloodGroup String?
@@ -35,18 +81,63 @@ model Appointment {
   patientEmail      String?
   
   healthConcern     String?
-  symptoms          String[] // PostgreSQL supports scalar arrays
+  symptoms          String[]
   duration          String?
   severity          String?
   consultMode       String?
   urgency           String?
   notes             String?
   
-  date              String
-  timeSlot          String
-  status            String   @default("WAITING") // e.g., WAITING, COMPLETED, CANCELLED
-  priority          String   @default("ROUTINE") // e.g., ROUTINE, URGENT
+  date              String?
+  timeSlot          String?
+  priority          String   @default("ROUTINE")
   
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  ehrRecord    EhrRecord?
+  prescription Prescription?
+  payment      Payment?
+}
+
+model EhrRecord {
+  id            String       @id @default(uuid())
+  patientId     String
+  patient       Patient      @relation(fields: [patientId], references: [id])
+  appointmentId String?      @unique
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+  diagnosis     String?
+  notes         String?
+  aiSummary     String?
+  createdAt     DateTime     @default(now())
+}
+
+model Prescription {
+  id            String      @id @default(uuid())
+  patientId     String
+  patient       Patient     @relation(fields: [patientId], references: [id])
+  doctorId      String
+  doctor        Doctor      @relation(fields: [doctorId], references: [id])
+  appointmentId String      @unique
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+  medicines     Json
+  dietAdvice    String?
+  createdAt     DateTime    @default(now())
+}
+
+model Payment {
+  id              String   @id @default(uuid())
+  patientId       String
+  patient         Patient  @relation(fields: [patientId], references: [id])
+  appointmentId   String   @unique
+  appointment     Appointment @relation(fields: [appointmentId], references: [id])
+  razorpayOrderId String?
+  amount          Int
+  status          String   @default("PENDING")
+  createdAt       DateTime @default(now())
+}
+
+model Hospital {
+  id        String @id @default(uuid())
+  name      String
+  type      String
+  latitude  Float
+  longitude Float
 }
