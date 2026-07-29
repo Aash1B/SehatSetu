@@ -16,7 +16,7 @@ interface VideoPlayerProps {
 const VideoPlayer: React.FC<VideoPlayerProps> = ({
   doctorName = 'Dr. Ananya Sharma',
   doctorSpecialty = 'Senior Dermatologist',
-  doctorAvatar = 'https://images.unsplash.com/photo-1594824813566-88855ce78906?auto=format&fit=crop&q=80&w=600',
+  doctorAvatar = 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=600',
   patientName = 'Ananya Sharma (You)',
   patientAvatar = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
   isMicMuted,
@@ -112,7 +112,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           /* Normal Live Video Feed Display */
           <div className="video-feed-wrapper">
             <img
-              src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=1200"
+              src={doctorAvatar}
               alt={doctorName}
               className="remote-doctor-video"
             />

@@ -48,27 +48,40 @@ const VideoConsultationPage: React.FC = () => {
               <polygon points="23 7 16 12 23 17 23 7"></polygon>
               <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
             </svg>
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-base font-bold text-white tracking-wide">Live Video Consultation</h1>
-              <span className="bg-emerald-500/20 text-emerald-400 text-xs px-2.5 py-0.5 rounded-full font-medium border border-emerald-500/30 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                Encrypted Call
-              </span>
+            <span>Dashboard</span>
+          </button>
+
+          <div className="vcall-brand-pill">
+            <div className="brand-logo-small">
+              <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="var(--color-aster-blue)"/>
+              </svg>
             </div>
             <p className="text-xs text-gray-400">Dr. Sunita Deshmukh • General Physician</p>
           </div>
         </div>
 
-        {/* Center: Timer & Room Status */}
-        <div className="flex items-center gap-2 bg-gray-900/80 px-4 py-1.5 rounded-full border border-gray-800 text-sm font-mono text-orange-400 shadow-inner">
-          <span className="w-2 h-2 rounded-full bg-orange-500 animate-ping"></span>
-          <span>
-            {Math.floor(secondsElapsed / 3600).toString().padStart(2, '0')}:
-            {Math.floor((secondsElapsed % 3600) / 60).toString().padStart(2, '0')}:
-            {(secondsElapsed % 60).toString().padStart(2, '0')}
-          </span>
+        {/* Doctor Details & Consultation Counter */}
+        <div className="vcall-header-center">
+          <div className="vcall-doctor-summary">
+            <img
+              src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=300"
+              alt="Dr. Ananya Sharma"
+              className="vcall-doc-avatar"
+            />
+            <div>
+              <div className="doc-name-verified">
+                <h3 className="vcall-doc-name">Dr. Ananya Sharma</h3>
+                <span className="blue-tick-sm">✓</span>
+              </div>
+              <span className="vcall-doc-spec">Senior Dermatologist • OPD Room 4</span>
+            </div>
+          </div>
+
+          <div className="vcall-timer-box">
+            <span className="timer-icon">⏱️</span>
+            <span className="timer-display">{formatTimer(secondsElapsed)}</span>
+          </div>
         </div>
 
         {/* Right Actions */}

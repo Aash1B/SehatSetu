@@ -68,9 +68,9 @@ const HeroSection: React.FC = () => {
               <svg viewBox="0 0 64 64" fill="none" className="stethoscope-svg">
                 <path d="M20 12v12c0 6.627 5.373 12 12 12s12-5.373 12-12V12" stroke="#1E293B" strokeWidth="4" strokeLinecap="round"/>
                 <path d="M32 36v12c0 4.418-3.582 8-8 8H20" stroke="#1E293B" strokeWidth="4" strokeLinecap="round"/>
-                <circle cx="20" cy="56" r="4" fill="#0EA5E9"/>
-                <circle cx="20" cy="12" r="3" fill="#F97316"/>
-                <circle cx="44" cy="12" r="3" fill="#F97316"/>
+                <circle cx="20" cy="56" r="4" fill="var(--color-aster-blue)"/>
+                <circle cx="20" cy="12" r="3" fill="var(--color-habanero)"/>
+                <circle cx="44" cy="12" r="3" fill="var(--color-habanero)"/>
               </svg>
               <div className="care-connected-label">Care, connected</div>
             </div>
