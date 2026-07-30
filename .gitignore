@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Dependencies & Build
 node_modules/
 dist/
@@ -24,9 +23,8 @@ lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
-=======
+
 node_modules/
 dist/
 .env
 /generated/prisma
->>>>>>> 8c9005268384f9b906adb1181bd89c94e83c4d66

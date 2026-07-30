@@ -1,15 +1,14 @@
 import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
 import * as bcrypt from 'bcrypt';
-
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
-const prisma = new PrismaClient({ adapter });
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly prisma: PrismaService,
+  ) {}
 
 async signup(
   email: string,
@@ -18,22 +17,32 @@ async signup(
   role: 'PATIENT' | 'DOCTOR',
   dataConsent: boolean,
 ) {
-  const existingUser = await prisma.user.findUnique({ where: { email } });
+  const existingUser = await this.prisma.user.findUnique({ where: { email } });
   if (existingUser) {
     throw new ConflictException('An account with this email already exists');
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
 
-  const user = await prisma.user.create({
-    data: {
-      email,
-      passwordHash,
-      fullName,
-      role,
-      dataConsentGiven: dataConsent,
-      dataConsentAt: new Date(),
-    },
+  const user = await this.prisma.$transaction(async (tx) => {
+    const newUser = await tx.user.create({
+      data: {
+        email,
+        passwordHash,
+        fullName,
+        role,
+        dataConsentGiven: dataConsent,
+        dataConsentAt: new Date(),
+      },
+    });
+
+    if (role === 'PATIENT') {
+      await tx.patient.create({ data: { userId: newUser.id } });
+    } else if (role === 'DOCTOR') {
+      await tx.doctor.create({ data: { userId: newUser.id, specialty: 'General Physician' } });
+    }
+
+    return newUser;
   });
 
   const accessToken = this.jwtService.sign({ sub: user.id, role: user.role });
@@ -47,8 +56,9 @@ async signup(
   };
 }
 
+
   async login(email: string, password: string) {
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -70,14 +80,14 @@ async signup(
   }
 
   async deleteAccount(userId: string) {
-  await prisma.user.update({
-    where: { id: userId },
-    data: {
-      email: `deleted_${userId}@sehatsetu.invalid`,
-      passwordHash: 'DELETED',
-      fullName: 'Deleted User',
-    },
-  });
-  return { message: 'Account and personal data deleted' };
-}
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        email: `deleted_${userId}@sehatsetu.invalid`,
+        passwordHash: 'DELETED',
+        fullName: 'Deleted User',
+      },
+    });
+    return { message: 'Account and personal data deleted' };
+  }
 }
