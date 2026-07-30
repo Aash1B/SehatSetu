@@ -39,14 +39,19 @@ const VideoConsultationPage: React.FC = () => {
   };
 
   return (
-    <div className="sehat-videocall-container relative flex flex-col h-screen w-screen bg-[#0B0F19] overflow-hidden font-sans text-white select-none">
-      {/* Top Bar Header */}
-      <header className="videocall-top-bar flex items-center justify-between px-6 py-3 bg-[#111827]/80 backdrop-blur-md border-b border-gray-800/60 z-20">
-        <div className="flex items-center gap-3">
-          <div className="bg-orange-500/20 text-orange-400 p-2 rounded-xl border border-orange-500/30">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="23 7 16 12 23 17 23 7"></polygon>
-              <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+    <div className={`sehat-video-consultation-root ${activeSidebarTab !== 'none' ? 'sidebar-open' : ''}`}>
+      {/* 1. TOP NAVIGATION HEADER */}
+      <header className="vcall-top-header">
+        <div className="vcall-header-left">
+          <button
+            type="button"
+            className="btn-vcall-back"
+            onClick={() => { dispatch(setCurrentPage('dashboard')); navigate('/patient/dashboard'); }}
+            title="Return to Patient Dashboard"
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <line x1="19" y1="12" x2="5" y2="12" />
+              <polyline points="12 19 5 12 12 5" />
             </svg>
             <span>Dashboard</span>
           </button>

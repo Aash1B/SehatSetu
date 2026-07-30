@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { setCurrentPage } from '../store/uiSlice';
 
 interface EndCallModalProps {
@@ -19,6 +20,7 @@ const EndCallModal: React.FC<EndCallModalProps> = ({
   doctorAvatar = 'https://images.unsplash.com/photo-1594824813566-88855ce78906?auto=format&fit=crop&q=80&w=300',
 }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [rating, setRating] = useState<number>(5);
   const [hoverRating, setHoverRating] = useState<number>(0);
   const [feedbackText, setFeedbackText] = useState<string>('');
@@ -153,7 +155,7 @@ const EndCallModal: React.FC<EndCallModalProps> = ({
           <button
             type="button"
             className="btn-return-dashboard"
-            onClick={() => dispatch(setCurrentPage('dashboard'))}
+            onClick={() => { dispatch(setCurrentPage('dashboard')); navigate('/patient/dashboard'); }}
           >
             Return to Dashboard
           </button>

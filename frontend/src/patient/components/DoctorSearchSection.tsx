@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { doctorsData, type Doctor } from '../data/doctorsData';
 import CustomSelect, { type OptionItem } from './CustomSelect';
 import { useNavigate } from 'react-router-dom';
@@ -233,14 +234,14 @@ const DoctorSearchSection: React.FC = () => {
                     <button 
                       type="button" 
                       className="btn-view-profile"
-                      onClick={() => navigate(`/patient/book/${doctor.id}`)}
+                      onClick={() => { dispatch(setCurrentPage('book-appointment')); navigate(`/patient/book/${doctor.id}`); }}
                     >
                       View Profile
                     </button>
                     <button 
                       type="button" 
                       className="btn-book-doctor"
-                      onClick={() => navigate(`/patient/book/${doctor.id}`)}
+                      onClick={() => { dispatch(setCurrentPage('book-appointment')); navigate(`/patient/book/${doctor.id}`); }}
                     >
                       Book Appointment
                     </button>

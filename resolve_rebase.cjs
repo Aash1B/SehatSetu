@@ -1,5 +1,4 @@
 const fs = require('fs');
-const path = require('path');
 
 function resolveFile(filePath) {
   if (!fs.existsSync(filePath)) return;
@@ -23,7 +22,6 @@ function resolveFile(filePath) {
       inIncoming = true;
     } else if (line.startsWith('>>>>>>>')) {
       inConflict = false;
-      // Prefer currentIncoming if non-empty, otherwise currentHead
       const chosen = currentIncoming.length > 0 ? currentIncoming : currentHead;
       newLines.push(...chosen);
     } else if (inConflict) {
@@ -42,20 +40,12 @@ function resolveFile(filePath) {
 }
 
 const files = [
-  '.env.example',
-  'frontend/package.json',
-  'frontend/src/App.tsx',
-  'frontend/src/App.css',
-  'frontend/src/doctor/components/StatusBadge.tsx',
-  'frontend/src/doctor/pages/Dashboard.tsx',
-  'frontend/src/patient/components/HeroSection.tsx',
-  'frontend/src/patient/components/Navbar.tsx',
-  'frontend/src/patient/components/Sidebar.tsx',
+  'frontend/src/patient/components/CtaBanner.tsx',
+  'frontend/src/patient/components/DoctorSearchSection.tsx',
+  'frontend/src/patient/pages/BookAppointmentPage.tsx',
   'frontend/src/patient/pages/DashboardPage.tsx',
   'frontend/src/patient/pages/DoctorSearchPage.tsx',
   'frontend/src/patient/pages/VideoConsultationPage.tsx',
-  'package.json',
-  'package-lock.json'
 ];
 
 files.forEach(resolveFile);

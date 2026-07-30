@@ -271,7 +271,7 @@ const DoctorSearchPage: React.FC = () => {
                         <button
                           type="button"
                           className="btn-full-book-now"
-                          onClick={() => navigate(`/patient/book/${doctor.id}`)}
+                          onClick={() => { dispatch(setCurrentPage('book-appointment')); navigate(`/patient/book/${doctor.id}`); }}
                         >
                           Book Appointment
                         </button>

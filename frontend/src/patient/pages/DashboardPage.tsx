@@ -300,7 +300,7 @@ const DashboardPage: React.FC = () => {
           {/* Quick Action Cards Grid */}
           <div className="quick-actions-2grid">
             {/* Card 1: Book Appointment */}
-            <div className="action-card" onClick={() => navigate('/patient/book/new')}>
+            <div className="action-card" onClick={() => { dispatch(setCurrentPage('book-appointment')); navigate('/patient/book/DOC-001'); }}>
               <div className="card-icon-badge blue-badge">
                 <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#2563EB" strokeWidth="2.2" strokeLinecap="round">
                   <rect x="3" y="4" width="18" height="18" rx="2"/>
@@ -382,14 +382,14 @@ const DashboardPage: React.FC = () => {
                       <button 
                         type="button" 
                         className="btn-reschedule"
-                        onClick={() => navigate('/patient/book/new')}
+                        onClick={() => { dispatch(setCurrentPage('doctors')); navigate('/patient/search'); }}
                       >
                         Reschedule
                       </button>
                       <button 
                         type="button" 
                         className="btn-join-consultation"
-                        onClick={() => { dispatch(setCurrentPage('video-call')); navigate('/patient/consultation/1'); }}
+                        onClick={() => { dispatch(setCurrentPage('video-call')); navigate('/patient/consultation/CONS-001'); }}
                       >
                         Join Consultation
                       </button>

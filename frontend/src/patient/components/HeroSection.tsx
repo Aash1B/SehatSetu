@@ -8,6 +8,11 @@ const HeroSection: React.FC = () => {
   const navigate = useNavigate();
 
   const handleBookAppointment = () => {
+    dispatch(setCurrentPage('book-appointment'));
+    navigate('/patient/book/DOC-001');
+  };
+
+  const handleFindDoctor = () => {
     dispatch(setCurrentPage('doctors'));
     navigate('/patient/search');
   };
@@ -45,7 +50,7 @@ const HeroSection: React.FC = () => {
             <button 
               type="button"
               className="btn-secondary-outline"
-              onClick={handleBookAppointment}
+              onClick={handleFindDoctor}
             >
               Find a Doctor
               <svg className="btn-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">

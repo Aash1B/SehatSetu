@@ -171,6 +171,7 @@ const BookAppointmentPage: React.FC = () => {
       setCurrentStep(prev => prev - 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
+      dispatch(setCurrentPage('landing'));
       navigate('/');
     }
   };
@@ -188,7 +189,7 @@ const BookAppointmentPage: React.FC = () => {
             <button 
               type="button" 
               className="btn-nav-arrow-only"
-              onClick={() => navigate('/')}
+              onClick={() => { dispatch(setCurrentPage('landing')); navigate('/'); }}
               title="Back to Home"
               aria-label="Back to Home"
             >
@@ -200,7 +201,7 @@ const BookAppointmentPage: React.FC = () => {
             <button 
               type="button" 
               className="booking-brand-logo"
-              onClick={() => navigate('/')}
+              onClick={() => { dispatch(setCurrentPage('landing')); navigate('/'); }}
             >
               <div className="logo-badge">
                 <svg viewBox="0 0 24 24" fill="none" className="logo-icon" xmlns="http://www.w3.org/2000/svg">
@@ -215,20 +216,20 @@ const BookAppointmentPage: React.FC = () => {
           </div>
 
           <nav className="booking-nav-links">
-            <button type="button" className="booking-nav-link" onClick={() => navigate('/')}>
+            <button type="button" className="booking-nav-link" onClick={() => { dispatch(setCurrentPage('landing')); navigate('/'); }}>
               How it works
             </button>
-            <button type="button" className="booking-nav-link" onClick={() => navigate('/patient/search')}>
+            <button type="button" className="booking-nav-link" onClick={() => { dispatch(setCurrentPage('doctors')); navigate('/patient/search'); }}>
               Find a specialist
             </button>
-            <button type="button" className="booking-nav-link" onClick={() => navigate('/')}>
+            <button type="button" className="booking-nav-link" onClick={() => { dispatch(setCurrentPage('landing')); navigate('/'); }}>
               Health resources
             </button>
           </nav>
 
           <div className="booking-nav-actions">
-            <button type="button" className="btn-booking-sign-in">Sign In</button>
-            <button type="button" className="btn-booking-get-started" onClick={() => navigate('/')}>
+            <button type="button" className="btn-booking-sign-in" onClick={() => { dispatch(setCurrentPage('landing')); navigate('/patient/login'); }}>Sign In</button>
+            <button type="button" className="btn-booking-get-started" onClick={() => { dispatch(setCurrentPage('landing')); navigate('/'); }}>
               Home
             </button>
           </div>
@@ -286,7 +287,7 @@ const BookAppointmentPage: React.FC = () => {
             )}
 
             <div className="booking-top-breadcrumbs">
-              <button type="button" className="crumb-btn" onClick={() => navigate('/')}>
+              <button type="button" className="crumb-btn" onClick={() => { dispatch(setCurrentPage('landing')); navigate('/'); }}>
                 Home
               </button>
               <span className="crumb-slash">/</span>
@@ -343,9 +344,9 @@ const BookAppointmentPage: React.FC = () => {
               <button 
                 type="button" 
                 className="btn-primary-orange"
-                onClick={() => navigate('/')}
+                onClick={() => { dispatch(setCurrentPage('dashboard')); navigate('/patient/dashboard'); }}
               >
-                Return to Home
+                Go to Dashboard
               </button>
             </div>
           </div>
