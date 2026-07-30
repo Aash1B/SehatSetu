@@ -1,0 +1,112 @@
+{
+  "info": {
+    "name": "Sehat-Setu AI Microservice",
+    "description": "Production-readiness smoke requests. Gemini endpoints require GEMINI_API_KEY.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8000"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [{"key": "X-Request-ID", "value": "postman-test-001"}],
+        "url": "{{baseUrl}}/api/v1/health"
+      }
+    },
+    {
+      "name": "Extract medical information",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"transcript\":\"The patient reports fever and headache for three days, blood pressure 140/90, and an allergy to penicillin.\",\"language\":\"auto\",\"output_language\":\"en\"}"
+        },
+        "url": "{{baseUrl}}/api/v1/extract-medical-info"
+      }
+    },
+    {
+      "name": "Generate consultation summary",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"transcript\":\"The patient reports fever and headache for three days. Blood pressure is 140/90. Allergic to penicillin.\",\"medical_entities\":{\"symptoms\":[\"fever\",\"headache\"],\"conditions\":[],\"allergies\":[\"penicillin\"],\"medications\":[],\"duration\":[\"three days\"],\"vital_signs\":{\"blood_pressure\":\"140/90\"},\"procedures\":[]},\"language\":\"auto\",\"output_language\":\"en\"}"
+        },
+        "url": "{{baseUrl}}/api/v1/generate-summary"
+      }
+    },
+    {
+      "name": "Generate prescription draft",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"summary\":\"The patient has fever for three days and is allergic to penicillin. Paracetamol 500 mg twice daily was explicitly discussed.\",\"medical_entities\":{\"symptoms\":[\"fever\"],\"allergies\":[\"penicillin\"],\"medications\":[{\"name\":\"paracetamol\",\"dosage\":\"500 mg\",\"frequency\":\"twice daily\"}]},\"language\":\"auto\",\"output_language\":\"en\"}"
+        },
+        "url": "{{baseUrl}}/api/v1/generate-prescription"
+      }
+    },
+    {
+      "name": "Diet recommendation",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value":"application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"summary\":\"The patient is recovering from fever and needs general hydration guidance.\",\"medical_entities\":{\"symptoms\":[\"fever\"],\"allergies\":[]},\"language\":\"auto\",\"output_language\":\"en\"}"
+        },
+        "url": "{{baseUrl}}/api/v1/diet-recommendation"
+      }
+    },
+    {
+      "name": "Recommend doctor",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value":"application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"issue\":\"The patient reports a persistent skin rash and itching.\",\"symptoms\":[\"skin rash\",\"itching\"],\"language\":\"auto\",\"output_language\":\"en\"}"
+        },
+        "url": "{{baseUrl}}/api/v1/recommend-doctor"
+      }
+    },
+    {
+      "name": "Transcribe audio",
+      "request": {
+        "method": "POST",
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {"key": "language", "value": "auto", "type": "text"},
+            {"key": "output_language", "value": "en", "type": "text"},
+            {"key": "file", "type": "file", "src": []}
+          ]
+        },
+        "url": "{{baseUrl}}/api/v1/transcribe"
+      }
+    },
+    {
+      "name": "OCR image or PDF",
+      "request": {
+        "method": "POST",
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {"key": "output_language", "value": "auto", "type": "text"},
+            {"key": "file", "type": "file", "src": []}
+          ]
+        },
+        "url": "{{baseUrl}}/api/v1/ocr/analyze"
+      }
+    }
+  ]
+}

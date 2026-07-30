@@ -1,0 +1,105 @@
+@baseUrl = http://127.0.0.1:8000
+
+### Health
+GET {{baseUrl}}/api/v1/health
+X-Request-ID: manual-test-001
+
+### Extract medical information
+POST {{baseUrl}}/api/v1/extract-medical-info
+Content-Type: application/json
+
+{
+  "transcript": "The patient reports fever and headache for three days, blood pressure 140/90, and an allergy to penicillin.",
+  "language": "auto",
+  "output_language": "en"
+}
+
+### Generate consultation summary
+POST {{baseUrl}}/api/v1/generate-summary
+Content-Type: application/json
+
+{
+  "transcript": "The patient reports fever and headache for three days. Blood pressure is 140/90. The patient is allergic to penicillin.",
+  "medical_entities": {
+    "symptoms": ["fever", "headache"],
+    "conditions": [],
+    "allergies": ["penicillin"],
+    "medications": [],
+    "duration": ["three days"],
+    "vital_signs": {"blood_pressure": "140/90"},
+    "procedures": []
+  },
+  "language": "auto",
+  "output_language": "en"
+}
+
+### Generate clinician-review prescription draft
+POST {{baseUrl}}/api/v1/generate-prescription
+Content-Type: application/json
+
+{
+  "summary": "The patient has fever for three days and is allergic to penicillin. Paracetamol 500 mg twice daily was explicitly discussed.",
+  "medical_entities": {
+    "symptoms": ["fever"],
+    "allergies": ["penicillin"],
+    "medications": [{"name": "paracetamol", "dosage": "500 mg", "frequency": "twice daily"}]
+  },
+  "language": "auto",
+  "output_language": "en"
+}
+
+### Generate diet recommendation
+POST {{baseUrl}}/api/v1/diet-recommendation
+Content-Type: application/json
+
+{
+  "summary": "The patient is recovering from fever and needs general hydration guidance.",
+  "medical_entities": {"symptoms": ["fever"], "allergies": []},
+  "language": "auto",
+  "output_language": "en"
+}
+
+### Recommend doctor category
+POST {{baseUrl}}/api/v1/recommend-doctor
+Content-Type: application/json
+
+{
+  "issue": "The patient reports a persistent skin rash and itching.",
+  "symptoms": ["skin rash", "itching"],
+  "language": "auto",
+  "output_language": "en"
+}
+
+### Transcribe an audio upload (VS Code REST Client file syntax)
+POST {{baseUrl}}/api/v1/transcribe
+Content-Type: multipart/form-data; boundary=Boundary
+
+--Boundary
+Content-Disposition: form-data; name="language"
+
+auto
+--Boundary
+Content-Disposition: form-data; name="output_language"
+
+en
+--Boundary
+Content-Disposition: form-data; name="file"; filename="sample.wav"
+Content-Type: audio/wav
+
+< ../sample-medical-audio.wav
+--Boundary--
+
+### OCR image/PDF upload
+POST {{baseUrl}}/api/v1/ocr/analyze
+Content-Type: multipart/form-data; boundary=Boundary
+
+--Boundary
+Content-Disposition: form-data; name="output_language"
+
+auto
+--Boundary
+Content-Disposition: form-data; name="file"; filename="medical-document.png"
+Content-Type: image/png
+
+< ./medical-document.png
+--Boundary--

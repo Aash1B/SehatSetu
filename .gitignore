@@ -1,9 +1,10 @@
-<<<<<<< HEAD
 # Dependencies & Build
 node_modules/
 dist/
 dist-ssr/
 .env
+.env.*
+!.env.example
 *.local
 
 # Logs
@@ -24,9 +25,21 @@ lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
-=======
-node_modules/
-dist/
-.env
 /generated/prisma
->>>>>>> 8c9005268384f9b906adb1181bd89c94e83c4d66
+
+# Python / AI service
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+.tmp/
+.cache/
+model-cache/
+uploads/
+
+# Local data and secrets
+*.dump
+*.sql.gz
+*.pem
+*.key
