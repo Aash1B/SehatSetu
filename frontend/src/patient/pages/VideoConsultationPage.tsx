@@ -11,31 +11,67 @@ const VideoConsultationPage: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // Call States
-  const [isMicOn, setIsMicOn] = useState<boolean>(true);
-  const [isVideoOn, setIsVideoOn] = useState<boolean>(true);
+  // Call duration timer
+  const [secondsElapsed, setSecondsElapsed] = useState<number>(872); // Starts around 14m 32s for realistic feel
+  const [isTimerRunning, setIsTimerRunning] = useState<boolean>(true);
+
+  // Call states
+  const [isMicMuted, setIsMicMuted] = useState<boolean>(false);
+  const [isVideoOff, setIsVideoOff] = useState<boolean>(false);
   const [isScreenSharing, setIsScreenSharing] = useState<boolean>(false);
   const [isAudioOnly, setIsAudioOnly] = useState<boolean>(false);
   const [isHandRaised, setIsHandRaised] = useState<boolean>(false);
-  const [activeSidebarTab, setActiveSidebarTab] = useState<SidebarTabType>(null);
+  const [activeSidebarTab, setActiveSidebarTab] = useState<SidebarTabType | 'none'>('chat');
   const [isEndCallModalOpen, setIsEndCallModalOpen] = useState<boolean>(false);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
-  // Timer State (HH:MM:SS)
-  const [secondsElapsed, setSecondsElapsed] = useState<number>(145); // start at 02:25
-
+  // Timer interval effect
   useEffect(() => {
-    const timer = setInterval(() => {
-      setSecondsElapsed((prev) => prev + 1);
-    }, 1000);
+    let timer: ReturnType<typeof setInterval>;
+    if (isTimerRunning) {
+      timer = setInterval(() => {
+        setSecondsElapsed((prev) => prev + 1);
+      }, 1000);
+    }
     return () => clearInterval(timer);
-  }, []);
+  }, [isTimerRunning]);
+
+  const formatTimer = (totalSeconds: number) => {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    const pad = (num: number) => (num < 10 ? `0${num}` : `${num}`);
+
+    if (hours > 0) {
+      return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    }
+    return `${pad(minutes)}:${pad(seconds)}`;
+  };
 
   const handleToggleSidebarTab = (tab: SidebarTabType) => {
-    setActiveSidebarTab((prev) => (prev === tab ? null : tab));
+    if (activeSidebarTab === tab) {
+      setActiveSidebarTab('none');
+    } else {
+      setActiveSidebarTab(tab);
+    }
   };
 
   const handleEndCallTrigger = () => {
+    setIsTimerRunning(false);
     setIsEndCallModalOpen(true);
+  };
+
+  const toggleFullscreenMode = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+      setIsFullscreen(true);
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      }
+      setIsFullscreen(false);
+    }
   };
 
   return (
@@ -46,7 +82,10 @@ const VideoConsultationPage: React.FC = () => {
           <button
             type="button"
             className="btn-vcall-back"
-            onClick={() => { dispatch(setCurrentPage('dashboard')); navigate('/patient/dashboard'); }}
+            onClick={() => {
+              dispatch(setCurrentPage('dashboard'));
+              navigate('/patient/dashboard');
+            }}
             title="Return to Patient Dashboard"
           >
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2">
@@ -59,10 +98,13 @@ const VideoConsultationPage: React.FC = () => {
           <div className="vcall-brand-pill">
             <div className="brand-logo-small">
               <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="var(--color-aster-blue)"/>
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#F97316" />
               </svg>
             </div>
-            <p className="text-xs text-gray-400">Dr. Sunita Deshmukh • General Physician</p>
+            <span className="brand-name">SehatSetu</span>
+            <span className="live-call-badge">
+              <span className="pulsing-red-dot"></span> LIVE
+            </span>
           </div>
         </div>
 
@@ -70,7 +112,7 @@ const VideoConsultationPage: React.FC = () => {
         <div className="vcall-header-center">
           <div className="vcall-doctor-summary">
             <img
-              src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=300"
+              src="https://images.unsplash.com/photo-1594824813566-88855ce78906?auto=format&fit=crop&q=80&w=150"
               alt="Dr. Ananya Sharma"
               className="vcall-doc-avatar"
             />
@@ -89,45 +131,55 @@ const VideoConsultationPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Actions */}
-        <div className="flex items-center gap-3">
-          <button 
+        {/* Header Action Buttons */}
+        <div className="vcall-header-right">
+          <button
             type="button"
-            className="text-xs text-gray-300 hover:text-white bg-gray-800/80 hover:bg-gray-700 px-3 py-1.5 rounded-lg border border-gray-700 transition-all flex items-center gap-1.5"
-            onClick={() => { dispatch(setCurrentPage('dashboard')); navigate('/patient/dashboard'); }}
+            className="vcall-icon-btn"
+            onClick={toggleFullscreenMode}
+            title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
           >
-            ← Back to Dashboard
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+            </svg>
           </button>
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <div className="relative flex-1 flex overflow-hidden">
-        {/* 1. MAIN VIDEO PLAYER AREA */}
-        <VideoPlayer
-          isVideoOn={isVideoOn}
-          isMicOn={isMicOn}
-          isScreenSharing={isScreenSharing}
-          isHandRaised={isHandRaised}
-          doctorName="Dr. Sunita Deshmukh"
-          patientName="Ananya Sharma"
-        />
-
-        {/* 2. SIDEBAR PANEL (Chat, EHR, Notes, AI Prescriptions) */}
-        {activeSidebarTab && (
-          <VideoCallSidebar
-            activeTab={activeSidebarTab}
-            onClose={() => setActiveSidebarTab(null)}
+      {/* 2. MAIN CONTENT BODY GRID (VIDEO PLAYER + SIDEBAR) */}
+      <div className="vcall-body-grid">
+        {/* Main Video View Stage */}
+        <main className="vcall-stage-area">
+          <VideoPlayer
+            doctorName="Dr. Ananya Sharma"
+            doctorSpecialty="Senior Dermatologist"
+            isMicMuted={isMicMuted}
+            isVideoOff={isVideoOff}
+            isScreenSharing={isScreenSharing}
+            isAudioOnly={isAudioOnly}
+            isHandRaised={isHandRaised}
           />
+        </main>
+
+        {/* Right Collapsible Side Panel */}
+        {activeSidebarTab !== 'none' && (
+          <aside className="vcall-sidebar-area">
+            <VideoCallSidebar
+              activeTab={activeSidebarTab}
+              onTabChange={(tab) => setActiveSidebarTab(tab)}
+              onClose={() => setActiveSidebarTab('none')}
+              doctorName="Dr. Ananya Sharma"
+            />
+          </aside>
         )}
       </div>
 
-      {/* 3. BOTTOM CONTROL BAR */}
+      {/* 3. BOTTOM FLOATING GLASS CONTROL DOCK */}
       <VideoCallControls
-        isMicOn={isMicOn}
-        onToggleMic={() => setIsMicOn(!isMicOn)}
-        isVideoOn={isVideoOn}
-        onToggleVideo={() => setIsVideoOn(!isVideoOn)}
+        isMicMuted={isMicMuted}
+        onToggleMic={() => setIsMicMuted(!isMicMuted)}
+        isVideoOff={isVideoOff}
+        onToggleVideo={() => setIsVideoOff(!isVideoOff)}
         isScreenSharing={isScreenSharing}
         onToggleScreenShare={() => setIsScreenSharing(!isScreenSharing)}
         isAudioOnly={isAudioOnly}
@@ -143,8 +195,8 @@ const VideoConsultationPage: React.FC = () => {
       <EndCallModal
         isOpen={isEndCallModalOpen}
         callDuration={secondsElapsed}
-        doctorName="Dr. Sunita Deshmukh"
-        doctorSpecialty="General Physician"
+        doctorName="Dr. Ananya Sharma"
+        doctorSpecialty="Senior Dermatologist"
         onClose={() => setIsEndCallModalOpen(false)}
       />
     </div>
