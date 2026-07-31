@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { setCurrentPage } from '../store/uiSlice';
 import { doctorsData, type Doctor } from '../data/doctorsData';
+import { fetchDoctors } from '../services/doctorApi';
 import CustomSelect, { type OptionItem } from './CustomSelect';
-import { useNavigate } from 'react-router-dom';
 
 const SPECIALTY_OPTIONS: OptionItem[] = [
   { value: 'All', label: 'Specialization (All)' },
@@ -56,6 +57,7 @@ const FEES_OPTIONS: OptionItem[] = [
 const DoctorSearchSection: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [doctorsList, setDoctorsList] = useState<Doctor[]>(doctorsData);
   const [searchTerm, setSearchTerm] = useState('');
   const [specialtyFilter, setSpecialtyFilter] = useState('All');
   const [locationFilter, setLocationFilter] = useState('All');
@@ -65,13 +67,21 @@ const DoctorSearchSection: React.FC = () => {
   const [favorites, setFavorites] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  useEffect(() => {
+    fetchDoctors().then((data) => {
+      if (data && data.length > 0) {
+        setDoctorsList(data);
+      }
+    });
+  }, []);
+
   const toggleFavorite = (id: string) => {
     setFavorites(prev => 
       prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
     );
   };
 
-  const filteredDoctors = doctorsData.filter(doc => {
+  const filteredDoctors = doctorsList.filter(doc => {
     const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       doc.specialty.toLowerCase().includes(searchTerm.toLowerCase()) ||
       doc.hospital.toLowerCase().includes(searchTerm.toLowerCase()) ||

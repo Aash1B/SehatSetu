@@ -19,24 +19,6 @@ const services = [
     description: 'Convenient diagnostic testing with trusted lab partners.',
     icon: '📈',
   },
-  {
-    id: 'mental',
-    title: 'Mental Health',
-    description: 'Compassionate support for a healthier, calmer you.',
-    icon: '💭',
-  },
-  {
-    id: 'pharmacy',
-    title: 'Pharmacy',
-    description: 'Order medicines safely and have them delivered to you.',
-    icon: '🛡️',
-  },
-  {
-    id: 'emergency',
-    title: 'Emergency Care',
-    description: 'Fast, reliable support when every second matters.',
-    icon: '💝',
-  },
 ];
 
 const ServicesSection: React.FC = () => {

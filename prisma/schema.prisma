@@ -35,8 +35,17 @@ model Patient {
   id                String   @id @default(uuid())
   userId            String   @unique
   user              User     @relation(fields: [userId], references: [id])
+  phone             String?
+  phoneNumber       String?
   gender            String?
+  age               String?
   dateOfBirth       DateTime?
+  height            String?
+  weight            String?
+  bloodGroup        String?
+  emergencyContact  String?
+  address           String?
+  profilePhoto      String?
   allergies         String[]
   chronicConditions String[]
 
@@ -47,11 +56,24 @@ model Patient {
 }
 
 model Doctor {
-  id              String  @id @default(uuid())
-  userId          String  @unique
-  user            User    @relation(fields: [userId], references: [id])
-  specialty       String
-  consultationFee Int?
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id])
+  name            String   @default("Dr. Doctor")
+  specialty       String   @default("General Physician")
+  experience      String?  @default("10+ Years Experience")
+  rating          Float    @default(4.8)
+  reviewsCount    Int      @default(0)
+  hospital        String?  @default("Apollo Medical Center")
+  location        String?  @default("Delhi")
+  imageUrl        String?
+  fee             String?  @default("₹500")
+  consultationFee Int?     @default(500)
+  availableToday  Boolean  @default(true)
+  priorityLevel   String   @default("P1")
+  priorityScore   Int      @default(90)
+  degrees         String?  @default("MBBS")
+  tags            String[]
 
   appointments  Appointment[]
   prescriptions Prescription[]

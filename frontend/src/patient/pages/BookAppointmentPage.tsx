@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { setCurrentPage } from '../store/uiSlice';
 import { doctorsData, type Doctor } from '../data/doctorsData';
+import { fetchDoctors, recommendDoctorsApi, type RecommendationResult } from '../services/doctorApi';
 import Footer from '../components/Footer';
 
 interface BookingFormData {
@@ -73,7 +74,40 @@ const BookAppointmentPage: React.FC = () => {
     patientEmail: 'ananya.sharma@example.com',
   });
 
-  const filteredStep2Doctors = doctorsData.filter(doc => {
+  const [doctorsList, setDoctorsList] = useState<Doctor[]>(doctorsData);
+  const [aiRecommendation, setAiRecommendation] = useState<RecommendationResult | null>(null);
+
+  useEffect(() => {
+    fetchDoctors().then((data) => {
+      if (data && data.length > 0) {
+        setDoctorsList(data);
+        setFormData(prev => ({
+          ...prev,
+          selectedDoctor: prev.selectedDoctor ? data.find(d => d.id === prev.selectedDoctor?.id) || data[0] : data[0],
+        }));
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    if (formData.symptoms.length > 0 || formData.notes) {
+      recommendDoctorsApi(formData.notes, formData.symptoms).then((rec) => {
+        setAiRecommendation(rec);
+        if (rec.recommendedCategory) {
+          const recCat = rec.recommendedCategory.split(' ')[0];
+          setStep2Specialty(recCat);
+        }
+        if (rec.recommendedDoctors && rec.recommendedDoctors.length > 0) {
+          setFormData(prev => ({
+            ...prev,
+            selectedDoctor: rec.recommendedDoctors[0],
+          }));
+        }
+      });
+    }
+  }, [formData.symptoms, formData.notes]);
+
+  const filteredStep2Doctors = doctorsList.filter(doc => {
     const matchesSearch = 
       doc.name.toLowerCase().includes(step2SearchTerm.toLowerCase()) ||
       doc.specialty.toLowerCase().includes(step2SearchTerm.toLowerCase()) ||
@@ -596,6 +630,48 @@ const BookAppointmentPage: React.FC = () => {
                       <p className="form-main-subtitle">Choose from top specialists matched to your symptoms.</p>
                     </div>
                   </div>
+
+                  {aiRecommendation && (
+                    <div style={{
+                      background: 'linear-gradient(135deg, #EFF6FF 0%, #E0F2FE 100%)',
+                      border: '1px solid #BAE6FD',
+                      borderRadius: '12px',
+                      padding: '12px 16px',
+                      marginBottom: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '12px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ fontSize: '20px' }}>✨</span>
+                        <div>
+                          <h4 style={{ margin: 0, fontWeight: 700, color: '#0369A1', fontSize: '14px' }}>
+                            AI Specialist Matched: {aiRecommendation.recommendedCategory}
+                          </h4>
+                          <p style={{ margin: '2px 0 0', color: '#0284C7', fontSize: '12px' }}>
+                            Only showing {aiRecommendation.recommendedCategory} specialists matching your reported symptoms.
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setStep2Specialty('All')}
+                        style={{
+                          background: '#FFFFFF',
+                          border: '1px solid #7DD3FC',
+                          color: '#0369A1',
+                          borderRadius: '8px',
+                          padding: '6px 12px',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Show All Doctors
+                      </button>
+                    </div>
+                  )}
 
                   {/* Step 2 Search & Filter Row */}
                   <div className="step2-search-filter-block">

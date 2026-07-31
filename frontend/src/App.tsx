@@ -29,7 +29,6 @@ import DoctorSearchPage from './patient/pages/DoctorSearchPage';
 import BookAppointmentPage from './patient/pages/BookAppointmentPage';
 import HealthQuestionnairePage from './patient/pages/HealthQuestionnairePage';
 import AppointmentsPage from './patient/pages/AppointmentsPage';
-import ProfileSettingsPage from './patient/pages/ProfileSettingsPage';
 import VideoConsultationPage from './patient/pages/VideoConsultationPage';
 
 function App() {

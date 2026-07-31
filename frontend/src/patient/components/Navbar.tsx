@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toggleSidebar, setCurrentPage } from '../store/uiSlice';
 import type { RootState } from '../store';
-import { useNavigate } from 'react-router-dom';
 
 const Navbar: React.FC = () => {
   const dispatch = useDispatch();

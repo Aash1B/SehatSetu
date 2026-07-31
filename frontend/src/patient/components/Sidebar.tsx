@@ -2,8 +2,7 @@ import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import type { RootState } from '../store';
-import { closeSidebar } from '../store/uiSlice';
-import { useNavigate } from 'react-router-dom';
+import { closeSidebar, setCurrentPage } from '../store/uiSlice';
 
 const Sidebar: React.FC = () => {
   const dispatch = useDispatch();
