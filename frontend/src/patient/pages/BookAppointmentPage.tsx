@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { setCurrentPage } from '../store/uiSlice';
 import { doctorsData, type Doctor } from '../data/doctorsData';
 import Footer from '../components/Footer';
@@ -37,6 +38,7 @@ const ALL_SYMPTOMS = [
 
 const BookAppointmentPage: React.FC = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [symptomSearch, setSymptomSearch] = useState<string>('');
   const [showMoreSymptoms, setShowMoreSymptoms] = useState<boolean>(false);
@@ -48,6 +50,7 @@ const BookAppointmentPage: React.FC = () => {
   const [bookingConfirmed, setBookingConfirmed] = useState<boolean>(false);
   const [paymentMethod, setPaymentMethod] = useState<'upi' | 'card' | 'netbanking' | 'wallets'>('upi');
   const [step4Error, setStep4Error] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const [formData, setFormData] = useState<BookingFormData>({
     healthConcern: 'specific-symptoms',
@@ -95,7 +98,7 @@ const BookAppointmentPage: React.FC = () => {
   };
 
 
-  const handleNextStep = () => {
+  const handleNextStep = async () => {
     if (currentStep === 4) {
       if (!formData.patientName.trim()) {
         setStep4Error('Please enter full name.');
@@ -112,11 +115,54 @@ const BookAppointmentPage: React.FC = () => {
     }
 
     setStep4Error('');
-    if (currentStep < 5) {
+    if (currentStep < 4) {
       setCurrentStep(prev => prev + 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      setBookingConfirmed(true);
+    } else if (currentStep === 4) {
+      setIsSubmitting(true);
+      try {
+        const payload = {
+          doctorId: formData.selectedDoctor?.id || 'd1', // fallback if null
+          patientName: formData.patientName,
+          patientAge: formData.patientAge,
+          patientGender: formData.patientGender,
+          patientHeight: formData.patientHeight,
+          patientWeight: formData.patientWeight,
+          patientBloodGroup: formData.patientBloodGroup,
+          patientPhone: formData.patientPhone,
+          patientEmail: formData.patientEmail,
+          healthConcern: formData.healthConcern,
+          symptoms: formData.symptoms,
+          duration: formData.duration,
+          severity: formData.severity,
+          consultMode: formData.consultMode,
+          urgency: formData.urgency,
+          notes: formData.notes,
+          date: formData.selectedDate,
+          timeSlot: formData.selectedTimeSlot,
+        };
+
+        const response = await fetch('/api/appointments', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to book appointment');
+        }
+
+        setBookingConfirmed(true);
+        setCurrentStep(5);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (err) {
+        console.error(err);
+        setStep4Error('Failed to book appointment. Please try again.');
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -125,7 +171,7 @@ const BookAppointmentPage: React.FC = () => {
       setCurrentStep(prev => prev - 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      dispatch(setCurrentPage('landing'));
+      navigate('/');
     }
   };
 
@@ -142,7 +188,7 @@ const BookAppointmentPage: React.FC = () => {
             <button 
               type="button" 
               className="btn-nav-arrow-only"
-              onClick={() => dispatch(setCurrentPage('landing'))}
+              onClick={() => navigate('/')}
               title="Back to Home"
               aria-label="Back to Home"
             >
@@ -154,7 +200,7 @@ const BookAppointmentPage: React.FC = () => {
             <button 
               type="button" 
               className="booking-brand-logo"
-              onClick={() => dispatch(setCurrentPage('landing'))}
+              onClick={() => navigate('/')}
             >
               <div className="logo-badge">
                 <svg viewBox="0 0 24 24" fill="none" className="logo-icon" xmlns="http://www.w3.org/2000/svg">
@@ -169,20 +215,20 @@ const BookAppointmentPage: React.FC = () => {
           </div>
 
           <nav className="booking-nav-links">
-            <button type="button" className="booking-nav-link" onClick={() => dispatch(setCurrentPage('landing'))}>
+            <button type="button" className="booking-nav-link" onClick={() => navigate('/')}>
               How it works
             </button>
-            <button type="button" className="booking-nav-link" onClick={() => dispatch(setCurrentPage('doctors'))}>
+            <button type="button" className="booking-nav-link" onClick={() => navigate('/patient/search')}>
               Find a specialist
             </button>
-            <button type="button" className="booking-nav-link" onClick={() => dispatch(setCurrentPage('landing'))}>
+            <button type="button" className="booking-nav-link" onClick={() => navigate('/')}>
               Health resources
             </button>
           </nav>
 
           <div className="booking-nav-actions">
             <button type="button" className="btn-booking-sign-in">Sign In</button>
-            <button type="button" className="btn-booking-get-started" onClick={() => dispatch(setCurrentPage('landing'))}>
+            <button type="button" className="btn-booking-get-started" onClick={() => navigate('/')}>
               Home
             </button>
           </div>
@@ -240,7 +286,7 @@ const BookAppointmentPage: React.FC = () => {
             )}
 
             <div className="booking-top-breadcrumbs">
-              <button type="button" className="crumb-btn" onClick={() => dispatch(setCurrentPage('landing'))}>
+              <button type="button" className="crumb-btn" onClick={() => navigate('/')}>
                 Home
               </button>
               <span className="crumb-slash">/</span>
@@ -297,7 +343,7 @@ const BookAppointmentPage: React.FC = () => {
               <button 
                 type="button" 
                 className="btn-primary-orange"
-                onClick={() => dispatch(setCurrentPage('landing'))}
+                onClick={() => navigate('/')}
               >
                 Return to Home
               </button>

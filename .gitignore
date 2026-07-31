@@ -3,6 +3,8 @@ node_modules/
 dist/
 dist-ssr/
 .env
+.env.*
+!.env.example
 *.local
 
 # Logs
@@ -24,7 +26,21 @@ lerna-debug.log*
 *.sln
 *.sw?
 
-node_modules/
-dist/
-.env
 /generated/prisma
+
+# Python / AI service
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+.tmp/
+.cache/
+model-cache/
+uploads/
+
+# Local data and secrets
+*.dump
+*.sql.gz
+*.pem
+*.key

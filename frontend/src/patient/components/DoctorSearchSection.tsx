@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { doctorsData, type Doctor } from '../data/doctorsData';
-import { setCurrentPage } from '../store/uiSlice';
 import CustomSelect, { type OptionItem } from './CustomSelect';
+import { useNavigate } from 'react-router-dom';
 
 const SPECIALTY_OPTIONS: OptionItem[] = [
   { value: 'All', label: 'Specialization (All)' },
@@ -54,6 +54,7 @@ const FEES_OPTIONS: OptionItem[] = [
 
 const DoctorSearchSection: React.FC = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [specialtyFilter, setSpecialtyFilter] = useState('All');
   const [locationFilter, setLocationFilter] = useState('All');
@@ -182,7 +183,7 @@ const DoctorSearchSection: React.FC = () => {
           <button 
             type="button" 
             className="link-view-all" 
-            onClick={() => dispatch(setCurrentPage('doctors'))}
+            onClick={() => navigate('/patient/search')}
           >
             View All Doctors
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
@@ -232,14 +233,14 @@ const DoctorSearchSection: React.FC = () => {
                     <button 
                       type="button" 
                       className="btn-view-profile"
-                      onClick={() => dispatch(setCurrentPage('book-appointment'))}
+                      onClick={() => navigate(`/patient/book/${doctor.id}`)}
                     >
                       View Profile
                     </button>
                     <button 
                       type="button" 
                       className="btn-book-doctor"
-                      onClick={() => dispatch(setCurrentPage('book-appointment'))}
+                      onClick={() => navigate(`/patient/book/${doctor.id}`)}
                     >
                       Book Appointment
                     </button>

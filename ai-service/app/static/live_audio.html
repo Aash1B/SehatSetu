@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sehat-Setu Live Audio Test</title>
+  <link rel="stylesheet" href="/static/live_audio.css">
+</head>
+<body>
+  <main class="panel">
+    <header>
+      <p class="eyebrow">Development utility</p>
+      <h1>Live speech-to-text test</h1>
+      <p>Stream microphone chunks over WebSocket or upload an audio file for REST transcription.</p>
+    </header>
+
+    <section class="controls" aria-label="Recording controls">
+      <button id="startButton" type="button">Start recording</button>
+      <button id="pauseButton" type="button" disabled>Pause</button>
+      <button id="resumeButton" type="button" disabled>Resume</button>
+      <button id="stopButton" type="button" disabled>Stop recording</button>
+      <span id="timer" aria-live="polite">00:00</span>
+    </section>
+
+    <label class="upload">
+      Upload existing audio
+      <input id="fileInput" type="file" accept=".wav,.mp3,.m4a,.webm,.ogg,.mp4,audio/*,video/webm">
+    </label>
+
+    <audio id="audioPreview" controls hidden></audio>
+    <dl class="recording-details">
+      <dt>Recording MIME type</dt><dd id="recordingMimeType">Not selected</dd>
+      <dt>Recorded Blob size</dt><dd id="recordedBlobSize">0 bytes</dd>
+      <dt>WebSocket mode</dt><dd>Complete decodable recording per message</dd>
+    </dl>
+
+    <div class="options">
+      <label>Language
+        <select id="language">
+          <option value="auto">Auto detect</option>
+          <option value="en">English</option>
+          <option value="hi">Hindi</option>
+        </select>
+      </label>
+      <label><input id="includeSegments" type="checkbox" checked> Include segments</label>
+      <label>Chunk duration
+        <select id="chunkDuration">
+          <option value="5000">5 seconds</option>
+          <option value="10000" selected>10 seconds</option>
+          <option value="15000">15 seconds</option>
+          <option value="20000">20 seconds</option>
+        </select>
+      </label>
+    </div>
+
+    <section class="actions">
+      <button id="sendButton" type="button" disabled>Send for transcription</button>
+      <button id="resetButton" type="button" class="secondary">Reset</button>
+      <span id="loading" role="status" hidden>Transcribing…</span>
+    </section>
+
+    <p id="errorMessage" class="error" role="alert" hidden></p>
+
+    <section class="result">
+      <h2>Live stream</h2>
+      <dl>
+        <dt>Connection</dt><dd id="connectionStatus">Disconnected</dd>
+        <dt>Selected microphone</dt><dd id="microphoneName">Not selected</dd>
+        <dt>Live input level</dt><dd><progress id="inputLevel" max="100" value="0"></progress></dd>
+        <dt>Chunk status</dt><dd id="chunkStatus">Idle</dd>
+        <dt>Chunk sequence</dt><dd id="chunkSequence">0</dd>
+        <dt>Detected language</dt><dd id="liveLanguage">—</dd>
+      </dl>
+      <p id="streamProcessing" hidden>Processing chunk…</p>
+      <h3>Live transcript</h3>
+      <pre id="liveTranscript"></pre>
+      <h3>Final transcript</h3>
+      <pre id="finalTranscript"></pre>
+      <button id="reconnectButton" type="button" class="secondary">Reconnect</button>
+    </section>
+
+    <section id="result" class="result" hidden>
+      <h2>Result</h2>
+      <dl>
+        <dt>Detected language</dt><dd id="detectedLanguage">—</dd>
+        <dt>Processing time</dt><dd id="processingTime">—</dd>
+      </dl>
+      <pre id="transcript"></pre>
+    </section>
+  </main>
+  <script src="/static/live_audio.js" defer></script>
+</body>
+</html>

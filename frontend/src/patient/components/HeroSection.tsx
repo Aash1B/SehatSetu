@@ -1,9 +1,10 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
-import { setCurrentPage } from '../store/uiSlice';
+import { useNavigate } from 'react-router-dom';
 
 const HeroSection: React.FC = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   return (
     <section id="home" className="hero-section">
@@ -28,7 +29,7 @@ const HeroSection: React.FC = () => {
             <button 
               type="button"
               className="btn-primary-orange"
-              onClick={() => dispatch(setCurrentPage('book-appointment'))}
+              onClick={() => navigate('/patient/book/new')}
             >
               Book Appointment
               <svg className="btn-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">

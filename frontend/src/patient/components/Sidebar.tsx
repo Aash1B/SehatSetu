@@ -1,10 +1,12 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../store';
-import { closeSidebar, setCurrentPage } from '../store/uiSlice';
+import { closeSidebar } from '../store/uiSlice';
+import { useNavigate } from 'react-router-dom';
 
 const Sidebar: React.FC = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const isOpen = useSelector((state: RootState) => state.ui.isSidebarOpen);
   const currentPage = useSelector((state: RootState) => state.ui.currentPage);
 
@@ -81,7 +83,7 @@ const Sidebar: React.FC = () => {
           <div className="sidebar-group">
             <span className="sidebar-group-title">Main Navigation</span>
             <nav className="sidebar-menu">
-              <a href="#home" className={`sidebar-item ${currentPage === 'landing' ? 'active' : ''}`} onClick={() => { dispatch(setCurrentPage('landing')); dispatch(closeSidebar()); }}>
+              <a href="#home" className={`sidebar-item ${currentPage === 'landing' ? 'active' : ''}`} onClick={() => { navigate('/'); dispatch(closeSidebar()); }}>
                 <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                   <polyline points="9 22 9 12 15 12 15 22"></polyline>

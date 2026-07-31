@@ -26,6 +26,7 @@ enum Role {
 
 enum AppointmentStatus {
   SCHEDULED
+  WAITING
   COMPLETED
   CANCELLED
 }
@@ -57,15 +58,40 @@ model Doctor {
 }
 
 model Appointment {
-  id          String            @id @default(uuid())
-  patientId   String
-  patient     Patient           @relation(fields: [patientId], references: [id])
-  doctorId    String
-  doctor      Doctor            @relation(fields: [doctorId], references: [id])
-  scheduledAt DateTime
-  status      AppointmentStatus @default(SCHEDULED)
-  createdAt   DateTime          @default(now())
+  id                String   @id @default(uuid())
+  
+  // Relational fields (Incoming branch)
+  patientId         String?
+  patient           Patient? @relation(fields: [patientId], references: [id])
+  doctorId          String
+  doctor            Doctor?  @relation(fields: [doctorId], references: [id])
+  scheduledAt       DateTime?
+  status            String   @default("WAITING") 
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt @default(now())
 
+  // Flat fields from booking flow (HEAD)
+  patientName       String?
+  patientAge        String?
+  patientGender     String?
+  patientHeight     String?
+  patientWeight     String?
+  patientBloodGroup String?
+  patientPhone      String?
+  patientEmail      String?
+  
+  healthConcern     String?
+  symptoms          String[]
+  duration          String?
+  severity          String?
+  consultMode       String?
+  urgency           String?
+  notes             String?
+  
+  date              String?
+  timeSlot          String?
+  priority          String   @default("ROUTINE")
+  
   ehrRecord    EhrRecord?
   prescription Prescription?
   payment      Payment?

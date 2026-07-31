@@ -1,10 +1,12 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { toggleSidebar, setCurrentPage } from '../store/uiSlice';
+import { toggleSidebar } from '../store/uiSlice';
 import type { RootState } from '../store';
+import { useNavigate } from 'react-router-dom';
 
 const Navbar: React.FC = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const currentPage = useSelector((state: RootState) => state.ui.currentPage);
 
   return (
@@ -30,7 +32,7 @@ const Navbar: React.FC = () => {
           <button 
             type="button" 
             className="brand-logo btn-logo-reset"
-            onClick={() => dispatch(setCurrentPage('landing'))}
+            onClick={() => navigate('/')}
           >
             <div className="logo-badge">
               <svg viewBox="0 0 24 24" fill="none" className="logo-icon" xmlns="http://www.w3.org/2000/svg">
@@ -49,7 +51,7 @@ const Navbar: React.FC = () => {
           <button 
             type="button" 
             className={`nav-link ${currentPage === 'landing' ? 'active' : ''}`}
-            onClick={() => dispatch(setCurrentPage('landing'))}
+            onClick={() => navigate('/')}
           >
             Home
           </button>
@@ -57,7 +59,7 @@ const Navbar: React.FC = () => {
           <button 
             type="button" 
             className={`nav-link ${currentPage === 'doctors' ? 'active' : ''}`}
-            onClick={() => dispatch(setCurrentPage('doctors'))}
+            onClick={() => navigate('/patient/search')}
           >
             Doctors
           </button>
@@ -70,7 +72,7 @@ const Navbar: React.FC = () => {
           <button type="button" className="btn-sign-in">
             Sign In
           </button>
-          <button type="button" className="btn-get-started" onClick={() => dispatch(setCurrentPage('dashboard'))}>
+          <button type="button" className="btn-get-started" onClick={() => navigate('/patient/dashboard')}>
             Dashboard
           </button>
           <button 
