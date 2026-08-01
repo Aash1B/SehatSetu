@@ -24,8 +24,11 @@ export default function DoctorLogin() {
       saveAuth(res.accessToken, { id: res.id, email: res.email, fullName: res.fullName, role: res.role });
       navigate('/doctor/dashboard');
     } catch (err: any) {
-      setError(err.message);
-    } finally {
+  setError(err.message);
+  if (err.message.toLowerCase().includes('verify your email')) {
+    navigate('/verify-otp', { state: { email, role: 'PATIENT' } }); // 'DOCTOR' in DoctorLogin.tsx
+  }
+}finally {
       setLoading(false);
     }
   };
@@ -61,7 +64,10 @@ export default function DoctorLogin() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
+              <div className="flex items-center justify-between mb-1">
+  <label className="block text-sm font-medium text-slate-700">Password</label>
+  <Link to="/forgot-password" className="text-xs text-indigo-700 hover:underline">Forgot password?</Link>
+</div>
               <input
                 type="password"
                 required

@@ -5,9 +5,10 @@ import { EhrModule } from './ehr/ehr.module';
 import { AppointmentsModule } from './appointments/appointments.module';
 import { AiModule } from './ai/ai.module';
 import { HealthController } from './health.controller';
+import { MailModule } from './mail/mail.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, EhrModule, AppointmentsModule, AiModule],
+  imports: [PrismaModule, MailModule, AuthModule, EhrModule, AppointmentsModule, AiModule],
   controllers: [HealthController],
 })
 export class AppModule {}

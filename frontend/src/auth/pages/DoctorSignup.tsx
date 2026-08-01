@@ -2,7 +2,6 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { signup } from '../api';
-import { saveAuth } from '../authStorage';
 import { validatePassword } from '../validatePassword';
 
 export default function DoctorSignup() {
@@ -29,9 +28,8 @@ if (!passwordCheck.valid) {
     }
     setLoading(true);
     try {
-      const res = await signup({ email, password, fullName, role: 'DOCTOR', dataConsent });
-      saveAuth(res.accessToken, { id: res.id, email: res.email, fullName: res.fullName, role: res.role });
-      navigate('/doctor/dashboard');
+      await signup({ email, password, fullName, role: 'DOCTOR', dataConsent });
+navigate('/verify-otp', { state: { email, role: 'DOCTOR' } });
     } catch (err: any) {
       setError(err.message);
     } finally {

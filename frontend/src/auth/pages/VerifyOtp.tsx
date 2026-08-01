@@ -1,0 +1,121 @@
+import { useState } from 'react';
+import type { FormEvent } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { verifyOtp, resendOtp } from '../api';
+
+export default function VerifyOtp() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const email = (location.state as { email?: string; role?: 'PATIENT' | 'DOCTOR' })?.email || '';
+  const role = (location.state as { email?: string; role?: 'PATIENT' | 'DOCTOR' })?.role || 'PATIENT';
+
+  const [otp, setOtp] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+
+  const loginPath = role === 'DOCTOR' ? '/doctor/login' : '/patient/login';
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setLoading(true);
+    try {
+      const res = await verifyOtp({ email, otp });
+      setSuccess(res.message);
+      setTimeout(() => navigate(loginPath), 1500);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setError('');
+    setSuccess('');
+    setResending(true);
+    try {
+      const res = await resendOtp({ email });
+      setSuccess(res.message);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setResending(false);
+    }
+  };
+
+  if (!email) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-blue-50 px-4">
+        <div className="text-center">
+          <p className="text-slate-600 mb-4">No email to verify. Please sign up first.</p>
+          <Link to="/patient/signup" className="text-orange-500 font-medium hover:underline">Go to signup</Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-blue-50 px-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <Link to="/" className="inline-flex items-center gap-1 text-2xl font-bold">
+            <span className="text-orange-500">Sehat</span>
+            <span className="text-slate-900">Setu</span>
+          </Link>
+          <p className="text-slate-500 mt-2">Verify your email</p>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
+          <p className="text-sm text-slate-600 mb-6">
+            We sent a 6-digit code to <span className="font-medium text-slate-900">{email}</span>. Enter it below to verify your account.
+          </p>
+
+          {error && (
+            <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-600 text-sm">{error}</div>
+          )}
+          {success && (
+            <div className="mb-4 p-3 rounded-lg bg-green-50 text-green-600 text-sm">{success}</div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Verification code</label>
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                required
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-400 text-center text-2xl tracking-[0.5em]"
+                placeholder="000000"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loading || otp.length !== 6}
+              className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-medium py-2.5 rounded-lg transition"
+            >
+              {loading ? 'Verifying...' : 'Verify email'}
+            </button>
+          </form>
+
+          <p className="text-center text-sm text-slate-500 mt-6">
+            Didn't get a code?{' '}
+            <button
+              onClick={handleResend}
+              disabled={resending}
+              className="text-orange-500 font-medium hover:underline disabled:opacity-50"
+            >
+              {resending ? 'Sending...' : 'Resend code'}
+            </button>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}

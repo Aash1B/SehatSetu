@@ -7,6 +7,9 @@ import PatientLogin from './auth/pages/PatientLogin';
 import PatientSignup from './auth/pages/PatientSignup';
 import DoctorLogin from './auth/pages/DoctorLogin';
 import DoctorSignup from './auth/pages/DoctorSignup';
+import VerifyOtp from './auth/pages/VerifyOtp';
+import ForgotPassword from './auth/pages/ForgotPassword';
+import ResetPassword from './auth/pages/ResetPassword';
 
 const PatientLayout = () => (
   <div className="patient-portal min-h-screen">
@@ -44,6 +47,9 @@ function App() {
            <Route path="/patient/signup" element={<PatientSignup />} />
            <Route path="/doctor/login" element={<DoctorLogin />} />
            <Route path="/doctor/signup" element={<DoctorSignup />} />
+           <Route path="/verify-otp" element={<VerifyOtp />} />
+           <Route path="/forgot-password" element={<ForgotPassword />} />
+           <Route path="/reset-password" element={<ResetPassword />} />
           {/* Patient Portal Layout */}
           <Route element={<PatientLayout />}>
             {/* Landing Page */}
