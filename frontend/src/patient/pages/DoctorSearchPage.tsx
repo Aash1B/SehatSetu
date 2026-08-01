@@ -7,7 +7,6 @@ import Footer from '../components/Footer';
 import FloatingEmergencyButton from '../components/FloatingEmergencyButton';
 import CustomSelect, { type OptionItem } from '../components/CustomSelect';
 import { doctorsData, PRIORITY_CONFIG, type Doctor } from '../data/doctorsData';
-import { fetchDoctors } from '../services/doctorApi';
 import { setCurrentPage } from '../store/uiSlice';
 
 const SPECIALTY_OPTIONS: OptionItem[] = [
@@ -36,20 +35,11 @@ const LOCATION_OPTIONS: OptionItem[] = [
 const DoctorSearchPage: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [doctorsList, setDoctorsList] = useState<Doctor[]>(doctorsData);
   const [searchTerm, setSearchTerm] = useState('');
   const [specialtyFilter, setSpecialtyFilter] = useState('All');
   const [locationFilter, setLocationFilter] = useState('All');
   const [favorites, setFavorites] = useState<string[]>([]);
   const [onlyAvailableToday, setOnlyAvailableToday] = useState(false);
-
-  useEffect(() => {
-    fetchDoctors().then((data) => {
-      if (data && data.length > 0) {
-        setDoctorsList(data);
-      }
-    });
-  }, []);
 
   const toggleFavorite = (id: string) => {
     setFavorites(prev => 
@@ -58,7 +48,7 @@ const DoctorSearchPage: React.FC = () => {
   };
 
   const filteredAndSortedDoctors = useMemo(() => {
-    return doctorsList
+    return doctorsData
       .filter((doc: Doctor) => {
         const matchesSearch = 
           doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -86,7 +76,7 @@ const DoctorSearchPage: React.FC = () => {
         if (!isGenA && isGenB) return 1;
         return b.priorityScore - a.priorityScore;
       });
-  }, [doctorsList, searchTerm, specialtyFilter, locationFilter, onlyAvailableToday]);
+  }, [searchTerm, specialtyFilter, locationFilter, onlyAvailableToday]);
 
   return (
     <div className="all-doctors-page">
@@ -101,7 +91,7 @@ const DoctorSearchPage: React.FC = () => {
             <button 
               type="button" 
               className="breadcrumb-back-btn"
-              onClick={() => { dispatch(setCurrentPage('landing')); navigate('/'); }}
+              onClick={() => navigate('/')}
             >
               ← Back to Home
             </button>
@@ -281,7 +271,7 @@ const DoctorSearchPage: React.FC = () => {
                         <button
                           type="button"
                           className="btn-full-book-now"
-                          onClick={() => { dispatch(setCurrentPage('book-appointment')); navigate(`/patient/book/${doctor.id}`); }}
+                          onClick={() => navigate(`/patient/book/${doctor.id}`)}
                         >
                           Book Appointment
                         </button>

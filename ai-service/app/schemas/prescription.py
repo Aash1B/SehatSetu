@@ -61,6 +61,8 @@ class PrescriptionMedication(BaseModel):
     route: str | None = Field(default=None, min_length=1, max_length=100)
     duration: str | None = Field(default=None, min_length=1, max_length=100)
     instructions: str | None = Field(default=None, min_length=1, max_length=500)
+    contraindication_warnings: list[str] = Field(default_factory=list)
+    allergy_warnings: list[str] = Field(default_factory=list)
 
     @field_validator(
         "medicine", "dosage", "frequency", "route", "duration", "instructions"
@@ -86,6 +88,9 @@ class PrescriptionStructuredOutput(BaseModel):
     medications: list[PrescriptionMedication] = Field(default_factory=list)
     recommended_lab_tests: list["LabTestItem"] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
+    diet_and_lifestyle_guidance: list[str] = Field(default_factory=list)
+    follow_up_advice: list[str] = Field(default_factory=list)
+    requires_doctor_confirmation: bool = True
     requires_doctor_review: bool = True
     disclaimer: str = "AI-generated draft. Doctor approval required."
 

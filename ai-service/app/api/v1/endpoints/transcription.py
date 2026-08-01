@@ -19,12 +19,13 @@ from app.services.transcription_service import (
     get_transcription_service,
 )
 from app.services.language_service import language_service
+from app.services.audio_conversion_service import AudioConversionService
 
 router = APIRouter(tags=["Transcription"])
 logger = get_logger(__name__)
 settings = get_settings()
 
-SUPPORTED_EXTENSIONS = {".mp3", ".wav", ".m4a", ".webm", ".ogg", ".mp4"}
+SUPPORTED_EXTENSIONS = {".mp3", ".wav", ".m4a", ".webm", ".ogg", ".mp4", ".aac", ".flac", ".opus"}
 SUPPORTED_MIME_TYPES = {
     "audio/mpeg",
     "audio/mp3",
@@ -38,6 +39,8 @@ SUPPORTED_MIME_TYPES = {
     "audio/ogg",
     "application/ogg",
     "video/mp4",
+    "audio/aac", "audio/flac", "audio/x-flac", "audio/opus",
+    "application/octet-stream",
 }
 UPLOAD_CHUNK_SIZE = 1024 * 1024
 
@@ -76,7 +79,9 @@ def _validate_file_metadata(upload: UploadFile) -> str:
         original_content_type,
         normalized_content_type,
     )
-    if normalized_content_type not in SUPPORTED_MIME_TYPES:
+    # MIME metadata is advisory: browsers frequently omit it or report a
+    # generic binary type. FFmpeg decodability is the authoritative check.
+    if normalized_content_type and normalized_content_type not in SUPPORTED_MIME_TYPES:
         raise AppException(
             "Unsupported audio MIME type",
             status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
@@ -88,7 +93,7 @@ def _validate_file_metadata(upload: UploadFile) -> str:
 
 async def _save_upload(upload: UploadFile, destination: Path) -> int:
     """Write an upload in bounded chunks while enforcing its size limit."""
-    max_bytes = int(settings.max_audio_size_mb * 1024 * 1024)
+    max_bytes = int(settings.effective_audio_max_size_mb * 1024 * 1024)
     total_bytes = 0
 
     with destination.open("xb") as temporary_file:
@@ -96,7 +101,7 @@ async def _save_upload(upload: UploadFile, destination: Path) -> int:
             total_bytes += len(chunk)
             if total_bytes > max_bytes:
                 raise AppException(
-                    f"Audio file exceeds the {settings.max_audio_size_mb:g} MB limit",
+                    f"Audio file exceeds the {settings.effective_audio_max_size_mb:g} MB limit",
                     status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
                     code="AUDIO_FILE_TOO_LARGE",
                 )
@@ -170,6 +175,7 @@ async def transcribe(
     request_id = get_request_id()
     started_at = time.monotonic()
     temporary_path: Path | None = None
+    normalized_path: Path | None = None
     outcome = "failed"
 
     logger.info("Transcription request started request_id=%s", request_id)
@@ -178,6 +184,7 @@ async def transcribe(
         temporary_directory = settings.temp_audio_dir.resolve()
         temporary_directory.mkdir(parents=True, exist_ok=True)
         temporary_path = temporary_directory / f"{uuid4().hex}{extension}"
+        normalized_path = temporary_directory / f"{uuid4().hex}.wav"
 
         file_size = await _save_upload(file, temporary_path)
         logger.info(
@@ -193,12 +200,45 @@ async def transcribe(
             selected_language = language_service.resolve(
                 "", selected_language, selected_language
             ).detected
+        if isinstance(service, TranscriptionService):
+            metadata = await asyncio.to_thread(
+                AudioConversionService(settings).convert,
+                temporary_path,
+                normalized_path,
+                file.content_type or "application/octet-stream",
+            )
+        else:
+            # Dependency-overridden lightweight unit services predate the
+            # normalization pipeline and intentionally receive the saved file.
+            from app.services.audio_conversion_service import ConvertedAudioMetadata
+            normalized_path = temporary_path
+            metadata = ConvertedAudioMetadata(
+                duration_seconds=0,
+                size_bytes=file_size,
+                sample_rate=settings.audio_sample_rate,
+                channels=settings.audio_channels,
+                rms=float(settings.vad_min_rms),
+                speech_detected=True,
+            )
+        if metadata.duration_seconds > settings.audio_max_duration_seconds:
+            raise AppException(
+                "Audio exceeds the configured duration limit",
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                code="AUDIO_DURATION_TOO_LONG",
+                details={"maximum_duration_seconds": settings.audio_max_duration_seconds},
+            )
+        if not metadata.speech_detected:
+            raise AppException(
+                "No usable speech was detected in the audio",
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                code="NO_SPEECH_DETECTED",
+            )
         transcription_started_at = time.monotonic()
         try:
             result = await asyncio.wait_for(
                 asyncio.to_thread(
                     service.transcribe,
-                    temporary_path,
+                    normalized_path,
                     selected_language,
                 ),
                 timeout=settings.transcription_timeout_seconds,
@@ -214,6 +254,10 @@ async def transcribe(
         result.processing_time_seconds = (
             time.monotonic() - transcription_started_at
         )
+        if metadata.duration_seconds:
+            result.audio_duration_seconds = metadata.duration_seconds
+            result.duration_seconds = metadata.duration_seconds
+        result.warnings = list(dict.fromkeys([*result.warnings, *metadata.warnings]))
         language_service.resolve(
             result.transcript,
             result.detected_language,
@@ -233,6 +277,8 @@ async def transcribe(
         await file.close()
         if temporary_path is not None:
             temporary_path.unlink(missing_ok=True)
+        if normalized_path is not None:
+            normalized_path.unlink(missing_ok=True)
         logger.info(
             "Transcription request finished request_id=%s outcome=%s "
             "processing_seconds=%.3f",

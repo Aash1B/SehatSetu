@@ -1,8 +1,7 @@
-import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store } from './patient/store';
 import './Patient.css';
-import './App.css';
 
 const PatientLayout = () => (
   <div className="patient-portal min-h-screen">
@@ -18,9 +17,8 @@ import PatientDetails from './doctor/pages/PatientDetails';
 import DoctorPrescription from './doctor/pages/DoctorPrescription';
 import VideoConsultation from './doctor/pages/VideoConsultation';
 
-// Landing Pages
-import PatientLandingPage from './patient/pages/LandingPage';
-import PortalSelectorPage from './LandingPage';
+// Landing Page
+import LandingPage from './patient/pages/LandingPage';
 
 // Patient Pages
 import LoginPage from './patient/pages/LoginPage';
@@ -36,19 +34,20 @@ function App() {
     <Provider store={store}>
       <Router>
         <Routes>
-          {/* Patient Main Home Page */}
-          <Route path="/" element={<PatientLandingPage />} />
-          <Route path="/patient" element={<PatientLandingPage />} />
-          <Route path="/portals" element={<PortalSelectorPage />} />
+          {/* Patient Portal Layout */}
+          <Route element={<PatientLayout />}>
+            {/* Landing Page */}
+            <Route path="/" element={<LandingPage />} />
 
-          {/* Patient Sub-routes */}
-          <Route path="/patient/login" element={<LoginPage />} />
-          <Route path="/patient/dashboard" element={<DashboardPage />} />
-          <Route path="/patient/search" element={<DoctorSearchPage />} />
-          <Route path="/patient/book/:id" element={<BookAppointmentPage />} />
-          <Route path="/patient/questionnaire/:id" element={<HealthQuestionnairePage />} />
-          <Route path="/patient/appointments" element={<AppointmentsPage />} />
-          <Route path="/patient/consultation/:id" element={<VideoConsultationPage />} />
+            {/* Patient Routes */}
+            <Route path="/patient/login" element={<LoginPage />} />
+            <Route path="/patient/dashboard" element={<DashboardPage />} />
+            <Route path="/patient/search" element={<DoctorSearchPage />} />
+            <Route path="/patient/book/:id" element={<BookAppointmentPage />} />
+            <Route path="/patient/questionnaire/:id" element={<HealthQuestionnairePage />} />
+            <Route path="/patient/appointments" element={<AppointmentsPage />} />
+            <Route path="/patient/consultation/:id" element={<VideoConsultationPage />} />
+          </Route>
 
           {/* Doctor Routes */}
           <Route path="/doctor/login" element={<DoctorLogin />} />

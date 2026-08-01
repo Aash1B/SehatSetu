@@ -1,18 +1,13 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { toggleSidebar, setCurrentPage } from '../store/uiSlice';
+import { toggleSidebar } from '../store/uiSlice';
 import type { RootState } from '../store';
+import { useNavigate } from 'react-router-dom';
 
 const Navbar: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const currentPage = useSelector((state: RootState) => state.ui.currentPage);
-
-  const handleNav = (page: string, path: string) => {
-    dispatch(setCurrentPage(page as any));
-    navigate(path);
-  };
 
   return (
     <header className="navbar-header">
@@ -37,11 +32,11 @@ const Navbar: React.FC = () => {
           <button 
             type="button" 
             className="brand-logo btn-logo-reset"
-            onClick={() => handleNav('landing', '/')}
+            onClick={() => navigate('/')}
           >
             <div className="logo-badge">
               <svg viewBox="0 0 24 24" fill="none" className="logo-icon" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="var(--color-habanero)"/>
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#F97316"/>
                 <path d="M12 7v6m-3-3h6" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round"/>
               </svg>
             </div>
@@ -56,7 +51,7 @@ const Navbar: React.FC = () => {
           <button 
             type="button" 
             className={`nav-link ${currentPage === 'landing' ? 'active' : ''}`}
-            onClick={() => handleNav('landing', '/')}
+            onClick={() => navigate('/')}
           >
             Home
           </button>
@@ -64,7 +59,7 @@ const Navbar: React.FC = () => {
           <button 
             type="button" 
             className={`nav-link ${currentPage === 'doctors' ? 'active' : ''}`}
-            onClick={() => handleNav('doctors', '/patient/search')}
+            onClick={() => navigate('/patient/search')}
           >
             Doctors
           </button>
@@ -74,18 +69,10 @@ const Navbar: React.FC = () => {
 
         {/* Actions */}
         <div className="nav-actions">
-          <button 
-            type="button" 
-            className="btn-sign-in"
-            onClick={() => handleNav('login', '/patient/login')}
-          >
+          <button type="button" className="btn-sign-in">
             Sign In
           </button>
-          <button 
-            type="button" 
-            className="btn-get-started" 
-            onClick={() => handleNav('dashboard', '/patient/dashboard')}
-          >
+          <button type="button" className="btn-get-started" onClick={() => navigate('/patient/dashboard')}>
             Dashboard
           </button>
           <button 

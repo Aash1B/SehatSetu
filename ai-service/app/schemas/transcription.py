@@ -13,12 +13,18 @@ class TranscriptionSegment(BaseModel):
     start: float = Field(ge=0, description="Segment start time in seconds.")
     end: float = Field(ge=0, description="Segment end time in seconds.")
     text: str = Field(min_length=1, description="Recognized text for this segment.")
+    confidence: float | None = Field(default=None, ge=0, le=1)
+    no_speech_probability: float | None = Field(default=None, ge=0, le=1)
 
 
 class TranscriptionData(BaseModel):
     """Local Whisper transcription output."""
 
     transcript: str = Field(min_length=1, description="Combined recognized speech.")
+    raw_transcript: str | None = None
+    cleaned_transcript: str | None = None
+    requested_language: str = "auto"
+    fallback_detection_used: bool = False
     detected_language: str = Field(description="Detected or requested language code.")
     language_probability: float | None = Field(
         default=None, ge=0, le=1, description="Whisper language confidence."
@@ -36,6 +42,8 @@ class TranscriptionData(BaseModel):
     )
     segments: list[TranscriptionSegment]
     model: str = Field(description="Configured local Whisper model.")
+    segment_count: int = Field(default=0, ge=0)
+    warnings: list[str] = Field(default_factory=list)
     is_dummy: Literal[False] = False
 
 

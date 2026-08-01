@@ -30,10 +30,30 @@ class Settings(BaseSettings):
     whisper_device: str = "cpu"
     whisper_compute_type: str = "int8"
     whisper_beam_size: PositiveInt = 5
+    whisper_best_of: PositiveInt = 5
+    whisper_cpu_threads: NonNegativeInt = 0
+    whisper_num_workers: PositiveInt = 1
+    whisper_language_detection_threshold: float = Field(default=0.55, ge=0, le=1)
+    whisper_word_timestamps: bool = True
+    whisper_medical_prompt_enabled: bool = True
+    whisper_no_speech_threshold: float = Field(default=0.6, ge=0, le=1)
+    whisper_log_prob_threshold: float = -1.0
+    whisper_compression_ratio_threshold: PositiveFloat = 2.4
     whisper_temperature: float = Field(default=0, ge=0, le=1)
     whisper_condition_on_previous_text: bool = True
     whisper_context_words: PositiveInt = 50
     max_audio_size_mb: PositiveFloat = 25
+    audio_max_file_size_mb: PositiveFloat | None = None
+    audio_max_duration_seconds: PositiveFloat = 3600
+    audio_sample_rate: PositiveInt = 16000
+    audio_channels: PositiveInt = 1
+    audio_enable_preprocessing: bool = True
+    audio_enable_noise_reduction: bool = True
+    audio_enable_silence_trimming: bool = False
+    audio_min_speech_seconds: PositiveFloat = 0.35
+    audio_normalization_target: float = Field(default=-18.0, ge=-30, le=-5)
+    audio_chunk_duration_seconds: PositiveInt = 600
+    audio_chunk_overlap_seconds: NonNegativeInt = 2
     transcription_timeout_seconds: PositiveInt = 120
     temp_audio_dir: Path = Path(".tmp/audio")
     ner_model_name: str = "d4data/biomedical-ner-all"
@@ -72,6 +92,10 @@ class Settings(BaseSettings):
     live_transcript_max_active_sessions: PositiveInt = 100
     live_transcript_max_chunk_size_mb: PositiveFloat = 5
     live_transcript_max_pending_chunks: PositiveInt = 3
+    live_transcription_min_buffer_seconds: PositiveFloat = 1
+    live_transcription_window_seconds: PositiveInt = 30
+    live_transcription_overlap_seconds: NonNegativeInt = 1
+    live_transcription_max_buffer_mb: PositiveFloat = 25
     internal_api_key: SecretStr | None = None
 
     model_config = SettingsConfigDict(
@@ -101,6 +125,11 @@ class Settings(BaseSettings):
             for origin in self.allowed_origins.split(",")
             if origin.strip()
         ]
+
+    @property
+    def effective_audio_max_size_mb(self) -> float:
+        """Support the documented name without breaking MAX_AUDIO_SIZE_MB."""
+        return self.audio_max_file_size_mb or self.max_audio_size_mb
 
 
 @lru_cache

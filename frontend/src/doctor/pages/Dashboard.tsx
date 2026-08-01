@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CalendarCheck, CheckCircle2, Stethoscope, ChevronRight, Activity, FileText, ActivityIcon } from 'lucide-react';
+import { CalendarCheck, CheckCircle2, Stethoscope, ChevronRight, Activity, CalendarPlus, Phone, FileText, ActivityIcon } from 'lucide-react';
 
 import DoctorSidebar from '../components/DoctorSidebar';
 import DashboardHeader from '../components/DashboardHeader';
 import StatCard from '../components/StatCard';
 import AIBanner from '../components/AIBanner';
 import ConsultationCard from '../components/ConsultationCard';
+import QuickActionButton from '../components/QuickActionButton';
 import ActivityItem from '../components/ActivityItem';
 import { Specialization, ConsultationStatus, Priority } from '../../types';
 import type { DashboardResponse } from '../../types';

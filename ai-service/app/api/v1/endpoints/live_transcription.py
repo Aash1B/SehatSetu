@@ -376,6 +376,14 @@ async def transcribe_live_chunk(
             language_confidence=confidence,
             processing_time_ms=(time.monotonic() - started) * 1000,
             is_final=is_final,
+            accepted_chunk_index=sequence_number,
+            expected_next_chunk=(
+                session.expected_sequence_number if session else sequence_number + 1
+            ),
+            partial_transcript=merged,
+            finalized_transcript=merged if is_final else None,
+            needs_more_audio=not is_final and not bool(chunk_text),
+            warnings=[] if chunk_text else ["silence_or_no_recognizable_speech"],
         )
         response = LiveTranscriptionResponse(
             message="Live audio chunk processed", data=data

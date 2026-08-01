@@ -1,0 +1,1105 @@
+{
+  "schema_version": 2,
+  "generator": "offline Windows System.Speech plus FFmpeg",
+  "limitations": [
+    "Only en-US voices were installed; Hindi and Hinglish pronunciation is non-native synthetic speech."
+  ],
+  "cases": [
+    {
+      "id": "en-quiet-fever",
+      "file": "audio/en/en-quiet-fever.wav",
+      "category": "quiet",
+      "language": "en",
+      "expected_transcript": "Patient reports fever and cough for two days.",
+      "important_terms": [
+        "fever",
+        "cough"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [],
+      "expected_medicines": [],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "quiet",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-david",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "en-normal-migraine",
+      "file": "audio/en/en-normal-migraine.wav",
+      "category": "quiet",
+      "language": "en",
+      "expected_transcript": "Patient reports migraine with nausea.",
+      "important_terms": [
+        "migraine",
+        "nausea"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [],
+      "expected_medicines": [],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "quiet",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-zira",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "en-fast-asthma",
+      "file": "audio/en/en-fast-asthma.wav",
+      "category": "fast",
+      "language": "en",
+      "expected_transcript": "Patient has asthma and shortness of breath.",
+      "important_terms": [
+        "asthma",
+        "shortness of breath"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [],
+      "expected_medicines": [],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "fast",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-david",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "en-slow-pneumonia",
+      "file": "audio/en/en-slow-pneumonia.wav",
+      "category": "slow",
+      "language": "en",
+      "expected_transcript": "The suspected diagnosis is pneumonia.",
+      "important_terms": [
+        "pneumonia"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [],
+      "expected_medicines": [],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "slow",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-zira",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "en-fan-hypertension",
+      "file": "audio/en/en-fan-hypertension.wav",
+      "category": "noisy",
+      "language": "en",
+      "expected_transcript": "Patient has hypertension and blood pressure is 140 over 90.",
+      "important_terms": [
+        "hypertension",
+        "blood pressure"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [
+        "140 over 90"
+      ],
+      "expected_medicines": [],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "noisy",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-david",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "en-background-diabetes",
+      "file": "audio/en/en-background-diabetes.wav",
+      "category": "noisy",
+      "language": "en",
+      "expected_transcript": "Patient has diabetes and blood sugar is 180 milligrams per deciliter.",
+      "important_terms": [
+        "diabetes",
+        "blood sugar"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [
+        "180 milligrams per deciliter"
+      ],
+      "expected_medicines": [],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "noisy",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-zira",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "en-low-chest",
+      "file": "audio/en/en-low-chest.wav",
+      "category": "low-volume",
+      "language": "en",
+      "expected_transcript": "Patient reports chest pain.",
+      "important_terms": [
+        "chest pain"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [],
+      "expected_medicines": [],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "low-volume",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-david",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "en-clipped-abdominal",
+      "file": "audio/en/en-clipped-abdominal.wav",
+      "category": "clipped",
+      "language": "en",
+      "expected_transcript": "Patient reports abdominal pain and vomiting.",
+      "important_terms": [
+        "abdominal pain",
+        "vomiting"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [],
+      "expected_medicines": [],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "clipped",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-zira",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "en-paracetamol",
+      "file": "audio/en/en-paracetamol.wav",
+      "category": "medicine-heavy",
+      "language": "en",
+      "expected_transcript": "Paracetamol 500 milligrams twice daily after food.",
+      "important_terms": [
+        "Paracetamol"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [
+        "500 milligrams",
+        "twice daily",
+        "after food"
+      ],
+      "expected_medicines": [
+        "Paracetamol"
+      ],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "medicine-heavy",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-david",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "en-azithromycin",
+      "file": "audio/en/en-azithromycin.wav",
+      "category": "medicine-heavy",
+      "language": "en",
+      "expected_transcript": "Azithromycin one tablet once daily after food.",
+      "important_terms": [
+        "Azithromycin"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [
+        "one tablet",
+        "once daily",
+        "after food"
+      ],
+      "expected_medicines": [
+        "Azithromycin"
+      ],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "medicine-heavy",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-zira",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "en-metformin",
+      "file": "audio/en/en-metformin.wav",
+      "category": "dosage-heavy",
+      "language": "en",
+      "expected_transcript": "Metformin 500 milligrams twice daily before breakfast.",
+      "important_terms": [
+        "Metformin"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [
+        "500 milligrams",
+        "twice daily",
+        "before breakfast"
+      ],
+      "expected_medicines": [
+        "Metformin"
+      ],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "dosage-heavy",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-david",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "en-pantoprazole",
+      "file": "audio/en/en-pantoprazole.wav",
+      "category": "dosage-heavy",
+      "language": "en",
+      "expected_transcript": "Pantoprazole 40 milligrams once daily before food.",
+      "important_terms": [
+        "Pantoprazole"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [
+        "40 milligrams",
+        "once daily",
+        "before food"
+      ],
+      "expected_medicines": [
+        "Pantoprazole"
+      ],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "dosage-heavy",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-zira",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "en-negation-fever",
+      "file": "audio/en/en-negation-fever.wav",
+      "category": "negation-heavy",
+      "language": "en",
+      "expected_transcript": "Patient has no fever and denies chest pain.",
+      "important_terms": [
+        "fever",
+        "chest pain"
+      ],
+      "expected_negations": [
+        "no",
+        "denies"
+      ],
+      "expected_dosages": [],
+      "expected_medicines": [],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "negation-heavy",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-david",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "en-allergy",
+      "file": "audio/en/en-allergy.wav",
+      "category": "negation-heavy",
+      "language": "en",
+      "expected_transcript": "Patient has no known drug allergy.",
+      "important_terms": [
+        "drug allergy"
+      ],
+      "expected_negations": [
+        "no"
+      ],
+      "expected_dosages": [],
+      "expected_medicines": [],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "negation-heavy",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-zira",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "en-labs",
+      "file": "audio/en/en-labs.wav",
+      "category": "medical-heavy",
+      "language": "en",
+      "expected_transcript": "Doctor advised CBC LFT KFT and ECG.",
+      "important_terms": [
+        "CBC",
+        "LFT",
+        "KFT",
+        "ECG"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [],
+      "expected_medicines": [],
+      "expected_tests": [
+        "CBC",
+        "LFT",
+        "KFT",
+        "ECG"
+      ],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "medical-heavy",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-david",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "en-imaging",
+      "file": "audio/en/en-imaging.wav",
+      "category": "medical-heavy",
+      "language": "en",
+      "expected_transcript": "Doctor advised MRI and CT scan after checking creatinine.",
+      "important_terms": [
+        "MRI",
+        "CT scan",
+        "creatinine"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [],
+      "expected_medicines": [],
+      "expected_tests": [
+        "MRI",
+        "CT scan"
+      ],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "medical-heavy",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-zira",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "hi-fever",
+      "file": "audio/hi/hi-fever.wav",
+      "category": "quiet",
+      "language": "hi",
+      "expected_transcript": "Mareez ko do din se bukhar aur khansi hai.",
+      "important_terms": [
+        "bukhar",
+        "khansi"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [],
+      "expected_medicines": [],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "quiet",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-david",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "hi-headache",
+      "file": "audio/hi/hi-headache.wav",
+      "category": "quiet",
+      "language": "hi",
+      "expected_transcript": "Mareez ko migraine aur chakkar hai.",
+      "important_terms": [
+        "migraine",
+        "chakkar"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [],
+      "expected_medicines": [],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "quiet",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-zira",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "hi-fast-asthma",
+      "file": "audio/hi/hi-fast-asthma.wav",
+      "category": "fast",
+      "language": "hi",
+      "expected_transcript": "Mareez ko asthma aur saans lene mein takleef hai.",
+      "important_terms": [
+        "asthma",
+        "saans lene mein takleef"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [],
+      "expected_medicines": [],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "fast",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-david",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "hi-noisy-diabetes",
+      "file": "audio/hi/hi-noisy-diabetes.wav",
+      "category": "noisy",
+      "language": "hi",
+      "expected_transcript": "Mareez ko diabetes hai aur blood sugar zyada hai.",
+      "important_terms": [
+        "diabetes",
+        "blood sugar"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [],
+      "expected_medicines": [],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "noisy",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-zira",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "hi-hypertension",
+      "file": "audio/hi/hi-hypertension.wav",
+      "category": "medical-heavy",
+      "language": "hi",
+      "expected_transcript": "Mareez ko hypertension hai aur blood pressure 150 over 90 hai.",
+      "important_terms": [
+        "hypertension",
+        "blood pressure"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [
+        "150 over 90"
+      ],
+      "expected_medicines": [],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "medical-heavy",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-david",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "hi-metformin",
+      "file": "audio/hi/hi-metformin.wav",
+      "category": "medicine-heavy",
+      "language": "hi",
+      "expected_transcript": "Mareez Metformin 500 milligrams twice daily leta hai.",
+      "important_terms": [
+        "Metformin"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [
+        "500 milligrams",
+        "twice daily"
+      ],
+      "expected_medicines": [
+        "Metformin"
+      ],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "medicine-heavy",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-zira",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "hi-paracetamol",
+      "file": "audio/hi/hi-paracetamol.wav",
+      "category": "dosage-heavy",
+      "language": "hi",
+      "expected_transcript": "Paracetamol one tablet khane ke baad lena hai.",
+      "important_terms": [
+        "Paracetamol"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [
+        "one tablet"
+      ],
+      "expected_medicines": [
+        "Paracetamol"
+      ],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "dosage-heavy",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-david",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "hi-negation",
+      "file": "audio/hi/hi-negation.wav",
+      "category": "negation-heavy",
+      "language": "hi",
+      "expected_transcript": "Mareez ko bukhar nahi hai aur chest pain se inkar karta hai.",
+      "important_terms": [
+        "bukhar",
+        "chest pain"
+      ],
+      "expected_negations": [
+        "nahi",
+        "inkar"
+      ],
+      "expected_dosages": [],
+      "expected_medicines": [],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "negation-heavy",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-zira",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "hi-labs",
+      "file": "audio/hi/hi-labs.wav",
+      "category": "medical-heavy",
+      "language": "hi",
+      "expected_transcript": "Doctor ne CBC LFT aur KFT test likhe hain.",
+      "important_terms": [
+        "CBC",
+        "LFT",
+        "KFT"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [],
+      "expected_medicines": [],
+      "expected_tests": [
+        "CBC",
+        "LFT",
+        "KFT"
+      ],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "medical-heavy",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-david",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "hi-imaging",
+      "file": "audio/hi/hi-imaging.wav",
+      "category": "medical-heavy",
+      "language": "hi",
+      "expected_transcript": "Doctor ne ECG MRI aur CT scan karane ko kaha.",
+      "important_terms": [
+        "ECG",
+        "MRI",
+        "CT scan"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [],
+      "expected_medicines": [],
+      "expected_tests": [
+        "ECG",
+        "MRI",
+        "CT scan"
+      ],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "medical-heavy",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-zira",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "hinglish-fever",
+      "file": "audio/hi_Latn/hinglish-fever.wav",
+      "category": "hinglish",
+      "language": "hi-Latn",
+      "expected_transcript": "Patient ko do din se fever aur cough hai.",
+      "important_terms": [
+        "fever",
+        "cough"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [],
+      "expected_medicines": [],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "hinglish",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-david",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "hinglish-migraine",
+      "file": "audio/hi_Latn/hinglish-migraine.wav",
+      "category": "hinglish",
+      "language": "hi-Latn",
+      "expected_transcript": "Patient ko migraine hai but diagnosis confirm nahi hai.",
+      "important_terms": [
+        "migraine"
+      ],
+      "expected_negations": [
+        "nahi"
+      ],
+      "expected_dosages": [],
+      "expected_medicines": [],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "hinglish",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-zira",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "hinglish-azithromycin",
+      "file": "audio/hi_Latn/hinglish-azithromycin.wav",
+      "category": "medicine-heavy",
+      "language": "hi-Latn",
+      "expected_transcript": "Doctor ne Azithromycin once daily after food bola.",
+      "important_terms": [
+        "Azithromycin"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [
+        "once daily",
+        "after food"
+      ],
+      "expected_medicines": [
+        "Azithromycin"
+      ],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "medicine-heavy",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-david",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "hinglish-pantoprazole",
+      "file": "audio/hi_Latn/hinglish-pantoprazole.wav",
+      "category": "dosage-heavy",
+      "language": "hi-Latn",
+      "expected_transcript": "Pantoprazole 40 milligrams before breakfast lena hai.",
+      "important_terms": [
+        "Pantoprazole"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [
+        "40 milligrams",
+        "before breakfast"
+      ],
+      "expected_medicines": [
+        "Pantoprazole"
+      ],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "dosage-heavy",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-zira",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "hinglish-negation",
+      "file": "audio/hi_Latn/hinglish-negation.wav",
+      "category": "negation-heavy",
+      "language": "hi-Latn",
+      "expected_transcript": "Patient ko no fever hai and denies chest pain.",
+      "important_terms": [
+        "fever",
+        "chest pain"
+      ],
+      "expected_negations": [
+        "no",
+        "denies"
+      ],
+      "expected_dosages": [],
+      "expected_medicines": [],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "negation-heavy",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-david",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "hinglish-allergy",
+      "file": "audio/hi_Latn/hinglish-allergy.wav",
+      "category": "negation-heavy",
+      "language": "hi-Latn",
+      "expected_transcript": "Patient bolta hai no known drug allergy.",
+      "important_terms": [
+        "drug allergy"
+      ],
+      "expected_negations": [
+        "no"
+      ],
+      "expected_dosages": [],
+      "expected_medicines": [],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "negation-heavy",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-zira",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "hinglish-diabetes",
+      "file": "audio/hi_Latn/hinglish-diabetes.wav",
+      "category": "medical-heavy",
+      "language": "hi-Latn",
+      "expected_transcript": "Diabetes ke liye Metformin 500 milligrams twice daily chal raha hai.",
+      "important_terms": [
+        "Diabetes",
+        "Metformin"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [
+        "500 milligrams",
+        "twice daily"
+      ],
+      "expected_medicines": [
+        "Metformin"
+      ],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "medical-heavy",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-david",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "hinglish-tests",
+      "file": "audio/hi_Latn/hinglish-tests.wav",
+      "category": "medical-heavy",
+      "language": "hi-Latn",
+      "expected_transcript": "Doctor ne CBC ECG and MRI advise kiya.",
+      "important_terms": [
+        "CBC",
+        "ECG",
+        "MRI"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [],
+      "expected_medicines": [],
+      "expected_tests": [
+        "CBC",
+        "ECG",
+        "MRI"
+      ],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "medical-heavy",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-zira",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "browser-webm-en",
+      "file": "audio/en/browser-webm-en.webm",
+      "category": "browser-webm",
+      "language": "en",
+      "expected_transcript": "Patient takes Paracetamol 500 milligrams twice daily.",
+      "important_terms": [
+        "Paracetamol"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [
+        "500 milligrams",
+        "twice daily"
+      ],
+      "expected_medicines": [
+        "Paracetamol"
+      ],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "browser-webm",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-david",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "browser-webm-hinglish",
+      "file": "audio/hi_Latn/browser-webm-hinglish.webm",
+      "category": "browser-webm",
+      "language": "hi-Latn",
+      "expected_transcript": "Patient ko asthma hai but no chest pain.",
+      "important_terms": [
+        "asthma",
+        "chest pain"
+      ],
+      "expected_negations": [
+        "no"
+      ],
+      "expected_dosages": [],
+      "expected_medicines": [],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "browser-webm",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-zira",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "long-consultation-en",
+      "file": "audio/en/long-consultation-en.wav",
+      "category": "long-audio",
+      "language": "en",
+      "expected_transcript": "Patient reports fever cough and migraine for three days. Patient denies chest pain and has no known drug allergy. Doctor advised CBC LFT KFT ECG MRI and CT scan. Patient takes Metformin 500 milligrams twice daily after food.",
+      "important_terms": [
+        "fever",
+        "cough",
+        "migraine",
+        "CBC",
+        "LFT",
+        "KFT",
+        "ECG",
+        "MRI",
+        "CT scan"
+      ],
+      "expected_negations": [
+        "denies",
+        "no"
+      ],
+      "expected_dosages": [
+        "500 milligrams",
+        "twice daily",
+        "after food"
+      ],
+      "expected_medicines": [
+        "Metformin"
+      ],
+      "expected_tests": [
+        "CBC",
+        "LFT",
+        "KFT",
+        "ECG",
+        "MRI",
+        "CT scan"
+      ],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "long-audio",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-david",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "long-consultation-hinglish",
+      "file": "audio/hi_Latn/long-consultation-hinglish.wav",
+      "category": "long-audio",
+      "language": "hi-Latn",
+      "expected_transcript": "Patient ko fever aur khansi three days se hai. Chest pain nahi hai. Doctor ne CBC ECG aur CT scan advise kiya. Paracetamol 500 milligrams twice daily after food lena hai.",
+      "important_terms": [
+        "fever",
+        "khansi",
+        "CBC",
+        "ECG",
+        "CT scan"
+      ],
+      "expected_negations": [
+        "nahi"
+      ],
+      "expected_dosages": [
+        "500 milligrams",
+        "twice daily",
+        "after food"
+      ],
+      "expected_medicines": [
+        "Paracetamol"
+      ],
+      "expected_tests": [
+        "CBC",
+        "ECG",
+        "CT scan"
+      ],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "long-audio",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-zira",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "medical-levothyroxine",
+      "file": "audio/en/medical-levothyroxine.wav",
+      "category": "medicine-heavy",
+      "language": "en",
+      "expected_transcript": "Levothyroxine 50 micrograms once daily before breakfast.",
+      "important_terms": [
+        "Levothyroxine"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [
+        "50 micrograms",
+        "once daily",
+        "before breakfast"
+      ],
+      "expected_medicines": [
+        "Levothyroxine"
+      ],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "medicine-heavy",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-david",
+      "tts_culture": "en-US"
+    },
+    {
+      "id": "medical-atorvastatin",
+      "file": "audio/en/medical-atorvastatin.wav",
+      "category": "medicine-heavy",
+      "language": "en",
+      "expected_transcript": "Atorvastatin 10 milligrams once daily at bedtime.",
+      "important_terms": [
+        "Atorvastatin"
+      ],
+      "expected_negations": [],
+      "expected_dosages": [
+        "10 milligrams",
+        "once daily",
+        "at bedtime"
+      ],
+      "expected_medicines": [
+        "Atorvastatin"
+      ],
+      "expected_tests": [],
+      "speaker_notes": "Offline Windows SAPI synthetic voice; native Hindi voice unavailable",
+      "noise_condition": "medicine-heavy",
+      "optional": false,
+      "enabled": true,
+      "consented": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "speaker_id": "sapi-zira",
+      "tts_culture": "en-US"
+    }
+  ]
+}

@@ -10,11 +10,6 @@ export class AppointmentsController {
     return this.appointmentsService.createAppointment(createAppointmentDto);
   }
 
-  @Get()
-  async getAllAppointments() {
-    return this.appointmentsService.getAllAppointments();
-  }
-
   @Get('doctor/:doctorId')
   async getAppointmentsForDoctor(@Param('doctorId') doctorId: string) {
     return this.appointmentsService.getAppointmentsForDoctor(doctorId);

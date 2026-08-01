@@ -62,6 +62,8 @@ class DietStructuredOutput(BaseModel):
     foods_to_avoid: list[str] = Field(default_factory=list)
     hydration: str = Field(default="", max_length=500)
     meal_guidance: list[str] = Field(default_factory=list)
+    condition_specific_notes: list[str] = Field(default_factory=list)
+    warning_signs: list[str] = Field(default_factory=list)
     lifestyle_recommendations: list[str] = Field(default_factory=list)
     recommended_vitamins: list["NutrientRecommendation"] = Field(
         default_factory=list

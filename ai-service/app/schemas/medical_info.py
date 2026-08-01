@@ -63,6 +63,10 @@ class MedicationMention(BaseModel):
     """A medication mention and its nearby structured instructions."""
 
     name: str = Field(description="Medication name found in the transcript.")
+    normalized_name: str | None = None
+    strength: str | None = None
+    dose: str | None = None
+    unit: str | None = None
     dosage: str | None = Field(
         default=None, description="Dosage stated near the medication."
     )
@@ -72,6 +76,10 @@ class MedicationMention(BaseModel):
     duration: str | None = Field(
         default=None, description="Duration stated near the medication."
     )
+    route: str | None = None
+    instruction: str | None = None
+    confidence: float | None = Field(default=None, ge=0, le=1)
+    source_text: str | None = None
 
 
 class SymptomMention(BaseModel):
@@ -108,6 +116,12 @@ class MedicalInfoData(BaseModel):
     symptoms: list[str] = Field(default_factory=list)
     symptom_details: list[SymptomMention] = Field(default_factory=list)
     conditions: list[str] = Field(default_factory=list)
+    suspected_conditions: list[str] = Field(default_factory=list)
+    negated_findings: list[str] = Field(default_factory=list)
+    historical_conditions: list[str] = Field(default_factory=list)
+    family_history: list[str] = Field(default_factory=list)
+    lab_tests: list[str] = Field(default_factory=list)
+    doctor_instructions: list[str] = Field(default_factory=list)
     allergies: list[str] = Field(default_factory=list)
     medications: list[MedicationMention] = Field(default_factory=list)
     duration: list[str] = Field(default_factory=list)

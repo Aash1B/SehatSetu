@@ -26,6 +26,9 @@ class OCRAnalysisData(BaseModel):
     engine: Literal["gemini-vision"] = "gemini-vision"
     document_type: str = "Unknown"
     extracted_text: str = ""
+    raw_ocr_text: str = ""
+    cleaned_ocr_text: str = ""
+    warnings: list[str] = Field(default_factory=list)
     pages: list[OCRPageResult] = Field(default_factory=list)
     summary: str = ""
     key_findings: list[str] = Field(default_factory=list)

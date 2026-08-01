@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import DoctorSidebar from '../components/DoctorSidebar';
+import DashboardHeader from '../components/DashboardHeader';
 import VideoContainer from '../components/VideoContainer';
 import VideoControls from '../components/VideoControls';
 import PatientMiniCard from '../components/PatientMiniCard';
@@ -9,7 +11,7 @@ import MedicineEditor from '../components/MedicineEditor';
 import LabTestEditor from '../components/LabTestEditor';
 import DietEditor from '../components/DietEditor';
 import EndConsultationDialog from '../components/EndConsultationDialog';
-import type { PatientProfile } from '../../types';
+import type { PatientProfile, TranscriptDTO, AIInsightDTO } from '../../types';
 import { Shield } from 'lucide-react';
 
 // Mock Data
@@ -23,6 +25,18 @@ const mockPatient: PatientProfile = {
   weight: "58kg",
   height: "162cm"
 };
+
+const mockTranscripts: TranscriptDTO[] = [
+  { id: '1', speaker: 'Doctor', text: 'Hello Sunita, how are you feeling today?', timestamp: '11:30 AM' },
+  { id: '2', speaker: 'Patient', text: 'Doctor, my fever is not going down. It is been 4 days now.', timestamp: '11:31 AM' },
+  { id: '3', speaker: 'Doctor', text: 'I see. Have you been taking the paracetamol I prescribed?', timestamp: '11:31 AM' },
+  { id: '4', speaker: 'Patient', text: 'Yes, but it only goes down for a few hours and then comes back with body ache.', timestamp: '11:32 AM' },
+];
+
+const mockInsights: AIInsightDTO[] = [
+  { id: '1', type: 'SUGGESTION', message: 'Fever persisting > 3 days with body ache. Consider testing for Dengue (NS1/IgM).', confidence: 92 },
+  { id: '2', type: 'INFO', message: 'Patient has a history of Type 2 Diabetes.', confidence: 100 },
+];
 
 const VideoConsultation: React.FC = () => {
   const { consultationId = '1' } = useParams<{ consultationId: string }>();

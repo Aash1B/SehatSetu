@@ -52,13 +52,16 @@ const FloatingEmergencyButton: React.FC = () => {
                 <span className="call-now-tag">CALL NOW</span>
               </a>
 
-              <a 
-                href="https://www.google.com/search?q=emergency+hospitals+and+ICU+availability+near+me" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="emergency-action-item find-nearest" 
-                onClick={() => setModalOpen(false)}
-              >
+              <a href="tel:18001234567" className="emergency-action-item call-doctor">
+                <span className="action-icon">📞</span>
+                <div className="action-info">
+                  <div className="action-title">24/7 Doctor Helpline</div>
+                  <div className="action-sub">Toll-free Instant Consultation</div>
+                </div>
+                <span className="call-now-tag">CONNECT</span>
+              </a>
+
+              <a href="#doctors" className="emergency-action-item find-nearest" onClick={() => setModalOpen(false)}>
                 <span className="action-icon">🏥</span>
                 <div className="action-info">
                   <div className="action-title">Emergency Hospitals Nearby</div>

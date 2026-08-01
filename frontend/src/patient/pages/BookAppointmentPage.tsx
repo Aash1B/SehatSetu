@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { setCurrentPage } from '../store/uiSlice';
 import { doctorsData, type Doctor } from '../data/doctorsData';
-import { fetchDoctors, recommendDoctorsApi, type RecommendationResult } from '../services/doctorApi';
 import Footer from '../components/Footer';
 
 interface BookingFormData {
@@ -74,40 +73,7 @@ const BookAppointmentPage: React.FC = () => {
     patientEmail: 'ananya.sharma@example.com',
   });
 
-  const [doctorsList, setDoctorsList] = useState<Doctor[]>(doctorsData);
-  const [aiRecommendation, setAiRecommendation] = useState<RecommendationResult | null>(null);
-
-  useEffect(() => {
-    fetchDoctors().then((data) => {
-      if (data && data.length > 0) {
-        setDoctorsList(data);
-        setFormData(prev => ({
-          ...prev,
-          selectedDoctor: prev.selectedDoctor ? data.find(d => d.id === prev.selectedDoctor?.id) || data[0] : data[0],
-        }));
-      }
-    });
-  }, []);
-
-  useEffect(() => {
-    if (formData.symptoms.length > 0 || formData.notes) {
-      recommendDoctorsApi(formData.notes, formData.symptoms).then((rec) => {
-        setAiRecommendation(rec);
-        if (rec.recommendedCategory) {
-          const recCat = rec.recommendedCategory.split(' ')[0];
-          setStep2Specialty(recCat);
-        }
-        if (rec.recommendedDoctors && rec.recommendedDoctors.length > 0) {
-          setFormData(prev => ({
-            ...prev,
-            selectedDoctor: rec.recommendedDoctors[0],
-          }));
-        }
-      });
-    }
-  }, [formData.symptoms, formData.notes]);
-
-  const filteredStep2Doctors = doctorsList.filter(doc => {
+  const filteredStep2Doctors = doctorsData.filter(doc => {
     const matchesSearch = 
       doc.name.toLowerCase().includes(step2SearchTerm.toLowerCase()) ||
       doc.specialty.toLowerCase().includes(step2SearchTerm.toLowerCase()) ||
@@ -205,7 +171,6 @@ const BookAppointmentPage: React.FC = () => {
       setCurrentStep(prev => prev - 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      dispatch(setCurrentPage('landing'));
       navigate('/');
     }
   };
@@ -223,7 +188,7 @@ const BookAppointmentPage: React.FC = () => {
             <button 
               type="button" 
               className="btn-nav-arrow-only"
-              onClick={() => { dispatch(setCurrentPage('landing')); navigate('/'); }}
+              onClick={() => navigate('/')}
               title="Back to Home"
               aria-label="Back to Home"
             >
@@ -235,7 +200,7 @@ const BookAppointmentPage: React.FC = () => {
             <button 
               type="button" 
               className="booking-brand-logo"
-              onClick={() => { dispatch(setCurrentPage('landing')); navigate('/'); }}
+              onClick={() => navigate('/')}
             >
               <div className="logo-badge">
                 <svg viewBox="0 0 24 24" fill="none" className="logo-icon" xmlns="http://www.w3.org/2000/svg">
@@ -250,20 +215,20 @@ const BookAppointmentPage: React.FC = () => {
           </div>
 
           <nav className="booking-nav-links">
-            <button type="button" className="booking-nav-link" onClick={() => { dispatch(setCurrentPage('landing')); navigate('/'); }}>
+            <button type="button" className="booking-nav-link" onClick={() => navigate('/')}>
               How it works
             </button>
-            <button type="button" className="booking-nav-link" onClick={() => { dispatch(setCurrentPage('doctors')); navigate('/patient/search'); }}>
+            <button type="button" className="booking-nav-link" onClick={() => navigate('/patient/search')}>
               Find a specialist
             </button>
-            <button type="button" className="booking-nav-link" onClick={() => { dispatch(setCurrentPage('landing')); navigate('/'); }}>
+            <button type="button" className="booking-nav-link" onClick={() => navigate('/')}>
               Health resources
             </button>
           </nav>
 
           <div className="booking-nav-actions">
-            <button type="button" className="btn-booking-sign-in" onClick={() => { dispatch(setCurrentPage('landing')); navigate('/patient/login'); }}>Sign In</button>
-            <button type="button" className="btn-booking-get-started" onClick={() => { dispatch(setCurrentPage('landing')); navigate('/'); }}>
+            <button type="button" className="btn-booking-sign-in">Sign In</button>
+            <button type="button" className="btn-booking-get-started" onClick={() => navigate('/')}>
               Home
             </button>
           </div>
@@ -321,7 +286,7 @@ const BookAppointmentPage: React.FC = () => {
             )}
 
             <div className="booking-top-breadcrumbs">
-              <button type="button" className="crumb-btn" onClick={() => { dispatch(setCurrentPage('landing')); navigate('/'); }}>
+              <button type="button" className="crumb-btn" onClick={() => navigate('/')}>
                 Home
               </button>
               <span className="crumb-slash">/</span>
@@ -378,9 +343,9 @@ const BookAppointmentPage: React.FC = () => {
               <button 
                 type="button" 
                 className="btn-primary-orange"
-                onClick={() => { dispatch(setCurrentPage('dashboard')); navigate('/patient/dashboard'); }}
+                onClick={() => navigate('/')}
               >
-                Go to Dashboard
+                Return to Home
               </button>
             </div>
           </div>
@@ -630,48 +595,6 @@ const BookAppointmentPage: React.FC = () => {
                       <p className="form-main-subtitle">Choose from top specialists matched to your symptoms.</p>
                     </div>
                   </div>
-
-                  {aiRecommendation && (
-                    <div style={{
-                      background: 'linear-gradient(135deg, #EFF6FF 0%, #E0F2FE 100%)',
-                      border: '1px solid #BAE6FD',
-                      borderRadius: '12px',
-                      padding: '12px 16px',
-                      marginBottom: '16px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '12px'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ fontSize: '20px' }}>✨</span>
-                        <div>
-                          <h4 style={{ margin: 0, fontWeight: 700, color: '#0369A1', fontSize: '14px' }}>
-                            AI Specialist Matched: {aiRecommendation.recommendedCategory}
-                          </h4>
-                          <p style={{ margin: '2px 0 0', color: '#0284C7', fontSize: '12px' }}>
-                            Only showing {aiRecommendation.recommendedCategory} specialists matching your reported symptoms.
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setStep2Specialty('All')}
-                        style={{
-                          background: '#FFFFFF',
-                          border: '1px solid #7DD3FC',
-                          color: '#0369A1',
-                          borderRadius: '8px',
-                          padding: '6px 12px',
-                          fontSize: '12px',
-                          fontWeight: 600,
-                          cursor: 'pointer'
-                        }}
-                      >
-                        Show All Doctors
-                      </button>
-                    </div>
-                  )}
 
                   {/* Step 2 Search & Filter Row */}
                   <div className="step2-search-filter-block">

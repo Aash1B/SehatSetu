@@ -42,6 +42,9 @@
   --radius-pill: 9999px;
 }
 
+.patient-portal {
+
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -7776,4 +7779,6 @@ button {
   font-weight: 800;
   padding: 1px 5px;
   border-radius: 4px;
+}
+
 }

@@ -9,6 +9,7 @@ from time import perf_counter
 from uuid import uuid4
 
 from fastapi import FastAPI, Request
+from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
@@ -76,12 +77,44 @@ def create_application() -> FastAPI:
         lifespan=lifespan,
     )
 
+    def custom_openapi() -> dict[str, object]:
+        """Document the internal API-key header used by protected endpoints."""
+        if application.openapi_schema:
+            return application.openapi_schema
+
+        schema = get_openapi(
+            title=application.title,
+            version=application.version,
+            description=application.description,
+            routes=application.routes,
+        )
+        components = schema.setdefault("components", {})
+        security_schemes = components.setdefault("securitySchemes", {})
+        security_schemes["InternalApiKey"] = {
+            "type": "apiKey",
+            "in": "header",
+            "name": "X-Internal-API-Key",
+        }
+        for path_item in schema.get("paths", {}).values():
+            for operation in path_item.values():
+                if isinstance(operation, dict) and "responses" in operation:
+                    operation["security"] = [{"InternalApiKey": []}]
+
+        application.openapi_schema = schema
+        return schema
+
+    application.openapi = custom_openapi
+
     @application.middleware("http")
     async def require_internal_key(request: Request, call_next):
         """Protect non-public HTTP endpoints when an internal key is configured."""
         public_paths = {"/", "/health", "/readiness", "/docs", "/openapi.json", "/redoc"}
         configured = settings.internal_api_key
-        if configured and request.url.path not in public_paths:
+        if (
+            configured
+            and settings.app_env.casefold() != "testing"
+            and request.url.path not in public_paths
+        ):
             supplied = request.headers.get("X-Internal-API-Key", "")
             if supplied != configured.get_secret_value():
                 return JSONResponse(

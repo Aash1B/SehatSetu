@@ -40,6 +40,7 @@ class DietService:
             ),
             system_instruction=DIET_SYSTEM_INSTRUCTION,
             response_model=DietStructuredOutput,
+            max_output_tokens=1200,
         )
         result = DietRecommendationData.model_validate(structured.model_dump())
         for field in (

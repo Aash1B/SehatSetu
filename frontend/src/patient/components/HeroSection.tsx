@@ -1,21 +1,10 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { setCurrentPage } from '../store/uiSlice';
 
 const HeroSection: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  const handleBookAppointment = () => {
-    dispatch(setCurrentPage('book-appointment'));
-    navigate('/patient/book/DOC-001');
-  };
-
-  const handleFindDoctor = () => {
-    dispatch(setCurrentPage('doctors'));
-    navigate('/patient/search');
-  };
 
   return (
     <section id="home" className="hero-section">
@@ -40,24 +29,20 @@ const HeroSection: React.FC = () => {
             <button 
               type="button"
               className="btn-primary-orange"
-              onClick={handleBookAppointment}
+              onClick={() => navigate('/patient/book/new')}
             >
               Book Appointment
               <svg className="btn-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M5 12h14M12 5l7 7-7 7"/>
               </svg>
             </button>
-            <button 
-              type="button"
-              className="btn-secondary-outline"
-              onClick={handleFindDoctor}
-            >
+            <a href="#doctors" className="btn-secondary-outline">
               Find a Doctor
               <svg className="btn-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <circle cx="11" cy="11" r="8"/>
                 <path d="M21 21l-4.35-4.35"/>
               </svg>
-            </button>
+            </a>
           </div>
 
           {/* Social Proof Stack */}
@@ -83,9 +68,9 @@ const HeroSection: React.FC = () => {
               <svg viewBox="0 0 64 64" fill="none" className="stethoscope-svg">
                 <path d="M20 12v12c0 6.627 5.373 12 12 12s12-5.373 12-12V12" stroke="#1E293B" strokeWidth="4" strokeLinecap="round"/>
                 <path d="M32 36v12c0 4.418-3.582 8-8 8H20" stroke="#1E293B" strokeWidth="4" strokeLinecap="round"/>
-                <circle cx="20" cy="56" r="4" fill="var(--color-aster-blue)"/>
-                <circle cx="20" cy="12" r="3" fill="var(--color-habanero)"/>
-                <circle cx="44" cy="12" r="3" fill="var(--color-habanero)"/>
+                <circle cx="20" cy="56" r="4" fill="#0EA5E9"/>
+                <circle cx="20" cy="12" r="3" fill="#F97316"/>
+                <circle cx="44" cy="12" r="3" fill="#F97316"/>
               </svg>
               <div className="care-connected-label">Care, connected</div>
             </div>

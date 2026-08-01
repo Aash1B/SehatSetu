@@ -154,6 +154,9 @@ class MedicalNERService:
         active_symptoms = [
             mention.name for mention in symptom_details if not mention.negated
         ]
+        negated_findings = [
+            mention.name for mention in symptom_details if mention.negated
+        ]
         conditions = _unique(
             _terms_in_text(text, CONDITIONS) + model_entities["conditions"]
         )
@@ -191,6 +194,8 @@ class MedicalNERService:
             symptoms=active_symptoms,
             symptom_details=symptom_details,
             conditions=conditions,
+            negated_findings=negated_findings,
+            lab_tests=procedures,
             allergies=allergies,
             medications=medications,
             duration=durations,
