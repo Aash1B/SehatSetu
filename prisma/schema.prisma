@@ -17,6 +17,12 @@ model User {
   dataConsentGiven Boolean   @default(false)
   doctor           Doctor?
   patient          Patient?
+
+  emailVerified       Boolean   @default(false)
+  emailOtpHash        String?
+  emailOtpExpiresAt   DateTime?
+  resetTokenHash      String?
+  resetTokenExpiresAt DateTime?
 }
 
 model Patient {

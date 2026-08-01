@@ -2,6 +2,11 @@ import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-
 import { Provider } from 'react-redux';
 import { store } from './patient/store';
 import './Patient.css';
+// Auth Pages (new)
+import PatientLogin from './auth/pages/PatientLogin';
+import PatientSignup from './auth/pages/PatientSignup';
+import DoctorLogin from './auth/pages/DoctorLogin';
+import DoctorSignup from './auth/pages/DoctorSignup';
 
 const PatientLayout = () => (
   <div className="patient-portal min-h-screen">
@@ -10,7 +15,6 @@ const PatientLayout = () => (
 );
 
 // Doctor Pages
-import DoctorLogin from './doctor/pages/DoctorLogin';
 import DoctorDashboard from './doctor/pages/Dashboard';
 import ConsultationsList from './doctor/pages/ConsultationsList';
 import PatientDetails from './doctor/pages/PatientDetails';
@@ -21,7 +25,7 @@ import VideoConsultation from './doctor/pages/VideoConsultation';
 import LandingPage from './patient/pages/LandingPage';
 
 // Patient Pages
-import LoginPage from './patient/pages/LoginPage';
+
 import DashboardPage from './patient/pages/DashboardPage';
 import DoctorSearchPage from './patient/pages/DoctorSearchPage';
 import BookAppointmentPage from './patient/pages/BookAppointmentPage';
@@ -34,13 +38,19 @@ function App() {
     <Provider store={store}>
       <Router>
         <Routes>
+
+          {/* Auth Routes (new) */}
+           <Route path="/patient/login" element={<PatientLogin />} />
+           <Route path="/patient/signup" element={<PatientSignup />} />
+           <Route path="/doctor/login" element={<DoctorLogin />} />
+           <Route path="/doctor/signup" element={<DoctorSignup />} />
           {/* Patient Portal Layout */}
           <Route element={<PatientLayout />}>
             {/* Landing Page */}
             <Route path="/" element={<LandingPage />} />
 
             {/* Patient Routes */}
-            <Route path="/patient/login" element={<LoginPage />} />
+           
             <Route path="/patient/dashboard" element={<DashboardPage />} />
             <Route path="/patient/search" element={<DoctorSearchPage />} />
             <Route path="/patient/book/:id" element={<BookAppointmentPage />} />
@@ -50,7 +60,7 @@ function App() {
           </Route>
 
           {/* Doctor Routes */}
-          <Route path="/doctor/login" element={<DoctorLogin />} />
+          
           <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
           <Route path="/doctor/consultations" element={<ConsultationsList />} />
           <Route path="/doctor/patient/:id" element={<PatientDetails />} />
