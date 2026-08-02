@@ -1,7 +1,7 @@
 // Doctor API service - Fetch, Search, Filter doctors
 // TODO: Implement RTK Query endpoints
 
-const API_BASE = 'http://localhost:8000/api/doctors';
+const API_BASE = '/api/doctors';
 
 export interface RecommendationResult {
   recommendedCategory: string;

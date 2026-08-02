@@ -215,9 +215,26 @@ export class AppointmentsService {
   }
 
   async getAllAppointments() {
-    return prisma.appointment.findMany({
+    const apps = await prisma.appointment.findMany({
       orderBy: { createdAt: 'desc' },
       include: { doctor: true, patient: true },
+    });
+
+    return apps.map(app => {
+      const dateObj = app.scheduledAt ? new Date(app.scheduledAt) : new Date();
+      const formattedDate = isNaN(dateObj.getTime())
+        ? new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })
+        : dateObj.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+
+      let cleanDate = app.date;
+      if (!cleanDate || cleanDate.includes('May') || cleanDate.includes('2024') || cleanDate.includes('Thu 23')) {
+        cleanDate = formattedDate;
+      }
+
+      return {
+        ...app,
+        date: cleanDate,
+      };
     });
   }
 

@@ -77,3 +77,12 @@ export async function uploadMedicalReport(file: File) {
     { method: 'POST' },
   );
 }
+
+export async function listMedicalReports() {
+  try {
+    return await backendRequest<any[]>('');
+  } catch (e) {
+    console.warn('Backend listMedicalReports unavailable, returning empty list:', e);
+    return [];
+  }
+}

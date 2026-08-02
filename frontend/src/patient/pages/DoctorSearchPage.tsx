@@ -7,6 +7,7 @@ import Footer from '../components/Footer';
 import FloatingEmergencyButton from '../components/FloatingEmergencyButton';
 import CustomSelect, { type OptionItem } from '../components/CustomSelect';
 import { doctorsData, PRIORITY_CONFIG, type Doctor } from '../data/doctorsData';
+import { fetchDoctors } from '../services/doctorApi';
 import { setCurrentPage } from '../store/uiSlice';
 
 const SPECIALTY_OPTIONS: OptionItem[] = [
@@ -35,11 +36,25 @@ const LOCATION_OPTIONS: OptionItem[] = [
 const DoctorSearchPage: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [doctorsList, setDoctorsList] = useState<Doctor[]>(doctorsData);
   const [searchTerm, setSearchTerm] = useState('');
   const [specialtyFilter, setSpecialtyFilter] = useState('All');
   const [locationFilter, setLocationFilter] = useState('All');
   const [favorites, setFavorites] = useState<string[]>([]);
   const [onlyAvailableToday, setOnlyAvailableToday] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const fetched = await fetchDoctors();
+        if (fetched && fetched.length > 0) {
+          setDoctorsList(fetched);
+        }
+      } catch (err) {
+        console.warn('Backend doctors fetch fallback:', err);
+      }
+    })();
+  }, []);
 
   const toggleFavorite = (id: string) => {
     setFavorites(prev => 
@@ -48,7 +63,7 @@ const DoctorSearchPage: React.FC = () => {
   };
 
   const filteredAndSortedDoctors = useMemo(() => {
-    return doctorsData
+    return doctorsList
       .filter((doc: Doctor) => {
         const matchesSearch = 
           doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

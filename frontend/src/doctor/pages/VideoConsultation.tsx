@@ -9,6 +9,7 @@ import MedicineEditor from '../components/MedicineEditor';
 import LabTestEditor from '../components/LabTestEditor';
 import DietEditor from '../components/DietEditor';
 import EndConsultationDialog from '../components/EndConsultationDialog';
+import PrescriptionViewModal from '../../common/components/PrescriptionViewModal';
 import type { PatientProfile, TranscriptDTO, AIInsightDTO } from '../../types';
 import { Shield, Mic } from 'lucide-react';
 import { useLiveAudioTranscription } from '../../common/hooks/useLiveAudioTranscription';
@@ -25,22 +26,11 @@ const mockPatient: PatientProfile = {
   height: "162cm"
 };
 
-const mockTranscripts: TranscriptDTO[] = [
-  { id: '1', speaker: 'Doctor', text: 'Hello Sunita, how are you feeling today?', timestamp: '11:30 AM' },
-  { id: '2', speaker: 'Patient', text: 'Doctor, my fever is not going down. It is been 4 days now.', timestamp: '11:31 AM' },
-  { id: '3', speaker: 'Doctor', text: 'I see. Have you been taking the paracetamol I prescribed?', timestamp: '11:31 AM' },
-  { id: '4', speaker: 'Patient', text: 'Yes, but it only goes down for a few hours and then comes back with body ache.', timestamp: '11:32 AM' },
-];
-
-const mockInsights: AIInsightDTO[] = [
-  { id: '1', type: 'SUGGESTION', message: 'Fever persisting > 3 days with body ache. Consider testing for Dengue (NS1/IgM).', confidence: 92 },
-  { id: '2', type: 'INFO', message: 'Patient has a history of Type 2 Diabetes.', confidence: 100 },
-];
-
 const VideoConsultation: React.FC = () => {
   const { consultationId = '1' } = useParams<{ consultationId: string }>();
   const navigate = useNavigate();
   const [isEndCallOpen, setIsEndCallOpen] = useState(false);
+  const [showRxModal, setShowRxModal] = useState(false);
   const [token, setToken] = useState("");
   const serverUrl = import.meta.env.VITE_LIVEKIT_URL;
 
@@ -67,7 +57,7 @@ const VideoConsultation: React.FC = () => {
           <div className="flex items-center gap-4">
             <button 
               onClick={() => navigate(`/doctor/patient/${mockPatient.id}`)}
-              className="text-gray-500 hover:text-deep-space font-medium text-sm transition-colors"
+              className="text-gray-500 hover:text-deep-space font-medium text-sm transition-colors cursor-pointer"
             >
               ← Back to Details
             </button>
@@ -138,6 +128,16 @@ const VideoConsultation: React.FC = () => {
         isOpen={isEndCallOpen}
         onClose={() => setIsEndCallOpen(false)}
         consultationId={consultationId}
+        onConfirmRx={() => setShowRxModal(true)}
+      />
+
+      <PrescriptionViewModal 
+        isOpen={showRxModal}
+        isModal={true}
+        onClose={() => {
+          setShowRxModal(false);
+          navigate('/doctor/dashboard');
+        }}
       />
     </div>
   );

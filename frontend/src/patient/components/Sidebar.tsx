@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../store';
-import { closeSidebar } from '../store/uiSlice';
+import { closeSidebar, setDashboardTab } from '../store/uiSlice';
 import { useNavigate } from 'react-router-dom';
 
 const Sidebar: React.FC = () => {
@@ -90,6 +90,15 @@ const Sidebar: React.FC = () => {
                 </svg>
                 <span>Home</span>
               </a>
+              <button type="button" className={`sidebar-item ${currentPage === 'dashboard' ? 'active' : ''}`} onClick={() => { navigate('/patient/dashboard'); dispatch(closeSidebar()); }}>
+                <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                  <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                  <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+                  <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+                </svg>
+                <span>Dashboard</span>
+              </button>
               <a href="#services" className="sidebar-item" onClick={handleNavClick}>
                 <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
@@ -105,21 +114,21 @@ const Sidebar: React.FC = () => {
           <div className="sidebar-group">
             <span className="sidebar-group-title">Account & Support</span>
             <nav className="sidebar-menu">
-              <a href="#profile" className="sidebar-item" onClick={handleNavClick}>
+              <button 
+                type="button" 
+                className={`sidebar-item ${currentPage === 'dashboard' ? 'active' : ''}`}
+                onClick={() => {
+                  dispatch(setDashboardTab('profile'));
+                  navigate('/patient/dashboard');
+                  dispatch(closeSidebar());
+                }}
+              >
                 <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
                 <span>Profile & Settings</span>
-              </a>
-              <a href="#help" className="sidebar-item" onClick={handleNavClick}>
-                <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                </svg>
-                <span>Help & FAQs</span>
-              </a>
+              </button>
             </nav>
           </div>
         </div>

@@ -1,6 +1,8 @@
 import React from 'react';
 import { Download, Printer, CheckCircle2, ShieldCheck, X, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 export interface PrescriptionData {
   id?: string;
@@ -34,23 +36,22 @@ interface PrescriptionViewModalProps {
 
 const defaultPrescription: PrescriptionData = {
   id: "RX-2026-8849",
-  doctorName: "Dr. Sarah Jenkins",
-  doctorSpecialty: "Cardiologist & Internal Medicine",
+  doctorName: "Dr. Ananya Sharma",
+  doctorSpecialty: "General Physician & Telehealth Specialist",
   doctorRegNo: "MCI-IND-98742",
   doctorHospital: "SehatSetu Digital Health Clinic",
-  patientName: "Ananya Sharma",
-  patientAge: 28,
+  patientName: "Sunita Devi",
+  patientAge: 31,
   patientGender: "Female",
   date: new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
-  diagnosis: "Mild Hypertension & Fatigue",
-  symptoms: ["Chest discomfort", "Fatigue", "Mild Headache"],
+  diagnosis: "Acute Viral Fever with Body Ache",
+  symptoms: ["Persistent Fever (4 days)", "Body ache & Fatigue"],
   medications: [
-    { name: "Telmisartan 40mg", dosage: "40 mg", frequency: "1-0-0", duration: "14 days", timing: "Before Breakfast" },
-    { name: "Multivitamin Extra", dosage: "1 Tablet", frequency: "0-1-0", duration: "30 days", timing: "After Lunch" },
-    { name: "Paracetamol 650mg", dosage: "650 mg", frequency: "SOS (as needed)", duration: "3 days", timing: "After Food" }
+    { name: "Tab. Paracetamol 650mg", dosage: "650 mg", frequency: "1-0-1", duration: "5 days", timing: "After Food" },
+    { name: "Tab. Cetirizine 10mg", dosage: "10 mg", frequency: "0-0-1", duration: "3 days", timing: "SOS at Night" }
   ],
-  dietAdvice: "Low sodium diet (< 2g/day), drink 3L water daily, 30 mins light daily walking.",
-  notes: "Follow up in 2 weeks or if symptoms persist. Get BP recorded twice daily."
+  dietAdvice: "Increase fluid intake (min 3L/day), avoid spicy and oily foods, take warm water & rest.",
+  notes: "Follow up in 5 days if fever persists. Complete CBC & Dengue NS1 test if body ache continues."
 };
 
 const PrescriptionViewModal: React.FC<PrescriptionViewModalProps> = ({
@@ -68,183 +69,359 @@ const PrescriptionViewModal: React.FC<PrescriptionViewModalProps> = ({
     window.print();
   };
 
-  const handleDownload = () => {
-    alert("📄 Prescription PDF downloaded successfully!");
+  const handleDownload = async () => {
+    const filename = `SehatSetu_Prescription_${rx.id || 'RX-2026'}.pdf`;
+    try {
+      const element = document.getElementById('prescription-document');
+      if (element) {
+        // Temporarily adjust element styles for high-dpi capture without scrollbars
+        const origOverflow = element.style.overflowY;
+        const origMaxHeight = element.style.maxHeight;
+        element.style.overflowY = 'visible';
+        element.style.maxHeight = 'none';
+
+        const canvas = await html2canvas(element, {
+          scale: 3, // Ultra-HD High Resolution
+          useCORS: true,
+          allowTaint: true,
+          logging: false,
+          backgroundColor: '#ffffff',
+          scrollX: 0,
+          scrollY: 0,
+          windowWidth: element.scrollWidth,
+          windowHeight: element.scrollHeight
+        });
+
+        // Restore original scroll styles immediately
+        element.style.overflowY = origOverflow;
+        element.style.maxHeight = origMaxHeight;
+
+        const imgData = canvas.toDataURL('image/png', 1.0);
+        const imgWidth = 210; // A4 width in mm
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        
+        // Single-page dynamic canvas PDF matching exact screen aspect ratio
+        const pdf = new jsPDF('p', 'mm', [imgWidth, Math.max(imgHeight, 297)]);
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+
+        pdf.save(filename);
+        return;
+      }
+    } catch (err) {
+      console.warn('html2canvas PDF generation error, using direct PDF fallback:', err);
+    }
+
+    // Direct jsPDF Builder Fallback
+    try {
+      const doc = new jsPDF();
+      doc.setFillColor(29, 78, 216);
+      doc.rect(0, 0, 210, 30, 'F');
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(16);
+      doc.text('SehatSetu Medical Prescription', 14, 18);
+      doc.setFontSize(9);
+      doc.text(`Rx ID: ${rx.id || 'RX-2026'} | Date: ${rx.date}`, 14, 25);
+
+      doc.setTextColor(15, 23, 42);
+      doc.setFontSize(12);
+      doc.text(`Doctor: ${rx.doctorName}`, 14, 40);
+      doc.setFontSize(10);
+      doc.text(`${rx.doctorSpecialty} (Reg No: ${rx.doctorRegNo})`, 14, 46);
+
+      doc.setFontSize(11);
+      doc.text(`Patient: ${rx.patientName} (${rx.patientAge} Yrs / ${rx.patientGender})`, 14, 58);
+      doc.text(`Diagnosis: ${rx.diagnosis}`, 14, 64);
+
+      doc.setFontSize(12);
+      doc.text('Prescribed Medications:', 14, 78);
+      doc.setFontSize(10);
+      let y = 88;
+      rx.medications?.forEach((m) => {
+        doc.text(`• ${m.name} - ${m.dosage} | Frequency: ${m.frequency} | Duration: ${m.duration} (${m.timing || 'After Food'})`, 14, y);
+        y += 8;
+      });
+
+      if (rx.dietAdvice) {
+        y += 6;
+        doc.setFontSize(12);
+        doc.text('Diet & Lifestyle Advice:', 14, y);
+        y += 8;
+        doc.setFontSize(10);
+        doc.text(rx.dietAdvice, 14, y);
+      }
+
+      doc.save(filename);
+    } catch (e) {
+      console.error('Failed to generate PDF:', e);
+    }
   };
 
   const content = (
-    <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-gray-100 overflow-hidden my-6">
-      {/* Header Bar */}
-      <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-deep-space text-white p-6 relative">
-        {onClose && (
-          <button 
-            onClick={onClose}
-            className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        )}
-
-        <div className="flex items-center justify-between pr-10">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20">
-              <span className="text-2xl font-black text-amber-400">Rx</span>
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight">SehatSetu Medical Prescription</h2>
-              <p className="text-xs text-blue-200">Verified Electronic Medical Record • Instant Consultation</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Prescription Content Body */}
-      <div className="p-8 space-y-6">
+    <div style={{
+      backgroundColor: '#ffffff',
+      borderRadius: '24px',
+      maxWidth: '680px',
+      width: '100%',
+      maxHeight: '88vh',
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
+      boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',
+      border: '1px solid #e2e8f0',
+      margin: 'auto'
+    }}>
+      
+      {/* Printable Document Container containing Header + Body */}
+      <div id="prescription-document" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', backgroundColor: '#ffffff' }} className="custom-scrollbar">
         
-        {/* Doctor & Hospital Details Header */}
-        <div className="flex justify-between items-start pb-6 border-b border-gray-200">
-          <div>
-            <h3 className="text-xl font-bold text-gray-900">{rx.doctorName}</h3>
-            <p className="text-sm font-semibold text-blue-600">{rx.doctorSpecialty}</p>
-            <p className="text-xs text-gray-500 mt-0.5">Reg No: {rx.doctorRegNo}</p>
-            <p className="text-xs text-gray-500">{rx.doctorHospital}</p>
-          </div>
-          <div className="text-right">
-            <span className="inline-flex items-center gap-1 bg-green-50 border border-green-200 text-green-700 text-xs font-bold px-3 py-1 rounded-full mb-1">
-              <ShieldCheck className="w-3.5 h-3.5" /> Digitally Signed
-            </span>
-            <p className="text-xs text-gray-500">Rx ID: <span className="font-mono font-bold text-gray-700">{rx.id}</span></p>
-            <p className="text-xs text-gray-500">Date: <span className="font-semibold text-gray-700">{rx.date}</span></p>
-          </div>
-        </div>
-
-        {/* Patient Details Row */}
-        <div className="bg-gray-50 rounded-2xl p-4 border border-gray-200 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
-          <div>
-            <span className="text-gray-400 block font-medium">Patient Name</span>
-            <span className="font-bold text-gray-800 text-sm">{rx.patientName}</span>
-          </div>
-          <div>
-            <span className="text-gray-400 block font-medium">Age / Gender</span>
-            <span className="font-semibold text-gray-800">{rx.patientAge} Yrs / {rx.patientGender}</span>
-          </div>
-          <div>
-            <span className="text-gray-400 block font-medium">Diagnosis</span>
-            <span className="font-semibold text-blue-900">{rx.diagnosis}</span>
-          </div>
-          <div>
-            <span className="text-gray-400 block font-medium">Consultation</span>
-            <span className="font-semibold text-green-700 flex items-center gap-1">
-              <CheckCircle2 className="w-3.5 h-3.5 text-green-600" /> Completed
-            </span>
-          </div>
-        </div>
-
-        {/* Reported Symptoms */}
-        {rx.symptoms && rx.symptoms.length > 0 && (
-          <div>
-            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Reported Symptoms</h4>
-            <div className="flex flex-wrap gap-2">
-              {rx.symptoms.map((s, idx) => (
-                <span key={idx} className="bg-blue-50 text-blue-700 border border-blue-100 text-xs font-medium px-3 py-1 rounded-full">
-                  • {s}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Prescribed Medications Table */}
-        <div>
-          <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-            <FileText className="w-4 h-4 text-blue-600" /> Rx Prescribed Medications
-          </h4>
-          <div className="border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-gray-100 text-gray-700 font-bold border-b border-gray-200">
-                <tr>
-                  <th className="p-3">Medicine Name</th>
-                  <th className="p-3">Dosage</th>
-                  <th className="p-3">Frequency</th>
-                  <th className="p-3">Duration</th>
-                  <th className="p-3">Instruction</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {rx.medications?.map((med, index) => (
-                  <tr key={index} className="hover:bg-blue-50/50 transition-colors">
-                    <td className="p-3 font-bold text-gray-900">{med.name}</td>
-                    <td className="p-3 font-medium text-gray-600">{med.dosage}</td>
-                    <td className="p-3 font-semibold text-blue-700 bg-blue-50/80 rounded px-2 py-0.5">{med.frequency}</td>
-                    <td className="p-3 text-gray-600">{med.duration}</td>
-                    <td className="p-3 text-gray-500 italic">{med.timing || "After Food"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Diet & Advice */}
-        {rx.dietAdvice && (
-          <div className="bg-amber-50/60 border border-amber-200/80 rounded-2xl p-4">
-            <h4 className="text-xs font-bold text-amber-900 uppercase tracking-wider mb-1">🥗 Diet & Lifestyle Instructions</h4>
-            <p className="text-xs text-amber-800 leading-relaxed font-medium">{rx.dietAdvice}</p>
-          </div>
-        )}
-
-        {/* Doctor Signature & Stamp */}
-        <div className="pt-4 border-t border-gray-200 flex justify-between items-end">
-          <div className="text-xs text-gray-400">
-            <p>Generated automatically via SehatSetu Telehealth</p>
-            <p>Scan QR code on physical report to verify authenticity.</p>
-          </div>
-          <div className="text-right">
-            <div className="inline-block border-b-2 border-gray-800 pb-1 px-4 mb-1">
-              <span className="font-serif italic text-lg text-blue-900 font-bold tracking-wider">{rx.doctorName}</span>
-            </div>
-            <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Doctor Signature & Stamp</p>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex gap-4 pt-4 border-t border-gray-100 print:hidden">
-          <button
-            onClick={handleDownload}
-            className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
-          >
-            <Download className="w-4 h-4" /> Download PDF Prescription
-          </button>
-          <button
-            onClick={handlePrint}
-            className="py-3 px-6 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-bold text-sm rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"
-          >
-            <Printer className="w-4 h-4" /> Print
-          </button>
+        {/* Top Banner (Inside Document Padding) */}
+        <div style={{
+          background: 'linear-gradient(135deg, #1d4ed8 0%, #4338ca 50%, #1e40af 100%)',
+          color: '#ffffff',
+          padding: '16px 20px',
+          borderRadius: '16px',
+          margin: '20px 20px 0 20px',
+          position: 'relative',
+          boxShadow: '0 4px 12px rgba(29, 78, 216, 0.2)'
+        }}>
           {onClose && (
-            <button
+            <button 
               onClick={onClose}
-              className="py-3 px-6 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-sm rounded-xl transition-all"
+              style={{
+                position: 'absolute',
+                top: '12px',
+                right: '12px',
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                border: 'none',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer'
+              }}
             >
-              Close
+              <X className="w-4 h-4" />
             </button>
           )}
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '38px', height: '38px', backgroundColor: 'rgba(255, 255, 255, 0.15)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255, 255, 255, 0.25)' }}>
+              <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#fbbf24', fontFamily: 'serif' }}>Rx</span>
+            </div>
+            <div>
+              <h2 style={{ fontSize: '17px', fontWeight: 'bold', margin: 0, letterSpacing: '-0.01em' }}>SehatSetu Medical Prescription</h2>
+              <p style={{ fontSize: '11px', color: '#dbeafe', margin: '2px 0 0 0' }}>Verified Electronic Medical Record • Instant Consultation</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Prescription Content Body */}
+        <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+          
+          {/* Doctor Info Row */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '12px', borderBottom: '1px solid #f1f5f9' }}>
+            <div>
+              <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#0f172a', margin: 0 }}>{rx.doctorName}</h3>
+              <p style={{ fontSize: '13px', fontWeight: '600', color: '#2563eb', margin: '2px 0' }}>{rx.doctorSpecialty}</p>
+              <p style={{ fontSize: '11px', color: '#94a3b8', margin: '1px 0' }}>Reg No: <span style={{ fontFamily: 'monospace', color: '#475569', fontWeight: 'bold' }}>{rx.doctorRegNo}</span></p>
+              <p style={{ fontSize: '11px', color: '#94a3b8', margin: 0 }}>{rx.doctorHospital}</p>
+            </div>
+            <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-end' }}>
+              <span style={{ backgroundColor: '#ecfdf5', border: '1px solid #a7f3d0', color: '#047857', fontSize: '11px', fontWeight: 'bold', padding: '3px 10px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> Digitally Verified
+              </span>
+              <p style={{ fontSize: '11px', color: '#94a3b8', margin: 0 }}>Rx ID: <span style={{ fontFamily: 'monospace', fontWeight: 'bold', color: '#1e293b' }}>{rx.id}</span></p>
+              <p style={{ fontSize: '11px', color: '#94a3b8', margin: 0 }}>Date: <span style={{ fontWeight: '600', color: '#1e293b' }}>{rx.date}</span></p>
+            </div>
+          </div>
+
+          {/* Patient Details Box */}
+          <div style={{ backgroundColor: '#f8fafc', borderRadius: '16px', padding: '14px', border: '1px solid #e2e8f0', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', fontSize: '11px' }}>
+            <div>
+              <span style={{ color: '#94a3b8', display: 'block', fontWeight: 'bold', textTransform: 'uppercase', fontSize: '9px', marginBottom: '2px' }}>PATIENT NAME</span>
+              <span style={{ fontWeight: 'bold', color: '#0f172a', fontSize: '13px', display: 'block' }}>{rx.patientName}</span>
+            </div>
+            <div>
+              <span style={{ color: '#94a3b8', display: 'block', fontWeight: 'bold', textTransform: 'uppercase', fontSize: '9px', marginBottom: '2px' }}>AGE / GENDER</span>
+              <span style={{ fontWeight: '600', color: '#334155', display: 'block' }}>{rx.patientAge} Yrs / {rx.patientGender}</span>
+            </div>
+            <div>
+              <span style={{ color: '#94a3b8', display: 'block', fontWeight: 'bold', textTransform: 'uppercase', fontSize: '9px', marginBottom: '2px' }}>DIAGNOSIS</span>
+              <span style={{ fontWeight: 'bold', color: '#1e3a8a', display: 'block', lineHeight: 1.2 }}>{rx.diagnosis}</span>
+            </div>
+            <div>
+              <span style={{ color: '#94a3b8', display: 'block', fontWeight: 'bold', textTransform: 'uppercase', fontSize: '9px', marginBottom: '2px' }}>CONSULTATION</span>
+              <span style={{ fontWeight: 'bold', color: '#047857', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Completed
+              </span>
+            </div>
+          </div>
+
+          {/* Reported Symptoms */}
+          {rx.symptoms && rx.symptoms.length > 0 && (
+            <div>
+              <h4 style={{ fontSize: '10px', fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>REPORTED SYMPTOMS</h4>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                {rx.symptoms.map((s, idx) => (
+                  <span key={idx} style={{ backgroundColor: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe', fontSize: '11px', fontWeight: '600', padding: '4px 10px', borderRadius: '12px' }}>
+                    • {s}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Prescribed Medications Table */}
+          <div>
+            <h4 style={{ fontSize: '10px', fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <FileText className="w-3.5 h-3.5 text-blue-600" /> RX PRESCRIBED MEDICATIONS
+            </h4>
+            <div style={{ border: '1px solid #e2e8f0', borderRadius: '16px', overflow: 'hidden' }}>
+              <table style={{ width: '100%', textAlign: 'left', fontSize: '12px', borderCollapse: 'collapse' }}>
+                <thead style={{ backgroundColor: '#f8fafc', color: '#334155', fontWeight: 'bold', borderBottom: '1px solid #e2e8f0' }}>
+                  <tr>
+                    <th style={{ padding: '10px 12px' }}>Medicine Name</th>
+                    <th style={{ padding: '10px 12px' }}>Dosage</th>
+                    <th style={{ padding: '10px 12px' }}>Frequency</th>
+                    <th style={{ padding: '10px 12px' }}>Duration</th>
+                    <th style={{ padding: '10px 12px' }}>Instruction</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rx.medications?.map((med, index) => (
+                    <tr key={index} style={{ borderBottom: index < rx.medications.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
+                      <td style={{ padding: '10px 12px', fontWeight: 'bold', color: '#0f172a' }}>{med.name}</td>
+                      <td style={{ padding: '10px 12px', fontWeight: '500', color: '#475569' }}>{med.dosage}</td>
+                      <td style={{ padding: '10px 12px' }}>
+                        <span style={{ backgroundColor: '#dbeafe', color: '#1e40af', fontWeight: 'bold', padding: '2px 8px', borderRadius: '6px', fontSize: '11px' }}>
+                          {med.frequency}
+                        </span>
+                      </td>
+                      <td style={{ padding: '10px 12px', color: '#475569' }}>{med.duration}</td>
+                      <td style={{ padding: '10px 12px', color: '#64748b', fontStyle: 'italic' }}>{med.timing || "After Food"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Diet & Advice */}
+          {rx.dietAdvice && (
+            <div style={{ backgroundColor: '#fffbeb', border: '1px solid #fde68a', borderRadius: '16px', padding: '14px' }}>
+              <h4 style={{ fontSize: '10px', fontWeight: 'bold', color: '#78350f', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
+                🥗 DIET & LIFESTYLE INSTRUCTIONS
+              </h4>
+              <p style={{ fontSize: '12px', color: '#92400e', margin: 0, fontWeight: '500', lineHeight: 1.5 }}>{rx.dietAdvice}</p>
+            </div>
+          )}
+
+          {/* Signature Footer */}
+          <div style={{ paddingTop: '16px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '4px' }}>
+            <div style={{ fontSize: '10px', color: '#94a3b8', lineHeight: 1.4 }}>
+              <p style={{ margin: 0 }}>Generated automatically via SehatSetu Telehealth</p>
+              <p style={{ margin: 0 }}>Scan QR code on physical report to verify authenticity.</p>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ borderBottom: '1px solid #0f172a', paddingBottom: '2px', paddingLeft: '12px', paddingRight: '12px', marginBottom: '2px', display: 'inline-block' }}>
+                <span style={{ fontFamily: 'serif', fontStyle: 'italic', fontSize: '18px', color: '#091e42', fontWeight: 'bold' }}>{rx.doctorName}</span>
+              </div>
+              <p style={{ fontSize: '8px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '0.1em', margin: 0 }}>DOCTOR SIGNATURE & STAMP</p>
+            </div>
+          </div>
+
         </div>
 
       </div>
+
+      {/* Fixed Bottom Action Buttons Bar */}
+      <div style={{ padding: '16px 20px', backgroundColor: '#ffffff', borderTop: '1px solid #e2e8f0', display: 'flex', gap: '12px', alignItems: 'center', flexShrink: 0 }}>
+        <button
+          onClick={handleDownload}
+          style={{
+            flex: 1,
+            padding: '12px 16px',
+            backgroundColor: '#2563eb',
+            color: '#ffffff',
+            fontWeight: 'bold',
+            fontSize: '13px',
+            borderRadius: '14px',
+            border: 'none',
+            boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            cursor: 'pointer'
+          }}
+        >
+          <Download className="w-4 h-4" /> Download PDF Prescription
+        </button>
+        <button
+          onClick={handlePrint}
+          style={{
+            padding: '12px 18px',
+            backgroundColor: '#ffffff',
+            border: '1px solid #cbd5e1',
+            color: '#334155',
+            fontWeight: 'bold',
+            fontSize: '13px',
+            borderRadius: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            cursor: 'pointer'
+          }}
+        >
+          <Printer className="w-4 h-4 text-slate-600" /> Print / Save PDF
+        </button>
+        {onClose && (
+          <button
+            onClick={onClose}
+            style={{
+              padding: '12px 20px',
+              backgroundColor: '#f1f5f9',
+              color: '#334155',
+              fontWeight: 'bold',
+              fontSize: '13px',
+              borderRadius: '14px',
+              border: 'none',
+              cursor: 'pointer'
+            }}
+          >
+            Close
+          </button>
+        )}
+      </div>
+
     </div>
   );
 
   if (isModal) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto animate-in fade-in">
+      <div style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 9999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '16px',
+        backgroundColor: 'rgba(0, 0, 0, 0.65)',
+        backdropFilter: 'blur(8px)'
+      }}>
         {content}
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-slate-100 flex items-center justify-center p-6">
       {content}
     </div>
   );

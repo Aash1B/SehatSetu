@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 
 export type PageType = 'landing' | 'book-appointment' | 'dashboard' | 'doctors';
-export type DashboardTabType = 'overview' | 'appointments' | 'video' | 'records' | 'prescriptions';
+export type DashboardTabType = 'overview' | 'appointments' | 'video' | 'records' | 'prescriptions' | 'profile';
 
 interface UiState {
   isSidebarOpen: boolean;

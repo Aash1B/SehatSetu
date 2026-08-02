@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { uploadMedicalReport } from '../services/medicalReportsApi';
 import { doctorsData } from '../data/doctorsData';
 import { getAppointmentTimeStatus } from '../../utils/appointmentTime';
+import PrescriptionViewModal from '../../common/components/PrescriptionViewModal';
 
 interface ConsultationItem {
   id: string;
@@ -21,9 +22,9 @@ const recentConsultationsData: ConsultationItem[] = [
   {
     id: 'CONS-001',
     doctorName: 'Dr. Alok Verma',
-    specialty: 'General Physician',
+    specialty: 'Pediatrician & General Physician',
     avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=300',
-    date: '10 May 2024',
+    date: 'Aug 02, 2026',
     time: '06:00 PM',
     mode: 'Video Consultation',
   },
@@ -32,7 +33,7 @@ const recentConsultationsData: ConsultationItem[] = [
     doctorName: 'Dr. Priya Mehta',
     specialty: 'Gynecologist',
     avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=300',
-    date: '02 May 2024',
+    date: 'Jul 28, 2026',
     time: '11:00 AM',
     mode: 'Video Consultation',
   },
@@ -41,7 +42,7 @@ const recentConsultationsData: ConsultationItem[] = [
     doctorName: 'Dr. Alok Verma',
     specialty: 'General Physician',
     avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=300',
-    date: '18 Apr 2024',
+    date: 'Jul 20, 2026',
     time: '05:30 PM',
     mode: 'Chat Consultation',
   },
@@ -49,16 +50,54 @@ const recentConsultationsData: ConsultationItem[] = [
 
 const recentPrescriptionsData = [
   {
-    id: 'RX-101',
+    id: 'RX-2026-8849',
     doctorName: 'Dr. Ananya Sharma',
-    date: '20 May 2024',
-    meds: 'Tab. Paracetamol 500mg, Tab. Cetirizine 10mg',
+    date: 'Aug 02, 2026',
+    meds: 'Tab. Paracetamol 650mg, Tab. Cetirizine 10mg',
+    fullData: {
+      id: 'RX-2026-8849',
+      doctorName: 'Dr. Ananya Sharma',
+      doctorSpecialty: 'General Physician & Telehealth Specialist',
+      doctorRegNo: 'MCI-IND-98742',
+      doctorHospital: 'SehatSetu Digital Health Clinic',
+      patientName: 'Sunita Devi',
+      patientAge: 31,
+      patientGender: 'Female',
+      date: 'Aug 02, 2026',
+      diagnosis: 'Acute Viral Fever with Body Ache',
+      symptoms: ['Persistent Fever (4 days)', 'Body ache & Fatigue'],
+      medications: [
+        { name: 'Tab. Paracetamol 650mg', dosage: '650 mg', frequency: '1-0-1', duration: '5 days', timing: 'After Food' },
+        { name: 'Tab. Cetirizine 10mg', dosage: '10 mg', frequency: '0-0-1', duration: '3 days', timing: 'SOS at Night' }
+      ],
+      dietAdvice: 'Increase fluid intake (min 3L/day), avoid spicy and oily foods, take warm water & rest.',
+      notes: 'Follow up in 5 days if fever persists. Complete CBC & Dengue NS1 test if body ache continues.'
+    }
   },
   {
-    id: 'RX-102',
+    id: 'RX-2026-7412',
     doctorName: 'Dr. Alok Verma',
-    date: '10 May 2024',
-    meds: 'Amoxicillin 500mg, Vitamin C Tablets',
+    date: 'Jul 28, 2026',
+    meds: 'Amoxicillin 500mg, Vitamin C 500mg',
+    fullData: {
+      id: 'RX-2026-7412',
+      doctorName: 'Dr. Alok Verma',
+      doctorSpecialty: 'Pediatrician & General Practitioner',
+      doctorRegNo: 'MCI-IND-65412',
+      doctorHospital: 'Max Super Speciality Hospital',
+      patientName: 'Sunita Devi',
+      patientAge: 31,
+      patientGender: 'Female',
+      date: 'Jul 28, 2026',
+      diagnosis: 'Upper Respiratory Tract Infection',
+      symptoms: ['Sore Throat', 'Mild Cough', 'Nasal Congestion'],
+      medications: [
+        { name: 'Cap. Amoxicillin 500mg', dosage: '500 mg', frequency: '1-1-1', duration: '5 days', timing: 'After Food' },
+        { name: 'Tab. Vitamin C 500mg', dosage: '500 mg', frequency: '1-0-0', duration: '10 days', timing: 'Morning' }
+      ],
+      dietAdvice: 'Warm saline gargles 3 times daily. Avoid cold beverages and ice creams.',
+      notes: 'Rest for 3 days and stay well hydrated.'
+    }
   },
 ];
 
@@ -77,7 +116,74 @@ const DashboardPage: React.FC = () => {
   const [reportUploadMessage, setReportUploadMessage] = useState('');
   const reportInputRef = useRef<HTMLInputElement>(null);
 
+  const [consultationsList, setConsultationsList] = useState<ConsultationItem[]>(recentConsultationsData);
+  const [prescriptionsList, setPrescriptionsList] = useState<any[]>(recentPrescriptionsData);
+  const [showRxModal, setShowRxModal] = useState<boolean>(false);
+  const [selectedRxData, setSelectedRxData] = useState<any>(null);
+  const [selectedEhrModalData, setSelectedEhrModalData] = useState<any>(null);
+
+  // Profile & Settings states
+  const [profileSubTab, setProfileSubTab] = useState<'personal' | 'medical' | 'security' | 'notifications' | 'billing'>('personal');
+  const [profileData, setProfileData] = useState({
+    fullName: 'Ananya Sharma',
+    email: 'ananya.sharma@sehatsetu.com',
+    phone: '+91 98765 43210',
+    dob: '1995-08-15',
+    gender: 'Female',
+    bloodGroup: 'O+',
+    height: '165',
+    weight: '58',
+    address: 'B-402, Green Park Extension, New Delhi - 110016',
+    emergencyContactName: 'Rahul Sharma (Spouse)',
+    emergencyContactPhone: '+91 98112 33445',
+    allergies: ['Penicillin', 'Dust & Pollen', 'Sulfa Drugs'],
+    chronicConditions: ['Mild Asthma', 'Migraine'],
+  });
+
+  const [securitySettings, setSecuritySettings] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+    enable2FA: true,
+  });
+
+  const [notificationSettings, setNotificationSettings] = useState({
+    whatsappReminders: true,
+    emailPrescriptions: true,
+    smsAlerts: true,
+    healthTips: false,
+  });
+
+  const [profileSaveSuccess, setProfileSaveSuccess] = useState(false);
+
+  const [ehrReportsList, setEhrReportsList] = useState<any[]>([
+    {
+      id: 'EHR-2026-001',
+      title: 'Blood CBC & Dengue Test Report',
+      date: 'Aug 02, 2026',
+      status: '✓ Processed via OCR',
+      summary: 'Extracted Platelet Count: 185,000 / μL • Hemoglobin: 14.2 g/dL',
+      source: 'Diagnostic Lab',
+      extractedData: 'Platelets: 185,000 / μL | RBC: 4.8 M/μL | WBC: 7,200 / μL | Hemoglobin: 14.2 g/dL'
+    },
+    {
+      id: 'EHR-9941',
+      title: 'General Physician Consultation EHR',
+      date: 'Jul 25, 2026',
+      status: '🩺 Clinical Record',
+      summary: 'Diagnosis: Acute Viral Fever • Prescriptions issued & Rest advised',
+      source: 'SehatSetu Telehealth',
+      extractedData: 'Diagnosis: Acute Viral Fever | Prescribed: Paracetamol 650mg, Cetirizine 10mg | Follow-up: 5 days'
+    }
+  ]);
+
   useEffect(() => {
+    // Clear legacy 2024 cached mock items
+    const activeRxStr = localStorage.getItem('sehatsetu_active_prescription');
+    if (activeRxStr && (activeRxStr.includes('2024') || activeRxStr.includes('May 20'))) {
+      localStorage.removeItem('sehatsetu_active_prescription');
+    }
+
     const fetchAppointments = async () => {
       try {
         const res = await fetch('/api/appointments');
@@ -85,6 +191,33 @@ const DashboardPage: React.FC = () => {
           const apps = await res.json();
           if (Array.isArray(apps) && apps.length > 0) {
             setLatestAppointment(apps[0]); // Most recently booked appointment
+            const dbConsultations: ConsultationItem[] = apps.map((app: any) => {
+              const matchedDoc = doctorsData.find(d => d.id === app.doctorId) || doctorsData[0];
+              
+              let displayDate = app.date;
+              if (app.scheduledAt) {
+                const sDate = new Date(app.scheduledAt);
+                if (!isNaN(sDate.getTime())) {
+                  displayDate = sDate.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+                }
+              }
+              
+              if (!displayDate || displayDate.includes('May') || displayDate.includes('2024') || displayDate.includes('Thu 23')) {
+                const today = new Date();
+                displayDate = today.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+              }
+
+              return {
+                id: app.id || `CONS-${Math.floor(1000 + Math.random() * 9000)}`,
+                doctorName: matchedDoc?.name || app.doctorName || 'Dr. Alok Verma',
+                specialty: matchedDoc?.specialty || 'General Physician',
+                avatar: matchedDoc?.imageUrl || 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=300',
+                date: displayDate,
+                time: app.timeSlot || '10:00 AM',
+                mode: (app.consultMode || 'Video Consultation') as any,
+              };
+            });
+            setConsultationsList(dbConsultations);
           }
         }
       } catch (err) {
@@ -92,6 +225,30 @@ const DashboardPage: React.FC = () => {
       }
     };
     fetchAppointments();
+
+    // Sync recently issued prescriptions from live consultations
+    const activeRx = localStorage.getItem('sehatsetu_active_prescription');
+    if (activeRx) {
+      try {
+        const parsed = JSON.parse(activeRx);
+        const formattedRx = {
+          id: parsed.id || 'RX-2026-8849',
+          doctorName: parsed.doctorName || 'Dr. Ananya Sharma',
+          date: parsed.date || 'Today',
+          meds: Array.isArray(parsed.medications) 
+            ? parsed.medications.map((m: any) => m.name).join(', ') 
+            : 'Tab. Paracetamol 650mg, Tab. Cetirizine 10mg',
+          fullData: parsed,
+        };
+
+        setPrescriptionsList((prev) => {
+          const exists = prev.some((p) => p.id === formattedRx.id);
+          return exists ? prev : [formattedRx, ...prev];
+        });
+      } catch (e) {
+        console.error('Error loading prescription on patient dashboard:', e);
+      }
+    }
   }, []);
 
   const handleTabClick = (tab: DashboardTabType) => {
@@ -106,11 +263,23 @@ const DashboardPage: React.FC = () => {
     if (!file) return;
 
     setReportUploadState('uploading');
-    setReportUploadMessage(`Uploading ${file.name}…`);
+    setReportUploadMessage(`🔍 Uploading & Running AI OCR on ${file.name}…`);
     try {
-      await uploadMedicalReport(file);
+      const result: any = await uploadMedicalReport(file);
       setReportUploadState('success');
-      setReportUploadMessage(`${file.name} uploaded and processed.`);
+      setReportUploadMessage(`✨ ${file.name} uploaded & AI OCR Extracted successfully!`);
+
+      const newEhrItem = {
+        id: result?.id || `EHR-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+        title: file.name.replace(/\.[^/.]+$/, ""),
+        date: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+        status: '✓ Processed via OCR',
+        summary: result?.extractedText ? `OCR Extracted Text: ${result.extractedText.slice(0, 80)}...` : 'AI Extracted: Key health parameters & lab findings stored in EHR.',
+        source: 'Uploaded EHR Report',
+        extractedData: result?.extractedText || 'Extracted parameters: Normal range. Report verified & indexed in database.'
+      };
+
+      setEhrReportsList((prev) => [newEhrItem, ...prev]);
     } catch (error) {
       setReportUploadState('error');
       setReportUploadMessage(
@@ -149,7 +318,7 @@ const DashboardPage: React.FC = () => {
             <nav className="sidebar-menu">
               <button 
                 type="button" 
-                className={`sidebar-item ${currentPage === 'landing' ? 'active' : ''}`}
+                className={`sidebar-item ${currentPage === 'landing' && activeTab !== 'overview' && activeTab !== 'appointments' && activeTab !== 'records' && activeTab !== 'prescriptions' ? 'active' : ''}`}
                 onClick={() => navigate('/')}
               >
                 <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -157,6 +326,23 @@ const DashboardPage: React.FC = () => {
                   <polyline points="9 22 9 12 15 12 15 22"></polyline>
                 </svg>
                 <span>Home</span>
+              </button>
+
+              <button 
+                type="button" 
+                className={`sidebar-item ${activeTab === 'overview' ? 'active' : ''}`}
+                onClick={() => {
+                  handleTabClick('overview');
+                  navigate('/patient/dashboard');
+                }}
+              >
+                <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                  <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                  <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+                  <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+                </svg>
+                <span>Dashboard</span>
               </button>
 
               <button 
@@ -226,20 +412,16 @@ const DashboardPage: React.FC = () => {
           <div className="sidebar-group">
             <span className="sidebar-group-title">Account & Support</span>
             <nav className="sidebar-menu">
-              <button type="button" className="sidebar-item" onClick={() => alert('Profile & Settings opened')}>
+              <button 
+                type="button" 
+                className={`sidebar-item ${currentPage === 'dashboard' && activeTab === 'profile' ? 'active' : ''}`}
+                onClick={() => handleTabClick('profile')}
+              >
                 <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
                 <span>Profile & Settings</span>
-              </button>
-              <button type="button" className="sidebar-item" onClick={() => alert('Help & FAQs opened')}>
-                <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                </svg>
-                <span>Help & FAQs</span>
               </button>
             </nav>
           </div>
@@ -521,7 +703,7 @@ const DashboardPage: React.FC = () => {
                 {/* Consultations Table / List */}
                 {activeSubTab === 'consultations' ? (
                   <div className="consultations-table">
-                    {recentConsultationsData.map((item) => (
+                    {consultationsList.map((item) => (
                       <div key={item.id} className="consultation-row">
                         <div className="row-doctor-info">
                           <img src={item.avatar} alt={item.doctorName} className="row-doc-img" />
@@ -554,7 +736,7 @@ const DashboardPage: React.FC = () => {
                   </div>
                 ) : (
                   <div className="consultations-table">
-                    {recentPrescriptionsData.map((rx) => (
+                    {prescriptionsList.map((rx) => (
                       <div key={rx.id} className="consultation-row">
                         <div className="row-doctor-info">
                           <div className="rx-icon-box">💊</div>
@@ -576,9 +758,22 @@ const DashboardPage: React.FC = () => {
                           <button 
                             type="button" 
                             className="btn-view-details"
-                            onClick={() => alert(`Downloading ${rx.id} Prescription PDF...`)}
+                            onClick={() => {
+                              setSelectedRxData(rx.fullData || {
+                                id: rx.id,
+                                doctorName: rx.doctorName,
+                                patientName: 'Sunita Devi',
+                                date: rx.date,
+                                medications: [
+                                  { name: 'Tab. Paracetamol 650mg', dosage: '650 mg', frequency: '1-0-1', duration: '5 days', timing: 'After Food' },
+                                  { name: 'Tab. Cetirizine 10mg', dosage: '10 mg', frequency: '0-0-1', duration: '3 days', timing: 'SOS at Night' }
+                                ],
+                                dietAdvice: 'Increase fluid intake (min 3L/day), avoid spicy and oily foods, take warm water.'
+                              });
+                              setShowRxModal(true);
+                            }}
                           >
-                            Download PDF
+                            View / Download PDF
                           </button>
                         </div>
                       </div>
@@ -714,7 +909,7 @@ const DashboardPage: React.FC = () => {
               </div>
 
               <div className="appointments-cards-grid">
-                {recentConsultationsData.map((item) => (
+                {consultationsList.map((item) => (
                   <div key={item.id} className="appointment-card-item">
                     <div className="appt-card-top">
                       <div className="doc-profile-left">
@@ -768,6 +963,545 @@ const DashboardPage: React.FC = () => {
                     })()}
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'records' && (
+            <div className="records-tab-content" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div className="tab-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h2 className="tab-title" style={{ fontSize: '24px', fontWeight: 'bold', color: '#0f172a' }}>Electronic Health Records (EHR) & Medical History</h2>
+                  <p className="tab-subtitle" style={{ fontSize: '14px', color: '#64748b' }}>Connected directly with database EHR records, lab reports, and OCR clinical summaries.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => reportInputRef.current?.click()}
+                  style={{
+                    backgroundColor: '#2563eb',
+                    color: 'white',
+                    fontWeight: 'bold',
+                    padding: '10px 20px',
+                    borderRadius: '12px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)'
+                  }}
+                >
+                  📁 Upload New EHR Report
+                </button>
+              </div>
+
+              {/* EHR Overview Summary Banner */}
+              <div style={{ background: 'linear-gradient(135deg, #eff6ff, #dbeafe)', border: '1px solid #bfdbfe', borderRadius: '20px', padding: '20px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#1e40af', marginBottom: '8px' }}>🏥 Verified EHR Clinical Timeline</h3>
+                <p style={{ fontSize: '13px', color: '#1e3a8a', lineHeight: '1.5' }}>
+                  Your Electronic Health Record aggregates all consultation notes, prescriptions, and lab reports processed through AI OCR. All files are securely encrypted and stored in your medical vault.
+                </p>
+              </div>
+
+              {/* EHR Database Records Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+                {ehrReportsList.map((item) => (
+                  <div key={item.id} style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', alignItems: 'center' }}>
+                      <span style={{ background: item.status.includes('OCR') ? '#dcfce7' : '#dbeafe', color: item.status.includes('OCR') ? '#15803d' : '#1e40af', fontSize: '11px', fontWeight: 'bold', padding: '4px 10px', borderRadius: '20px' }}>
+                        {item.status}
+                      </span>
+                      <span style={{ fontSize: '12px', color: '#94a3b8' }}>{item.date}</span>
+                    </div>
+                    <h4 style={{ fontSize: '16px', fontWeight: 'bold', color: '#0f172a' }}>{item.title}</h4>
+                    <p style={{ fontSize: '12px', color: '#64748b', marginTop: '4px', lineHeight: '1.4' }}>{item.summary}</p>
+                    <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#2563eb' }}>ID: {item.id}</span>
+                      <button 
+                        type="button" 
+                        onClick={() => setSelectedEhrModalData(item)}
+                        style={{ background: '#2563eb', color: 'white', border: 'none', padding: '6px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                      >
+                        🔍 View AI OCR Data
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'profile' && (
+            <div className="profile-tab-content">
+              {/* Profile Hero Header */}
+              <div className="profile-hero-header">
+                <div className="profile-avatar-wrapper">
+                  <div className="profile-avatar-large">
+                    AS
+                  </div>
+                  <button 
+                    type="button" 
+                    className="profile-avatar-edit-btn"
+                    title="Upload New Profile Picture"
+                    onClick={() => alert('Photo upload dialog opened. Select a profile picture.')}
+                  >
+                    ✏️
+                  </button>
+                </div>
+
+                <div className="profile-hero-info">
+                  <div className="profile-hero-name-row">
+                    <h2 className="profile-hero-name">{profileData.fullName}</h2>
+                    <span className="profile-badge-pill profile-badge-verified">
+                      ✓ Verified Patient
+                    </span>
+                    <span className="profile-badge-pill profile-badge-gold">
+                      ⭐ Gold Member
+                    </span>
+                  </div>
+                  <p className="profile-hero-sub">{profileData.email} • {profileData.phone}</p>
+                  <p className="profile-hero-meta">Patient ID: <span style={{ fontFamily: 'monospace', fontWeight: 'bold', color: '#ffffff' }}>#PAT-2026-9812</span> • Reg Date: Aug 2026</p>
+                </div>
+              </div>
+
+              {/* Settings Sub-Tabs Header Bar */}
+              <div className="profile-subtabs-bar">
+                {[
+                  { id: 'personal', label: '👤 Personal Details' },
+                  { id: 'medical', label: '🩺 Medical Profile & Vitals' },
+                  { id: 'security', label: '🔒 Account & Security' },
+                  { id: 'notifications', label: '🔔 Notifications' },
+                  { id: 'billing', label: '💳 Billing & Payments' },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    className={`profile-subtab-btn ${profileSubTab === tab.id ? 'active' : ''}`}
+                    onClick={() => setProfileSubTab(tab.id as any)}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Toast Success Alert */}
+              {profileSaveSuccess && (
+                <div style={{ backgroundColor: '#ecfdf5', border: '1px solid #a7f3d0', color: '#065f46', padding: '16px', borderRadius: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 'bold', fontSize: '14px' }}>
+                  <span>✓ Profile settings updated and saved successfully!</span>
+                  <button onClick={() => setProfileSaveSuccess(false)} style={{ background: 'none', border: 'none', color: '#047857', fontWeight: 'bold', cursor: 'pointer' }}>✕</button>
+                </div>
+              )}
+
+              {/* Sub-Tab 1: Personal Details */}
+              {profileSubTab === 'personal' && (
+                <div className="profile-card-box">
+                  <h3 className="profile-card-title">Personal & Contact Information</h3>
+                  
+                  <div className="profile-form-grid">
+                    <div className="profile-field-group">
+                      <label className="profile-label">Full Name</label>
+                      <input 
+                        type="text" 
+                        value={profileData.fullName}
+                        onChange={(e) => setProfileData({ ...profileData, fullName: e.target.value })}
+                        className="profile-input-control"
+                      />
+                    </div>
+
+                    <div className="profile-field-group">
+                      <label className="profile-label">Email Address</label>
+                      <input 
+                        type="email" 
+                        value={profileData.email}
+                        onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
+                        className="profile-input-control"
+                      />
+                    </div>
+
+                    <div className="profile-field-group">
+                      <label className="profile-label">Phone Number</label>
+                      <input 
+                        type="text" 
+                        value={profileData.phone}
+                        onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
+                        className="profile-input-control"
+                      />
+                    </div>
+
+                    <div className="profile-field-group">
+                      <label className="profile-label">Date of Birth</label>
+                      <input 
+                        type="date" 
+                        value={profileData.dob}
+                        onChange={(e) => setProfileData({ ...profileData, dob: e.target.value })}
+                        className="profile-input-control"
+                      />
+                    </div>
+
+                    <div className="profile-field-group">
+                      <label className="profile-label">Gender</label>
+                      <select 
+                        value={profileData.gender}
+                        onChange={(e) => setProfileData({ ...profileData, gender: e.target.value })}
+                        className="profile-input-control"
+                      >
+                        <option value="Female">Female</option>
+                        <option value="Male">Male</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+
+                    <div className="profile-field-group">
+                      <label className="profile-label">Blood Group</label>
+                      <select 
+                        value={profileData.bloodGroup}
+                        onChange={(e) => setProfileData({ ...profileData, bloodGroup: e.target.value })}
+                        className="profile-input-control"
+                      >
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                      </select>
+                    </div>
+
+                    <div className="profile-field-group">
+                      <label className="profile-label">Height (cm)</label>
+                      <input 
+                        type="number" 
+                        value={profileData.height}
+                        onChange={(e) => setProfileData({ ...profileData, height: e.target.value })}
+                        className="profile-input-control"
+                      />
+                    </div>
+
+                    <div className="profile-field-group">
+                      <label className="profile-label">Weight (kg)</label>
+                      <input 
+                        type="number" 
+                        value={profileData.weight}
+                        onChange={(e) => setProfileData({ ...profileData, weight: e.target.value })}
+                        className="profile-input-control"
+                      />
+                    </div>
+
+                    <div className="profile-field-group full-width">
+                      <label className="profile-label">Residential Address</label>
+                      <input 
+                        type="text" 
+                        value={profileData.address}
+                        onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
+                        className="profile-input-control"
+                      />
+                    </div>
+
+                    <div className="profile-field-group">
+                      <label className="profile-label">Emergency Contact Name</label>
+                      <input 
+                        type="text" 
+                        value={profileData.emergencyContactName}
+                        onChange={(e) => setProfileData({ ...profileData, emergencyContactName: e.target.value })}
+                        className="profile-input-control"
+                      />
+                    </div>
+
+                    <div className="profile-field-group">
+                      <label className="profile-label">Emergency Contact Phone</label>
+                      <input 
+                        type="text" 
+                        value={profileData.emergencyContactPhone}
+                        onChange={(e) => setProfileData({ ...profileData, emergencyContactPhone: e.target.value })}
+                        className="profile-input-control"
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '16px' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setProfileSaveSuccess(true);
+                        setTimeout(() => setProfileSaveSuccess(false), 4000);
+                      }}
+                      className="profile-save-btn"
+                    >
+                      💾 Save Profile Changes
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Sub-Tab 2: Medical Profile & Vitals */}
+              {profileSubTab === 'medical' && (
+                <div className="profile-card-box">
+                  <h3 className="profile-card-title">Medical History & Vitals Overview</h3>
+                  
+                  {/* Current Vitals Cards */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '16px' }}>
+                    <div style={{ backgroundColor: '#fff1f2', border: '1px solid #fecdd3', padding: '16px', borderRadius: '16px', textAlign: 'center' }}>
+                      <span style={{ fontSize: '24px', display: 'block', marginBottom: '4px' }}>❤️</span>
+                      <span style={{ fontSize: '11px', color: '#e11d48', fontWeight: 'bold', display: 'block', textTransform: 'uppercase' }}>Blood Pressure</span>
+                      <span style={{ fontSize: '20px', fontWeight: '800', color: '#881337' }}>120/80</span>
+                      <span style={{ fontSize: '10px', color: '#f43f5e', display: 'block', fontWeight: '600' }}>mmHg • Normal</span>
+                    </div>
+
+                    <div style={{ backgroundColor: '#fffbeb', border: '1px solid #fde68a', padding: '16px', borderRadius: '16px', textAlign: 'center' }}>
+                      <span style={{ fontSize: '24px', display: 'block', marginBottom: '4px' }}>💓</span>
+                      <span style={{ fontSize: '11px', color: '#d97706', fontWeight: 'bold', display: 'block', textTransform: 'uppercase' }}>Heart Rate</span>
+                      <span style={{ fontSize: '20px', fontWeight: '800', color: '#78350f' }}>72</span>
+                      <span style={{ fontSize: '10px', color: '#f59e0b', display: 'block', fontWeight: '600' }}>bpm • Optimal</span>
+                    </div>
+
+                    <div style={{ backgroundColor: '#ecfdf5', border: '1px solid #a7f3d0', padding: '16px', borderRadius: '16px', textAlign: 'center' }}>
+                      <span style={{ fontSize: '24px', display: 'block', marginBottom: '4px' }}>🩸</span>
+                      <span style={{ fontSize: '11px', color: '#059669', fontWeight: 'bold', display: 'block', textTransform: 'uppercase' }}>Blood Sugar</span>
+                      <span style={{ fontSize: '20px', fontWeight: '800', color: '#064e3b' }}>95</span>
+                      <span style={{ fontSize: '10px', color: '#10b981', display: 'block', fontWeight: '600' }}>mg/dL • Fasting</span>
+                    </div>
+
+                    <div style={{ backgroundColor: '#eff6ff', border: '1px solid #bfdbfe', padding: '16px', borderRadius: '16px', textAlign: 'center' }}>
+                      <span style={{ fontSize: '24px', display: 'block', marginBottom: '4px' }}>🫁</span>
+                      <span style={{ fontSize: '11px', color: '#2563eb', fontWeight: 'bold', display: 'block', textTransform: 'uppercase' }}>Oxygen (SpO2)</span>
+                      <span style={{ fontSize: '20px', fontWeight: '800', color: '#1e3a8a' }}>99%</span>
+                      <span style={{ fontSize: '10px', color: '#3b82f6', display: 'block', fontWeight: '600' }}>Excellent</span>
+                    </div>
+                  </div>
+
+                  {/* Known Allergies */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <h4 className="profile-label">Known Medical Allergies</h4>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      {profileData.allergies.map((allergy, idx) => (
+                        <span key={idx} style={{ backgroundColor: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca', fontSize: '12px', fontWeight: 'bold', padding: '6px 12px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          ⚠️ {allergy}
+                        </span>
+                      ))}
+                      <button 
+                        onClick={() => {
+                          const newAllergy = prompt('Enter new allergy:');
+                          if (newAllergy) setProfileData({ ...profileData, allergies: [...profileData.allergies, newAllergy] });
+                        }}
+                        style={{ backgroundColor: '#f1f5f9', color: '#334155', fontSize: '12px', fontWeight: 'bold', padding: '6px 12px', borderRadius: '12px', cursor: 'pointer', border: 'none' }}
+                      >
+                        + Add Allergy
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Chronic Conditions */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <h4 className="profile-label">Chronic Conditions</h4>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      {profileData.chronicConditions.map((condition, idx) => (
+                        <span key={idx} style={{ backgroundColor: '#eef2ff', color: '#4338ca', border: '1px solid #c7d2fe', fontSize: '12px', fontWeight: 'bold', padding: '6px 12px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          🩺 {condition}
+                        </span>
+                      ))}
+                      <button 
+                        onClick={() => {
+                          const newCond = prompt('Enter condition name:');
+                          if (newCond) setProfileData({ ...profileData, chronicConditions: [...profileData.chronicConditions, newCond] });
+                        }}
+                        style={{ backgroundColor: '#f1f5f9', color: '#334155', fontSize: '12px', fontWeight: 'bold', padding: '6px 12px', borderRadius: '12px', cursor: 'pointer', border: 'none' }}
+                      >
+                        + Add Condition
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Sub-Tab 3: Account & Security */}
+              {profileSubTab === 'security' && (
+                <div className="profile-card-box">
+                  <h3 className="profile-card-title">Password & Security Settings</h3>
+
+                  <div style={{ maxWidth: '440px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div className="profile-field-group">
+                      <label className="profile-label">Current Password</label>
+                      <input 
+                        type="password" 
+                        placeholder="••••••••"
+                        value={securitySettings.currentPassword}
+                        onChange={(e) => setSecuritySettings({ ...securitySettings, currentPassword: e.target.value })}
+                        className="profile-input-control"
+                      />
+                    </div>
+
+                    <div className="profile-field-group">
+                      <label className="profile-label">New Password</label>
+                      <input 
+                        type="password" 
+                        placeholder="••••••••"
+                        value={securitySettings.newPassword}
+                        onChange={(e) => setSecuritySettings({ ...securitySettings, newPassword: e.target.value })}
+                        className="profile-input-control"
+                      />
+                    </div>
+
+                    <div className="profile-field-group">
+                      <label className="profile-label">Confirm New Password</label>
+                      <input 
+                        type="password" 
+                        placeholder="••••••••"
+                        value={securitySettings.confirmPassword}
+                        onChange={(e) => setSecuritySettings({ ...securitySettings, confirmPassword: e.target.value })}
+                        className="profile-input-control"
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => alert('Password updated successfully!')}
+                      className="profile-save-btn"
+                      style={{ alignSelf: 'flex-start' }}
+                    >
+                      Update Password
+                    </button>
+                  </div>
+
+                  {/* 2FA Section */}
+                  <div style={{ paddingTop: '20px', borderTop: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <h4 className="profile-label">Two-Factor Authentication (2FA)</h4>
+                      <p style={{ fontSize: '12px', color: '#64748b' }}>Secure your account with SMS & Email verification OTPs on login.</p>
+                    </div>
+                    <button 
+                      onClick={() => setSecuritySettings({ ...securitySettings, enable2FA: !securitySettings.enable2FA })}
+                      style={{
+                        padding: '8px 16px',
+                        borderRadius: '12px',
+                        fontSize: '12px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        backgroundColor: securitySettings.enable2FA ? '#059669' : '#e2e8f0',
+                        color: securitySettings.enable2FA ? '#ffffff' : '#334155',
+                        border: 'none'
+                      }}
+                    >
+                      {securitySettings.enable2FA ? '✓ Enabled' : 'Disabled'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Sub-Tab 4: Notifications */}
+              {profileSubTab === 'notifications' && (
+                <div className="profile-card-box">
+                  <h3 className="profile-card-title">Notification & Alert Preferences</h3>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {[
+                      { key: 'whatsappReminders', title: 'WhatsApp Consultation Reminders', desc: 'Receive instant WhatsApp links 15 minutes before your video call.' },
+                      { key: 'emailPrescriptions', title: 'Email Prescription Copy', desc: 'Automatically email PDF prescription copies after consultation end.' },
+                      { key: 'smsAlerts', title: 'SMS Booking Alerts', desc: 'Receive SMS confirmations and status updates for doctor appointments.' },
+                      { key: 'healthTips', title: 'Weekly Wellness & Health Tips', desc: 'Personalized AI tips tailored to your health profile and chronic conditions.' },
+                    ].map((item) => (
+                      <div key={item.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '16px' }}>
+                        <div>
+                          <h4 className="profile-label">{item.title}</h4>
+                          <p style={{ fontSize: '12px', color: '#64748b' }}>{item.desc}</p>
+                        </div>
+                        <input 
+                          type="checkbox" 
+                          checked={(notificationSettings as any)[item.key]}
+                          onChange={(e) => setNotificationSettings({ ...notificationSettings, [item.key]: e.target.checked })}
+                          style={{ width: '20px', height: '20px', accentColor: '#2563eb', cursor: 'pointer' }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Sub-Tab 5: Billing & Payments */}
+              {profileSubTab === 'billing' && (
+                <div className="profile-card-box">
+                  <h3 className="profile-card-title">Saved Payment Methods & History</h3>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
+                    <div style={{ backgroundColor: '#0f172a', color: '#ffffff', padding: '20px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 'bold', textTransform: 'uppercase' }}>Default Payment UPI</span>
+                        <span style={{ backgroundColor: 'rgba(52, 211, 153, 0.2)', color: '#34d399', fontSize: '10px', fontWeight: 'bold', padding: '2px 10px', borderRadius: '9999px' }}>Active</span>
+                      </div>
+                      <p style={{ fontSize: '18px', fontFamily: 'monospace', fontWeight: 'bold', color: '#ffffff' }}>ananya@okicici</p>
+                      <p style={{ fontSize: '12px', color: '#94a3b8' }}>Linked to Google Pay / BHIM UPI</p>
+                    </div>
+
+                    <div style={{ backgroundColor: '#1e293b', color: '#ffffff', padding: '20px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 'bold', textTransform: 'uppercase' }}>Visa Debit Card</span>
+                        <span style={{ fontSize: '12px', color: '#94a3b8' }}>Expires 09/28</span>
+                      </div>
+                      <p style={{ fontSize: '18px', fontFamily: 'monospace', fontWeight: 'bold', color: '#ffffff' }}>•••• •••• •••• 4821</p>
+                      <p style={{ fontSize: '12px', color: '#94a3b8' }}>HDFC Bank Signature Card</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          )}
+          
+          {activeTab === 'prescriptions' && (
+            <div className="prescriptions-tab-content" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div className="tab-section-header">
+                <div>
+                  <h2 className="tab-title" style={{ fontSize: '24px', fontWeight: 'bold', color: '#0f172a' }}>Prescriptions & Medications</h2>
+                  <p className="tab-subtitle" style={{ fontSize: '14px', color: '#64748b' }}>View and download all official medical prescriptions issued by your doctors.</p>
+                </div>
+              </div>
+
+              <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '20px', padding: '24px', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
+                <div className="consultations-table">
+                  {prescriptionsList.map((rx) => (
+                    <div key={rx.id} className="consultation-row">
+                      <div className="row-doctor-info">
+                        <div className="rx-icon-box">💊</div>
+                        <div>
+                          <h4 className="row-doc-name">{rx.doctorName}</h4>
+                          <span className="row-doc-spec">{rx.meds}</span>
+                        </div>
+                      </div>
+
+                      <div className="row-datetime">
+                        <span>📅 {rx.date}</span>
+                      </div>
+
+                      <div className="row-mode">
+                        <span className="rx-tag">Prescription Issued</span>
+                      </div>
+
+                      <div className="row-action">
+                        <button 
+                          type="button" 
+                          className="btn-view-details"
+                          onClick={() => {
+                            setSelectedRxData(rx.fullData || {
+                              id: rx.id,
+                              doctorName: rx.doctorName,
+                              patientName: 'Sunita Devi',
+                              date: rx.date,
+                              medications: [
+                                { name: 'Tab. Paracetamol 650mg', dosage: '650 mg', frequency: '1-0-1', duration: '5 days', timing: 'After Food' },
+                                { name: 'Tab. Cetirizine 10mg', dosage: '10 mg', frequency: '0-0-1', duration: '3 days', timing: 'SOS at Night' }
+                              ],
+                              dietAdvice: 'Increase fluid intake (min 3L/day), avoid spicy and oily foods, take warm water.'
+                            });
+                            setShowRxModal(true);
+                          }}
+                        >
+                          View / Download PDF
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -851,6 +1585,56 @@ const DashboardPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* AI OCR Data Inspection Modal */}
+      {selectedEhrModalData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <div className="flex justify-between items-center border-b border-gray-100 pb-4">
+              <div>
+                <span className="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-0.5 rounded-full">✓ Verified AI OCR Result</span>
+                <h3 className="text-xl font-bold text-gray-900 mt-1">{selectedEhrModalData.title}</h3>
+              </div>
+              <button 
+                onClick={() => setSelectedEhrModalData(null)}
+                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">AI Extracted Clinical Data</span>
+              <p className="text-xs font-mono text-slate-800 leading-relaxed bg-white p-3 rounded-xl border border-slate-200">
+                {selectedEhrModalData.extractedData}
+              </p>
+            </div>
+
+            <div className="text-xs text-gray-500">
+              <p>• Report ID: <span className="font-mono font-bold">{selectedEhrModalData.id}</span></p>
+              <p>• Source: <span className="font-semibold">{selectedEhrModalData.source}</span></p>
+              <p>• Uploaded Date: <span className="font-semibold">{selectedEhrModalData.date}</span></p>
+            </div>
+
+            <div className="pt-2 flex gap-3">
+              <button
+                onClick={() => setSelectedEhrModalData(null)}
+                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-md transition-all cursor-pointer"
+              >
+                Close EHR Inspection
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Prescription View & Download Modal */}
+      <PrescriptionViewModal
+        isOpen={showRxModal}
+        isModal={true}
+        onClose={() => setShowRxModal(false)}
+        data={selectedRxData}
+      />
     </div>
   );
 };

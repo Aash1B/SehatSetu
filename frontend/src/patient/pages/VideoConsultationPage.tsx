@@ -14,18 +14,13 @@ const VideoConsultationPage: React.FC = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [showPrescriptionModal, setShowPrescriptionModal] = useState<boolean>(false);
+  const [patientPrescription, setPatientPrescription] = useState<any>(null);
 
   // Call duration timer
   const [secondsElapsed, setSecondsElapsed] = useState<number>(872);
   const [isTimerRunning, setIsTimerRunning] = useState<boolean>(true);
 
   // Call states
-  const [isMicMuted, setIsMicMuted] = useState<boolean>(false);
-  const [isScreenSharing, setIsScreenSharing] = useState<boolean>(false);
-  const [isAudioOnly, setIsAudioOnly] = useState<boolean>(false);
-  const [isHandRaised, setIsHandRaised] = useState<boolean>(false);
-  const [activeSidebarTab, setActiveSidebarTab] = useState<string>('chat');
-  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [token, setToken] = useState("");
   const serverUrl = import.meta.env.VITE_LIVEKIT_URL;
   const consultationId = id;
@@ -53,8 +48,20 @@ const VideoConsultationPage: React.FC = () => {
     return () => clearInterval(timer);
   }, [isTimerRunning]);
 
+  const loadPrescriptionData = () => {
+    const raw = localStorage.getItem(`prescription_${consultationId}`) || localStorage.getItem('sehatsetu_active_prescription');
+    if (raw) {
+      try {
+        setPatientPrescription(JSON.parse(raw));
+      } catch (e) {
+        console.error('Error parsing patient prescription:', e);
+      }
+    }
+  };
+
   const handleEndCall = async () => {
     setIsTimerRunning(false);
+    loadPrescriptionData();
     try {
       await fetch('/api/livekit/end-consultation', {
         method: 'POST',
@@ -179,7 +186,7 @@ const VideoConsultationPage: React.FC = () => {
                   className="px-6 h-12 rounded-full bg-red-600 hover:bg-red-700 text-white font-bold flex items-center justify-center transition-colors gap-2"
                 >
                   <PhoneOff className="w-5 h-5" />
-                  End Call & View Prescription
+                  Leave Call & View Prescription
                 </button>
               </div>
             </div>
@@ -193,7 +200,7 @@ const VideoConsultationPage: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="font-bold text-lg text-gray-900">Dr. Ananya Sharma</h3>
-                    <p className="text-gray-500 text-sm">Dermatologist</p>
+                    <p className="text-gray-500 text-sm">General Physician</p>
                   </div>
                 </div>
                 <div className="space-y-4">
@@ -235,6 +242,19 @@ const VideoConsultationPage: React.FC = () => {
         onClose={() => {
           setShowPrescriptionModal(false);
           navigate('/patient/dashboard');
+        }}
+        data={patientPrescription || {
+          doctorName: "Dr. Ananya Sharma",
+          doctorSpecialty: "General Physician & Telehealth Specialist",
+          patientName: "Sunita Devi",
+          patientAge: 31,
+          patientGender: "Female",
+          medications: [
+            { name: "Tab. Paracetamol 650mg", dosage: "650 mg", frequency: "1-0-1", duration: "5 days", timing: "After Food" },
+            { name: "Tab. Cetirizine 10mg", dosage: "10 mg", frequency: "0-0-1", duration: "3 days", timing: "SOS at Night" }
+          ],
+          symptoms: ["Persistent Fever (4 days)", "Body ache & Fatigue"],
+          dietAdvice: "Increase fluid intake (min 3L/day), avoid spicy and oily foods, take warm water & rest."
         }}
       />
     </div>
