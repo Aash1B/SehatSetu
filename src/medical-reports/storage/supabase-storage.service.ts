@@ -27,7 +27,7 @@ export class SupabaseStorageService implements StorageService {
         'Medical report storage is not configured',
       );
     }
-    if (bucket !== MEDICAL_REPORT_BUCKET) {
+    if (!bucket) {
       throw new ServiceUnavailableException(
         'Medical report storage is not configured',
       );

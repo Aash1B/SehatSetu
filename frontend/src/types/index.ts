@@ -5,7 +5,8 @@ export enum ConsultationStatus {
   IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
-  REFERRED = 'REFERRED'
+  REFERRED = 'REFERRED',
+  NO_SHOW = 'NO_SHOW'
 }
 
 export enum ReferralStatus {

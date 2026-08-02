@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
 
 :root {
   --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -201,6 +201,10 @@ button {
   align-items: center;
 }
 
+.hero-content {
+  padding-left: 56px;
+}
+
 .hero-tag {
   display: inline-flex;
   align-items: center;
@@ -341,16 +345,18 @@ button {
 .hero-visual {
   position: relative;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
-  min-height: 420px;
+  min-height: 460px;
+  width: 100%;
+  padding-right: 20px;
 }
 
 .visual-circle-bg {
-  width: 340px;
-  height: 340px;
+  width: 420px;
+  height: 420px;
   background: linear-gradient(135deg, #C7D2FE 0%, #A5B4FC 100%);
-  border-radius: 80px;
+  border-radius: 90px;
   position: relative;
   display: flex;
   align-items: center;
@@ -380,8 +386,8 @@ button {
 }
 
 .stethoscope-illustration {
-  width: 200px;
-  height: 200px;
+  width: 240px;
+  height: 240px;
   background: #FFFFFF;
   border-radius: 50%;
   display: flex;
@@ -392,17 +398,17 @@ button {
 }
 
 .stethoscope-svg {
-  width: 70px;
-  height: 70px;
+  width: 84px;
+  height: 84px;
 }
 
 .care-connected-label {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: #334155;
-  margin-top: 6px;
+  margin-top: 8px;
   background: #F1F5F9;
-  padding: 2px 10px;
+  padding: 3px 12px;
   border-radius: 6px;
 }
 
@@ -418,9 +424,9 @@ button {
 }
 
 .appointment-preview-card {
-  top: 40px;
-  left: 0;
-  width: 230px;
+  top: 30px;
+  left: -20px;
+  width: 240px;
 }
 
 .card-header-icon {
@@ -1297,6 +1303,21 @@ button {
   margin: 0 auto;
 }
 
+.footer-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 40px;
+  margin-bottom: 50px;
+}
+
+.footer-right-links-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 36px;
+  margin-left: auto;
+}
+
 .footer-columns-grid {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr;
@@ -1341,9 +1362,9 @@ button {
 
 .footer-col-title {
   color: #FFFFFF;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 700;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .footer-links-list {
@@ -1351,11 +1372,11 @@ button {
 }
 
 .footer-links-list li {
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .footer-links-list a {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: #94A3B8;
   transition: color 0.2s ease;
 }
@@ -1399,6 +1420,8 @@ button {
   .hero-container { grid-template-columns: 1fr; }
   .doctors-cards-grid { grid-template-columns: repeat(2, 1fr); }
   .services-grid { grid-template-columns: repeat(2, 1fr); }
+  .footer-top-row { flex-direction: column; gap: 32px; }
+  .footer-right-links-wrapper { flex-wrap: wrap; gap: 32px; }
   .footer-columns-grid { grid-template-columns: repeat(2, 1fr); }
   .cta-banner-card { flex-direction: column; gap: 24px; text-align: center; }
 }
@@ -7781,4 +7804,46 @@ button {
   border-radius: 4px;
 }
 
+}
+
+/* ==========================================================================
+   Full Width & 75% Zoom Fluid Layout Enhancements (Patient Side)
+   ========================================================================== */
+.navbar-container,
+.hero-container,
+.stats-bar-container,
+.search-section-container,
+.services-container,
+.how-it-works-container,
+.testimonials-container,
+.cta-banner-card,
+.footer-container,
+.booking-navbar-container,
+.booking-main-container,
+.doctors-main-container,
+.dashboard-main-container,
+.step-tracker-container,
+.doctor-search-container {
+  max-width: 100% !important;
+  width: 100% !important;
+  padding-left: 24px !important;
+  padding-right: 24px !important;
+}
+
+@media (min-width: 1200px) {
+  .hero-container {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 60px !important;
+  }
+
+  .booking-grid-wrapper {
+    grid-template-columns: 1fr 380px !important;
+    gap: 40px !important;
+  }
+
+  .services-grid,
+  .steps-grid,
+  .testimonials-grid {
+    gap: 32px !important;
+  }
 }

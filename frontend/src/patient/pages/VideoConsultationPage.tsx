@@ -1,17 +1,78 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { LiveKitRoom, VideoConference } from '@livekit/components-react';
+import '@livekit/components-styles';
 import { Shield, Mic, MicOff, Video as VideoIcon, VideoOff, PhoneOff, MonitorUp, MoreVertical, User, MessageSquare } from 'lucide-react';
 import ConsultationTimer from '../../doctor/components/ConsultationTimer';
 import { cn } from '../../lib/utils';
+
+import PrescriptionViewModal from '../../common/components/PrescriptionViewModal';
 
 const VideoConsultationPage: React.FC = () => {
   const { id = '1' } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
+  const [showPrescriptionModal, setShowPrescriptionModal] = useState<boolean>(false);
 
-  const handleEndCall = () => {
-    navigate('/patient/dashboard');
+  // Call duration timer
+  const [secondsElapsed, setSecondsElapsed] = useState<number>(872);
+  const [isTimerRunning, setIsTimerRunning] = useState<boolean>(true);
+
+  // Call states
+  const [isMicMuted, setIsMicMuted] = useState<boolean>(false);
+  const [isScreenSharing, setIsScreenSharing] = useState<boolean>(false);
+  const [isAudioOnly, setIsAudioOnly] = useState<boolean>(false);
+  const [isHandRaised, setIsHandRaised] = useState<boolean>(false);
+  const [activeSidebarTab, setActiveSidebarTab] = useState<string>('chat');
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [token, setToken] = useState("");
+  const serverUrl = import.meta.env.VITE_LIVEKIT_URL;
+  const consultationId = id;
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const resp = await fetch(`/api/livekit/token?room=${consultationId}&username=Patient`);
+        const data = await resp.json();
+        setToken(data.token);
+      } catch (e) {
+        console.error(e);
+      }
+    })();
+  }, [consultationId]);
+
+  // Timer interval effect
+  useEffect(() => {
+    let timer: ReturnType<typeof setInterval>;
+    if (isTimerRunning) {
+      timer = setInterval(() => {
+        setSecondsElapsed((prev) => prev + 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [isTimerRunning]);
+
+  const handleEndCall = async () => {
+    setIsTimerRunning(false);
+    try {
+      await fetch('/api/livekit/end-consultation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          appointmentId: id || '1',
+          durationSeconds: secondsElapsed,
+          notes: 'Consultation ended by patient.',
+        }),
+      });
+    } catch (err) {
+      console.warn('Could not post end-consultation queue job:', err);
+    }
+    setShowPrescriptionModal(true);
+  };
+
+  const handleEndCallTrigger = async () => {
+    await handleEndCall();
   };
 
   return (
@@ -42,13 +103,26 @@ const VideoConsultationPage: React.FC = () => {
             {/* Left Column: Video & Controls */}
             <div className="lg:col-span-8 flex flex-col h-full gap-4">
               <div className="flex-1 min-h-0 relative rounded-2xl overflow-hidden bg-deep-space shadow-sm border border-gray-200">
-                {/* Remote Video (Doctor) */}
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
-                  <div className="text-white/40 flex flex-col items-center gap-3">
-                    <User className="w-20 h-20" />
-                    <p className="font-medium text-lg">Dr. Ananya Sharma (Connecting...)</p>
+                {token ? (
+                  <LiveKitRoom
+                    video={true}
+                    audio={true}
+                    token={token}
+                    serverUrl={serverUrl}
+                    data-lk-theme="default"
+                    style={{ height: '100%', flex: 1, display: 'flex', flexDirection: 'column' }}
+                    onDisconnected={handleEndCallTrigger}
+                  >
+                    <VideoConference />
+                  </LiveKitRoom>
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
+                    <div className="text-white/40 flex flex-col items-center gap-3">
+                      <User className="w-20 h-20" />
+                      <p className="font-medium text-lg">Dr. Ananya Sharma (Connecting...)</p>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Local Video (Patient) */}
                 <div className="absolute bottom-4 right-4 w-48 aspect-video bg-gray-800 rounded-xl overflow-hidden shadow-lg border-2 border-white/20 flex items-center justify-center">
@@ -105,7 +179,7 @@ const VideoConsultationPage: React.FC = () => {
                   className="px-6 h-12 rounded-full bg-red-600 hover:bg-red-700 text-white font-bold flex items-center justify-center transition-colors gap-2"
                 >
                   <PhoneOff className="w-5 h-5" />
-                  End Call
+                  End Call & View Prescription
                 </button>
               </div>
             </div>
@@ -151,7 +225,18 @@ const VideoConsultationPage: React.FC = () => {
 
           </div>
         </div>
+
       </main>
+
+      {/* Real-time Prescription View Modal when Consultation Ends */}
+      <PrescriptionViewModal 
+        isOpen={showPrescriptionModal}
+        isModal={true}
+        onClose={() => {
+          setShowPrescriptionModal(false);
+          navigate('/patient/dashboard');
+        }}
+      />
     </div>
   );
 };

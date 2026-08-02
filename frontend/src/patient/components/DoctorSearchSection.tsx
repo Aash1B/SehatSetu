@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { doctorsData, type Doctor } from '../data/doctorsData';
+import { fetchDoctors } from '../services/doctorApi';
 import CustomSelect, { type OptionItem } from './CustomSelect';
 import { useNavigate } from 'react-router-dom';
+import { recommendDoctorSpecialist } from '../../common/services/aiApi';
 
 const SPECIALTY_OPTIONS: OptionItem[] = [
   { value: 'All', label: 'Specialization (All)' },
@@ -41,9 +43,9 @@ const HOSPITAL_OPTIONS: OptionItem[] = [
 
 const EXPERIENCE_OPTIONS: OptionItem[] = [
   { value: 'All', label: 'Experience' },
-  { value: '5+', label: '5+ Years' },
+  { value: '1-5', label: '1 - 5 Years' },
+  { value: '5-10', label: '5 - 10 Years' },
   { value: '10+', label: '10+ Years' },
-  { value: '15+', label: '15+ Years' },
 ];
 
 const FEES_OPTIONS: OptionItem[] = [
@@ -55,6 +57,7 @@ const FEES_OPTIONS: OptionItem[] = [
 const DoctorSearchSection: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [doctorsList, setDoctorsList] = useState<Doctor[]>(doctorsData);
   const [searchTerm, setSearchTerm] = useState('');
   const [specialtyFilter, setSpecialtyFilter] = useState('All');
   const [locationFilter, setLocationFilter] = useState('All');
@@ -64,17 +67,27 @@ const DoctorSearchSection: React.FC = () => {
   const [favorites, setFavorites] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  useEffect(() => {
+    fetchDoctors().then(docs => {
+      if (docs && docs.length > 0) {
+        setDoctorsList(docs);
+      }
+    }).catch(err => {
+      console.warn("Could not fetch dynamic doctors, using static fallback", err);
+    });
+  }, []);
+
   const toggleFavorite = (id: string) => {
     setFavorites(prev => 
       prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
     );
   };
 
-  const filteredDoctors = doctorsData.filter(doc => {
-    const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doc.specialty.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doc.hospital.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doc.location.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredDoctors = doctorsList.filter(doc => {
+    const matchesSearch = (doc.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (doc.specialty || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (doc.hospital || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (doc.location || '').toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesSpecialty = specialtyFilter === 'All' || 
       doc.specialty.toLowerCase().includes(specialtyFilter.toLowerCase().split(' ')[0]) ||
@@ -115,12 +128,23 @@ const DoctorSearchSection: React.FC = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <button type="button" className="btn-voice-search" title="Voice Search">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
-                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                <line x1="12" y1="19" x2="12" y2="22"/>
-              </svg>
+            <button 
+              type="button" 
+              className="btn-voice-search" 
+              title="AI Recommend Specialist"
+              onClick={async () => {
+                if (!searchTerm.trim()) return;
+                try {
+                  const res = await recommendDoctorSpecialist(searchTerm);
+                  if (res && res.data && res.data.specialization) {
+                    setSpecialtyFilter(res.data.specialization);
+                  }
+                } catch (e) {
+                  console.error('AI doctor recommendation error', e);
+                }
+              }}
+            >
+              <span className="text-xs font-bold text-orange-600 flex items-center gap-1 px-1">✨ AI Match</span>
             </button>
             <button type="button" className="btn-search-submit">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">

@@ -77,6 +77,23 @@ export const SPECIALIZATIONS = [
 
 export const doctorsData: Doctor[] = [
   {
+    id: 'd1',
+    name: 'Dr. Sarah Jenkins',
+    specialty: 'Cardiologist',
+    experience: '12 Years',
+    rating: 4.8,
+    reviewsCount: 3100,
+    hospital: 'HeartCare Clinic',
+    location: 'Mumbai',
+    imageUrl: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=400',
+    fee: '₹1000',
+    availableToday: true,
+    priorityLevel: 'P1',
+    priorityScore: 200,
+    degrees: 'MBBS, MD (Cardiology)',
+    tags: ['Cardiology Expert', 'Heart Specialist'],
+  },
+  {
     id: 'doc-6',
     name: 'Dr. Sunita Deshmukh',
     specialty: 'General Physician',

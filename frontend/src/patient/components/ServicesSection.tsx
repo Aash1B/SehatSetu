@@ -1,45 +1,50 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const services = [
   {
-    id: 'general',
-    title: 'General Consultation',
-    description: 'Expert guidance for everyday health concerns and wellness.',
-    icon: '🩺',
+    id: 'lab_nearby',
+    title: 'Lab Tests Nearby',
+    description: 'Find trusted diagnostic labs and blood testing centers near your location.',
+    icon: '🧪',
+    route: 'google',
   },
   {
     id: 'specialist',
     title: 'Specialist Referral',
     description: 'Get connected to the right specialist for your condition.',
     icon: '➡️',
-  },
-  {
-    id: 'lab',
-    title: 'Lab Tests',
-    description: 'Convenient diagnostic testing with trusted lab partners.',
-    icon: '📈',
-  },
-  {
-    id: 'mental',
-    title: 'Mental Health',
-    description: 'Compassionate support for a healthier, calmer you.',
-    icon: '💭',
-  },
-  {
-    id: 'pharmacy',
-    title: 'Pharmacy',
-    description: 'Order medicines safely and have them delivered to you.',
-    icon: '🛡️',
+    route: '/patient/search',
   },
   {
     id: 'emergency',
     title: 'Emergency Care',
     description: 'Fast, reliable support when every second matters.',
     icon: '💝',
+    route: '/patient/search?emergency=true',
   },
 ];
 
 const ServicesSection: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleCardClick = (id: string, route: string) => {
+    if (id === 'lab_nearby') {
+      window.open('https://www.google.com/search?q=lab+tests+nearby', '_blank', 'noopener,noreferrer');
+      return;
+    }
+    if (id === 'emergency') {
+      const floatingEmergencyBtn = document.querySelector('.floating-emergency-btn') as HTMLButtonElement;
+      if (floatingEmergencyBtn) {
+        floatingEmergencyBtn.click();
+      } else {
+        window.location.href = 'tel:102';
+      }
+      return;
+    }
+    navigate(route);
+  };
+
   return (
     <section id="services" className="services-section">
       <div className="services-container">
@@ -48,20 +53,29 @@ const ServicesSection: React.FC = () => {
             <span className="section-subtag">CARE THAT FITS YOUR LIFE</span>
             <h2 className="services-title">Our Services</h2>
           </div>
-          <a href="#all-services" className="link-explore-all">
-            Explore all ›
-          </a>
         </div>
 
         <div className="services-grid">
           {services.map((service) => (
-            <div key={service.id} className="service-card">
+            <div 
+              key={service.id} 
+              className="service-card"
+              style={{ cursor: 'pointer' }}
+              onClick={() => handleCardClick(service.id, service.route)}
+            >
               <div className="service-icon-box">{service.icon}</div>
               <h3 className="service-card-title">{service.title}</h3>
               <p className="service-card-desc">{service.description}</p>
-              <a href={`#service-${service.id}`} className="service-learn-more">
+              <button 
+                type="button" 
+                className="service-learn-more"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCardClick(service.id, service.route);
+                }}
+              >
                 Learn more →
-              </a>
+              </button>
             </div>
           ))}
         </div>

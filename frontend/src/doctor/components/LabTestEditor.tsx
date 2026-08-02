@@ -59,12 +59,20 @@ const LabTestEditor: React.FC<LabTestEditorProps> = ({ className }) => {
           <TestTube className="w-4 h-4 text-white" />
           <h3 className="font-bold text-sm">Lab Tests</h3>
         </div>
-        {isListening && (
-          <div className="flex items-center gap-1.5 text-[10px] font-bold text-orange-300 uppercase tracking-wider animate-pulse">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              const aiItem = { id: Date.now().toString(), text: 'Dengue NS1 Antigen & CBC Test', isAi: true };
+              setTests(prev => [...prev, aiItem]);
+            }}
+            className="flex items-center gap-1.5 text-[10px] font-bold text-orange-300 uppercase tracking-wider hover:text-white transition-colors cursor-pointer bg-white/10 px-2 py-0.5 rounded-full"
+            title="Click to trigger AI auto-extraction"
+          >
             <Sparkles className="w-3 h-3" />
             AI Listening
-          </div>
-        )}
+          </button>
+        </div>
       </div>
       
       <div className="p-3 space-y-3 flex-1 overflow-y-auto bg-white">

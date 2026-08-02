@@ -63,8 +63,6 @@ const Navbar: React.FC = () => {
           >
             Doctors
           </button>
-          <a href="#how-it-works" className="nav-link">How It Works</a>
-          <a href="#testimonials" className="nav-link">Testimonials</a>
         </nav>
 
         {/* Actions */}

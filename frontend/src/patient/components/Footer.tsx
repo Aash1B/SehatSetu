@@ -4,7 +4,7 @@ const Footer: React.FC = () => {
   return (
     <footer id="contact" className="site-footer">
       <div className="footer-container">
-        <div className="footer-columns-grid">
+        <div className="footer-top-row">
           {/* Brand Column */}
           <div className="footer-brand-col">
             <a href="#home" className="footer-logo">
@@ -29,45 +29,38 @@ const Footer: React.FC = () => {
             </div>
           </div>
 
-          {/* Company Links */}
-          <div className="footer-links-col">
-            <h4 className="footer-col-title">Company</h4>
-            <ul className="footer-links-list">
-              <li><a href="#about">About us</a></li>
-              <li><a href="#careers">Careers</a></li>
-              <li><a href="#press">Press</a></li>
-            </ul>
-          </div>
+          {/* Right Link Columns Clustered Together */}
+          <div className="footer-right-links-wrapper">
+            {/* Services Links */}
+            <div className="footer-links-col">
+              <h4 className="footer-col-title">Services</h4>
+              <ul className="footer-links-list">
+                <li><a href="#doctors">Find a doctor</a></li>
+                <li><a href="#doctors">Book appointment</a></li>
+                <li><a href="#records">Health records</a></li>
+              </ul>
+            </div>
 
-          {/* Services Links */}
-          <div className="footer-links-col">
-            <h4 className="footer-col-title">Services</h4>
-            <ul className="footer-links-list">
-              <li><a href="#doctors">Find a doctor</a></li>
-              <li><a href="#doctors">Book appointment</a></li>
-              <li><a href="#records">Health records</a></li>
-            </ul>
-          </div>
+            {/* Support Links */}
+            <div className="footer-links-col">
+              <h4 className="footer-col-title">Support</h4>
+              <ul className="footer-links-list">
+                <li><a href="#help">Help center</a></li>
+                <li><a href="#contact">Contact us</a></li>
+                <li><a href="#privacy">Privacy policy</a></li>
+              </ul>
+            </div>
 
-          {/* Support Links */}
-          <div className="footer-links-col">
-            <h4 className="footer-col-title">Support</h4>
-            <ul className="footer-links-list">
-              <li><a href="#help">Help center</a></li>
-              <li><a href="#contact">Contact us</a></li>
-              <li><a href="#privacy">Privacy policy</a></li>
-            </ul>
-          </div>
-
-          {/* Connect Column */}
-          <div className="footer-links-col">
-            <h4 className="footer-col-title">Connect</h4>
-            <p className="footer-connect-text">
-              Have a question? Our care team is here for you.
-            </p>
-            <a href="#talk" className="talk-to-us-link">
-              Talk to us →
-            </a>
+            {/* Connect Column */}
+            <div className="footer-links-col">
+              <h4 className="footer-col-title">Connect</h4>
+              <ul className="footer-links-list mb-2">
+                <li><a href="#about">About us</a></li>
+              </ul>
+              <a href="#talk" className="talk-to-us-link">
+                Talk to us →
+              </a>
+            </div>
           </div>
         </div>
 

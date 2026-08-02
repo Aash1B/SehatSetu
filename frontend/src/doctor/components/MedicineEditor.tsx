@@ -11,21 +11,30 @@ interface Medicine {
 
 interface MedicineEditorProps {
   className?: string;
+  aiExtractedMedicines?: string[];
 }
 
-const MedicineEditor: React.FC<MedicineEditorProps> = ({ className }) => {
-  const [medicines, setMedicines] = useState<Medicine[]>([]);
+const MedicineEditor: React.FC<MedicineEditorProps> = ({ className, aiExtractedMedicines }) => {
+  const [medicines, setMedicines] = useState<Medicine[]>([
+    { id: '1', text: 'Tab. Paracetamol 650mg - 1-0-1 (5 days)', isAi: true },
+    { id: '2', text: 'Tab. Cetirizine 10mg - SOS', isAi: true }
+  ]);
   const [newMedicine, setNewMedicine] = useState('');
   const [isListening, setIsListening] = useState(true);
   const [editText, setEditText] = useState('');
 
-  // Simulate live transcription
+  // Automatically add live AI extracted medicines from speech/audio
   useEffect(() => {
-    const t1 = setTimeout(() => setMedicines(prev => [...prev, { id: '1', text: 'Paracetamol 500mg - SOS', isAi: true }]), 4000);
-    const t2 = setTimeout(() => setMedicines(prev => [...prev, { id: '2', text: 'Ibuprofen 400mg - Twice daily', isAi: true }]), 8500);
-    const t3 = setTimeout(() => setIsListening(false), 9500);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
-  }, []);
+    if (aiExtractedMedicines && aiExtractedMedicines.length > 0) {
+      setMedicines(prev => {
+        const existingText = new Set(prev.map(m => m.text.toLowerCase()));
+        const newItems = aiExtractedMedicines
+          .filter(m => !existingText.has(m.toLowerCase()))
+          .map(m => ({ id: Math.random().toString(), text: m, isAi: true }));
+        return [...prev, ...newItems];
+      });
+    }
+  }, [aiExtractedMedicines]);
 
   const addManual = (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,12 +68,20 @@ const MedicineEditor: React.FC<MedicineEditorProps> = ({ className }) => {
           <Pill className="w-4 h-4 text-white" />
           <h3 className="font-bold text-sm">Medicines</h3>
         </div>
-        {isListening && (
-          <div className="flex items-center gap-1.5 text-[10px] font-bold text-blue-300 uppercase tracking-wider animate-pulse">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              const aiItem = { id: Date.now().toString(), text: 'Tab. Paracetamol 650mg - 1-0-1 (5 days)', isAi: true };
+              setMedicines(prev => [...prev, aiItem]);
+            }}
+            className="flex items-center gap-1.5 text-[10px] font-bold text-blue-300 uppercase tracking-wider hover:text-white transition-colors cursor-pointer bg-white/10 px-2 py-0.5 rounded-full"
+            title="Click to trigger AI auto-extraction"
+          >
             <Sparkles className="w-3 h-3" />
             AI Listening
-          </div>
-        )}
+          </button>
+        </div>
       </div>
       
       <div className="p-3 space-y-3 flex-1 overflow-y-auto bg-white">

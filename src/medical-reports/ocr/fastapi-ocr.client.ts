@@ -52,7 +52,7 @@ export class FastApiOcrClient implements OcrClient {
     mimeType: string,
   ): Promise<OcrResult> {
     const form = new FormData();
-    form.append('file', new Blob([bytes], { type: mimeType }), fileName);
+    form.append('file', new Blob([Buffer.from(bytes)], { type: mimeType }), fileName);
     form.append('include_summary', 'true');
 
     let response: Response;

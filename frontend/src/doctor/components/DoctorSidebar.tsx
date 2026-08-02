@@ -1,7 +1,8 @@
-import React from 'react';
-import { Home, Users, Calendar, Bell, User } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Home, Users, Calendar, Bell, User, ChevronDown } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { cn } from '../../lib/utils';
+import { getActiveDoctor, setActiveDoctorId, DOCTORS_LIST, type DoctorProfile } from '../utils/doctorProfile';
 
 export interface DoctorSidebarProps {
   className?: string;
@@ -10,12 +11,23 @@ export interface DoctorSidebarProps {
 const navItems = [
   { name: 'Home', path: '/doctor/dashboard', icon: Home },
   { name: 'Patients', path: '/doctor/consultations', icon: Users },
+  { name: 'Availability', path: '/doctor/availability', icon: Calendar },
   { name: 'Profile', path: '/doctor/profile', icon: User },
 ];
 
 const DoctorSidebar: React.FC<DoctorSidebarProps> = ({ className }) => {
+  const [activeDoctor, setActiveDoctor] = useState<DoctorProfile>(getActiveDoctor());
+
+  useEffect(() => {
+    const handleDoctorChange = () => {
+      setActiveDoctor(getActiveDoctor());
+    };
+    window.addEventListener('sehat_doctor_changed', handleDoctorChange);
+    return () => window.removeEventListener('sehat_doctor_changed', handleDoctorChange);
+  }, []);
+
   return (
-    <aside className={cn("w-64 bg-deep-space border-r border-jodhpur-tan/30 flex flex-col justify-between hidden md:flex h-full", className)}>
+    <aside className={cn("shrink-0 w-64 bg-deep-space border-r border-jodhpur-tan/30 flex flex-col justify-between hidden md:flex h-full", className)}>
       <div>
         {/* Logo */}
         <div className="p-6 flex items-center gap-3">
@@ -54,15 +66,24 @@ const DoctorSidebar: React.FC<DoctorSidebarProps> = ({ className }) => {
         </nav>
       </div>
 
-      {/* Doctor Snippet */}
-      <div className="p-4 m-4 bg-white/10 rounded-xl flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-white text-deep-space flex items-center justify-center font-bold text-sm shrink-0">
-          DS
+      {/* Active Doctor Selector */}
+      <div className="p-4 m-4 bg-white/10 rounded-xl">
+        <p className="text-[10px] uppercase tracking-wider text-white/50 font-bold mb-1">Doctor Account</p>
+        <div className="relative">
+          <select
+            value={activeDoctor.id}
+            onChange={(e) => setActiveDoctorId(e.target.value)}
+            className="w-full bg-deep-space text-white font-bold text-sm rounded-lg p-2 border border-white/20 focus:outline-none focus:border-habanero appearance-none cursor-pointer pr-8"
+          >
+            {DOCTORS_LIST.map((doc) => (
+              <option key={doc.id} value={doc.id} className="bg-deep-space text-white">
+                {doc.name} ({doc.specialization})
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="w-4 h-4 text-white/70 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
-        <div className="min-w-0">
-          <p className="text-sm font-bold text-white truncate">Dr. Sharma</p>
-          <p className="text-xs text-white/60 truncate">General Physician</p>
-        </div>
+        <p className="text-xs text-white/60 mt-1.5 truncate">{activeDoctor.specialization}</p>
       </div>
     </aside>
   );

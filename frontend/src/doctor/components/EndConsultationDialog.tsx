@@ -42,7 +42,21 @@ const EndConsultationDialog: React.FC<EndConsultationDialogProps> = ({ isOpen, o
               Cancel
             </button>
             <button 
-              onClick={() => navigate(`/doctor/prescription/${consultationId}`)}
+              onClick={async () => {
+                try {
+                  await fetch('/api/livekit/end-consultation', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      appointmentId: consultationId,
+                      notes: 'Consultation ended by doctor.',
+                    }),
+                  });
+                } catch (err) {
+                  console.warn('Could not post end-consultation queue job:', err);
+                }
+                navigate(`/doctor/prescription/${consultationId}`);
+              }}
               className="flex-1 py-3 rounded-xl bg-habanero text-white font-bold hover:bg-[#e0750e] transition-colors"
             >
               Proceed to Prescription

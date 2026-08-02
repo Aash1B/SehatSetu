@@ -23,6 +23,9 @@ import ConsultationsList from './doctor/pages/ConsultationsList';
 import PatientDetails from './doctor/pages/PatientDetails';
 import DoctorPrescription from './doctor/pages/DoctorPrescription';
 import VideoConsultation from './doctor/pages/VideoConsultation';
+import DoctorProfile from './doctor/pages/DoctorProfile';
+import DoctorAvailability from './doctor/pages/DoctorAvailability';
+import DoctorOnboarding from './doctor/pages/DoctorOnboarding';
 
 // Landing Page
 import LandingPage from './patient/pages/LandingPage';
@@ -72,6 +75,10 @@ function App() {
           <Route path="/doctor/patient/:id" element={<PatientDetails />} />
           <Route path="/doctor/prescription/:id" element={<DoctorPrescription />} />
           <Route path="/doctor/consultation/:id" element={<VideoConsultation />} />
+          <Route path="/doctor/profile" element={<DoctorProfile />} />
+          <Route path="/doctor/availability" element={<DoctorAvailability />} />
+          <Route path="/doctor/onboarding" element={<DoctorOnboarding />} />
+          <Route path="/doctor/setup-profile" element={<DoctorOnboarding />} />
         </Routes>
       </Router>
     </Provider>

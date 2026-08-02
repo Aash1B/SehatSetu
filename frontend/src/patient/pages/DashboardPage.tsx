@@ -1,9 +1,11 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../store';
 import { setDashboardTab, type DashboardTabType } from '../store/uiSlice';
 import { useNavigate } from 'react-router-dom';
 import { uploadMedicalReport } from '../services/medicalReportsApi';
+import { doctorsData } from '../data/doctorsData';
+import { getAppointmentTimeStatus } from '../../utils/appointmentTime';
 
 interface ConsultationItem {
   id: string;
@@ -68,11 +70,29 @@ const DashboardPage: React.FC = () => {
   const [activeSubTab, setActiveSubTab] = useState<'consultations' | 'prescriptions'>('prescriptions');
   const [showEmergencyModal, setShowEmergencyModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState<ConsultationItem | null>(null);
+  const [latestAppointment, setLatestAppointment] = useState<any>(null);
   const [reportUploadState, setReportUploadState] = useState<
     'idle' | 'uploading' | 'success' | 'error'
   >('idle');
   const [reportUploadMessage, setReportUploadMessage] = useState('');
   const reportInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        const res = await fetch('/api/appointments');
+        if (res.ok) {
+          const apps = await res.json();
+          if (Array.isArray(apps) && apps.length > 0) {
+            setLatestAppointment(apps[0]); // Most recently booked appointment
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch appointments:", err);
+      }
+    };
+    fetchAppointments();
+  }, []);
 
   const handleTabClick = (tab: DashboardTabType) => {
     dispatch(setDashboardTab(tab));
@@ -141,20 +161,6 @@ const DashboardPage: React.FC = () => {
 
               <button 
                 type="button" 
-                className={`sidebar-item ${currentPage === 'dashboard' && activeTab === 'overview' ? 'active' : ''}`}
-                onClick={() => handleTabClick('overview')}
-              >
-                <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="3" width="7" height="7"></rect>
-                  <rect x="14" y="3" width="7" height="7"></rect>
-                  <rect x="14" y="14" width="7" height="7"></rect>
-                  <rect x="3" y="14" width="7" height="7"></rect>
-                </svg>
-                <span>Patient Dashboard</span>
-              </button>
-
-              <button 
-                type="button" 
                 className={`sidebar-item ${currentPage === 'doctors' ? 'active' : ''}`}
                 onClick={() => navigate('/patient/search')}
               >
@@ -185,18 +191,6 @@ const DashboardPage: React.FC = () => {
                   <line x1="3" y1="10" x2="21" y2="10"></line>
                 </svg>
                 <span>My Appointments</span>
-              </button>
-
-              <button 
-                type="button" 
-                className={`sidebar-item ${currentPage === 'dashboard' && activeTab === 'video' ? 'active' : ''}`}
-                onClick={() => handleTabClick('video')}
-              >
-                <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polygon points="23 7 16 12 23 17 23 7"></polygon>
-                  <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
-                </svg>
-                <span>Video Consultation</span>
               </button>
 
               <button 
@@ -403,62 +397,104 @@ const DashboardPage: React.FC = () => {
             {/* LEFT COLUMN: Upcoming Appointment & Recent Consultations */}
             <div className="dash-left-col">
               {/* Upcoming Appointment Box */}
-              <div className="upcoming-appt-card">
-                <div className="upcoming-card-header">
-                  <h2 className="section-title">Upcoming Appointment</h2>
-                  <button type="button" className="link-view-all" onClick={() => handleTabClick('appointments')}>
-                    View All Appointments
-                  </button>
-                </div>
+              {(() => {
+                const bookedDocId = latestAppointment?.doctorId || 'd1';
+                const bookedDoctor = doctorsData.find(d => d.id === bookedDocId) || doctorsData[0];
+                const displayDocName = bookedDoctor.name;
+                const displayDocSub = `${bookedDoctor.specialty} • ${bookedDoctor.experience}`;
+                const displayDate = latestAppointment?.date || 'Today';
+                const displayTime = latestAppointment?.timeSlot || '10:00 AM';
+                const displayMode = latestAppointment?.consultMode || 'Video Consultation';
+                const displayPhoto = bookedDoctor.imageUrl || 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=400';
+                const apptId = latestAppointment?.id || '1';
 
-                <div className="upcoming-card-content">
-                  <img 
-                    src="https://images.unsplash.com/photo-1594824813566-88855ce78906?auto=format&fit=crop&q=80&w=300" 
-                    alt="Dr. Ananya Sharma" 
-                    className="doctor-avatar-large" 
-                  />
-                  <div className="doc-meta">
-                    <div className="doc-name-verified">
-                      <h3 className="doctor-name">Dr. Ananya Sharma</h3>
-                      <span className="verified-blue-tick">✓</span>
-                    </div>
-                    <p className="doctor-sub">Dermatologist • 11+ Years Experience</p>
-
-                    <div className="appt-datetime-row">
-                      <span className="icon-text">📅 Mon, 20 May 2024</span>
-                      <span className="icon-text">🕒 07:30 PM</span>
-                    </div>
-
-                    <div className="appt-mode-chip">
-                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#2563EB" strokeWidth="2">
-                        <polygon points="23 7 16 12 23 17 23 7"/>
-                        <rect x="1" y="5" width="15" height="14" rx="2"/>
-                      </svg>
-                      <span>Video Consultation</span>
-                    </div>
-                  </div>
-
-                  <div className="upcoming-card-right">
-                    <span className="badge-confirmed">Confirmed</span>
-                    <div className="action-buttons-group">
-                      <button 
-                        type="button" 
-                        className="btn-reschedule"
-                        onClick={() => navigate('/patient/book/new')}
-                      >
-                        Reschedule
-                      </button>
-                      <button 
-                        type="button" 
-                        className="btn-join-consultation"
-                        onClick={() => navigate('/patient/consultation/1')}
-                      >
-                        Join Consultation
+                return (
+                  <div className="upcoming-appt-card">
+                    <div className="upcoming-card-header">
+                      <h2 className="section-title">Upcoming Appointment</h2>
+                      <button type="button" className="link-view-all" onClick={() => handleTabClick('appointments')}>
+                        View All Appointments
                       </button>
                     </div>
+
+                    <div className="upcoming-card-content">
+                      <img 
+                        src={displayPhoto} 
+                        alt={displayDocName} 
+                        className="doctor-avatar-large" 
+                      />
+                      <div className="doc-meta">
+                        <div className="doc-name-verified">
+                          <h3 className="doctor-name">{displayDocName}</h3>
+                          <span className="verified-blue-tick">✓</span>
+                        </div>
+                        <p className="doctor-sub">{displayDocSub}</p>
+
+                        <div className="appt-datetime-row">
+                          <span className="icon-text">📅 {displayDate}</span>
+                          <span className="icon-text">🕒 {displayTime}</span>
+                        </div>
+
+                        <div className="appt-mode-chip">
+                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#2563EB" strokeWidth="2">
+                            <polygon points="23 7 16 12 23 17 23 7"/>
+                            <rect x="1" y="5" width="15" height="14" rx="2"/>
+                          </svg>
+                          <span>{displayMode}</span>
+                        </div>
+                      </div>
+
+                      {(() => {
+                        const timeStatus = getAppointmentTimeStatus(
+                          latestAppointment?.scheduledAt,
+                          displayDate,
+                          displayTime
+                        );
+
+                        return (
+                          <div className="upcoming-card-right">
+                            <span className="badge-confirmed">
+                              {latestAppointment?.status === 'COMPLETED' ? 'Completed' : timeStatus.isJoinable ? 'Live Now' : 'Confirmed'}
+                            </span>
+                            <div className="action-buttons-group">
+                              <button 
+                                type="button" 
+                                className="btn-reschedule"
+                                onClick={() => navigate('/patient/book/new')}
+                              >
+                                Reschedule
+                              </button>
+                              {timeStatus.isJoinable ? (
+                                <button 
+                                  type="button" 
+                                  className="btn-join-consultation animate-pulse bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                                  onClick={() => navigate(`/patient/consultation/${apptId}`)}
+                                >
+                                  📹 Join Consultation
+                                </button>
+                              ) : (
+                                <button 
+                                  type="button" 
+                                  className="btn-join-consultation opacity-60 cursor-not-allowed bg-slate-200 text-slate-600 border border-slate-300"
+                                  title={timeStatus.sublabel}
+                                  onClick={() => alert(`Consultation is scheduled for ${displayTime}. You can join 10 minutes prior to your scheduled time.`)}
+                                >
+                                  🔒 {timeStatus.label}
+                                </button>
+                              )}
+                            </div>
+                            {!timeStatus.isJoinable && timeStatus.sublabel && (
+                              <span className="text-[11px] font-semibold text-amber-600 block text-right mt-1">
+                                ⏱️ {timeStatus.sublabel}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
                   </div>
-                </div>
-              </div>
+                );
+              })()}
 
               {/* Recent Consultations Section */}
               <div className="recent-consultations-card">
@@ -564,38 +600,78 @@ const DashboardPage: React.FC = () => {
 
 
               {/* Widget 2: Health Reminders */}
-              <div className="dash-widget-card">
-                <div className="widget-header">
-                  <h3 className="widget-title">Health Reminders</h3>
-                  <button type="button" className="widget-link" onClick={() => handleTabClick('records')}>
-                    View All
-                  </button>
-                </div>
+              {(() => {
+                const doctorPrescribedReminders = (latestAppointment?.prescriptions && Array.isArray(latestAppointment.prescriptions) && latestAppointment.prescriptions.length > 0)
+                  ? latestAppointment.prescriptions.map((rx: any) => ({
+                      icon: '💊',
+                      title: rx.medicationName || 'Prescribed Medication',
+                      sub: `${rx.dosage || 'Take as directed'} (${rx.frequency || 'Daily'})`,
+                      time: rx.timing || '08:00 AM',
+                    }))
+                  : [];
 
-                <div className="reminders-list">
-                  <div className="reminder-item">
-                    <div className="reminder-icon-box blue">💊</div>
-                    <div className="reminder-info">
-                      <span className="reminder-title">Take Vitamin D3</span>
-                      <span className="reminder-sub">Daily, After Breakfast</span>
+                const defaultGenericReminders = [
+                  {
+                    icon: '💧',
+                    title: 'Drink Water',
+                    sub: 'Drink at least 2 liters (8 glasses) per day for optimal hydration',
+                    time: 'Daily',
+                  },
+                  {
+                    icon: '🚶',
+                    title: 'Daily Walk & Exercise',
+                    sub: 'Walk at least 30 minutes daily for cardiovascular wellness',
+                    time: 'Daily',
+                  },
+                  {
+                    icon: '😴',
+                    title: 'Restful Sleep',
+                    sub: 'Get 7-8 hours of continuous sleep for body recovery',
+                    time: 'Daily',
+                  },
+                ];
+
+                const displayReminders = doctorPrescribedReminders.length > 0 
+                  ? doctorPrescribedReminders 
+                  : defaultGenericReminders;
+
+                const isDocRecommended = doctorPrescribedReminders.length > 0;
+
+                return (
+                  <div className="dash-widget-card">
+                    <div className="widget-header">
+                      <div>
+                        <h3 className="widget-title">Health Reminders</h3>
+                        <span className="text-[11px] font-semibold text-slate-500 block mt-0.5">
+                          {isDocRecommended ? '🩺 Doctor Prescribed' : '🌿 Daily Wellness Guidelines'}
+                        </span>
+                      </div>
+                      <button type="button" className="widget-link" onClick={() => handleTabClick('records')}>
+                        View All
+                      </button>
                     </div>
-                    <span className="reminder-time">08:00 AM</span>
-                  </div>
 
-                  <div className="reminder-item">
-                    <div className="reminder-icon-box green">🧪</div>
-                    <div className="reminder-info">
-                      <span className="reminder-title">Drink Water</span>
-                      <span className="reminder-sub">Daily Goal: 8 glasses</span>
+                    <div className="reminders-list">
+                      {displayReminders.map((item, idx) => (
+                        <div key={idx} className="reminder-item">
+                          <div className={`reminder-icon-box ${idx % 2 === 0 ? 'blue' : 'green'}`}>
+                            {item.icon}
+                          </div>
+                          <div className="reminder-info">
+                            <span className="reminder-title">{item.title}</span>
+                            <span className="reminder-sub">{item.sub}</span>
+                          </div>
+                          <span className="reminder-time">{item.time}</span>
+                        </div>
+                      ))}
                     </div>
-                    <span className="reminder-time">Daily</span>
-                  </div>
-                </div>
 
-                <button type="button" className="btn-add-reminder" onClick={() => alert('Add reminder modal opened')}>
-                  + Add Reminder
-                </button>
-              </div>
+                    <button type="button" className="btn-add-reminder" onClick={() => alert('Add reminder modal opened')}>
+                      + Add Reminder
+                    </button>
+                  </div>
+                );
+              })()}
 
               {/* Widget 3: Need Immediate Help? (Emergency) */}
               <div className="emergency-widget-card">
@@ -663,14 +739,33 @@ const DashboardPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="appt-card-footer">
-                      <button type="button" className="btn-join-video-sm" onClick={() => alert(`Joining ${item.mode}...`)}>
-                        Join Consultation
-                      </button>
-                      <button type="button" className="btn-card-secondary">
-                        Reschedule
-                      </button>
-                    </div>
+                    {(() => {
+                      const cardTimeStatus = getAppointmentTimeStatus(undefined, item.date, item.time);
+                      return (
+                        <div className="appt-card-footer">
+                          {cardTimeStatus.isJoinable ? (
+                            <button 
+                              type="button" 
+                              className="btn-join-video-sm animate-pulse bg-emerald-600 hover:bg-emerald-700 text-white font-bold" 
+                              onClick={() => navigate(`/patient/consultation/${item.id}`)}
+                            >
+                              📹 Join Consultation
+                            </button>
+                          ) : (
+                            <button 
+                              type="button" 
+                              className="btn-join-video-sm opacity-60 cursor-not-allowed bg-slate-200 text-slate-600 border border-slate-300" 
+                              onClick={() => alert(`Consultation is scheduled for ${item.time}. You can join 10 minutes prior to your scheduled time.`)}
+                            >
+                              🔒 {cardTimeStatus.label}
+                            </button>
+                          )}
+                          <button type="button" className="btn-card-secondary" onClick={() => navigate('/patient/book/new')}>
+                            Reschedule
+                          </button>
+                        </div>
+                      );
+                    })()}
                   </div>
                 ))}
               </div>

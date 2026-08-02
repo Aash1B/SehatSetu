@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import DoctorSidebar from '../components/DoctorSidebar';
-import DashboardHeader from '../components/DashboardHeader';
-import VideoContainer from '../components/VideoContainer';
-import VideoControls from '../components/VideoControls';
+import { LiveKitRoom, VideoConference } from '@livekit/components-react';
+import '@livekit/components-styles';
 import PatientMiniCard from '../components/PatientMiniCard';
 import ConsultationTimer from '../components/ConsultationTimer';
 import SymptomsEditor from '../components/SymptomsEditor';
@@ -12,7 +10,8 @@ import LabTestEditor from '../components/LabTestEditor';
 import DietEditor from '../components/DietEditor';
 import EndConsultationDialog from '../components/EndConsultationDialog';
 import type { PatientProfile, TranscriptDTO, AIInsightDTO } from '../../types';
-import { Shield } from 'lucide-react';
+import { Shield, Mic } from 'lucide-react';
+import { useLiveAudioTranscription } from '../../common/hooks/useLiveAudioTranscription';
 
 // Mock Data
 const mockPatient: PatientProfile = {
@@ -42,6 +41,22 @@ const VideoConsultation: React.FC = () => {
   const { consultationId = '1' } = useParams<{ consultationId: string }>();
   const navigate = useNavigate();
   const [isEndCallOpen, setIsEndCallOpen] = useState(false);
+  const [token, setToken] = useState("");
+  const serverUrl = import.meta.env.VITE_LIVEKIT_URL;
+
+  const { isRecording, symptoms, medicines, startRecording, stopRecording } = useLiveAudioTranscription();
+
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const resp = await fetch(`/api/livekit/token?room=${consultationId}&username=Doctor`);
+        const data = await resp.json();
+        setToken(data.token);
+      } catch (e) {
+        console.error(e);
+      }
+    })();
+  }, [consultationId]);
 
   return (
     <div className="flex h-screen bg-luster-white font-sans text-deep-space">
@@ -61,6 +76,18 @@ const VideoConsultation: React.FC = () => {
               <Shield className="w-4 h-4" />
               End-to-End Encrypted
             </div>
+            <button
+              type="button"
+              onClick={isRecording ? stopRecording : startRecording}
+              className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                isRecording 
+                  ? 'bg-red-500 text-white animate-pulse shadow-md' 
+                  : 'bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-300'
+              }`}
+            >
+              <Mic className="w-3.5 h-3.5" />
+              {isRecording ? '🔴 Listening Live Speech...' : '🎙️ Start AI Mic Listening'}
+            </button>
           </div>
           <ConsultationTimer />
         </div>
@@ -71,11 +98,24 @@ const VideoConsultation: React.FC = () => {
             
             {/* Left Column: Video & Controls */}
             <div className="lg:col-span-8 flex flex-col h-full gap-4">
-              <div className="flex-1 min-h-0 relative rounded-2xl overflow-hidden">
-                <VideoContainer className="h-full" />
-              </div>
-              <div className="shrink-0">
-                <VideoControls onEndCall={() => setIsEndCallOpen(true)} />
+              <div className="flex-1 min-h-0 relative rounded-2xl overflow-hidden bg-gray-900 border border-gray-200 shadow-sm">
+                {token ? (
+                  <LiveKitRoom
+                    video={true}
+                    audio={true}
+                    token={token}
+                    serverUrl={serverUrl}
+                    data-lk-theme="default"
+                    style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+                    onDisconnected={() => setIsEndCallOpen(true)}
+                  >
+                    <VideoConference />
+                  </LiveKitRoom>
+                ) : (
+                  <div className="flex h-full items-center justify-center text-white/50 font-medium">
+                    Connecting to secure room...
+                  </div>
+                )}
               </div>
             </div>
 
@@ -84,8 +124,8 @@ const VideoConsultation: React.FC = () => {
               <PatientMiniCard patient={mockPatient} />
               
               <div className="flex-1 flex flex-col gap-4 min-h-0">
-                <SymptomsEditor className="flex-1 min-h-[200px]" />
-                <MedicineEditor className="flex-1 min-h-[200px]" />
+                <SymptomsEditor className="flex-1 min-h-[200px]" aiExtractedSymptoms={symptoms} />
+                <MedicineEditor className="flex-1 min-h-[200px]" aiExtractedMedicines={medicines} />
                 <LabTestEditor className="flex-1 min-h-[200px]" />
                 <DietEditor className="flex-1 min-h-[200px]" />
               </div>

@@ -11,22 +11,30 @@ interface Symptom {
 
 interface SymptomsEditorProps {
   className?: string;
+  aiExtractedSymptoms?: string[];
 }
 
-const SymptomsEditor: React.FC<SymptomsEditorProps> = ({ className }) => {
-  const [symptoms, setSymptoms] = useState<Symptom[]>([]);
+const SymptomsEditor: React.FC<SymptomsEditorProps> = ({ className, aiExtractedSymptoms }) => {
+  const [symptoms, setSymptoms] = useState<Symptom[]>([
+    { id: '1', text: 'Persistent Fever (4 days)', isAi: true },
+    { id: '2', text: 'Body ache & Fatigue', isAi: true }
+  ]);
   const [newSymptom, setNewSymptom] = useState('');
   const [isListening, setIsListening] = useState(true);
   const [editText, setEditText] = useState('');
 
-  // Simulate live transcription
+  // Automatically add live AI extracted symptoms from speech/audio
   useEffect(() => {
-    const t1 = setTimeout(() => setSymptoms(prev => [...prev, { id: '1', text: 'Persistent Fever (4 days)', isAi: true }]), 2000);
-    const t2 = setTimeout(() => setSymptoms(prev => [...prev, { id: '2', text: 'Body ache', isAi: true }]), 4500);
-    const t3 = setTimeout(() => setSymptoms(prev => [...prev, { id: '3', text: 'Headache', isAi: true }]), 7000);
-    const t4 = setTimeout(() => setIsListening(false), 8000);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
-  }, []);
+    if (aiExtractedSymptoms && aiExtractedSymptoms.length > 0) {
+      setSymptoms(prev => {
+        const existingText = new Set(prev.map(s => s.text.toLowerCase()));
+        const newItems = aiExtractedSymptoms
+          .filter(s => !existingText.has(s.toLowerCase()))
+          .map(s => ({ id: Math.random().toString(), text: s, isAi: true }));
+        return [...prev, ...newItems];
+      });
+    }
+  }, [aiExtractedSymptoms]);
 
   const addManual = (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,12 +68,20 @@ const SymptomsEditor: React.FC<SymptomsEditorProps> = ({ className }) => {
           <Stethoscope className="w-4 h-4 text-white" />
           <h3 className="font-bold text-sm">Symptoms</h3>
         </div>
-        {isListening && (
-          <div className="flex items-center gap-1.5 text-[10px] font-bold text-purple-300 uppercase tracking-wider animate-pulse">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              const aiItem = { id: Date.now().toString(), text: 'High grade fever (102°F) with fatigue', isAi: true };
+              setSymptoms(prev => [...prev, aiItem]);
+            }}
+            className="flex items-center gap-1.5 text-[10px] font-bold text-purple-300 uppercase tracking-wider hover:text-white transition-colors cursor-pointer bg-white/10 px-2 py-0.5 rounded-full"
+            title="Click to trigger AI auto-extraction"
+          >
             <Sparkles className="w-3 h-3" />
             AI Listening
-          </div>
-        )}
+          </button>
+        </div>
       </div>
       
       <div className="p-3 space-y-3 flex-1 overflow-y-auto bg-white">

@@ -7,12 +7,14 @@ import type { ConsultationSummary } from '../../types';
 export interface ConsultationCardProps {
   consultation: ConsultationSummary;
   onViewPatient?: () => void;
+  onViewSummary?: () => void;
   className?: string;
 }
 
 const ConsultationCard: React.FC<ConsultationCardProps> = ({
   consultation,
   onViewPatient,
+  onViewSummary,
   className
 }) => {
   const { patient, time, tags } = consultation;
@@ -29,7 +31,7 @@ const ConsultationCard: React.FC<ConsultationCardProps> = ({
           </div>
           <div className="flex flex-wrap gap-2">
             {tags.map((tag, idx) => (
-              <StatusBadge key={idx} label={tag.label} variant={tag.variant} />
+              <StatusBadge key={idx} label={tag.label} variant={tag.variant as any} />
             ))}
           </div>
         </div>
@@ -39,12 +41,24 @@ const ConsultationCard: React.FC<ConsultationCardProps> = ({
           <Clock className="w-4 h-4" />
           {time}
         </div>
-        <button 
-          onClick={onViewPatient}
-          className="bg-habanero hover:bg-[#e0750e] text-white px-6 py-2 rounded-xl font-medium transition-colors shadow-sm whitespace-nowrap"
-        >
-          View Patient
-        </button>
+        <div className="flex gap-3">
+          <button 
+            type="button"
+            className="bg-blue-50 hover:bg-blue-100 text-aster-blue border border-aster-blue/20 px-4 py-2 rounded-xl font-medium transition-colors shadow-sm whitespace-nowrap cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewSummary?.();
+            }}
+          >
+            Consultation Summary
+          </button>
+          <button 
+            onClick={onViewPatient}
+            className="bg-habanero hover:bg-[#e0750e] text-white px-6 py-2 rounded-xl font-medium transition-colors shadow-sm whitespace-nowrap"
+          >
+            View Patient
+          </button>
+        </div>
       </div>
     </div>
   );
