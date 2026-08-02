@@ -1,6 +1,12 @@
 {
   "schema_version": 2,
   "generator": "offline Pillow and PyMuPDF",
+  "comparison_ignored_phrases": [
+    "SEHAT-SETU SYNTHETIC TEACHING DOCUMENT",
+    "Typed Prescription",
+    "Fictional record — no patient identity",
+    "For OCR evaluation only. Not medical advice."
+  ],
   "documents": [
     {
       "id": "rx-paracetamol",

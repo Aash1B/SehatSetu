@@ -14,6 +14,13 @@ from app.core.exceptions import AppException
 from app.main import app
 from app.schemas.ocr import LabFinding, OCRMedicalAnalysis
 from app.services.ocr_service import OCRService, get_ocr_service
+from app.services.ocr.providers import TesseractRuntime
+
+
+def force_gemini_only(service: OCRService) -> OCRService:
+    """Keep provider-contract tests independent of host Tesseract installs."""
+    service.local_provider.runtime = TesseractRuntime(False, None, None, "missing")
+    return service
 
 
 class FakeGemini:
@@ -53,7 +60,7 @@ class FakeGemini:
 @pytest.fixture
 def client():
     fake = FakeGemini()
-    service = OCRService(Settings(_env_file=None), fake)
+    service = force_gemini_only(OCRService(Settings(_env_file=None), fake))
     app.dependency_overrides[get_ocr_service] = lambda: service
     with TestClient(app) as test_client:
         yield test_client
@@ -142,7 +149,7 @@ def test_pdf_and_multipage_pdf_ocr(page_count: int) -> None:
     fake = FakeGemini(
         [f"Extracted page {number}" for number in range(1, page_count + 1)]
     )
-    service = OCRService(Settings(_env_file=None), fake)
+    service = force_gemini_only(OCRService(Settings(_env_file=None), fake))
     app.dependency_overrides[get_ocr_service] = lambda: service
     try:
         with TestClient(app) as test_client:
@@ -219,7 +226,7 @@ def test_gemini_failure_is_mapped(
 
     path = tmp_path / "report.png"
     path.write_bytes(make_png())
-    service = OCRService(Settings(_env_file=None), FailingGemini())
+    service = force_gemini_only(OCRService(Settings(_env_file=None), FailingGemini()))
     with pytest.raises(AppException) as exc_info:
         service.analyze(path, "image/png", "auto", None, True)
     assert exc_info.value.code == "GEMINI_OCR_FAILED"

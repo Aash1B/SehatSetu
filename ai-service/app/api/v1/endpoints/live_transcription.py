@@ -1,6 +1,7 @@
 """Stateless-friendly live browser audio chunk transcription."""
 
 import asyncio
+import hmac
 import inspect
 import time
 from contextlib import suppress
@@ -420,6 +421,19 @@ async def live_transcription_websocket(
     service: TranscriptionService = Depends(get_transcription_service),
 ) -> None:
     """Stream sequential browser chunks with resumable temporary state."""
+    configured_key = settings.internal_api_key
+    if configured_key and settings.app_env.casefold() != "testing":
+        supplied_key = websocket.headers.get("X-Internal-API-Key", "")
+        if not supplied_key:
+            # Browser WebSocket clients cannot set custom headers. The local
+            # browser utility may therefore use the documented query option.
+            supplied_key = websocket.query_params.get("api_key", "")
+        if not hmac.compare_digest(
+            supplied_key,
+            configured_key.get_secret_value(),
+        ):
+            await websocket.close(code=1008, reason="Internal authentication failed")
+            return
     await websocket.accept()
     session: LiveTranscriptSession | None = None
     try:

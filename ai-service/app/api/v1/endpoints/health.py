@@ -12,6 +12,7 @@ from app.schemas.health import (
 )
 from app.core.ffmpeg import get_ffmpeg_status
 from app.services.transcription_service import get_transcription_service
+from app.services.ocr.providers import detect_tesseract
 
 router = APIRouter(tags=["Health"])
 settings = get_settings()
@@ -35,6 +36,8 @@ async def health_check() -> HealthResponse:
     """Return the current service health."""
     ffmpeg_status = get_ffmpeg_status(settings)
     transcription = get_transcription_service()
+    tesseract = detect_tesseract(settings.tesseract_path)
+    gemini_ready=bool(settings.gemini_api_key and settings.gemini_api_key.get_secret_value().strip())
     return HealthResponse(
         message="AI service is healthy",
         data=HealthData(
@@ -49,10 +52,16 @@ async def health_check() -> HealthResponse:
                 searched_locations=ffmpeg_status.searched_locations,
             ),
             ocr=OCRHealth(
-                available=bool(
-                    settings.gemini_api_key
-                    and settings.gemini_model.strip()
-                )
+                provider=settings.ocr_local_engine if tesseract.installed else "gemini-vision",
+                available=bool(tesseract.installed or (gemini_ready and settings.gemini_model.strip())),
+                mode=settings.ocr_mode,
+                local_available=tesseract.installed,
+                fallback_available=bool(gemini_ready and settings.gemini_model.strip()),
+                installed=tesseract.installed,
+                path=tesseract.path,
+                version=tesseract.version,
+                availability=tesseract.availability,
+                languages=list(tesseract.languages),
             ),
             whisper=WhisperHealth(
                 model=settings.whisper_model_size,
@@ -62,6 +71,6 @@ async def health_check() -> HealthResponse:
                 ready=transcription.is_ready,
             ),
             transcription_ready=ffmpeg_status.available and transcription.is_ready,
-            summary_provider_ready=bool(settings.gemini_api_key),
+            summary_provider_ready=gemini_ready,
         ),
     )

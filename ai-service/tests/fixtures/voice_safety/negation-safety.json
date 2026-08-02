@@ -1,0 +1,326 @@
+{
+  "schema_version": 1,
+  "classification": "deterministic text-only synthetic safety set",
+  "cases": [
+    {
+      "id": "neg-01",
+      "pair_id": "pair-01",
+      "positive": "Patient reports fever.",
+      "negative": "Patient reports no fever.",
+      "negation_term": "no",
+      "synthetic": true
+    },
+    {
+      "id": "neg-02",
+      "pair_id": "pair-02",
+      "positive": "Patient reports chest pain.",
+      "negative": "Patient reports denies chest pain.",
+      "negation_term": "denies",
+      "synthetic": true
+    },
+    {
+      "id": "neg-03",
+      "pair_id": "pair-03",
+      "positive": "Patient reports vomiting.",
+      "negative": "Patient reports no vomiting.",
+      "negation_term": "no",
+      "synthetic": true
+    },
+    {
+      "id": "neg-04",
+      "pair_id": "pair-04",
+      "positive": "Patient reports dizziness.",
+      "negative": "Patient reports does not feel dizzy.",
+      "negation_term": "does",
+      "synthetic": true
+    },
+    {
+      "id": "neg-05",
+      "pair_id": "pair-05",
+      "positive": "Patient reports known drug allergy.",
+      "negative": "Patient reports no known drug allergy.",
+      "negation_term": "no",
+      "synthetic": true
+    },
+    {
+      "id": "neg-06",
+      "pair_id": "pair-06",
+      "positive": "Patient reports shortness of breath.",
+      "negative": "Patient reports no shortness of breath.",
+      "negation_term": "no",
+      "synthetic": true
+    },
+    {
+      "id": "neg-07",
+      "pair_id": "pair-07",
+      "positive": "Patient reports cough and fever.",
+      "negative": "Patient reports cough but no fever.",
+      "negation_term": "cough",
+      "synthetic": true
+    },
+    {
+      "id": "neg-08",
+      "pair_id": "pair-08",
+      "positive": "Patient reports pain with swelling.",
+      "negative": "Patient reports pain without swelling.",
+      "negation_term": "pain",
+      "synthetic": true
+    },
+    {
+      "id": "neg-09",
+      "pair_id": "pair-09",
+      "positive": "Patient reports test result is positive.",
+      "negative": "Patient reports test result is negative.",
+      "negation_term": "test",
+      "synthetic": true
+    },
+    {
+      "id": "neg-10",
+      "pair_id": "pair-10",
+      "positive": "Patient reports taking medication.",
+      "negative": "Patient reports not taking medication.",
+      "negation_term": "not",
+      "synthetic": true
+    },
+    {
+      "id": "neg-11",
+      "pair_id": "pair-11",
+      "positive": "Patient reports fever.",
+      "negative": "Patient reports no fever.",
+      "negation_term": "नहीं है",
+      "synthetic": true
+    },
+    {
+      "id": "neg-12",
+      "pair_id": "pair-12",
+      "positive": "Patient reports chest pain.",
+      "negative": "Patient reports denies chest pain.",
+      "negation_term": "मना करता है",
+      "synthetic": true
+    },
+    {
+      "id": "neg-13",
+      "pair_id": "pair-13",
+      "positive": "Patient reports vomiting.",
+      "negative": "Patient reports no vomiting.",
+      "negation_term": "nahi",
+      "synthetic": true
+    },
+    {
+      "id": "neg-14",
+      "pair_id": "pair-14",
+      "positive": "Patient reports dizziness.",
+      "negative": "Patient reports does not feel dizzy.",
+      "negation_term": "nahi hai",
+      "synthetic": true
+    },
+    {
+      "id": "neg-15",
+      "pair_id": "pair-15",
+      "positive": "Patient reports known drug allergy.",
+      "negative": "Patient reports no known drug allergy.",
+      "negation_term": "bina",
+      "synthetic": true
+    },
+    {
+      "id": "neg-16",
+      "pair_id": "pair-16",
+      "positive": "Patient reports shortness of breath.",
+      "negative": "Patient reports no shortness of breath.",
+      "negation_term": "no",
+      "synthetic": true
+    },
+    {
+      "id": "neg-17",
+      "pair_id": "pair-17",
+      "positive": "Patient reports cough and fever.",
+      "negative": "Patient reports cough but no fever.",
+      "negation_term": "not",
+      "synthetic": true
+    },
+    {
+      "id": "neg-18",
+      "pair_id": "pair-18",
+      "positive": "Patient reports pain with swelling.",
+      "negative": "Patient reports pain without swelling.",
+      "negation_term": "denies",
+      "synthetic": true
+    },
+    {
+      "id": "neg-19",
+      "pair_id": "pair-19",
+      "positive": "Patient reports test result is positive.",
+      "negative": "Patient reports test result is negative.",
+      "negation_term": "denied",
+      "synthetic": true
+    },
+    {
+      "id": "neg-20",
+      "pair_id": "pair-20",
+      "positive": "Patient reports taking medication.",
+      "negative": "Patient reports not taking medication.",
+      "negation_term": "without",
+      "synthetic": true
+    },
+    {
+      "id": "neg-21",
+      "pair_id": "pair-21",
+      "positive": "Patient reports fever.",
+      "negative": "Patient reports no fever.",
+      "negation_term": "negative",
+      "synthetic": true
+    },
+    {
+      "id": "neg-22",
+      "pair_id": "pair-22",
+      "positive": "Patient reports chest pain.",
+      "negative": "Patient reports denies chest pain.",
+      "negation_term": "never",
+      "synthetic": true
+    },
+    {
+      "id": "neg-23",
+      "pair_id": "pair-23",
+      "positive": "Patient reports vomiting.",
+      "negative": "Patient reports no vomiting.",
+      "negation_term": "does not",
+      "synthetic": true
+    },
+    {
+      "id": "neg-24",
+      "pair_id": "pair-24",
+      "positive": "Patient reports dizziness.",
+      "negative": "Patient reports does not feel dizzy.",
+      "negation_term": "did not",
+      "synthetic": true
+    },
+    {
+      "id": "neg-25",
+      "pair_id": "pair-25",
+      "positive": "Patient reports known drug allergy.",
+      "negative": "Patient reports no known drug allergy.",
+      "negation_term": "नहीं",
+      "synthetic": true
+    },
+    {
+      "id": "neg-26",
+      "pair_id": "pair-26",
+      "positive": "Patient reports shortness of breath.",
+      "negative": "Patient reports no shortness of breath.",
+      "negation_term": "नहीं है",
+      "synthetic": true
+    },
+    {
+      "id": "neg-27",
+      "pair_id": "pair-27",
+      "positive": "Patient reports cough and fever.",
+      "negative": "Patient reports cough but no fever.",
+      "negation_term": "मना करता है",
+      "synthetic": true
+    },
+    {
+      "id": "neg-28",
+      "pair_id": "pair-28",
+      "positive": "Patient reports pain with swelling.",
+      "negative": "Patient reports pain without swelling.",
+      "negation_term": "nahi",
+      "synthetic": true
+    },
+    {
+      "id": "neg-29",
+      "pair_id": "pair-29",
+      "positive": "Patient reports test result is positive.",
+      "negative": "Patient reports test result is negative.",
+      "negation_term": "nahi hai",
+      "synthetic": true
+    },
+    {
+      "id": "neg-30",
+      "pair_id": "pair-30",
+      "positive": "Patient reports taking medication.",
+      "negative": "Patient reports not taking medication.",
+      "negation_term": "bina",
+      "synthetic": true
+    },
+    {
+      "id": "neg-31",
+      "pair_id": "pair-31",
+      "positive": "Patient reports fever.",
+      "negative": "Patient reports no fever.",
+      "negation_term": "no",
+      "synthetic": true
+    },
+    {
+      "id": "neg-32",
+      "pair_id": "pair-32",
+      "positive": "Patient reports chest pain.",
+      "negative": "Patient reports denies chest pain.",
+      "negation_term": "not",
+      "synthetic": true
+    },
+    {
+      "id": "neg-33",
+      "pair_id": "pair-33",
+      "positive": "Patient reports vomiting.",
+      "negative": "Patient reports no vomiting.",
+      "negation_term": "denies",
+      "synthetic": true
+    },
+    {
+      "id": "neg-34",
+      "pair_id": "pair-34",
+      "positive": "Patient reports dizziness.",
+      "negative": "Patient reports does not feel dizzy.",
+      "negation_term": "denied",
+      "synthetic": true
+    },
+    {
+      "id": "neg-35",
+      "pair_id": "pair-35",
+      "positive": "Patient reports known drug allergy.",
+      "negative": "Patient reports no known drug allergy.",
+      "negation_term": "without",
+      "synthetic": true
+    },
+    {
+      "id": "neg-36",
+      "pair_id": "pair-36",
+      "positive": "Patient reports shortness of breath.",
+      "negative": "Patient reports no shortness of breath.",
+      "negation_term": "negative",
+      "synthetic": true
+    },
+    {
+      "id": "neg-37",
+      "pair_id": "pair-37",
+      "positive": "Patient reports cough and fever.",
+      "negative": "Patient reports cough but no fever.",
+      "negation_term": "never",
+      "synthetic": true
+    },
+    {
+      "id": "neg-38",
+      "pair_id": "pair-38",
+      "positive": "Patient reports pain with swelling.",
+      "negative": "Patient reports pain without swelling.",
+      "negation_term": "does not",
+      "synthetic": true
+    },
+    {
+      "id": "neg-39",
+      "pair_id": "pair-39",
+      "positive": "Patient reports test result is positive.",
+      "negative": "Patient reports test result is negative.",
+      "negation_term": "did not",
+      "synthetic": true
+    },
+    {
+      "id": "neg-40",
+      "pair_id": "pair-40",
+      "positive": "Patient reports taking medication.",
+      "negative": "Patient reports not taking medication.",
+      "negation_term": "नहीं",
+      "synthetic": true
+    }
+  ]
+}

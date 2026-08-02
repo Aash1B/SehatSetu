@@ -19,6 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 DEFAULT_MANIFEST = ROOT / "tests/fixtures/voice_dataset_manifest.json"
 DEFAULT_REPORT_DIR = ROOT / "reports/standalone-verification"
+from app.services.transcription_safety_service import metrics_dict, score_dosages
 
 
 def normalize(text: str) -> str:
@@ -113,6 +114,9 @@ def run(manifest_path: Path, output_dir: Path, client: EndpointClient, force_lan
             actual = data.get("raw_transcript") or data.get("transcript") or ""
             expected = case.get("expected_transcript", "")
             success = 200 <= http_status < 300
+            dosage_metrics = metrics_dict(score_dosages(
+                case.get("expected_dosages", []), expected, actual
+            ))
             result = {
                 "id": case["id"], "file": case["file"], "language": case.get("language"), "category": case.get("category"),
                 "expected_transcript": expected, "raw_transcript": data.get("raw_transcript"),
@@ -124,6 +128,7 @@ def run(manifest_path: Path, output_dir: Path, client: EndpointClient, force_lan
                 "sentence_exact_match": normalize(expected) == normalize(actual),
                 "medicine_recall": recall(case.get("expected_medicines", []), actual),
                 "dosage_recall": recall(case.get("expected_dosages", []), actual),
+                **dosage_metrics,
                 "test_name_recall": recall(case.get("expected_tests", []), actual),
                 "number_preservation": recall(re.findall(r"\d+(?:\.\d+)?", expected), actual),
                 "negation_preserved": recall(case.get("expected_negations", []), actual),
@@ -149,6 +154,12 @@ def run(manifest_path: Path, output_dir: Path, client: EndpointClient, force_lan
         "average_cer": average("cer"), "important_term_recall": average("important_term_recall"),
         "sentence_exact_match_rate": average("sentence_exact_match"),
         "medicine_recall": average("medicine_recall"), "dosage_recall": average("dosage_recall"),
+        "strict_dosage_recall": average("strict_dosage_recall"),
+        "normalized_dosage_recall": average("normalized_dosage_recall"),
+        "dosage_number_accuracy": average("dosage_number_accuracy"),
+        "dosage_unit_accuracy": average("dosage_unit_accuracy"),
+        "frequency_accuracy": average("frequency_accuracy"),
+        "timing_instruction_accuracy": average("timing_instruction_accuracy"),
         "test_name_recall": average("test_name_recall"), "number_preservation": average("number_preservation"),
         "negation_preservation_rate": average("negation_preserved"),
         "language_detection_accuracy": (sum(x.get("detected_language") == x.get("language") for x in language_cases) / len(language_cases)) if language_cases else None,

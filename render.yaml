@@ -45,7 +45,7 @@ services:
     runtime: docker
     dockerfilePath: ./ai-service/Dockerfile
     dockerContext: ./ai-service
-    healthCheckPath: /health
+    healthCheckPath: /healthz
     envVars:
       - key: APP_ENV
         value: production
@@ -53,6 +53,16 @@ services:
         value: "false"
       - key: FFMPEG_PATH
         value: /usr/bin/ffmpeg
+      - key: TESSERACT_PATH
+        value: /usr/bin/tesseract
+      - key: OCR_MODE
+        value: local-first
+      - key: OCR_FALLBACK_THRESHOLD
+        value: "0.60"
+      - key: OCR_CACHE_TTL_SECONDS
+        value: "300"
+      - key: OCR_MAX_CONCURRENT_REQUESTS
+        value: "2"
       - key: WHISPER_DEVICE
         value: cpu
       - key: WHISPER_COMPUTE_TYPE

@@ -20,8 +20,16 @@ class FFmpegHealth(BaseModel):
 class OCRHealth(BaseModel):
     """Configured OCR provider availability."""
 
-    provider: Literal["gemini-vision"] = "gemini-vision"
+    provider: str = "gemini-vision"
     available: bool
+    mode: str = "gemini-only"
+    local_available: bool = False
+    fallback_available: bool = False
+    installed: bool = False
+    path: str | None = None
+    version: str | None = None
+    availability: str = "missing"
+    languages: list[str] = Field(default_factory=list)
 
 
 class WhisperHealth(BaseModel):

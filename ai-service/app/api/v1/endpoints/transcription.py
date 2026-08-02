@@ -24,6 +24,9 @@ from app.services.audio_conversion_service import AudioConversionService
 router = APIRouter(tags=["Transcription"])
 logger = get_logger(__name__)
 settings = get_settings()
+_transcription_slots = asyncio.Semaphore(
+    settings.transcription_max_concurrent_requests
+)
 
 SUPPORTED_EXTENSIONS = {".mp3", ".wav", ".m4a", ".webm", ".ogg", ".mp4", ".aac", ".flac", ".opus"}
 SUPPORTED_MIME_TYPES = {
@@ -234,7 +237,20 @@ async def transcribe(
                 code="NO_SPEECH_DETECTED",
             )
         transcription_started_at = time.monotonic()
+        slot_acquired = False
         try:
+            try:
+                await asyncio.wait_for(
+                    _transcription_slots.acquire(),
+                    timeout=settings.transcription_queue_timeout_seconds,
+                )
+                slot_acquired = True
+            except TimeoutError as exc:
+                raise AppException(
+                    "The transcription queue is busy; retry later.",
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    code="TRANSCRIPTION_QUEUE_TIMEOUT",
+                ) from exc
             result = await asyncio.wait_for(
                 asyncio.to_thread(
                     service.transcribe,
@@ -250,6 +266,9 @@ async def transcribe(
                 status_code=status.HTTP_504_GATEWAY_TIMEOUT,
                 code="TRANSCRIPTION_TIMEOUT",
             ) from exc
+        finally:
+            if slot_acquired:
+                _transcription_slots.release()
 
         result.processing_time_seconds = (
             time.monotonic() - transcription_started_at
