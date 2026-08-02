@@ -384,7 +384,7 @@ def test_websocket_invalid_message_and_unsupported_mime(
         socket.send_json({"type": "unknown", "session_id": session_id})
         assert socket.receive_json()["code"] == "INVALID_CONTROL_MESSAGE"
         _, error = send_socket_chunk(
-            socket, session_id, uuid4().hex, mime_type="audio/aac"
+            socket, session_id, uuid4().hex, mime_type="text/plain"
         )
         assert error["code"] == "UNSUPPORTED_MIME_TYPE"
     finally:

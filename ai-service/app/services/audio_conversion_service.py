@@ -28,6 +28,7 @@ class ConvertedAudioMetadata:
     channels: int
     rms: float
     speech_detected: bool
+    warnings: tuple[str, ...] = ()
 
 
 def _inspect_pcm_wav(
@@ -49,7 +50,7 @@ def _inspect_pcm_wav(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             code="INVALID_CONVERTED_AUDIO",
         ) from exc
-    if channels != 1 or sample_rate != 16000 or sample_width != 2:
+    if channels != 1 or sample_rate <= 0 or sample_width != 2:
         raise AppException(
             "The normalized audio format was invalid.",
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -75,6 +76,16 @@ def _inspect_pcm_wav(
         if pcm
         else 0
     )
+    peak = max((abs(sample) for sample in pcm), default=0)
+    silent_samples = sum(1 for sample in pcm if abs(sample) < minimum_rms)
+    silence_ratio = silent_samples / len(pcm) if pcm else 1.0
+    warnings = []
+    if rms < max(minimum_rms * 2, 100):
+        warnings.append("low_volume")
+    if peak >= 32760:
+        warnings.append("clipping_detected")
+    if silence_ratio > 0.8:
+        warnings.append("excessive_silence")
     return ConvertedAudioMetadata(
         duration_seconds=duration,
         size_bytes=path.stat().st_size,
@@ -82,6 +93,7 @@ def _inspect_pcm_wav(
         channels=channels,
         rms=rms,
         speech_detected=rms >= minimum_rms,
+        warnings=tuple(warnings),
     )
 
 
@@ -104,6 +116,10 @@ def extension_for_audio_mime_type(mime_type: str) -> str:
         "audio/mpeg": ".mp3",
         "audio/mp3": ".mp3",
         "audio/x-m4a": ".m4a",
+        "audio/aac": ".aac",
+        "audio/flac": ".flac",
+        "audio/x-flac": ".flac",
+        "audio/opus": ".opus",
     }
     return extensions.get(normalize_audio_mime_type(mime_type), "")
 
@@ -200,16 +216,26 @@ class AudioConversionService:
             str(source),
             "-vn",
         ]
-        if self.settings.audio_normalization_enabled:
-            command.extend(
-                ["-af", self.settings.audio_normalization_filter]
+        if self.settings.audio_enable_preprocessing and self.settings.audio_normalization_enabled:
+            filters = ["highpass=f=80", "lowpass=f=7600"]
+            if self.settings.audio_enable_noise_reduction:
+                filters.append("afftdn=nf=-25")
+            filters.append(
+                f"loudnorm=I={self.settings.audio_normalization_target}:TP=-2:LRA=11"
             )
+            if self.settings.audio_enable_silence_trimming:
+                filters.append(
+                    "silenceremove=start_periods=1:start_duration=0.2:"
+                    "start_threshold=-50dB:stop_periods=-1:stop_duration=1.5:"
+                    "stop_threshold=-50dB"
+                )
+            command.extend(["-af", ",".join(filters)])
         command.extend(
             [
             "-ar",
-            "16000",
+            str(self.settings.audio_sample_rate),
             "-ac",
-            "1",
+            str(self.settings.audio_channels),
             "-c:a",
             "pcm_s16le",
             str(destination),
@@ -288,7 +314,7 @@ class AudioConversionService:
             )
         metadata = _inspect_pcm_wav(
             destination,
-            self.settings.live_transcript_min_chunk_duration_ms / 1000,
+            self.settings.audio_min_speech_seconds,
             self.settings.vad_min_rms,
         )
         logger.info(

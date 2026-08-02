@@ -8,8 +8,10 @@ from app.schemas.health import (
     HealthData,
     HealthResponse,
     OCRHealth,
+    WhisperHealth,
 )
 from app.core.ffmpeg import get_ffmpeg_status
+from app.services.transcription_service import get_transcription_service
 
 router = APIRouter(tags=["Health"])
 settings = get_settings()
@@ -32,6 +34,7 @@ settings = get_settings()
 async def health_check() -> HealthResponse:
     """Return the current service health."""
     ffmpeg_status = get_ffmpeg_status(settings)
+    transcription = get_transcription_service()
     return HealthResponse(
         message="AI service is healthy",
         data=HealthData(
@@ -51,5 +54,14 @@ async def health_check() -> HealthResponse:
                     and settings.gemini_model.strip()
                 )
             ),
+            whisper=WhisperHealth(
+                model=settings.whisper_model_size,
+                device=settings.whisper_device,
+                compute_type=settings.whisper_compute_type,
+                loaded=transcription.is_loaded,
+                ready=transcription.is_ready,
+            ),
+            transcription_ready=ffmpeg_status.available and transcription.is_ready,
+            summary_provider_ready=bool(settings.gemini_api_key),
         ),
     )

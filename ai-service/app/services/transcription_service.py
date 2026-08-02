@@ -11,6 +11,8 @@ from app.core.exceptions import AppException
 from app.core.logging import get_logger
 from app.schemas.transcription import TranscriptionData, TranscriptionSegment
 from app.core.languages import SUPPORTED_LANGUAGES
+from app.services.medical_vocabulary_service import get_medical_vocabulary_service
+from app.services.text_cleanup_service import get_text_cleanup_service
 
 logger = get_logger(__name__)
 
@@ -22,6 +24,15 @@ class TranscriptionService:
         self.settings = settings
         self._model: Any | None = None
         self._model_lock = Lock()
+        self._initialization_error: str | None = None
+
+    @property
+    def is_loaded(self) -> bool:
+        return self._model is not None
+
+    @property
+    def is_ready(self) -> bool:
+        return self._initialization_error is None
 
     def _get_model(self) -> Any:
         """Return the cached model, loading it on first inference."""
@@ -44,12 +55,15 @@ class TranscriptionService:
                     self.settings.whisper_model_size,
                     device=self.settings.whisper_device,
                     compute_type=self.settings.whisper_compute_type,
+                    cpu_threads=self.settings.whisper_cpu_threads,
+                    num_workers=self.settings.whisper_num_workers,
                 )
                 logger.info(
                     "Local Whisper model loaded model=%s",
                     self.settings.whisper_model_size,
                 )
             except Exception as exc:
+                self._initialization_error = type(exc).__name__
                 logger.exception(
                     "Whisper model load failed model=%s",
                     self.settings.whisper_model_size,
@@ -78,6 +92,11 @@ class TranscriptionService:
                 SUPPORTED_LANGUAGES["en"],
             ).whisper_code
         )
+        requested_language = language_hint or "auto"
+        prompt = initial_prompt or (
+            get_medical_vocabulary_service().initial_prompt()
+            if self.settings.whisper_medical_prompt_enabled else None
+        )
 
         try:
             raw_segments, info = model.transcribe(
@@ -85,11 +104,16 @@ class TranscriptionService:
                 language=language,
                 task=task,
                 beam_size=self.settings.whisper_beam_size,
+                best_of=self.settings.whisper_best_of,
                 temperature=self.settings.whisper_temperature,
                 condition_on_previous_text=(
                     self.settings.whisper_condition_on_previous_text
                 ),
-                initial_prompt=initial_prompt,
+                initial_prompt=prompt,
+                word_timestamps=self.settings.whisper_word_timestamps,
+                no_speech_threshold=self.settings.whisper_no_speech_threshold,
+                log_prob_threshold=self.settings.whisper_log_prob_threshold,
+                compression_ratio_threshold=self.settings.whisper_compression_ratio_threshold,
                 vad_filter=self.settings.vad_enabled,
                 vad_parameters={
                     "min_speech_duration_ms": (
@@ -105,6 +129,11 @@ class TranscriptionService:
                     start=float(segment.start),
                     end=float(segment.end),
                     text=text,
+                    confidence=(
+                        max(0.0, min(1.0, 2.718281828 ** float(segment.avg_logprob)))
+                        if getattr(segment, "avg_logprob", None) is not None else None
+                    ),
+                    no_speech_probability=getattr(segment, "no_speech_prob", None),
                 )
                 for segment in raw_segments
                 if (text := str(segment.text).strip())
@@ -139,14 +168,27 @@ class TranscriptionService:
             len(segments),
             duration,
         )
+        warnings: list[str] = []
+        probability = getattr(info, "language_probability", None)
+        if probability is not None and probability < self.settings.whisper_language_detection_threshold:
+            warnings.append("uncertain_language")
+        if any((segment.no_speech_probability or 0) > self.settings.whisper_no_speech_threshold for segment in segments):
+            warnings.append("low_confidence_segments")
+        cleaned = get_text_cleanup_service().clean(transcript)
         return TranscriptionData(
             transcript=transcript,
+            raw_transcript=transcript,
+            cleaned_transcript=cleaned,
+            requested_language=requested_language,
+            fallback_detection_used=language is None,
             detected_language=str(getattr(info, "language", language or "unknown")),
-            language_probability=getattr(info, "language_probability", None),
+            language_probability=probability,
             duration_seconds=duration,
             audio_duration_seconds=duration,
             segments=segments,
             model=self.settings.whisper_model_size,
+            segment_count=len(segments),
+            warnings=warnings,
         )
 
 

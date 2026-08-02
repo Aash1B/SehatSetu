@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../store';
-import { setCurrentPage, setDashboardTab, type DashboardTabType } from '../store/uiSlice';
+import { setDashboardTab, type DashboardTabType } from '../store/uiSlice';
 import { useNavigate } from 'react-router-dom';
+import { uploadMedicalReport } from '../services/medicalReportsApi';
 
 interface ConsultationItem {
   id: string;
@@ -67,9 +68,35 @@ const DashboardPage: React.FC = () => {
   const [activeSubTab, setActiveSubTab] = useState<'consultations' | 'prescriptions'>('prescriptions');
   const [showEmergencyModal, setShowEmergencyModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState<ConsultationItem | null>(null);
+  const [reportUploadState, setReportUploadState] = useState<
+    'idle' | 'uploading' | 'success' | 'error'
+  >('idle');
+  const [reportUploadMessage, setReportUploadMessage] = useState('');
+  const reportInputRef = useRef<HTMLInputElement>(null);
 
   const handleTabClick = (tab: DashboardTabType) => {
     dispatch(setDashboardTab(tab));
+  };
+
+  const handleReportSelected = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    setReportUploadState('uploading');
+    setReportUploadMessage(`Uploading ${file.name}…`);
+    try {
+      await uploadMedicalReport(file);
+      setReportUploadState('success');
+      setReportUploadMessage(`${file.name} uploaded and processed.`);
+    } catch (error) {
+      setReportUploadState('error');
+      setReportUploadMessage(
+        error instanceof Error ? error.message : 'Report upload failed.',
+      );
+    }
   };
 
   return (
@@ -318,7 +345,32 @@ const DashboardPage: React.FC = () => {
             </div>
 
             {/* Card 2: Upload Reports */}
-            <div className="action-card" onClick={() => handleTabClick('records')}>
+            <div
+              className="action-card"
+              onClick={() => {
+                if (reportUploadState !== 'uploading') {
+                  reportInputRef.current?.click();
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(event) => {
+                if (
+                  reportUploadState !== 'uploading' &&
+                  (event.key === 'Enter' || event.key === ' ')
+                ) {
+                  event.preventDefault();
+                  reportInputRef.current?.click();
+                }
+              }}
+            >
+              <input
+                ref={reportInputRef}
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp"
+                onChange={handleReportSelected}
+                style={{ display: 'none' }}
+              />
               <div className="card-icon-badge purple-badge">
                 <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#9333EA" strokeWidth="2.2" strokeLinecap="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -329,7 +381,18 @@ const DashboardPage: React.FC = () => {
               </div>
               <div className="action-card-text">
                 <h3 className="card-heading">Upload Reports</h3>
-                <p className="card-desc">Upload and share your medical reports</p>
+                <p
+                  className="card-desc"
+                  style={
+                    reportUploadState === 'error'
+                      ? { color: '#dc2626' }
+                      : reportUploadState === 'success'
+                        ? { color: '#15803d' }
+                        : undefined
+                  }
+                >
+                  {reportUploadMessage || 'Upload and securely process medical reports'}
+                </p>
               </div>
               <span className="arrow-link blue-arrow">→</span>
             </div>

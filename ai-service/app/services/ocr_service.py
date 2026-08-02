@@ -111,6 +111,7 @@ class OCRService:
         language: str,
         output_language: str | None,
         include_summary: bool,
+        include_medical_analysis: bool = True,
         request_id: str = "",
     ) -> OCRAnalysisData:
         """OCR all pages in order and generate structured medical analysis."""
@@ -134,7 +135,10 @@ class OCRService:
         language_meta = language_service.resolve(
             text, language, output_language
         )
-        analysis = self._analyze_medical_text(text, language_meta.output)
+        analysis = (
+            self._analyze_medical_text(text, language_meta.output)
+            if include_medical_analysis else OCRMedicalAnalysis()
+        )
         logger.info(
             "OCR request completed request_id=%s filename=%s pages=%d "
             "duration_ms=%.2f character_count=%d",
@@ -146,6 +150,8 @@ class OCRService:
         )
         return OCRAnalysisData(
             extracted_text=text,
+            raw_ocr_text=text,
+            cleaned_ocr_text="\n".join(line.strip() for line in text.splitlines() if line.strip()),
             pages=pages,
             document_type=analysis.document_type,
             summary=analysis.summary if include_summary else "",
@@ -252,7 +258,8 @@ class OCRService:
     ) -> OCRPageResult:
         """Validate an image and send its original bytes to Gemini Vision."""
         try:
-            from PIL import Image, ImageOps
+            from io import BytesIO
+            from PIL import Image, ImageEnhance, ImageFilter, ImageOps
 
             with Image.open(path) as source_image:
                 image = ImageOps.exif_transpose(source_image)
@@ -265,7 +272,22 @@ class OCRService:
                         status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
                         code="OCR_FILE_TOO_LARGE",
                     )
-                image.verify()
+                image.load()
+                # Conservative OCR copy: orient, upscale small scans, grayscale,
+                # auto-contrast, median denoise, and mild sharpening. The source
+                # file remains untouched for traceability.
+                if image.width < 1600:
+                    ratio = min(2.0, 1600 / max(image.width, 1))
+                    image = image.resize(
+                        (int(image.width * ratio), int(image.height * ratio)),
+                        Image.Resampling.LANCZOS,
+                    )
+                processed = ImageOps.autocontrast(ImageOps.grayscale(image), cutoff=1)
+                processed = processed.filter(ImageFilter.MedianFilter(size=3))
+                processed = ImageEnhance.Sharpness(processed).enhance(1.25)
+                buffer = BytesIO()
+                processed.save(buffer, format="PNG", optimize=True)
+                payload = buffer.getvalue()
         except AppException:
             raise
         except Exception as exc:
@@ -277,8 +299,8 @@ class OCRService:
         return OCRPageResult(
             page_number=page_number,
             extracted_text=self.provider.extract_text(
-                path.read_bytes(),
-                mime_type,
+                payload,
+                "image/png",
             ),
         )
 

@@ -16,6 +16,12 @@ class LiveTranscriptionData(BaseModel):
     language_confidence: float | None = Field(default=None, ge=0, le=1)
     processing_time_ms: float = Field(ge=0)
     is_final: bool
+    accepted_chunk_index: int | None = None
+    expected_next_chunk: int | None = None
+    partial_transcript: str = ""
+    finalized_transcript: str | None = None
+    needs_more_audio: bool = False
+    warnings: list[str] = Field(default_factory=list)
 
 
 class LiveTranscriptionResponse(ApiResponse[LiveTranscriptionData]):

@@ -97,9 +97,13 @@ class PrescriptionService:
                 value = getattr(medication, field_name)
                 if value and value.casefold() not in source_text:
                     setattr(medication, field_name, None)
-            key = tuple(
-                str(value).casefold()
-                for value in medication.model_dump().values()
+            key = (
+                medication.medicine.casefold(),
+                (medication.generic_name or "").casefold(),
+                (medication.dosage or "").casefold(),
+                (medication.frequency or "").casefold(),
+                (medication.route or "").casefold(),
+                (medication.duration or "").casefold(),
             )
             if key not in seen:
                 unique.append(medication)
@@ -147,6 +151,7 @@ class PrescriptionService:
             )
         result.warnings = list(dict.fromkeys(result.warnings))
         result.requires_doctor_review = True
+        result.requires_doctor_confirmation = True
         result.disclaimer = "AI-generated draft. Doctor approval required."
         result.language = language
         return result

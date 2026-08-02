@@ -24,6 +24,16 @@ class OCRHealth(BaseModel):
     available: bool
 
 
+class WhisperHealth(BaseModel):
+    """Non-sensitive model configuration and lazy-load state."""
+
+    model: str
+    device: str
+    compute_type: str
+    loaded: bool
+    ready: bool
+
+
 class HealthData(BaseModel):
     """Service health metadata."""
 
@@ -33,6 +43,9 @@ class HealthData(BaseModel):
     environment: str
     ffmpeg: FFmpegHealth
     ocr: OCRHealth
+    whisper: WhisperHealth
+    transcription_ready: bool
+    summary_provider_ready: bool
 
 
 class HealthResponse(ApiResponse[HealthData]):
