@@ -1,0 +1,56 @@
+{
+  "status": "RELEASE_READY_WITH_WARNINGS",
+  "readiness_score": 96,
+  "generated_date": "2026-08-02",
+  "branch": "main",
+  "commit": "0e5b465d4e4a2b202057ae145e2a44948e14d7f2",
+  "tests": {
+    "full": {"passed": 344, "failed": 0, "skipped": 0, "warnings": 49, "duration_seconds": 23.24},
+    "ocr": {"passed": 44, "failed": 0, "warnings": 7, "duration_seconds": 11.11},
+    "voice": {"passed": 104, "failed": 0, "warnings": 10, "duration_seconds": 3.96},
+    "health_config_openapi": {"passed": 15, "failed": 0, "warnings": 1, "duration_seconds": 2.94}
+  },
+  "smoke_tests": {
+    "application_import": "passed",
+    "compilation": "passed",
+    "environment_validation": "passed",
+    "png_ocr": "passed",
+    "pdf_ocr": "passed",
+    "short_whisper": "passed",
+    "docker_static": "passed",
+    "docker_runtime_build": "blocked_daemon_unavailable"
+  },
+  "security": {
+    "public_healthz": true,
+    "protected_versioned_health": true,
+    "protected_readiness": true,
+    "websocket_internal_key": true,
+    "constant_time_comparison": true,
+    "openapi_security_accurate": true,
+    "secret_scan": "passed"
+  },
+  "render_health_check_path": "/healthz",
+  "remaining_blockers": [],
+  "remaining_warnings": [
+    "Docker runtime build was not executed because the Docker Desktop Linux daemon was unavailable.",
+    "The full suite reports 49 upstream/deprecation warnings.",
+    "Required runtime files remain untracked until manually staged."
+  ],
+  "manual_git_commands": [
+    "git status --short",
+    "git diff --check",
+    "git add -- ai-service render.yaml",
+    "git status --short",
+    "git diff --cached --check",
+    "git commit -m \"fix(ai-service): finalize release readiness and internal auth\"",
+    "git push origin main"
+  ],
+  "confirmations": {
+    "staged": false,
+    "committed": false,
+    "pushed": false,
+    "deployed": false,
+    "nestjs_modified": false,
+    "frontend_modified": false
+  }
+}

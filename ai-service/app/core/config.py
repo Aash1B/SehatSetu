@@ -4,6 +4,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from pydantic import (
+    AliasChoices,
     Field,
     NonNegativeInt,
     PositiveFloat,
@@ -44,7 +45,13 @@ class Settings(BaseSettings):
     whisper_context_words: PositiveInt = 50
     max_audio_size_mb: PositiveFloat = 25
     audio_max_file_size_mb: PositiveFloat | None = None
-    audio_max_duration_seconds: PositiveFloat = 3600
+    audio_max_duration_seconds: PositiveFloat = Field(
+        default=3600,
+        validation_alias=AliasChoices(
+            "audio_max_duration_seconds",
+            "long_audio_max_duration_seconds",
+        ),
+    )
     audio_sample_rate: PositiveInt = 16000
     audio_channels: PositiveInt = 1
     audio_enable_preprocessing: bool = True
@@ -52,9 +59,39 @@ class Settings(BaseSettings):
     audio_enable_silence_trimming: bool = False
     audio_min_speech_seconds: PositiveFloat = 0.35
     audio_normalization_target: float = Field(default=-18.0, ge=-30, le=-5)
-    audio_chunk_duration_seconds: PositiveInt = 600
-    audio_chunk_overlap_seconds: NonNegativeInt = 2
+    audio_chunk_duration_seconds: PositiveInt = Field(
+        default=600,
+        validation_alias=AliasChoices(
+            "audio_chunk_duration_seconds",
+            "long_audio_chunk_seconds",
+        ),
+    )
+    audio_chunk_overlap_seconds: NonNegativeInt = Field(
+        default=2,
+        validation_alias=AliasChoices(
+            "audio_chunk_overlap_seconds",
+            "long_audio_overlap_seconds",
+        ),
+    )
     transcription_timeout_seconds: PositiveInt = 120
+    transcription_max_concurrent_requests: PositiveInt = 2
+    transcription_queue_timeout_seconds: PositiveInt = 30
+    transcription_request_timeout_seconds: PositiveInt = 180
+    model_load_timeout_seconds: PositiveInt = 300
+    whisper_second_pass_enabled: bool = Field(
+        default=True,
+        validation_alias=AliasChoices(
+            "whisper_second_pass_enabled",
+            "enable_second_pass_transcription",
+        ),
+    )
+    enable_transcription_quality_warnings: bool = True
+    whisper_second_pass_logprob_threshold: float = -0.85
+    whisper_repetition_word_run: PositiveInt = 6
+    whisper_repetition_phrase_repeats: PositiveInt = 3
+    whisper_max_words_per_audio_second: PositiveFloat = 5.0
+    whisper_repeated_numeric_run: PositiveInt = 6
+    whisper_correction_confidence_threshold: float = Field(default=0.88, ge=0, le=1)
     temp_audio_dir: Path = Path(".tmp/audio")
     ner_model_name: str = "d4data/biomedical-ner-all"
     ner_local_files_only: bool = True
@@ -74,6 +111,19 @@ class Settings(BaseSettings):
     ocr_max_file_size_mb: PositiveFloat = 10
     ocr_max_pdf_pages: PositiveInt = 10
     ocr_max_image_pixels: PositiveInt = 25_000_000
+    ocr_mode: str = "local-first"
+    ocr_local_engine: str = "tesseract"
+    tesseract_path: Path | None = None
+    tesseract_language: str = "eng"
+    ocr_preprocess_enabled: bool = True
+    ocr_preprocess_adaptive_threshold: bool = True
+    ocr_preprocess_deskew: bool = True
+    ocr_fallback_threshold: float = Field(default=0.55, ge=0, le=1)
+    ocr_max_concurrent_requests: PositiveInt = 2
+    ocr_request_timeout_seconds: PositiveInt = 120
+    ocr_cache_ttl_seconds: NonNegativeInt = 300
+    provider_max_concurrent_requests: PositiveInt = 2
+    provider_request_timeout_seconds: PositiveInt = 60
     gemini_ocr_max_output_tokens: PositiveInt = 4096
     ffmpeg_path: str = "ffmpeg"
     audio_conversion_timeout_seconds: PositiveInt = 30

@@ -2,6 +2,7 @@
 
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+import hmac
 import json
 from pathlib import Path
 import re
@@ -38,6 +39,14 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         settings.app_version,
         settings.app_env,
     )
+    if (
+        settings.app_env.casefold() == "production"
+        and not settings.internal_api_key
+    ):
+        logger.critical(
+            "INTERNAL_API_KEY is not configured in production; protected "
+            "HTTP and WebSocket routes will accept unauthenticated requests"
+        )
     ffmpeg_status = get_ffmpeg_status(settings)
     logger.info(
         "FFmpeg path from settings: %s",
@@ -95,7 +104,9 @@ def create_application() -> FastAPI:
             "in": "header",
             "name": "X-Internal-API-Key",
         }
-        for path_item in schema.get("paths", {}).values():
+        for path, path_item in schema.get("paths", {}).items():
+            if not path.startswith(settings.api_v1_prefix):
+                continue
             for operation in path_item.values():
                 if isinstance(operation, dict) and "responses" in operation:
                     operation["security"] = [{"InternalApiKey": []}]
@@ -108,7 +119,13 @@ def create_application() -> FastAPI:
     @application.middleware("http")
     async def require_internal_key(request: Request, call_next):
         """Protect non-public HTTP endpoints when an internal key is configured."""
-        public_paths = {"/", "/health", "/readiness", "/docs", "/openapi.json", "/redoc"}
+        public_paths = {
+            "/",
+            "/healthz",
+            "/docs",
+            "/openapi.json",
+            "/redoc",
+        }
         configured = settings.internal_api_key
         if (
             configured
@@ -116,7 +133,10 @@ def create_application() -> FastAPI:
             and request.url.path not in public_paths
         ):
             supplied = request.headers.get("X-Internal-API-Key", "")
-            if supplied != configured.get_secret_value():
+            if not hmac.compare_digest(
+                supplied,
+                configured.get_secret_value(),
+            ):
                 return JSONResponse(
                     status_code=401,
                     content={
@@ -132,6 +152,15 @@ def create_application() -> FastAPI:
     @application.get("/health", include_in_schema=False)
     async def process_health() -> dict[str, str]:
         return {"status": "healthy", "service": settings.app_name}
+
+    @application.api_route(
+        "/healthz",
+        methods=["GET", "HEAD"],
+        include_in_schema=False,
+    )
+    async def render_liveness() -> dict[str, str]:
+        """Return a minimal public process-liveness response for Render."""
+        return {"status": "ok"}
 
     @application.get("/readiness", include_in_schema=False)
     async def readiness() -> dict[str, object]:

@@ -1,0 +1,306 @@
+{
+  "schema_version": 1,
+  "classification": "deterministic text-only synthetic safety set",
+  "cases": [
+    {
+      "id": "med-01",
+      "text": "Patient takes Paracetamol 5 mg once daily.",
+      "medicine": "Paracetamol",
+      "synthetic": true
+    },
+    {
+      "id": "med-02",
+      "text": "Patient takes Azithromycin 5 mg once daily.",
+      "medicine": "Azithromycin",
+      "synthetic": true
+    },
+    {
+      "id": "med-03",
+      "text": "Patient takes Amoxicillin 5 mg once daily.",
+      "medicine": "Amoxicillin",
+      "synthetic": true
+    },
+    {
+      "id": "med-04",
+      "text": "Patient takes Metformin 5 mg once daily.",
+      "medicine": "Metformin",
+      "synthetic": true
+    },
+    {
+      "id": "med-05",
+      "text": "Patient takes Pantoprazole 5 mg once daily.",
+      "medicine": "Pantoprazole",
+      "synthetic": true
+    },
+    {
+      "id": "med-06",
+      "text": "Patient takes Levothyroxine 5 mg once daily.",
+      "medicine": "Levothyroxine",
+      "synthetic": true
+    },
+    {
+      "id": "med-07",
+      "text": "Patient takes Atorvastatin 5 mg once daily.",
+      "medicine": "Atorvastatin",
+      "synthetic": true
+    },
+    {
+      "id": "med-08",
+      "text": "Patient takes Amlodipine 5 mg once daily.",
+      "medicine": "Amlodipine",
+      "synthetic": true
+    },
+    {
+      "id": "med-09",
+      "text": "Patient takes Cetirizine 5 mg once daily.",
+      "medicine": "Cetirizine",
+      "synthetic": true
+    },
+    {
+      "id": "med-10",
+      "text": "Patient takes Salbutamol 5 mg once daily.",
+      "medicine": "Salbutamol",
+      "synthetic": true
+    },
+    {
+      "id": "med-11",
+      "text": "Patient takes Sumatriptan 5 mg once daily.",
+      "medicine": "Sumatriptan",
+      "synthetic": true
+    },
+    {
+      "id": "med-12",
+      "text": "Patient takes Paracetamol 5 mg once daily.",
+      "medicine": "Paracetamol",
+      "synthetic": true
+    },
+    {
+      "id": "med-13",
+      "text": "Patient takes Azithromycin 5 mg once daily.",
+      "medicine": "Azithromycin",
+      "synthetic": true
+    },
+    {
+      "id": "med-14",
+      "text": "Patient takes Amoxicillin 5 mg once daily.",
+      "medicine": "Amoxicillin",
+      "synthetic": true
+    },
+    {
+      "id": "med-15",
+      "text": "Patient takes Metformin 5 mg once daily.",
+      "medicine": "Metformin",
+      "synthetic": true
+    },
+    {
+      "id": "med-16",
+      "text": "Patient takes Pantoprazole 5 mg once daily.",
+      "medicine": "Pantoprazole",
+      "synthetic": true
+    },
+    {
+      "id": "med-17",
+      "text": "Patient takes Levothyroxine 5 mg once daily.",
+      "medicine": "Levothyroxine",
+      "synthetic": true
+    },
+    {
+      "id": "med-18",
+      "text": "Patient takes Atorvastatin 5 mg once daily.",
+      "medicine": "Atorvastatin",
+      "synthetic": true
+    },
+    {
+      "id": "med-19",
+      "text": "Patient takes Amlodipine 5 mg once daily.",
+      "medicine": "Amlodipine",
+      "synthetic": true
+    },
+    {
+      "id": "med-20",
+      "text": "Patient takes Cetirizine 5 mg once daily.",
+      "medicine": "Cetirizine",
+      "synthetic": true
+    },
+    {
+      "id": "med-21",
+      "text": "Patient takes Salbutamol 5 mg once daily.",
+      "medicine": "Salbutamol",
+      "synthetic": true
+    },
+    {
+      "id": "med-22",
+      "text": "Patient takes Sumatriptan 5 mg once daily.",
+      "medicine": "Sumatriptan",
+      "synthetic": true
+    },
+    {
+      "id": "med-23",
+      "text": "Patient takes Paracetamol 5 mg once daily.",
+      "medicine": "Paracetamol",
+      "synthetic": true
+    },
+    {
+      "id": "med-24",
+      "text": "Patient takes Azithromycin 5 mg once daily.",
+      "medicine": "Azithromycin",
+      "synthetic": true
+    },
+    {
+      "id": "med-25",
+      "text": "Patient takes Amoxicillin 5 mg once daily.",
+      "medicine": "Amoxicillin",
+      "synthetic": true
+    },
+    {
+      "id": "med-26",
+      "text": "Patient takes Metformin 5 mg once daily.",
+      "medicine": "Metformin",
+      "synthetic": true
+    },
+    {
+      "id": "med-27",
+      "text": "Patient takes Pantoprazole 5 mg once daily.",
+      "medicine": "Pantoprazole",
+      "synthetic": true
+    },
+    {
+      "id": "med-28",
+      "text": "Patient takes Levothyroxine 5 mg once daily.",
+      "medicine": "Levothyroxine",
+      "synthetic": true
+    },
+    {
+      "id": "med-29",
+      "text": "Patient takes Atorvastatin 5 mg once daily.",
+      "medicine": "Atorvastatin",
+      "synthetic": true
+    },
+    {
+      "id": "med-30",
+      "text": "Patient takes Amlodipine 5 mg once daily.",
+      "medicine": "Amlodipine",
+      "synthetic": true
+    },
+    {
+      "id": "med-31",
+      "text": "Patient takes Cetirizine 5 mg once daily.",
+      "medicine": "Cetirizine",
+      "synthetic": true
+    },
+    {
+      "id": "med-32",
+      "text": "Patient takes Salbutamol 5 mg once daily.",
+      "medicine": "Salbutamol",
+      "synthetic": true
+    },
+    {
+      "id": "med-33",
+      "text": "Patient takes Sumatriptan 5 mg once daily.",
+      "medicine": "Sumatriptan",
+      "synthetic": true
+    },
+    {
+      "id": "med-34",
+      "text": "Patient takes Paracetamol 5 mg once daily.",
+      "medicine": "Paracetamol",
+      "synthetic": true
+    },
+    {
+      "id": "med-35",
+      "text": "Patient takes Azithromycin 5 mg once daily.",
+      "medicine": "Azithromycin",
+      "synthetic": true
+    },
+    {
+      "id": "med-36",
+      "text": "Patient takes Amoxicillin 5 mg once daily.",
+      "medicine": "Amoxicillin",
+      "synthetic": true
+    },
+    {
+      "id": "med-37",
+      "text": "Patient takes Metformin 5 mg once daily.",
+      "medicine": "Metformin",
+      "synthetic": true
+    },
+    {
+      "id": "med-38",
+      "text": "Patient takes Pantoprazole 5 mg once daily.",
+      "medicine": "Pantoprazole",
+      "synthetic": true
+    },
+    {
+      "id": "med-39",
+      "text": "Patient takes Levothyroxine 5 mg once daily.",
+      "medicine": "Levothyroxine",
+      "synthetic": true
+    },
+    {
+      "id": "med-40",
+      "text": "Patient takes Atorvastatin 5 mg once daily.",
+      "medicine": "Atorvastatin",
+      "synthetic": true
+    },
+    {
+      "id": "med-41",
+      "text": "Patient takes Amlodipine 5 mg once daily.",
+      "medicine": "Amlodipine",
+      "synthetic": true
+    },
+    {
+      "id": "med-42",
+      "text": "Patient takes Cetirizine 5 mg once daily.",
+      "medicine": "Cetirizine",
+      "synthetic": true
+    },
+    {
+      "id": "med-43",
+      "text": "Patient takes Salbutamol 5 mg once daily.",
+      "medicine": "Salbutamol",
+      "synthetic": true
+    },
+    {
+      "id": "med-44",
+      "text": "Patient takes Sumatriptan 5 mg once daily.",
+      "medicine": "Sumatriptan",
+      "synthetic": true
+    },
+    {
+      "id": "med-45",
+      "text": "Patient takes Paracetamol 5 mg once daily.",
+      "medicine": "Paracetamol",
+      "synthetic": true
+    },
+    {
+      "id": "med-46",
+      "text": "Patient takes Azithromycin 5 mg once daily.",
+      "medicine": "Azithromycin",
+      "synthetic": true
+    },
+    {
+      "id": "med-47",
+      "text": "Patient takes Amoxicillin 5 mg once daily.",
+      "medicine": "Amoxicillin",
+      "synthetic": true
+    },
+    {
+      "id": "med-48",
+      "text": "Patient takes Metformin 5 mg once daily.",
+      "medicine": "Metformin",
+      "synthetic": true
+    },
+    {
+      "id": "med-49",
+      "text": "Patient takes Pantoprazole 5 mg once daily.",
+      "medicine": "Pantoprazole",
+      "synthetic": true
+    },
+    {
+      "id": "med-50",
+      "text": "Patient takes Levothyroxine 5 mg once daily.",
+      "medicine": "Levothyroxine",
+      "synthetic": true
+    }
+  ]
+}
