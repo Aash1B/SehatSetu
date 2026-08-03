@@ -7,22 +7,65 @@ datasource db {
 }
 
 model User {
-  id                     String          @id @default(uuid())
-  email                  String          @unique
+  id                     String               @id @default(uuid())
+  email                  String               @unique
   passwordHash           String
   fullName               String
   role                   Role
-  createdAt              DateTime        @default(now())
-  dataConsentGiven       Boolean         @default(false)
+  createdAt              DateTime             @default(now())
+  dataConsentGiven       Boolean              @default(false)
   dataConsentAt          DateTime?
-  emailVerified          Boolean         @default(false)
+  emailVerified          Boolean              @default(false)
   emailOtpHash           String?
   emailOtpExpiresAt      DateTime?
   resetTokenHash         String?
   resetTokenExpiresAt    DateTime?
+  accountStatus          String               @default("ACTIVE")
+  tokenVersion           Int                  @default(0)
+  deletedAt              DateTime?
   patient                Patient?
   doctor                 Doctor?
-  uploadedMedicalReports MedicalReport[] @relation("MedicalReportUploader")
+  uploadedMedicalReports MedicalReport[]      @relation("MedicalReportUploader")
+  accountDeletionOtps    AccountDeletionOtp[]
+}
+
+model AccountDeletionOtp {
+  id         String    @id @default(uuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  otpHash    String
+  purpose    String    @default("ACCOUNT_DELETION")
+  expiresAt  DateTime
+  attempts   Int       @default(0)
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId, purpose, createdAt])
+  @@index([expiresAt])
+}
+
+model AccountDeletionAudit {
+  id             String   @id @default(uuid())
+  userIdentifier String
+  role           Role
+  outcome        String
+  createdAt      DateTime @default(now())
+
+  @@index([userIdentifier, createdAt])
+}
+
+model StorageCleanupJob {
+  id          String    @id @default(uuid())
+  bucket      String
+  path        String
+  status      String    @default("PENDING")
+  attempts    Int       @default(0)
+  lastError   String?
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  @@unique([bucket, path])
+  @@index([status, createdAt])
 }
 
 enum Role {
@@ -52,6 +95,7 @@ model Patient {
   height           String?
   phone            String?
   weight           String?
+  profileImagePath String?
 
   appointments   Appointment[]
   ehrRecords     EhrRecord[]
@@ -116,9 +160,11 @@ model Appointment {
   urgency       String?
   notes         String?
 
-  date     String?
-  timeSlot String?
-  priority String  @default("ROUTINE")
+  date                  String?
+  timeSlot              String?
+  priority              String  @default("ROUTINE")
+  isFollowUp            Boolean @default(false)
+  emailRemindersEnabled Boolean @default(true)
 
   ehrRecord      EhrRecord?
   prescription   Prescription?

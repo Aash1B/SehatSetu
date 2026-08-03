@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { login } from '../api';
 import { saveAuth } from '../authStorage';
 
 export default function PatientLogin() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -22,7 +23,8 @@ export default function PatientLogin() {
         return;
       }
       saveAuth(res.accessToken, { id: res.id, email: res.email, fullName: res.fullName, role: res.role });
-      navigate('/patient/dashboard');
+      const requestedPath = (location.state as { from?: string } | null)?.from;
+      navigate(requestedPath?.startsWith('/patient/') ? requestedPath : '/patient/dashboard', { replace: true });
     } catch (err: any) {
   setError(err.message);
   if (err.message.toLowerCase().includes('verify your email')) {

@@ -42,6 +42,117 @@
   --radius-pill: 9999px;
 }
 
+/* Patient video consultation sidebar */
+.consultation-side-panel{display:flex;flex-direction:column;gap:18px;height:100%;min-height:0;padding:1px 3px 3px;overflow:hidden}
+.consultation-doctor-card,.consultation-chat-card{background:#fff;border:1px solid #dce6f3;border-radius:22px;box-shadow:0 12px 34px rgba(24,48,86,.1)}
+.consultation-doctor-card{position:relative;padding:22px;overflow:hidden}.consultation-doctor-card::before{content:"";position:absolute;inset:0 0 auto;height:5px;background:linear-gradient(90deg,#2563eb,#60a5fa,#16b981)}
+.consultation-doctor-topline{display:flex;align-items:center;justify-content:space-between;margin-bottom:19px;padding-top:2px}
+.consultation-live-dot,.consultation-secure-chip{display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:7px 11px;font-size:11px;font-weight:800}
+.consultation-live-dot{background:#ecfdf3;color:#087a3e}.consultation-live-dot i{width:7px;height:7px;border-radius:50%;background:#18b966;box-shadow:0 0 0 4px rgba(24,185,102,.12)}
+.consultation-secure-chip{background:#eff6ff;color:#1e5ab6}.consultation-secure-chip svg{width:12px;height:12px}
+.consultation-doctor-identity{display:flex;align-items:center;gap:17px;padding-bottom:20px;border-bottom:1px solid #e9eef6}
+.consultation-doctor-avatar{width:72px;height:72px;flex:0 0 72px;border-radius:21px;display:grid;place-items:center;background:linear-gradient(145deg,#e5f0ff,#b9d6ff);border:1px solid #9fc4fb;color:#1456b8;font-size:22px;font-weight:900;box-shadow:inset 0 0 0 5px rgba(255,255,255,.48),0 8px 20px rgba(37,99,235,.14)}
+.consultation-doctor-identity>div:last-child{min-width:0}.consultation-verified-label{display:inline-flex!important;align-items:center;gap:4px;margin-bottom:5px;color:#16845b!important;font-size:10px!important;font-weight:800}.consultation-verified-label svg{width:13px;height:13px}.consultation-doctor-identity h3{margin:0 0 5px;color:#101b32;font-size:19px;line-height:1.2;font-weight:850}.consultation-doctor-identity p{margin:0 0 6px;color:#2563eb;font-size:13px;font-weight:750}.consultation-clinic-label{color:#7b899d!important;font-size:10px!important}
+.consultation-doctor-facts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:17px}.consultation-doctor-facts>div{min-width:0;padding:13px 14px;border-radius:14px;background:linear-gradient(145deg,#f8faff,#f2f6fb);border:1px solid #e7edf5}.consultation-doctor-facts span,.consultation-doctor-facts strong{display:block}.consultation-doctor-facts span{margin-bottom:5px;color:#7c8ba1;font-size:9px;font-weight:850;text-transform:uppercase;letter-spacing:.08em}.consultation-doctor-facts strong{color:#17233b;font-size:12px;line-height:1.35;overflow-wrap:anywhere}.consultation-session-strip{display:flex;align-items:center;justify-content:space-between;margin-top:13px;padding:10px 12px;border-radius:12px;background:#effaf5;color:#167452;font-size:10px}.consultation-session-strip span{display:flex;align-items:center;gap:6px;font-weight:750}.consultation-session-strip svg{width:13px;height:13px}.consultation-session-strip strong{font-size:10px}
+.consultation-chat-card{display:flex;flex:1;min-height:0;flex-direction:column;overflow:hidden}
+.consultation-chat-header{display:flex;align-items:center;gap:13px;padding:17px 18px;border-bottom:1px solid #e6edf6;background:linear-gradient(135deg,#fff,#f5f9ff)}
+.consultation-chat-icon{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(145deg,#eaf3ff,#dbeafe);color:#1762cf;box-shadow:inset 0 0 0 1px #caddfa}.consultation-chat-icon svg{width:19px}.consultation-chat-header h4{margin:0 0 3px;color:#14213a;font-size:15px;font-weight:850}.consultation-chat-header p{margin:0;color:#78879d;font-size:10px}
+.consultation-chat-body{position:relative;display:flex;flex:1;min-height:190px;padding:24px;background:radial-gradient(circle at 50% 38%,#fff 0,#f8fbff 38%,#f2f6fb 100%);overflow-y:auto}
+.consultation-chat-empty{width:min(285px,92%);margin:auto;padding:24px 20px;text-align:center;color:#708097;border:1px solid #e4ebf5;border-radius:20px;background:rgba(255,255,255,.8);box-shadow:0 10px 30px rgba(37,67,110,.07)}.consultation-chat-empty>span{width:60px;height:60px;margin:0 auto 15px;border-radius:19px;display:grid;place-items:center;background:linear-gradient(145deg,#eef5ff,#fff);border:1px solid #cedef4;color:#3479dc;box-shadow:0 9px 24px rgba(45,75,120,.12)}.consultation-chat-empty svg{width:25px}.consultation-chat-empty strong{display:block;margin-bottom:8px;color:#2b3b55;font-size:14px}.consultation-chat-empty p{margin:0 auto;font-size:11px;line-height:1.65}.consultation-quick-notes{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin-top:16px}.consultation-quick-notes small{padding:6px 9px;border-radius:999px;background:#edf5ff;color:#3671c4;font-size:9px;font-weight:750}
+.consultation-chat-composer{display:flex;align-items:center;gap:9px;padding:14px;border-top:1px solid #e1e9f4;background:#fff}.consultation-chat-composer input{width:100%;min-width:0;height:48px;box-sizing:border-box;border:1px solid #d4deeb;border-radius:14px;background:#f7f9fc;padding:0 15px;color:#17233b;font:500 13px inherit;outline:none}.consultation-chat-composer input:focus{border-color:#4b8ae6;box-shadow:0 0 0 3px rgba(37,99,235,.1);background:#fff}.consultation-chat-composer button{height:48px;flex:0 0 auto;display:flex;align-items:center;gap:7px;border:0;border-radius:14px;padding:0 17px;background:linear-gradient(135deg,#2878e6,#1355bd);color:#fff;font-size:11px;font-weight:850;cursor:pointer;box-shadow:0 8px 18px rgba(23,91,197,.25);transition:transform .2s,box-shadow .2s}.consultation-chat-composer button:hover{transform:translateY(-1px);box-shadow:0 11px 22px rgba(23,91,197,.3)}.consultation-chat-composer button svg{width:15px;height:15px}
+@media(max-width:1023px){.consultation-side-panel{overflow:visible}.consultation-chat-card{min-height:390px}}
+
+/* Refined consultation panel */
+.consultation-side-panel{gap:16px;padding:2px}
+.consultation-doctor-card,.consultation-chat-card{border-color:#dbe5f2;border-radius:24px;box-shadow:0 18px 45px rgba(17,39,76,.1)}
+.consultation-doctor-card{padding:24px;background:linear-gradient(145deg,#fff 0%,#f8fbff 70%,#eef7ff 100%)}
+.consultation-doctor-card::after{content:"";position:absolute;right:-55px;top:-70px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,.12),transparent 68%);pointer-events:none}
+.consultation-doctor-topline,.consultation-doctor-identity,.consultation-doctor-facts,.consultation-session-strip{position:relative;z-index:1}
+.consultation-doctor-topline{margin-bottom:20px}
+.consultation-live-dot,.consultation-secure-chip{gap:8px;padding:8px 12px;border:1px solid;font-size:11px;letter-spacing:.01em}
+.consultation-live-dot{border-color:#c9f0dc}.consultation-live-dot i{width:8px;height:8px;animation:consultation-pulse 2s infinite}
+@keyframes consultation-pulse{50%{box-shadow:0 0 0 7px rgba(23,185,104,0)}}
+.consultation-secure-chip{border-color:#d7e7fd}.consultation-secure-chip svg{width:14px;height:14px}
+.consultation-doctor-identity{gap:18px;padding-bottom:0;border-bottom:0}
+.consultation-doctor-avatar{width:82px;height:82px;flex-basis:82px;border-radius:25px;font-size:25px;box-shadow:inset 0 0 0 6px rgba(255,255,255,.55),0 12px 25px rgba(37,99,235,.17)}
+.consultation-verified-label{gap:5px!important;text-transform:uppercase;letter-spacing:.045em}.consultation-verified-label svg{width:14px;height:14px}.consultation-doctor-identity h3{font-size:21px;font-weight:900;letter-spacing:-.025em}.consultation-doctor-identity p{font-weight:800}.consultation-clinic-label{display:block;font-weight:600}
+.consultation-doctor-facts{gap:12px;margin-top:20px}.consultation-doctor-facts>div{padding:14px 15px;border-radius:15px;background:rgba(255,255,255,.82);border-color:#e1e9f4;box-shadow:0 5px 14px rgba(35,65,108,.045)}.consultation-doctor-facts span{margin-bottom:6px;letter-spacing:.1em}.consultation-doctor-facts strong{font-size:12px;line-height:1.4}
+.consultation-session-strip{margin-top:14px;padding:11px 13px;border:1px solid #d6f1e4;border-radius:13px;background:linear-gradient(90deg,#ecfbf4,#f4fcf8)}.consultation-session-strip span{gap:7px;font-weight:800}.consultation-session-strip svg{width:14px;height:14px}
+.consultation-chat-card{background:#f8fbff}
+.consultation-chat-header{padding:16px 18px;background:#fff;border-bottom-color:#e3ebf5}.consultation-chat-header h4{font-weight:900}.consultation-chat-header p{font-weight:550}
+.consultation-chat-icon{flex:0 0 42px;border-radius:14px}
+.consultation-chat-body{align-items:center;justify-content:center;min-height:200px;padding:28px;background:radial-gradient(circle at 50% 42%,#fff 0%,#f7faff 44%,#f1f6fc 100%)}
+.consultation-chat-body::before{content:"";position:absolute;inset:18px;border:1px dashed rgba(148,163,184,.22);border-radius:18px;pointer-events:none}
+.consultation-chat-empty{position:relative;z-index:1;width:100%;max-width:410px;margin:auto;padding:30px 26px;border:0;background:transparent;box-shadow:none}.consultation-chat-empty>span{width:68px;height:68px;margin-bottom:17px;border-radius:22px;border-color:#d7e3f2;color:#2872d6;box-shadow:0 12px 28px rgba(38,81,139,.13)}.consultation-chat-empty svg{width:28px}.consultation-chat-empty strong{margin-bottom:9px;font-size:15px;font-weight:900}.consultation-chat-empty p{max-width:330px;line-height:1.7}.consultation-quick-notes{gap:8px;margin-top:18px}.consultation-quick-notes small{padding:7px 11px;border:1px solid #dceafb;background:#eef6ff;font-weight:800}
+.consultation-chat-composer{gap:10px;padding:13px;border-top-color:#dfe8f3}.consultation-chat-composer input{height:50px;border-radius:16px;padding:0 17px;transition:border-color .2s,box-shadow .2s,background .2s}.consultation-chat-composer input::placeholder{color:#92a0b4}.consultation-chat-composer input:focus{box-shadow:0 0 0 4px rgba(37,99,235,.1)}.consultation-chat-composer button{height:50px;justify-content:center;border-radius:16px;padding:0 19px;font-weight:900}.consultation-chat-composer button svg{width:16px;height:16px}
+@media(max-width:1279px){.consultation-doctor-card{padding:20px}.consultation-doctor-avatar{width:72px;height:72px;flex-basis:72px}.consultation-doctor-identity h3{font-size:18px}.consultation-doctor-facts{gap:9px}.consultation-doctor-facts>div{padding:12px}}
+@media(max-width:1023px){.consultation-chat-card{min-height:430px}.consultation-chat-empty{max-width:520px}}
+
+/* Larger, more readable consultation sidebar */
+.consultation-doctor-card{padding:28px}
+.consultation-doctor-topline{margin-bottom:24px}
+.consultation-live-dot,.consultation-secure-chip{padding:9px 14px;font-size:13px}
+.consultation-live-dot i{width:9px;height:9px}.consultation-secure-chip svg{width:16px;height:16px}
+.consultation-doctor-identity{gap:21px}
+.consultation-doctor-avatar{width:94px;height:94px;flex-basis:94px;border-radius:28px;font-size:30px}
+.consultation-verified-label{margin-bottom:7px!important;font-size:12px!important}.consultation-verified-label svg{width:16px;height:16px}
+.consultation-doctor-identity h3{margin-bottom:7px;font-size:25px}
+.consultation-doctor-identity p{margin-bottom:9px;font-size:15px}
+.consultation-clinic-label{font-size:12px!important}
+.consultation-doctor-facts{gap:14px;margin-top:24px}
+.consultation-doctor-facts>div{padding:17px 18px}
+.consultation-doctor-facts span{margin-bottom:7px;font-size:11px}
+.consultation-doctor-facts strong{font-size:14px}
+.consultation-session-strip{margin-top:16px;padding:13px 15px;font-size:12px}
+.consultation-session-strip svg{width:16px;height:16px}.consultation-session-strip strong{font-size:12px}
+.consultation-chat-header{gap:15px;padding:19px 21px}
+.consultation-chat-icon{width:48px;height:48px;flex-basis:48px;border-radius:15px}.consultation-chat-icon svg{width:22px}
+.consultation-chat-header h4{margin-bottom:4px;font-size:18px}
+.consultation-chat-header p{font-size:12px}
+.consultation-chat-empty{max-width:470px;padding:34px 28px}
+.consultation-chat-empty>span{width:76px;height:76px;border-radius:24px}.consultation-chat-empty svg{width:31px}
+.consultation-chat-empty strong{font-size:18px}
+.consultation-chat-empty p{max-width:390px;font-size:13px}
+.consultation-quick-notes small{padding:8px 13px;font-size:11px}
+.consultation-chat-composer{gap:11px;padding:15px}
+.consultation-chat-composer input{height:54px;padding:0 18px;font-size:15px}
+.consultation-chat-composer button{height:54px;padding:0 22px;font-size:13px}.consultation-chat-composer button svg{width:18px;height:18px}
+@media(max-width:1279px) and (min-width:1024px){.consultation-doctor-card{padding:22px}.consultation-doctor-avatar{width:78px;height:78px;flex-basis:78px}.consultation-doctor-identity h3{font-size:20px}.consultation-doctor-facts>div{padding:13px 14px}}
+
+/* Keep all consultation details contained inside their cards */
+.consultation-side-panel,.consultation-doctor-card,.consultation-chat-card{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
+.consultation-doctor-card>*{max-width:100%;box-sizing:border-box}
+.consultation-doctor-topline{gap:10px;flex-wrap:wrap}
+.consultation-live-dot,.consultation-secure-chip{max-width:100%;white-space:nowrap}
+.consultation-doctor-identity>div:last-child{min-width:0;max-width:100%;overflow:hidden}
+.consultation-doctor-identity h3,.consultation-doctor-identity p,.consultation-clinic-label{max-width:100%;overflow-wrap:anywhere}
+.consultation-doctor-facts{width:100%;min-width:0}
+.consultation-doctor-facts>div{width:100%;min-width:0;box-sizing:border-box;overflow:hidden}
+.consultation-session-strip{width:100%;min-width:0;box-sizing:border-box;gap:10px;flex-wrap:wrap}
+.consultation-session-strip span,.consultation-session-strip strong{min-width:0;white-space:normal;overflow-wrap:anywhere}
+@media(max-width:1180px){.consultation-doctor-topline{align-items:flex-start}.consultation-live-dot,.consultation-secure-chip{font-size:11px}.consultation-doctor-facts{grid-template-columns:1fr}.consultation-session-strip{align-items:flex-start}.consultation-session-strip strong{margin-left:auto}}
+
+/* Consultation page layout: bounded columns without viewport overflow */
+.consultation-page,.consultation-page *,.consultation-page *::before,.consultation-page *::after{box-sizing:border-box}
+.consultation-page{width:100%;max-width:100%;min-width:0}
+.consultation-page-main{width:100%;max-width:100%;min-width:0;overflow:hidden}
+.consultation-content{width:100%;max-width:100%;min-width:0;overflow:hidden}
+.consultation-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,420px);gap:24px;width:100%;max-width:100%;height:100%;min-width:0;min-height:0}
+.consultation-video-column,.consultation-side-panel{width:100%;max-width:100%;min-width:0;min-height:0}
+.consultation-video-column>div{width:100%;max-width:100%;min-width:0}
+.consultation-side-panel{overflow:hidden}
+.consultation-chat-header{width:100%;max-width:100%;min-width:0}
+.consultation-chat-header>div{min-width:0}.consultation-chat-header h4,.consultation-chat-header p{overflow-wrap:anywhere}
+.consultation-chat-body{width:100%;max-width:100%;min-width:0;overflow-y:auto;overscroll-behavior:contain}
+.consultation-chat-composer{position:relative;z-index:2;width:100%;max-width:100%;min-width:0;flex:0 0 auto}
+.consultation-chat-composer input{flex:1 1 auto;width:auto;min-width:0;max-width:100%}
+.consultation-chat-composer button{flex:0 0 auto;min-width:max-content;max-width:100%}
+@media(max-width:1279px) and (min-width:901px){.consultation-layout{grid-template-columns:minmax(0,1fr) minmax(320px,370px);gap:18px}.consultation-content{padding:18px}.consultation-chat-composer{padding:11px}.consultation-chat-composer button{padding-inline:16px}}
+@media(max-width:900px){.consultation-page{height:auto;min-height:100dvh}.consultation-page-main{height:auto;min-height:100dvh;overflow:visible}.consultation-content{overflow:visible;padding:18px}.consultation-layout{grid-template-columns:minmax(0,1fr);height:auto;gap:20px}.consultation-video-column{height:auto;min-height:480px}.consultation-side-panel{height:auto;overflow:visible}.consultation-chat-card{height:520px;min-height:430px}.consultation-page-header{gap:12px;flex-wrap:wrap}}
+@media(max-width:640px){.consultation-content{padding:12px}.consultation-layout{gap:16px}.consultation-video-column{min-height:400px}.consultation-doctor-card{padding:18px}.consultation-doctor-identity{align-items:flex-start;gap:14px}.consultation-doctor-avatar{width:70px;height:70px;flex-basis:70px;border-radius:22px;font-size:23px}.consultation-doctor-identity h3{font-size:19px}.consultation-doctor-facts{grid-template-columns:minmax(0,1fr)}.consultation-chat-card{height:480px}.consultation-chat-composer{gap:8px;padding:10px}.consultation-chat-composer input{height:48px;padding-inline:14px;font-size:14px}.consultation-chat-composer button{height:48px;padding-inline:14px}.consultation-page-header{padding:12px}.consultation-page-header>div:first-child{min-width:0;gap:9px;flex-wrap:wrap}}
+@media(max-width:400px){.consultation-content{padding:10px}.consultation-live-dot,.consultation-secure-chip{padding:7px 9px;font-size:10px}.consultation-chat-composer button span{display:none}.consultation-chat-composer button{min-width:48px;padding:0}.consultation-chat-empty{padding-inline:12px}.consultation-doctor-identity h3{font-size:18px}}
+.appointments-empty-state{grid-column:1/-1;padding:48px 24px;border:1px dashed #cbd5e1;border-radius:18px;background:#f8fafc;color:#64748b;text-align:center;font-size:14px;font-weight:650}
+
 .patient-portal {
 
 

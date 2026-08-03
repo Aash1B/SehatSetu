@@ -1,6 +1,7 @@
 import React from 'react';
 import SectionCard from '../SectionCard';
 import { Bell, Key, LogOut, Shield, User } from 'lucide-react';
+import AccountDeletionDangerZone from '../../../auth/components/AccountDeletionDangerZone';
 
 const SettingsCard: React.FC = () => {
   const settingsOptions = [
@@ -32,6 +33,7 @@ const SettingsCard: React.FC = () => {
           <span className="text-sm font-bold">Logout Account</span>
         </button>
       </div>
+      <AccountDeletionDangerZone role="DOCTOR" />
     </SectionCard>
   );
 };

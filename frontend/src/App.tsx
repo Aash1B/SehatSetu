@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store } from './patient/store';
 import './Patient.css';
@@ -10,12 +10,25 @@ import DoctorSignup from './auth/pages/DoctorSignup';
 import VerifyOtp from './auth/pages/VerifyOtp';
 import ForgotPassword from './auth/pages/ForgotPassword';
 import ResetPassword from './auth/pages/ResetPassword';
+import { getToken, getUser } from './auth/authStorage';
 
 const PatientLayout = () => (
   <div className="patient-portal min-h-screen">
     <Outlet />
   </div>
 );
+
+const RoleProtectedRoute = ({ role }: { role: 'PATIENT' | 'DOCTOR' }) => {
+  const user = getUser();
+  const location = useLocation();
+  return getToken() && user?.role === role
+    ? <Outlet />
+    : <Navigate
+        to={role === 'DOCTOR' ? '/doctor/login' : '/patient/login'}
+        replace
+        state={{ from: location.pathname }}
+      />;
+};
 
 // Doctor Pages
 import DoctorDashboard from './doctor/pages/Dashboard';
@@ -60,25 +73,29 @@ function App() {
 
             {/* Patient Routes */}
            
-            <Route path="/patient/dashboard" element={<DashboardPage />} />
-            <Route path="/patient/search" element={<DoctorSearchPage />} />
-            <Route path="/patient/book/:id" element={<BookAppointmentPage />} />
-            <Route path="/patient/questionnaire/:id" element={<HealthQuestionnairePage />} />
-            <Route path="/patient/appointments" element={<AppointmentsPage />} />
-            <Route path="/patient/consultation/:id" element={<VideoConsultationPage />} />
+            <Route element={<RoleProtectedRoute role="PATIENT" />}>
+              <Route path="/patient/search" element={<DoctorSearchPage />} />
+              <Route path="/patient/dashboard" element={<DashboardPage />} />
+              <Route path="/patient/book/:id" element={<BookAppointmentPage />} />
+              <Route path="/patient/questionnaire/:id" element={<HealthQuestionnairePage />} />
+              <Route path="/patient/appointments" element={<AppointmentsPage />} />
+              <Route path="/patient/consultation/:id" element={<VideoConsultationPage />} />
+            </Route>
           </Route>
 
           {/* Doctor Routes */}
           
-          <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
-          <Route path="/doctor/consultations" element={<ConsultationsList />} />
-          <Route path="/doctor/patient/:id" element={<PatientDetails />} />
-          <Route path="/doctor/prescription/:id" element={<DoctorPrescription />} />
-          <Route path="/doctor/consultation/:id" element={<VideoConsultation />} />
-          <Route path="/doctor/profile" element={<DoctorProfile />} />
-          <Route path="/doctor/availability" element={<DoctorAvailability />} />
-          <Route path="/doctor/onboarding" element={<DoctorOnboarding />} />
-          <Route path="/doctor/setup-profile" element={<DoctorOnboarding />} />
+          <Route element={<RoleProtectedRoute role="DOCTOR" />}>
+            <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
+            <Route path="/doctor/consultations" element={<ConsultationsList />} />
+            <Route path="/doctor/patient/:id" element={<PatientDetails />} />
+            <Route path="/doctor/prescription/:id" element={<DoctorPrescription />} />
+            <Route path="/doctor/consultation/:id" element={<VideoConsultation />} />
+            <Route path="/doctor/profile" element={<DoctorProfile />} />
+            <Route path="/doctor/availability" element={<DoctorAvailability />} />
+            <Route path="/doctor/onboarding" element={<DoctorOnboarding />} />
+            <Route path="/doctor/setup-profile" element={<DoctorOnboarding />} />
+          </Route>
         </Routes>
       </Router>
     </Provider>

@@ -104,6 +104,7 @@ class Settings(BaseSettings):
     gemini_max_retries: NonNegativeInt = 2
     doctor_rule_confidence_threshold: float = Field(default=0.70, ge=0, le=1)
     doctor_gemini_fallback_enabled: bool = True
+    emergency_number: str = "112"
     prescription_dummy_mode: bool = False
     summarize_max_transcript_length: PositiveInt = 20_000
     default_output_language: str = "en"

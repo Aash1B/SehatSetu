@@ -3,11 +3,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toggleSidebar } from '../store/uiSlice';
 import type { RootState } from '../store';
 import { useNavigate } from 'react-router-dom';
+import { getToken, getUser } from '../../auth/authStorage';
 
 const Navbar: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const currentPage = useSelector((state: RootState) => state.ui.currentPage);
+  const isAuthenticatedPatient = Boolean(getToken() && getUser()?.role === 'PATIENT');
 
   return (
     <header className="navbar-header">
@@ -67,10 +69,7 @@ const Navbar: React.FC = () => {
 
         {/* Actions */}
         <div className="nav-actions">
-          <button type="button" className="btn-sign-in">
-            Sign In
-          </button>
-          <button type="button" className="btn-get-started" onClick={() => navigate('/patient/dashboard')}>
+          <button type="button" className="btn-get-started" onClick={() => navigate(isAuthenticatedPatient ? '/patient/dashboard' : '/patient/signup')}>
             Dashboard
           </button>
           <button 

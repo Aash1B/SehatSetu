@@ -2,20 +2,39 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { LiveKitRoom, VideoConference } from '@livekit/components-react';
 import '@livekit/components-styles';
-import { Shield, Mic, MicOff, Video as VideoIcon, VideoOff, PhoneOff, MonitorUp, MoreVertical, User, MessageSquare } from 'lucide-react';
+import { Shield, User, MessageSquare, BadgeCheck, Clock3, Send } from 'lucide-react';
 import ConsultationTimer from '../../doctor/components/ConsultationTimer';
-import { cn } from '../../lib/utils';
 import { getConsultationRoomId } from '../../config/consultationTestMode';
 
 import PrescriptionViewModal from '../../common/components/PrescriptionViewModal';
+import { getToken } from '../../auth/authStorage';
+import LowBandwidthMode from '../../common/components/LowBandwidthMode';
+
+interface ConsultationPrescription {
+  id: string;
+  createdAt: string;
+  medicines?: unknown[];
+  dietAdvice?: string;
+}
+
+interface ConsultationAppointment {
+  prescription?: ConsultationPrescription | null;
+  doctor?: { name?: string; specialty?: string; hospital?: string; experience?: string; user?: { fullName?: string } };
+  patient?: { age?: string | number; gender?: string; user?: { fullName?: string } };
+  ehrRecord?: { diagnosis?: string; notes?: string };
+  patientName?: string;
+  patientAge?: string | number;
+  patientGender?: string;
+  healthConcern?: string;
+  symptoms?: string[];
+}
 
 const VideoConsultationPage: React.FC = () => {
   const { id = '1' } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [isMuted, setIsMuted] = useState(false);
-  const [isVideoOff, setIsVideoOff] = useState(false);
   const [showPrescriptionModal, setShowPrescriptionModal] = useState<boolean>(false);
-  const [patientPrescription, setPatientPrescription] = useState<any>(null);
+  const [patientPrescription, setPatientPrescription] = useState<Record<string, unknown> | null>(null);
+  const [appointment, setAppointment] = useState<ConsultationAppointment | null>(null);
 
   // Call duration timer
   const [secondsElapsed, setSecondsElapsed] = useState<number>(872);
@@ -31,7 +50,31 @@ const VideoConsultationPage: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        const resp = await fetch(`/api/livekit/token?room=${encodeURIComponent(roomId)}&username=Patient`);
+        const authHeaders = { Authorization: `Bearer ${getToken()}` };
+        const appointmentResponse = await fetch(`/api/appointments/${encodeURIComponent(consultationId)}`, { headers: authHeaders });
+        if (!appointmentResponse.ok) throw new Error('Unable to load consultation details');
+        const appointmentData = await appointmentResponse.json() as ConsultationAppointment;
+        setAppointment(appointmentData);
+        const prescription = appointmentData.prescription;
+        if (prescription) {
+          setPatientPrescription({
+            id: prescription.id,
+            doctorName: appointmentData.doctor?.name || appointmentData.doctor?.user?.fullName || 'Doctor',
+            doctorSpecialty: appointmentData.doctor?.specialty || '',
+            doctorHospital: appointmentData.doctor?.hospital || 'SehatSetu Digital Health Clinic',
+            patientName: appointmentData.patient?.user?.fullName || appointmentData.patientName || 'Patient',
+            patientAge: appointmentData.patient?.age || appointmentData.patientAge || '',
+            patientGender: appointmentData.patient?.gender || appointmentData.patientGender || '',
+            date: new Date(prescription.createdAt).toLocaleDateString(),
+            diagnosis: appointmentData.ehrRecord?.diagnosis || appointmentData.healthConcern || '',
+            symptoms: appointmentData.symptoms || [],
+            medications: Array.isArray(prescription.medicines) ? prescription.medicines : [],
+            dietAdvice: prescription.dietAdvice || '',
+            notes: appointmentData.ehrRecord?.notes || '',
+          });
+        }
+        const participantName = appointmentData.patient?.user?.fullName || 'Patient';
+        const resp = await fetch(`/api/livekit/token?room=${encodeURIComponent(roomId)}&username=${encodeURIComponent(participantName)}`);
         if (!resp.ok) throw new Error(`Unable to create video-room token (${resp.status})`);
         const data = await resp.json();
         if (!data.token || !data.serverUrl) throw new Error('Video-room configuration is incomplete');
@@ -42,7 +85,7 @@ const VideoConsultationPage: React.FC = () => {
         setConnectionError(e instanceof Error ? e.message : 'Unable to connect to the video room');
       }
     })();
-  }, [roomId]);
+  }, [roomId, consultationId]);
 
   // Timer interval effect
   useEffect(() => {
@@ -55,24 +98,12 @@ const VideoConsultationPage: React.FC = () => {
     return () => clearInterval(timer);
   }, [isTimerRunning]);
 
-  const loadPrescriptionData = () => {
-    const raw = localStorage.getItem(`prescription_${consultationId}`) || localStorage.getItem('sehatsetu_active_prescription');
-    if (raw) {
-      try {
-        setPatientPrescription(JSON.parse(raw));
-      } catch (e) {
-        console.error('Error parsing patient prescription:', e);
-      }
-    }
-  };
-
   const handleEndCall = async () => {
     setIsTimerRunning(false);
-    loadPrescriptionData();
     try {
       await fetch('/api/livekit/end-consultation', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
         body: JSON.stringify({
           appointmentId: id || '1',
           durationSeconds: secondsElapsed,
@@ -82,7 +113,35 @@ const VideoConsultationPage: React.FC = () => {
     } catch (err) {
       console.warn('Could not post end-consultation queue job:', err);
     }
-    setShowPrescriptionModal(true);
+    try {
+      const response = await fetch(`/api/appointments/${encodeURIComponent(consultationId)}`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      const latest = response.ok ? await response.json() as ConsultationAppointment : null;
+      if (latest?.prescription) {
+        const rx = latest.prescription;
+        setPatientPrescription({
+          id: rx.id,
+          doctorName: latest.doctor?.name || latest.doctor?.user?.fullName || 'Doctor',
+          doctorSpecialty: latest.doctor?.specialty || '',
+          doctorHospital: latest.doctor?.hospital || 'SehatSetu Digital Health Clinic',
+          patientName: latest.patient?.user?.fullName || latest.patientName || 'Patient',
+          patientAge: latest.patient?.age || latest.patientAge || '',
+          patientGender: latest.patient?.gender || latest.patientGender || '',
+          date: new Date(rx.createdAt).toLocaleDateString(),
+          diagnosis: latest.ehrRecord?.diagnosis || latest.healthConcern || '',
+          symptoms: latest.symptoms || [],
+          medications: Array.isArray(rx.medicines) ? rx.medicines : [],
+          dietAdvice: rx.dietAdvice || '',
+          notes: latest.ehrRecord?.notes || '',
+        });
+        setShowPrescriptionModal(true);
+        return;
+      }
+    } catch (error) {
+      console.warn('Could not refresh the issued prescription:', error);
+    }
+    navigate('/patient/dashboard');
   };
 
   const handleEndCallTrigger = async () => {
@@ -90,10 +149,10 @@ const VideoConsultationPage: React.FC = () => {
   };
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-luster-white font-sans text-deep-space">
-      <main className="flex-1 flex flex-col h-full min-h-0 overflow-hidden">
+    <div className="consultation-page flex h-dvh bg-luster-white font-sans text-deep-space">
+      <main className="consultation-page-main flex-1 flex flex-col h-full min-h-0">
         {/* Header Area */}
-        <div className="shrink-0 px-6 py-4 flex items-center justify-between border-b border-gray-100 bg-white shadow-sm z-10">
+        <div className="consultation-page-header shrink-0 px-6 py-4 flex items-center justify-between border-b border-gray-100 bg-white shadow-sm z-10">
           <div className="flex items-center gap-4">
             <button 
               onClick={() => navigate('/patient/dashboard')}
@@ -111,11 +170,11 @@ const VideoConsultationPage: React.FC = () => {
         </div>
 
         {/* Main Consultation Area */}
-        <div className="flex-1 min-h-0 overflow-hidden p-6">
-          <div className="grid h-full min-h-0 grid-cols-1 grid-rows-[minmax(0,1fr)] lg:grid-cols-12 gap-6">
+        <div className="consultation-content flex-1 min-h-0 p-6">
+          <div className="consultation-layout">
             
             {/* Left Column: Video & Controls */}
-            <div className="lg:col-span-8 flex flex-col h-full gap-4">
+            <div className="consultation-video-column flex flex-col h-full gap-4">
               <div className="flex-1 min-h-0 relative rounded-2xl overflow-hidden bg-deep-space shadow-sm border border-gray-200">
                 {token && serverUrl ? (
                   <LiveKitRoom
@@ -128,115 +187,77 @@ const VideoConsultationPage: React.FC = () => {
                     onDisconnected={handleEndCallTrigger}
                     onError={(error) => setConnectionError(error.message)}
                   >
+                    <LowBandwidthMode />
                     <VideoConference />
                   </LiveKitRoom>
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
                     <div className="text-white/40 flex flex-col items-center gap-3">
                       <User className="w-20 h-20" />
-                      <p className="font-medium text-lg">{connectionError || 'Dr. Ananya Sharma (Connecting...)'}</p>
+                      <p className="font-medium text-lg">{connectionError || `${appointment?.doctor?.name || appointment?.doctor?.user?.fullName || 'Doctor'} (Connecting...)`}</p>
                     </div>
                   </div>
                 )}
 
-                {/* Local Video (Patient) */}
-                <div className="absolute bottom-4 right-4 w-48 aspect-video bg-gray-800 rounded-xl overflow-hidden shadow-lg border-2 border-white/20 flex items-center justify-center">
-                  {!isVideoOff ? (
-                    <span className="text-white/50 font-medium text-sm">Local Video</span>
-                  ) : (
-                    <VideoOff className="w-8 h-8 text-white/50" />
-                  )}
-                </div>
-
-                {/* Name Tags */}
-                <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 text-white text-sm font-medium">
-                  Dr. Ananya Sharma
-                </div>
-                <div className="absolute bottom-[4.5rem] right-4 bg-black/50 backdrop-blur-md px-3 py-1 text-xs rounded-lg border border-white/10 text-white font-medium z-10">
-                  You
-                </div>
-              </div>
-
-              {/* Video Controls */}
-              <div className="shrink-0 flex items-center justify-center gap-4 py-4 px-6 bg-white rounded-2xl shadow-sm border border-gray-100">
-                <button 
-                  onClick={() => setIsMuted(!isMuted)}
-                  className={cn(
-                    "w-12 h-12 rounded-full flex items-center justify-center transition-colors",
-                    isMuted ? "bg-red-100 text-red-600" : "bg-gray-100 text-deep-space hover:bg-gray-200"
-                  )}
-                >
-                  {isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-                </button>
-
-                <button 
-                  onClick={() => setIsVideoOff(!isVideoOff)}
-                  className={cn(
-                    "w-12 h-12 rounded-full flex items-center justify-center transition-colors",
-                    isVideoOff ? "bg-red-100 text-red-600" : "bg-gray-100 text-deep-space hover:bg-gray-200"
-                  )}
-                >
-                  {isVideoOff ? <VideoOff className="w-5 h-5" /> : <VideoIcon className="w-5 h-5" />}
-                </button>
-
-                <button className="w-12 h-12 rounded-full bg-gray-100 text-deep-space hover:bg-gray-200 flex items-center justify-center transition-colors">
-                  <MonitorUp className="w-5 h-5" />
-                </button>
-
-                <button className="w-12 h-12 rounded-full bg-gray-100 text-deep-space hover:bg-gray-200 flex items-center justify-center transition-colors">
-                  <MoreVertical className="w-5 h-5" />
-                </button>
-
-                <div className="w-px h-8 bg-gray-200 mx-2"></div>
-
-                <button 
-                  onClick={handleEndCall}
-                  className="px-6 h-12 rounded-full bg-red-600 hover:bg-red-700 text-white font-bold flex items-center justify-center transition-colors gap-2"
-                >
-                  <PhoneOff className="w-5 h-5" />
-                  Leave Call & View Prescription
-                </button>
               </div>
             </div>
 
             {/* Right Column: Doctor Details & Chat */}
-            <div className="lg:col-span-4 flex flex-col h-full gap-4 overflow-y-auto pr-2 pb-2 custom-scrollbar">
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-16 h-16 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xl font-bold">
-                    AS
+            <aside className="consultation-side-panel">
+              <section className="consultation-doctor-card">
+                <div className="consultation-doctor-topline">
+                  <span className="consultation-live-dot"><i /> Doctor online</span>
+                  <span className="consultation-secure-chip"><Shield /> Secure</span>
+                </div>
+                <div className="consultation-doctor-identity">
+                  <div className="consultation-doctor-avatar">
+                    {(appointment?.doctor?.name || appointment?.doctor?.user?.fullName || 'Doctor').split(/\s+/).filter(Boolean).slice(-2).map((part: string) => part[0]).join('').toUpperCase()}
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg text-gray-900">Dr. Ananya Sharma</h3>
-                    <p className="text-gray-500 text-sm">General Physician</p>
+                    <span className="consultation-verified-label"><BadgeCheck /> Verified doctor</span>
+                    <h3>{appointment?.doctor?.name || appointment?.doctor?.user?.fullName || 'Doctor'}</h3>
+                    <p>{appointment?.doctor?.specialty || ''}</p>
+                    <span className="consultation-clinic-label">SehatSetu Digital Health Clinic</span>
                   </div>
                 </div>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center py-3 border-b border-gray-50">
-                    <span className="text-gray-500 text-sm">Experience</span>
-                    <span className="font-medium text-gray-900">11+ Years</span>
+                <div className="consultation-doctor-facts">
+                  <div>
+                    <span>Experience</span>
+                    <strong>{appointment?.doctor?.experience || 'Not provided'}</strong>
                   </div>
-                  <div className="flex justify-between items-center py-3 border-b border-gray-50">
-                    <span className="text-gray-500 text-sm">Language</span>
-                    <span className="font-medium text-gray-900">English, Hindi</span>
+                  <div>
+                    <span>Languages</span>
+                    <strong>English, Hindi</strong>
                   </div>
                 </div>
-              </div>
+                <div className="consultation-session-strip">
+                  <span><Clock3 /> Consultation in progress</span>
+                  <strong>Available now</strong>
+                </div>
+              </section>
 
-              <div className="flex-1 bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col">
-                <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <MessageSquare className="w-5 h-5 text-blue-500" />
-                  Consultation Chat
-                </h4>
-                <div className="flex-1 border border-gray-100 rounded-xl bg-gray-50 mb-4 p-4 flex flex-col justify-end">
-                  <p className="text-center text-gray-400 text-sm">Your messages will appear here.</p>
+              <section className="consultation-chat-card">
+                <header className="consultation-chat-header">
+                  <span className="consultation-chat-icon"><MessageSquare /></span>
+                  <div><h4>Consultation chat</h4><p>Messages are private and encrypted</p></div>
+                </header>
+                <div className="consultation-chat-body">
+                  <div className="consultation-chat-empty">
+                    <span><MessageSquare /></span>
+                    <strong>Your consultation chat</strong>
+                    <p>Share symptoms, questions, or anything important with your doctor during the call.</p>
+                    <div className="consultation-quick-notes" aria-hidden="true">
+                      <small>Ask a question</small>
+                      <small>Share a symptom</small>
+                    </div>
+                  </div>
                 </div>
-                <div className="relative">
-                  <input type="text" placeholder="Type a message..." className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                  <button className="absolute right-2 top-1/2 -translate-y-1/2 text-blue-600 font-medium text-sm px-3 py-1 bg-blue-50 rounded-lg">Send</button>
+                <div className="consultation-chat-composer">
+                  <input type="text" placeholder="Type a message…" aria-label="Consultation message" />
+                  <button type="button" aria-label="Send message"><Send /><span>Send</span></button>
                 </div>
-              </div>
-            </div>
+              </section>
+            </aside>
 
           </div>
         </div>
@@ -251,19 +272,7 @@ const VideoConsultationPage: React.FC = () => {
           setShowPrescriptionModal(false);
           navigate('/patient/dashboard');
         }}
-        data={patientPrescription || {
-          doctorName: "Dr. Ananya Sharma",
-          doctorSpecialty: "General Physician & Telehealth Specialist",
-          patientName: "Sunita Devi",
-          patientAge: 31,
-          patientGender: "Female",
-          medications: [
-            { name: "Tab. Paracetamol 650mg", dosage: "650 mg", frequency: "1-0-1", duration: "5 days", timing: "After Food" },
-            { name: "Tab. Cetirizine 10mg", dosage: "10 mg", frequency: "0-0-1", duration: "3 days", timing: "SOS at Night" }
-          ],
-          symptoms: ["Persistent Fever (4 days)", "Body ache & Fatigue"],
-          dietAdvice: "Increase fluid intake (min 3L/day), avoid spicy and oily foods, take warm water & rest."
-        }}
+        data={patientPrescription || undefined}
       />
     </div>
   );

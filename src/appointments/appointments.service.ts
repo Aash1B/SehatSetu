@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, BadRequestException, ConflictException, HttpException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { prisma } from '../prisma';
 import * as bcrypt from 'bcrypt';
@@ -13,7 +13,7 @@ export class AppointmentsService {
     @InjectQueue('appointment-queue') private readonly appointmentQueue: Queue,
   ) {}
 
-  async createAppointment(data: any) {
+  async createAppointment(data: any, authenticatedUserId: string) {
     const doctorId = data.doctorId || 'd1';
 
     return await prisma.$transaction(async (tx) => {
@@ -42,28 +42,19 @@ export class AppointmentsService {
         });
       }
 
-      // 2. Create or reuse User (Patient)
-      let email = data.patientEmail;
-      let user: any = null;
-
-      if (email) {
-        user = await tx.user.findUnique({ where: { email } });
+      if (!doctor.userId && doctor.name) {
+        const normalizedName = doctor.name.replace(/^dr\.?\s*/i, '').trim().toLowerCase();
+        const linkedDoctors = await tx.doctor.findMany({ where: { userId: { not: null } }, include: { user: true } });
+        const linkedMatch = linkedDoctors.find((candidate) =>
+          candidate.user?.fullName.replace(/^dr\.?\s*/i, '').trim().toLowerCase() === normalizedName,
+        );
+        if (linkedMatch) doctor = linkedMatch;
       }
 
-      if (!user) {
-        const passwordHash = await bcrypt.hash('dummy_password', 10);
-        if (!email) {
-          email = `patient-${uuidv4()}@sehatsetu.invalid`;
-        }
-
-        user = await tx.user.create({
-          data: {
-            email,
-            fullName: data.patientName || 'Unknown Patient',
-            passwordHash,
-            role: Role.PATIENT,
-          },
-        });
+      // 2. Create or reuse User (Patient)
+      const user = await tx.user.findUnique({ where: { id: authenticatedUserId } });
+      if (!user || user.role !== Role.PATIENT) {
+        throw new BadRequestException('A valid patient account is required');
       }
 
       // 3. Create or reuse Patient record
@@ -112,6 +103,23 @@ export class AppointmentsService {
         }
       }
 
+      if (scheduledAt.getTime() < Date.now() + 30 * 60 * 1000) {
+        throw new BadRequestException(
+          'Appointments must be booked at least 30 minutes in advance',
+        );
+      }
+
+
+      const occupiedSlot = await tx.appointment.findFirst({
+        where: {
+          doctorId: doctor.id,
+          scheduledAt,
+          status: { in: ['SCHEDULED', 'WAITING'] },
+        },
+        select: { id: true },
+      });
+      if (occupiedSlot) throw new ConflictException('This appointment slot was just booked. Please choose another time.');
+
       // 5. Create Appointment in DB
       const appointment = await tx.appointment.create({
         data: {
@@ -137,6 +145,8 @@ export class AppointmentsService {
           date: data.date || scheduledAt.toISOString().split('T')[0],
           timeSlot: data.timeSlot || '10:00 AM',
           priority: 'ROUTINE',
+          isFollowUp: Boolean(data.isFollowUp),
+          emailRemindersEnabled: data.emailRemindersEnabled !== false,
         },
       });
 
@@ -160,55 +170,18 @@ export class AppointmentsService {
       }
 
       return appointment;
-    }).then(async (createdAppt) => {
-      // Enqueue 40-min and 30-min pre-appointment delayed reminders in BullMQ
+    }, { isolationLevel: 'Serializable' }).then(async (createdAppt) => {
       try {
-        const scheduledTimeMs = createdAppt.scheduledAt ? new Date(createdAppt.scheduledAt).getTime() : Date.now();
-        const nowMs = Date.now();
-
-        // 40-minute pre-consultation reminder
-        const reminder40minMs = scheduledTimeMs - (40 * 60 * 1000);
-        const delay40min = Math.max(0, reminder40minMs - nowMs);
-
-        await this.appointmentQueue.add(
-          'send-40min-reminder',
-          {
-            appointmentId: createdAppt.id,
-            patientId: createdAppt.patientId || '',
-            doctorId: createdAppt.doctorId || 'd1',
-            patientName: createdAppt.patientName || 'Patient',
-            scheduledAt: createdAppt.scheduledAt ? createdAppt.scheduledAt.toISOString() : new Date().toISOString(),
-            consultMode: createdAppt.consultMode || 'VIDEO',
-            reminderType: '40min',
-          },
-          { delay: delay40min }
-        );
-
-        // 30-minute pre-consultation reminder
-        const reminder30minMs = scheduledTimeMs - (30 * 60 * 1000);
-        const delay30min = Math.max(0, reminder30minMs - nowMs);
-
-        await this.appointmentQueue.add(
-          'send-30min-reminder',
-          {
-            appointmentId: createdAppt.id,
-            patientId: createdAppt.patientId || '',
-            doctorId: createdAppt.doctorId || 'd1',
-            patientName: createdAppt.patientName || 'Patient',
-            scheduledAt: createdAppt.scheduledAt ? createdAppt.scheduledAt.toISOString() : new Date().toISOString(),
-            consultMode: createdAppt.consultMode || 'VIDEO',
-            reminderType: '30min',
-          },
-          { delay: delay30min }
-        );
-
-        console.log(`[BullMQ] Enqueued 40-min (Delay: ${delay40min}ms) & 30-min (Delay: ${delay30min}ms) reminders for appointment ${createdAppt.id}`);
+        await this.scheduleStandardReminders(createdAppt);
+        if (createdAppt.isFollowUp && createdAppt.emailRemindersEnabled) await this.scheduleFollowUpReminders(createdAppt);
       } catch (err: any) {
         console.warn('[BullMQ Warning] Could not enqueue reminder jobs:', err?.message || err);
       }
 
       return createdAppt;
     }).catch((error) => {
+      if (error instanceof HttpException) throw error;
+      if (error?.code === 'P2034') throw new ConflictException('This appointment slot was just booked. Please choose another time.');
       console.error('Error booking appointment in transaction:', error);
       throw new InternalServerErrorException('Failed to book appointment');
     });
@@ -236,6 +209,154 @@ export class AppointmentsService {
         date: cleanDate,
       };
     });
+  }
+
+  private async scheduleStandardReminders(appointment: any) {
+    if (!appointment.scheduledAt) return;
+    const now = Date.now();
+    const scheduled = new Date(appointment.scheduledAt).getTime();
+    for (const minutes of [40, 30]) {
+      const triggerAt = scheduled - minutes * 60 * 1000;
+      if (triggerAt <= now) continue;
+      const jobId = `appointment-${appointment.id}-${minutes}min`;
+      const existing = await this.appointmentQueue.getJob(jobId);
+      if (existing) await existing.remove().catch(() => undefined);
+      await this.appointmentQueue.add(`send-${minutes}min-reminder`, {
+        appointmentId: appointment.id,
+        patientId: appointment.patientId || '',
+        doctorId: appointment.doctorId,
+        patientName: appointment.patientName || 'Patient',
+        scheduledAt: new Date(appointment.scheduledAt).toISOString(),
+        consultMode: appointment.consultMode || 'VIDEO',
+        reminderType: `${minutes}min`,
+      }, { delay: triggerAt - now, jobId, removeOnComplete: 100, removeOnFail: 100 });
+    }
+  }
+
+  private async scheduleFollowUpReminders(appointment: any) {
+    if (!appointment.scheduledAt) return;
+    const now = Date.now();
+    const scheduled = new Date(appointment.scheduledAt).getTime();
+    const lead = scheduled - now;
+    if (lead <= 0) return;
+    const day = 24 * 60 * 60 * 1000;
+    const hour = 60 * 60 * 1000;
+    const offsets = lead >= 8 * day
+      ? [7 * day, 3 * day, day, 2 * hour]
+      : [lead * 0.8, lead * 0.55, lead * 0.3, Math.min(2 * hour, lead * 0.1)];
+    const labels = lead >= 8 * day
+      ? ['7 days', '3 days', '24 hours', '2 hours']
+      : ['early reminder', 'midway reminder', 'upcoming reminder', 'final reminder'];
+
+    await Promise.all(offsets.map(async (offset, index) => {
+      const jobId = `follow-up-${appointment.id}-${index + 1}`;
+      const existing = await this.appointmentQueue.getJob(jobId);
+      if (existing) await existing.remove().catch(() => undefined);
+      const triggerAt = scheduled - offset;
+      if (triggerAt <= now) return;
+      await this.appointmentQueue.add('send-follow-up-email-reminder', {
+        appointmentId: appointment.id,
+        patientId: appointment.patientId || '',
+        doctorId: appointment.doctorId,
+        patientName: appointment.patientName || 'Patient',
+        scheduledAt: new Date(appointment.scheduledAt).toISOString(),
+        consultMode: appointment.consultMode || 'VIDEO',
+        reminderType: `follow-up-${index + 1}`,
+        reminderLabel: labels[index],
+      }, { delay: triggerAt - now, jobId, removeOnComplete: 100, removeOnFail: 100 });
+    }));
+  }
+
+  async getAppointmentsForUser(userId: string, role: string) {
+    if (role === Role.PATIENT) {
+      await prisma.appointment.updateMany({
+        where: {
+          patient: { is: { userId } },
+          status: { in: ['SCHEDULED', 'WAITING'] },
+          scheduledAt: { lt: new Date(Date.now() - 45 * 60 * 1000) },
+        },
+        data: { status: 'CANCELLED' },
+      });
+      return prisma.appointment.findMany({
+        where: { patient: { is: { userId } } },
+        orderBy: { createdAt: 'desc' },
+        include: { doctor: { include: { user: true } }, prescription: true, ehrRecord: true },
+      });
+    }
+    if (role === Role.DOCTOR) {
+      return prisma.appointment.findMany({
+        where: { doctor: { is: { userId } } },
+        orderBy: { createdAt: 'desc' },
+        include: { patient: { include: { user: true } }, prescription: true, ehrRecord: true },
+      });
+    }
+    return [];
+  }
+
+  async getAppointmentForUser(appointmentId: string, userId: string, role: string) {
+    const appointment = await prisma.appointment.findFirst({
+      where: {
+        id: appointmentId,
+        ...(role === Role.PATIENT
+          ? { patient: { is: { userId } } }
+          : role === Role.DOCTOR
+            ? { doctor: { is: { userId } } }
+            : { id: '__unauthorized__' }),
+      },
+      include: {
+        patient: { include: { user: true } },
+        doctor: { include: { user: true } },
+        prescription: true,
+        ehrRecord: true,
+      },
+    });
+    if (!appointment) throw new NotFoundException('Appointment not found');
+    return appointment;
+  }
+
+  async rescheduleAppointment(appointmentId: string, data: any, userId: string, role: string) {
+    if (role !== Role.PATIENT) throw new BadRequestException('Only patients can reschedule appointments');
+    const appointment = await prisma.appointment.findFirst({
+      where: { id: appointmentId, patient: { is: { userId } } },
+    });
+    if (!appointment) throw new NotFoundException('Appointment not found');
+    if (appointment.status === 'COMPLETED' || appointment.status === 'CANCELLED') {
+      throw new BadRequestException('Completed or cancelled appointments cannot be rescheduled');
+    }
+
+    const dateLabel = String(data.date || '');
+    const scheduledAt = new Date();
+    if (/tomorrow/i.test(dateLabel)) scheduledAt.setDate(scheduledAt.getDate() + 1);
+    else if (!/today/i.test(dateLabel)) {
+      const parsedDate = new Date(dateLabel);
+      if (!Number.isNaN(parsedDate.getTime())) scheduledAt.setTime(parsedDate.getTime());
+      else scheduledAt.setTime(Number.NaN);
+    }
+    const match = String(data.timeSlot || '').match(/(\d+):?(\d*)\s*(AM|PM)/i);
+    if (Number.isNaN(scheduledAt.getTime()) || !match) throw new BadRequestException('Select a valid date and time');
+    let hours = Number(match[1]);
+    const minutes = Number(match[2] || 0);
+    if (match[3].toUpperCase() === 'PM' && hours < 12) hours += 12;
+    if (match[3].toUpperCase() === 'AM' && hours === 12) hours = 0;
+    scheduledAt.setHours(hours, minutes, 0, 0);
+    if (scheduledAt.getTime() < Date.now() + 30 * 60 * 1000) {
+      throw new BadRequestException('Appointments must be scheduled at least 30 minutes in advance');
+    }
+
+    const updated = await prisma.appointment.update({
+      where: { id: appointmentId },
+      data: {
+        scheduledAt,
+        date: data.date,
+        timeSlot: data.timeSlot,
+        doctorId: data.doctorId || appointment.doctorId,
+        status: 'SCHEDULED',
+      },
+      include: { doctor: { include: { user: true } }, prescription: true, ehrRecord: true },
+    });
+    await this.scheduleStandardReminders(updated);
+    if (updated.isFollowUp && updated.emailRemindersEnabled) await this.scheduleFollowUpReminders(updated);
+    return updated;
   }
 
   async getAppointmentsForDoctor(doctorId: string) {

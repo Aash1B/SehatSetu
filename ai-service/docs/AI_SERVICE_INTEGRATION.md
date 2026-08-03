@@ -193,7 +193,9 @@ These operations depend on Gemini except where an explicit dummy/fallback behavi
 
 ## Doctor routing
 
-`/recommend-doctor` returns a controlled specialization and urgency from rules, with optional Gemini fallback. It does not diagnose, rank clinicians, query availability, or create appointments. NestJS remains responsible for applying availability and booking logic.
+`/recommend-doctor` returns a controlled specialization and urgency from rules, with optional Gemini fallback. NestJS may pass its unmodified Google Places results as optional `nearby_hospitals`; the AI service preserves each payload under `raw`, cautiously classifies the facility, and ranks emergency suitability. Ranking prioritizes reported-open status, emergency/trauma capability signals, condition-relevant speciality signals, distance, and operational status. Rating/review volume are only tie-strengthening secondary factors. Unknown ownership never excludes a nearby facility.
+
+Classification priority is trusted internal metadata (`verifiedHospitalType`/`verifiedSpecialities`), deterministic India-focused keyword rules, an optional injected AI classifier, then `unknown`. Keyword and AI results are explicitly inferred, not verified facts. Display `hospital_classification_notice`, and independently verify hospital ownership, speciality, opening hours, and emergency capability whenever circumstances permit. This service does not rank clinicians, query live availability, or create appointments.
 
 ## Response handling
 

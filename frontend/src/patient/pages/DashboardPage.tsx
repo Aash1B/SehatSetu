@@ -7,6 +7,9 @@ import { uploadMedicalReport } from '../services/medicalReportsApi';
 import { doctorsData } from '../data/doctorsData';
 import { getAppointmentTimeStatus } from '../../utils/appointmentTime';
 import PrescriptionViewModal from '../../common/components/PrescriptionViewModal';
+import { clearAuth } from '../../auth/authStorage';
+import { getPatientDashboard, updatePatientProfile, uploadPatientAvatar } from '../services/patientApi';
+import AccountDeletionDangerZone from '../../auth/components/AccountDeletionDangerZone';
 
 interface ConsultationItem {
   id: string;
@@ -16,8 +19,13 @@ interface ConsultationItem {
   date: string;
   time: string;
   mode: 'Video Consultation' | 'Chat Consultation' | 'In-Person Visit';
+  status?: string;
+  scheduledAt?: string;
+  doctorId?: string;
+  prescription?: any;
 }
 
+/* Legacy mock datasets were removed. Patient records now come from the authenticated API. */
 const recentConsultationsData: ConsultationItem[] = [
   {
     id: 'CONS-001',
@@ -107,6 +115,7 @@ const DashboardPage: React.FC = () => {
   const currentPage = useSelector((state: RootState) => state.ui.currentPage);
   const activeTab = useSelector((state: RootState) => state.ui.dashboardTab);
   const [activeSubTab, setActiveSubTab] = useState<'consultations' | 'prescriptions'>('prescriptions');
+  const [appointmentFilter, setAppointmentFilter] = useState<'upcoming' | 'past' | 'cancelled'>('upcoming');
   const [showEmergencyModal, setShowEmergencyModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState<ConsultationItem | null>(null);
   const [latestAppointment, setLatestAppointment] = useState<any>(null);
@@ -115,9 +124,14 @@ const DashboardPage: React.FC = () => {
   >('idle');
   const [reportUploadMessage, setReportUploadMessage] = useState('');
   const reportInputRef = useRef<HTMLInputElement>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [profileImageUrl, setProfileImageUrl] = useState('');
+  const [avatarUploading, setAvatarUploading] = useState(false);
 
-  const [consultationsList, setConsultationsList] = useState<ConsultationItem[]>(recentConsultationsData);
-  const [prescriptionsList, setPrescriptionsList] = useState<any[]>(recentPrescriptionsData);
+  const [consultationsList, setConsultationsList] = useState<ConsultationItem[]>([]);
+  const [prescriptionsList, setPrescriptionsList] = useState<any[]>([]);
+  const [dashboardLoading, setDashboardLoading] = useState(true);
+  const [dashboardError, setDashboardError] = useState('');
   const [showRxModal, setShowRxModal] = useState<boolean>(false);
   const [selectedRxData, setSelectedRxData] = useState<any>(null);
   const [selectedEhrModalData, setSelectedEhrModalData] = useState<any>(null);
@@ -125,19 +139,9 @@ const DashboardPage: React.FC = () => {
   // Profile & Settings states
   const [profileSubTab, setProfileSubTab] = useState<'personal' | 'medical' | 'security' | 'notifications' | 'billing'>('personal');
   const [profileData, setProfileData] = useState({
-    fullName: 'Ananya Sharma',
-    email: 'ananya.sharma@sehatsetu.com',
-    phone: '+91 98765 43210',
-    dob: '1995-08-15',
-    gender: 'Female',
-    bloodGroup: 'O+',
-    height: '165',
-    weight: '58',
-    address: 'B-402, Green Park Extension, New Delhi - 110016',
-    emergencyContactName: 'Rahul Sharma (Spouse)',
-    emergencyContactPhone: '+91 98112 33445',
-    allergies: ['Penicillin', 'Dust & Pollen', 'Sulfa Drugs'],
-    chronicConditions: ['Mild Asthma', 'Migraine'],
+    fullName: '', email: '', phone: '', dob: '', gender: '', bloodGroup: '',
+    height: '', weight: '', address: '', emergencyContactName: '',
+    emergencyContactPhone: '', allergies: [] as string[], chronicConditions: [] as string[],
   });
 
   const [securitySettings, setSecuritySettings] = useState({
@@ -156,7 +160,7 @@ const DashboardPage: React.FC = () => {
 
   const [profileSaveSuccess, setProfileSaveSuccess] = useState(false);
 
-  const [ehrReportsList, setEhrReportsList] = useState<any[]>([
+  const [ehrReportsList, setEhrReportsList] = useState<any[]>(false ? [
     {
       id: 'EHR-2026-001',
       title: 'Blood CBC & Dengue Test Report',
@@ -175,12 +179,14 @@ const DashboardPage: React.FC = () => {
       source: 'SehatSetu Telehealth',
       extractedData: 'Diagnosis: Acute Viral Fever | Prescribed: Paracetamol 650mg, Cetirizine 10mg | Follow-up: 5 days'
     }
-  ]);
+  ] : []);
 
   useEffect(() => {
+    // Disabled legacy mock/local-storage loader; authenticated data is loaded below.
+    if (false) {
     // Clear legacy 2024 cached mock items
     const activeRxStr = localStorage.getItem('sehatsetu_active_prescription');
-    if (activeRxStr && (activeRxStr.includes('2024') || activeRxStr.includes('May 20'))) {
+    if (activeRxStr && (activeRxStr!.includes('2024') || activeRxStr!.includes('May 20'))) {
       localStorage.removeItem('sehatsetu_active_prescription');
     }
 
@@ -230,7 +236,7 @@ const DashboardPage: React.FC = () => {
     const activeRx = localStorage.getItem('sehatsetu_active_prescription');
     if (activeRx) {
       try {
-        const parsed = JSON.parse(activeRx);
+        const parsed = JSON.parse(activeRx!);
         const formattedRx = {
           id: parsed.id || 'RX-2026-8849',
           doctorName: parsed.doctorName || 'Dr. Ananya Sharma',
@@ -249,10 +255,131 @@ const DashboardPage: React.FC = () => {
         console.error('Error loading prescription on patient dashboard:', e);
       }
     }
+    }
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    getPatientDashboard()
+      .then((data) => {
+        if (!active) return;
+        const p = data.profile;
+        setProfileImageUrl(p.profileImageUrl || '');
+        setProfileData({
+          fullName: p.fullName || '', email: p.email || '', phone: p.phone || '',
+          dob: p.dateOfBirth ? String(p.dateOfBirth).slice(0, 10) : '', gender: p.gender || '',
+          bloodGroup: p.bloodGroup || '', height: p.height || '', weight: p.weight || '',
+          address: '', emergencyContactName: '', emergencyContactPhone: p.emergencyContact || '',
+          allergies: Array.isArray(p.allergies) ? p.allergies : [],
+          chronicConditions: Array.isArray(p.chronicConditions) ? p.chronicConditions : [],
+        });
+
+        const appointments = Array.isArray(data.appointments) ? data.appointments : [];
+        setLatestAppointment(appointments.find((a: any) => a.status !== 'COMPLETED' && a.status !== 'CANCELLED') || null);
+        setConsultationsList(appointments.map((app: any) => ({
+          id: app.id,
+          doctorName: app.doctor?.name || app.doctor?.user?.fullName || 'Doctor',
+          specialty: app.doctor?.specialty || 'Medical consultation',
+          avatar: app.doctor?.imageUrl || '',
+          date: app.scheduledAt ? new Date(app.scheduledAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : (app.date || ''),
+          time: app.timeSlot || (app.scheduledAt ? new Date(app.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''),
+          mode: app.consultMode === 'CHAT' ? 'Chat Consultation' : app.consultMode === 'IN_PERSON' ? 'In-Person Visit' : 'Video Consultation',
+          status: app.status || 'SCHEDULED',
+          scheduledAt: app.scheduledAt,
+          doctorId: app.doctorId,
+          prescription: app.prescription || null,
+        })));
+
+        const prescriptionRecords = [...(data.prescriptions || [])];
+        appointments.forEach((appointment: any) => {
+          if (appointment.prescription && !prescriptionRecords.some((rx: any) => rx.id === appointment.prescription.id)) {
+            prescriptionRecords.push({ ...appointment.prescription, appointment, doctor: appointment.doctor });
+          }
+        });
+        setPrescriptionsList(prescriptionRecords.map((rx: any) => {
+          const medications = Array.isArray(rx.medicines) ? rx.medicines : [];
+          const doctorName = rx.doctor?.name || rx.doctor?.user?.fullName || 'Doctor';
+          const date = new Date(rx.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+          return {
+            id: rx.id, doctorName, date,
+            meds: medications.map((m: any) => m.name || String(m)).join(', ') || 'No medicines listed',
+            fullData: {
+              ...rx,
+              doctorName,
+              doctorSpecialty: rx.doctor?.specialty,
+              doctorHospital: rx.doctor?.hospital || 'SehatSetu Digital Health Clinic',
+              patientName: p.fullName,
+              patientAge: p.age,
+              patientGender: p.gender,
+              date,
+              diagnosis: rx.appointment?.ehrRecord?.diagnosis || rx.appointment?.healthConcern || '',
+              symptoms: rx.appointment?.symptoms || [],
+              notes: rx.appointment?.ehrRecord?.notes || rx.appointment?.notes || '',
+              medications,
+            },
+          };
+        }));
+
+        const clinicalRecords = (data.ehrRecords || []).map((record: any) => ({
+          id: record.id, title: record.diagnosis || 'Consultation health record',
+          date: new Date(record.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+          status: 'Clinical Record', summary: record.aiSummary || record.notes || 'No clinical summary available.',
+          source: 'SehatSetu consultation', extractedData: record.notes || record.aiSummary || '',
+        }));
+        const reports = (data.medicalReports || []).map((report: any) => ({
+          id: report.id, title: report.originalFileName,
+          date: new Date(report.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+          status: report.ocrStatus, summary: report.extractedText || 'Report uploaded; processing may still be in progress.',
+          source: 'Uploaded medical report', extractedData: report.extractedText || '',
+        }));
+        setEhrReportsList([...reports, ...clinicalRecords]);
+        setDashboardError('');
+      })
+      .catch((error) => setDashboardError(error instanceof Error ? error.message : 'Unable to load patient dashboard.'))
+      .finally(() => setDashboardLoading(false));
+    return () => { active = false; };
   }, []);
 
   const handleTabClick = (tab: DashboardTabType) => {
     dispatch(setDashboardTab(tab));
+  };
+
+  const patientInitials = profileData.fullName
+    .split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'P';
+  const patientFirstName = profileData.fullName.split(/\s+/).filter(Boolean)[0] || 'Patient';
+
+  const saveProfile = async () => {
+    setProfileSaveSuccess(false);
+    try {
+      const updated = await updatePatientProfile({
+        fullName: profileData.fullName, phone: profileData.phone,
+        dateOfBirth: profileData.dob, gender: profileData.gender,
+        bloodGroup: profileData.bloodGroup, height: profileData.height,
+        weight: profileData.weight, emergencyContact: profileData.emergencyContactPhone,
+        allergies: profileData.allergies, chronicConditions: profileData.chronicConditions,
+      });
+      setProfileData((current) => ({ ...current, ...updated, dob: updated.dateOfBirth ? String(updated.dateOfBirth).slice(0, 10) : current.dob }));
+      setProfileSaveSuccess(true);
+      setTimeout(() => setProfileSaveSuccess(false), 4000);
+    } catch (error) {
+      setDashboardError(error instanceof Error ? error.message : 'Unable to save profile.');
+    }
+  };
+
+  const handleAvatarSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    setDashboardError('');
+    setAvatarUploading(true);
+    try {
+      const result = await uploadPatientAvatar(file);
+      setProfileImageUrl(result.profileImageUrl);
+    } catch (error) {
+      setDashboardError(error instanceof Error ? error.message : 'Profile picture upload failed.');
+    } finally {
+      setAvatarUploading(false);
+    }
   };
 
   const handleReportSelected = async (
@@ -431,19 +558,21 @@ const DashboardPage: React.FC = () => {
         <div className="sidebar-footer">
           <div className="sidebar-user-info">
             <div className="user-avatar">
-              <span>AS</span>
+              {profileImageUrl ? (
+                <img src={profileImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+              ) : <span>{patientInitials}</span>}
               <span className="online-indicator"></span>
             </div>
             <div className="user-details">
-              <span className="user-name">Ananya Sharma</span>
-              <span className="user-id">Patient ID: #SS-89421</span>
+              <span className="user-name">{profileData.fullName || 'Patient'}</span>
+              <span className="user-id">Patient portal</span>
             </div>
           </div>
           <button 
             type="button" 
             className="user-logout-btn" 
             title="Sign Out"
-            onClick={() => navigate('/')}
+            onClick={() => { clearAuth(); navigate('/patient/login'); }}
           >
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -471,13 +600,13 @@ const DashboardPage: React.FC = () => {
 
             {/* User Profile Dropdown Pill */}
             <div className="top-user-pill">
-              <img 
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150" 
-                alt="Ananya Sharma" 
-                className="user-pill-avatar" 
-              />
+              {profileImageUrl ? (
+                <img src={profileImageUrl} alt={profileData.fullName || 'Patient'} className="user-pill-avatar" />
+              ) : (
+                <div className="user-pill-avatar" style={{ display: 'grid', placeItems: 'center', background: '#dbeafe', color: '#1d4ed8', fontWeight: 800 }}>{patientInitials}</div>
+              )}
               <div className="user-pill-info">
-                <span className="user-pill-name">Ananya Sharma</span>
+                <span className="user-pill-name">{profileData.fullName || 'Patient'}</span>
                 <span className="user-pill-role">Patient</span>
               </div>
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#64748B" strokeWidth="2.5">
@@ -489,12 +618,14 @@ const DashboardPage: React.FC = () => {
 
         {/* Dashboard Content Container (Full Page Width) */}
         <main className="sehat-dash-content">
+          {dashboardLoading && <p className="tab-subtitle">Loading your health data…</p>}
+          {dashboardError && <p role="alert" style={{ color: '#b91c1c', marginBottom: '16px' }}>{dashboardError}</p>}
           {activeTab === 'overview' && (
             <>
           {/* Greeting Header */}
           <div className="dash-greeting-header">
             <h1 className="greeting-title">
-              Good Morning, Ananya <span className="wave-emoji">👋</span>
+              Good Morning, {patientFirstName} <span className="wave-emoji">👋</span>
             </h1>
             <p className="greeting-subtitle">Here's your health summary of today.</p>
           </div>
@@ -580,15 +711,23 @@ const DashboardPage: React.FC = () => {
             <div className="dash-left-col">
               {/* Upcoming Appointment Box */}
               {(() => {
+                if (!latestAppointment) {
+                  return (
+                    <div className="upcoming-appt-card">
+                      <div className="upcoming-card-header"><h2 className="section-title">Upcoming Appointment</h2></div>
+                      <p className="tab-subtitle">You have no upcoming appointments.</p>
+                    </div>
+                  );
+                }
                 const bookedDocId = latestAppointment?.doctorId || 'd1';
-                const bookedDoctor = doctorsData.find(d => d.id === bookedDocId) || doctorsData[0];
-                const displayDocName = bookedDoctor.name;
-                const displayDocSub = `${bookedDoctor.specialty} • ${bookedDoctor.experience}`;
-                const displayDate = latestAppointment?.date || 'Today';
-                const displayTime = latestAppointment?.timeSlot || '10:00 AM';
-                const displayMode = latestAppointment?.consultMode || 'Video Consultation';
-                const displayPhoto = bookedDoctor.imageUrl || 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=400';
-                const apptId = latestAppointment?.id || '1';
+                const bookedDoctor = latestAppointment.doctor || doctorsData.find(d => d.id === bookedDocId);
+                const displayDocName = bookedDoctor?.name || bookedDoctor?.user?.fullName || 'Doctor';
+                const displayDocSub = [bookedDoctor?.specialty, bookedDoctor?.experience].filter(Boolean).join(' • ');
+                const displayDate = latestAppointment?.scheduledAt ? new Date(latestAppointment.scheduledAt).toLocaleDateString() : (latestAppointment?.date || 'Date pending');
+                const displayTime = latestAppointment?.timeSlot || 'Time pending';
+                const displayMode = latestAppointment?.consultMode || 'VIDEO';
+                const displayPhoto = bookedDoctor?.imageUrl || '';
+                const apptId = latestAppointment.id;
 
                 return (
                   <div className="upcoming-appt-card">
@@ -762,13 +901,10 @@ const DashboardPage: React.FC = () => {
                               setSelectedRxData(rx.fullData || {
                                 id: rx.id,
                                 doctorName: rx.doctorName,
-                                patientName: 'Sunita Devi',
+                                patientName: profileData.fullName,
                                 date: rx.date,
-                                medications: [
-                                  { name: 'Tab. Paracetamol 650mg', dosage: '650 mg', frequency: '1-0-1', duration: '5 days', timing: 'After Food' },
-                                  { name: 'Tab. Cetirizine 10mg', dosage: '10 mg', frequency: '0-0-1', duration: '3 days', timing: 'SOS at Night' }
-                                ],
-                                dietAdvice: 'Increase fluid intake (min 3L/day), avoid spicy and oily foods, take warm water.'
+                                medications: [],
+                                dietAdvice: ''
                               });
                               setShowRxModal(true);
                             }}
@@ -903,13 +1039,18 @@ const DashboardPage: React.FC = () => {
               </div>
               
               <div className="appointments-filter-bar">
-                <button type="button" className="filter-btn active">Upcoming</button>
-                <button type="button" className="filter-btn">Past</button>
-                <button type="button" className="filter-btn">Cancelled</button>
+                <button type="button" className={`filter-btn ${appointmentFilter === 'upcoming' ? 'active' : ''}`} onClick={() => setAppointmentFilter('upcoming')}>Upcoming</button>
+                <button type="button" className={`filter-btn ${appointmentFilter === 'past' ? 'active' : ''}`} onClick={() => setAppointmentFilter('past')}>Past</button>
+                <button type="button" className={`filter-btn ${appointmentFilter === 'cancelled' ? 'active' : ''}`} onClick={() => setAppointmentFilter('cancelled')}>Cancelled</button>
               </div>
 
               <div className="appointments-cards-grid">
-                {consultationsList.map((item) => (
+                {consultationsList.filter((item) => {
+                  const status = (item.status || 'SCHEDULED').toUpperCase();
+                  const isCancelled = status === 'CANCELLED' || status === 'CANCELED';
+                  const isPast = status === 'COMPLETED';
+                  return appointmentFilter === 'cancelled' ? isCancelled : appointmentFilter === 'past' ? isPast : !isCancelled && !isPast;
+                }).map((item) => (
                   <div key={item.id} className="appointment-card-item">
                     <div className="appt-card-top">
                       <div className="doc-profile-left">
@@ -935,7 +1076,7 @@ const DashboardPage: React.FC = () => {
                     </div>
 
                     {(() => {
-                      const cardTimeStatus = getAppointmentTimeStatus(undefined, item.date, item.time);
+                      const cardTimeStatus = getAppointmentTimeStatus(item.scheduledAt, item.date, item.time);
                       return (
                         <div className="appt-card-footer">
                           {cardTimeStatus.isJoinable ? (
@@ -955,14 +1096,29 @@ const DashboardPage: React.FC = () => {
                               🔒 {cardTimeStatus.label}
                             </button>
                           )}
-                          <button type="button" className="btn-card-secondary" onClick={() => navigate('/patient/book/new')}>
-                            Reschedule
-                          </button>
+                          {appointmentFilter === 'upcoming' && (
+                            <button type="button" className="btn-card-secondary" onClick={() => navigate(`/patient/book/${item.doctorId || 'new'}?reschedule=${encodeURIComponent(item.id)}`)}>
+                              Reschedule
+                            </button>
+                          )}
+                          {appointmentFilter === 'past' && item.prescription && (
+                            <button type="button" className="btn-card-secondary" onClick={() => {
+                              const rx = prescriptionsList.find((entry) => entry.id === item.prescription?.id);
+                              setSelectedRxData(rx?.fullData || item.prescription);
+                              setShowRxModal(true);
+                            }}>View Prescription</button>
+                          )}
                         </div>
                       );
                     })()}
                   </div>
                 ))}
+                {consultationsList.filter((item) => {
+                  const status = (item.status || 'SCHEDULED').toUpperCase();
+                  const cancelled = status === 'CANCELLED' || status === 'CANCELED';
+                  const past = status === 'COMPLETED';
+                  return appointmentFilter === 'cancelled' ? cancelled : appointmentFilter === 'past' ? past : !cancelled && !past;
+                }).length === 0 && <div className="appointments-empty-state">No {appointmentFilter} appointments found.</div>}
               </div>
             </div>
           )}
@@ -1036,16 +1192,26 @@ const DashboardPage: React.FC = () => {
               {/* Profile Hero Header */}
               <div className="profile-hero-header">
                 <div className="profile-avatar-wrapper">
+                  <input
+                    ref={avatarInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={handleAvatarSelected}
+                    style={{ display: 'none' }}
+                  />
                   <div className="profile-avatar-large">
-                    AS
+                    {profileImageUrl ? (
+                      <img src={profileImageUrl} alt={profileData.fullName || 'Patient'} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+                    ) : patientInitials}
                   </div>
                   <button 
                     type="button" 
                     className="profile-avatar-edit-btn"
                     title="Upload New Profile Picture"
-                    onClick={() => alert('Photo upload dialog opened. Select a profile picture.')}
+                    disabled={avatarUploading}
+                    onClick={() => avatarInputRef.current?.click()}
                   >
-                    ✏️
+                    {avatarUploading ? '…' : '✏️'}
                   </button>
                 </div>
 
@@ -1223,10 +1389,7 @@ const DashboardPage: React.FC = () => {
                   <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '16px' }}>
                     <button
                       type="button"
-                      onClick={() => {
-                        setProfileSaveSuccess(true);
-                        setTimeout(() => setProfileSaveSuccess(false), 4000);
-                      }}
+                      onClick={saveProfile}
                       className="profile-save-btn"
                     >
                       💾 Save Profile Changes
@@ -1245,29 +1408,29 @@ const DashboardPage: React.FC = () => {
                     <div style={{ backgroundColor: '#fff1f2', border: '1px solid #fecdd3', padding: '16px', borderRadius: '16px', textAlign: 'center' }}>
                       <span style={{ fontSize: '24px', display: 'block', marginBottom: '4px' }}>❤️</span>
                       <span style={{ fontSize: '11px', color: '#e11d48', fontWeight: 'bold', display: 'block', textTransform: 'uppercase' }}>Blood Pressure</span>
-                      <span style={{ fontSize: '20px', fontWeight: '800', color: '#881337' }}>120/80</span>
-                      <span style={{ fontSize: '10px', color: '#f43f5e', display: 'block', fontWeight: '600' }}>mmHg • Normal</span>
+                      <span style={{ fontSize: '20px', fontWeight: '800', color: '#881337' }}>--</span>
+                      <span style={{ fontSize: '10px', color: '#f43f5e', display: 'block', fontWeight: '600' }}>No reading recorded</span>
                     </div>
 
                     <div style={{ backgroundColor: '#fffbeb', border: '1px solid #fde68a', padding: '16px', borderRadius: '16px', textAlign: 'center' }}>
                       <span style={{ fontSize: '24px', display: 'block', marginBottom: '4px' }}>💓</span>
                       <span style={{ fontSize: '11px', color: '#d97706', fontWeight: 'bold', display: 'block', textTransform: 'uppercase' }}>Heart Rate</span>
-                      <span style={{ fontSize: '20px', fontWeight: '800', color: '#78350f' }}>72</span>
-                      <span style={{ fontSize: '10px', color: '#f59e0b', display: 'block', fontWeight: '600' }}>bpm • Optimal</span>
+                      <span style={{ fontSize: '20px', fontWeight: '800', color: '#78350f' }}>--</span>
+                      <span style={{ fontSize: '10px', color: '#f59e0b', display: 'block', fontWeight: '600' }}>No reading recorded</span>
                     </div>
 
                     <div style={{ backgroundColor: '#ecfdf5', border: '1px solid #a7f3d0', padding: '16px', borderRadius: '16px', textAlign: 'center' }}>
                       <span style={{ fontSize: '24px', display: 'block', marginBottom: '4px' }}>🩸</span>
                       <span style={{ fontSize: '11px', color: '#059669', fontWeight: 'bold', display: 'block', textTransform: 'uppercase' }}>Blood Sugar</span>
-                      <span style={{ fontSize: '20px', fontWeight: '800', color: '#064e3b' }}>95</span>
-                      <span style={{ fontSize: '10px', color: '#10b981', display: 'block', fontWeight: '600' }}>mg/dL • Fasting</span>
+                      <span style={{ fontSize: '20px', fontWeight: '800', color: '#064e3b' }}>--</span>
+                      <span style={{ fontSize: '10px', color: '#10b981', display: 'block', fontWeight: '600' }}>No reading recorded</span>
                     </div>
 
                     <div style={{ backgroundColor: '#eff6ff', border: '1px solid #bfdbfe', padding: '16px', borderRadius: '16px', textAlign: 'center' }}>
                       <span style={{ fontSize: '24px', display: 'block', marginBottom: '4px' }}>🫁</span>
                       <span style={{ fontSize: '11px', color: '#2563eb', fontWeight: 'bold', display: 'block', textTransform: 'uppercase' }}>Oxygen (SpO2)</span>
-                      <span style={{ fontSize: '20px', fontWeight: '800', color: '#1e3a8a' }}>99%</span>
-                      <span style={{ fontSize: '10px', color: '#3b82f6', display: 'block', fontWeight: '600' }}>Excellent</span>
+                      <span style={{ fontSize: '20px', fontWeight: '800', color: '#1e3a8a' }}>--</span>
+                      <span style={{ fontSize: '10px', color: '#3b82f6', display: 'block', fontWeight: '600' }}>No reading recorded</span>
                     </div>
                   </div>
 
@@ -1331,7 +1494,6 @@ const DashboardPage: React.FC = () => {
                         className="profile-input-control"
                       />
                     </div>
-
                     <div className="profile-field-group">
                       <label className="profile-label">New Password</label>
                       <input 
@@ -1386,6 +1548,7 @@ const DashboardPage: React.FC = () => {
                       {securitySettings.enable2FA ? '✓ Enabled' : 'Disabled'}
                     </button>
                   </div>
+                  <AccountDeletionDangerZone role="PATIENT" />
                 </div>
               )}
 
@@ -1427,19 +1590,19 @@ const DashboardPage: React.FC = () => {
                     <div style={{ backgroundColor: '#0f172a', color: '#ffffff', padding: '20px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 'bold', textTransform: 'uppercase' }}>Default Payment UPI</span>
-                        <span style={{ backgroundColor: 'rgba(52, 211, 153, 0.2)', color: '#34d399', fontSize: '10px', fontWeight: 'bold', padding: '2px 10px', borderRadius: '9999px' }}>Active</span>
+                        <span style={{ backgroundColor: 'rgba(148, 163, 184, 0.2)', color: '#cbd5e1', fontSize: '10px', fontWeight: 'bold', padding: '2px 10px', borderRadius: '9999px' }}>Not configured</span>
                       </div>
-                      <p style={{ fontSize: '18px', fontFamily: 'monospace', fontWeight: 'bold', color: '#ffffff' }}>ananya@okicici</p>
-                      <p style={{ fontSize: '12px', color: '#94a3b8' }}>Linked to Google Pay / BHIM UPI</p>
+                      <p style={{ fontSize: '18px', fontFamily: 'monospace', fontWeight: 'bold', color: '#ffffff' }}>No saved UPI</p>
+                      <p style={{ fontSize: '12px', color: '#94a3b8' }}>Add a payment method during checkout.</p>
                     </div>
 
                     <div style={{ backgroundColor: '#1e293b', color: '#ffffff', padding: '20px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 'bold', textTransform: 'uppercase' }}>Visa Debit Card</span>
-                        <span style={{ fontSize: '12px', color: '#94a3b8' }}>Expires 09/28</span>
+                        <span style={{ fontSize: '12px', color: '#94a3b8' }}>Not configured</span>
                       </div>
-                      <p style={{ fontSize: '18px', fontFamily: 'monospace', fontWeight: 'bold', color: '#ffffff' }}>•••• •••• •••• 4821</p>
-                      <p style={{ fontSize: '12px', color: '#94a3b8' }}>HDFC Bank Signature Card</p>
+                      <p style={{ fontSize: '18px', fontFamily: 'monospace', fontWeight: 'bold', color: '#ffffff' }}>No saved card</p>
+                      <p style={{ fontSize: '12px', color: '#94a3b8' }}>Payment details are not stored here.</p>
                     </div>
                   </div>
                 </div>
@@ -1485,13 +1648,10 @@ const DashboardPage: React.FC = () => {
                             setSelectedRxData(rx.fullData || {
                               id: rx.id,
                               doctorName: rx.doctorName,
-                              patientName: 'Sunita Devi',
+                              patientName: profileData.fullName,
                               date: rx.date,
-                              medications: [
-                                { name: 'Tab. Paracetamol 650mg', dosage: '650 mg', frequency: '1-0-1', duration: '5 days', timing: 'After Food' },
-                                { name: 'Tab. Cetirizine 10mg', dosage: '10 mg', frequency: '0-0-1', duration: '3 days', timing: 'SOS at Night' }
-                              ],
-                              dietAdvice: 'Increase fluid intake (min 3L/day), avoid spicy and oily foods, take warm water.'
+                              medications: [],
+                              dietAdvice: ''
                             });
                             setShowRxModal(true);
                           }}
@@ -1501,6 +1661,7 @@ const DashboardPage: React.FC = () => {
                       </div>
                     </div>
                   ))}
+                  {prescriptionsList.length === 0 && <div className="appointments-empty-state">No prescriptions have been issued yet.</div>}
                 </div>
               </div>
             </div>

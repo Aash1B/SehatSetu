@@ -10,6 +10,7 @@ import { MailModule } from './mail/mail.module';
 import { MedicalReportsModule } from './medical-reports/medical-reports.module';
 import { DoctorsModule } from './doctors/doctors.module';
 import { QueueModule } from './queue/queue.module';
+import { PatientModule } from './patient/patient.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { QueueModule } from './queue/queue.module';
     LivekitModule,
     MedicalReportsModule,
     DoctorsModule,
+    PatientModule,
   ],
   controllers: [HealthController],
 })

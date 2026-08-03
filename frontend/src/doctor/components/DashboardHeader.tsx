@@ -3,6 +3,7 @@ import { Bell } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import type { Doctor } from '../../types';
+import { getToken } from '../../auth/authStorage';
 
 export interface DashboardHeaderProps {
   doctor: Doctor;
@@ -32,18 +33,11 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     const fetchRealNotifications = async () => {
       setLoading(true);
       try {
-        const res = await fetch('/api/appointments');
+        const res = await fetch('/api/appointments', { headers: { Authorization: `Bearer ${getToken()}` } });
         if (res.ok) {
           const allAppointments = await res.json();
           if (Array.isArray(allAppointments)) {
-            // Filter appointments matching current doctor if doctor ID is specified
-            const docAppointments = doctor?.id
-              ? allAppointments.filter((app: any) => 
-                  String(app.doctorId) === String(doctor.id) || 
-                  (app.doctor && String(app.doctor.id) === String(doctor.id)) ||
-                  (!app.doctorId && String(doctor.id) === 'doc-sarah-jenkins') // fallback for default doctor
-                )
-              : allAppointments;
+            const docAppointments = allAppointments;
 
             const mapped: NotificationItem[] = docAppointments.map((app: any) => {
               const pName = app.patientName || app.patient?.user?.fullName || 'Patient';

@@ -80,18 +80,28 @@ export class DoctorService {
   }
 
   async getAvailability(doctorId: string) {
+    let resolvedDoctorIds = [doctorId];
+    let availability: any = null;
     try {
       const doctor = await prisma.doctor.findUnique({
         where: { id: doctorId },
       });
-      if (doctor && doctor.availability) {
-        return doctor.availability;
+      if (doctor) {
+        availability = doctor.availability;
+        if (!doctor.userId && doctor.name) {
+          const normalizedName = doctor.name.replace(/^dr\.?\s*/i, '').trim().toLowerCase();
+          const linkedDoctors = await prisma.doctor.findMany({ where: { userId: { not: null } }, include: { user: true } });
+          const linkedMatch = linkedDoctors.find((candidate) =>
+            candidate.user?.fullName.replace(/^dr\.?\s*/i, '').trim().toLowerCase() === normalizedName,
+          );
+          if (linkedMatch) resolvedDoctorIds.push(linkedMatch.id);
+        }
       }
     } catch (e) {
       console.warn('Doctor not found in DB, using fallback availability structure:', doctorId);
     }
 
-    return {
+    const baseAvailability = availability || {
       slotDurationMinutes: 15,
       status: 'Available',
       slots: [
@@ -104,6 +114,22 @@ export class DoctorService {
         { day: 'Sunday', isWorking: false, workingHours: 'Closed', breakTime: '-' }
       ]
     };
+    const appointments = await prisma.appointment.findMany({
+      where: {
+        doctorId: { in: resolvedDoctorIds },
+        status: { in: ['SCHEDULED', 'WAITING'] },
+        scheduledAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
+      },
+      select: { scheduledAt: true, timeSlot: true },
+    });
+    const bookedSlots: Record<string, string[]> = {};
+    appointments.forEach((appointment) => {
+      if (!appointment.scheduledAt) return;
+      const dateKey = appointment.scheduledAt.toLocaleDateString('en-CA');
+      const slot = appointment.timeSlot || appointment.scheduledAt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      bookedSlots[dateKey] = [...new Set([...(bookedSlots[dateKey] || []), slot])];
+    });
+    return { ...(baseAvailability as object), bookedSlots };
   }
 
   async updateAvailability(doctorId: string, availability: any) {

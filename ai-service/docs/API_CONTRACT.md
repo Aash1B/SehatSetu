@@ -214,13 +214,15 @@ Statuses: 200, 422, 502, 504; unexpected errors map to `DIET_GENERATION_FAILED`.
 
 ### `POST /api/v1/recommend-doctor`
 
-Request `DoctorRecommendationRequest`: required `issue`; optional symptoms, age, gender, language, and output language. Returns required controlled doctor category, matched symptoms, reason, urgency, confidence, alternative categories, and recommendation source; emergency warning/disclaimer are optional.
+Request `DoctorRecommendationRequest`: required `issue`; optional symptoms, age, gender, language, output language, and up to 100 raw Google Places objects in `nearby_hospitals`. Existing requests remain valid. The response adds `emergency_instruction`, ranked `nearby_hospitals`, and `hospital_classification_notice` while retaining all existing doctor-routing fields.
 
 ```json
-{"issue":"Persistent chest pain and shortness of breath","symptoms":["chest pain"]}
+{"issue":"Persistent chest pain and shortness of breath","symptoms":["chest pain"],"nearby_hospitals":[{"googlePlaceId":"place-123","name":"City Heart and Emergency Hospital","distance":1800,"businessStatus":"OPERATIONAL","openNow":true}]}
 ```
 
-Statuses: 200, 422, 500 `DOCTOR_RECOMMENDATION_FAILED`. This routes specialization only; it does not diagnose, select a doctor, check availability, or book.
+Each enriched item contains the original provider object under `raw`, plus `hospital_type`, inferred `specialities`, provenance/confidence, `emergency_suitability_score`, reason, and warnings. Classifications are not confirmation of ownership or capability unless `classification_source` is `verified_database`; callers must display the classification notice. Distances are interpreted as metres.
+
+For an emergency, `emergency_detected` is true, `emergency_instruction` directs the user to call configured `EMERGENCY_NUMBER` (default India `112`) immediately and visit the nearest suitable emergency facility, and supplied hospitals are ranked. Statuses: 200, 422, 500 `DOCTOR_RECOMMENDATION_FAILED`. The service does not diagnose, confirm live availability, or book.
 
 ## OCR
 

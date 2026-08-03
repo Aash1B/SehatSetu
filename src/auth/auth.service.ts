@@ -146,7 +146,8 @@ export class AuthService {
       throw new UnauthorizedException('Please verify your email before logging in. Check your inbox for the verification code.');
     }
 
-    const accessToken = this.jwtService.sign({ sub: user.id, role: user.role });
+    if (user.accountStatus !== 'ACTIVE') throw new UnauthorizedException('This account is no longer active');
+    const accessToken = this.jwtService.sign({ sub: user.id, role: user.role, ver: user.tokenVersion });
 
     return {
       id: user.id,
@@ -155,18 +156,6 @@ export class AuthService {
       role: user.role,
       accessToken,
     };
-  }
-
-  async deleteAccount(userId: string) {
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        email: `deleted_${userId}@sehatsetu.invalid`,
-        passwordHash: 'DELETED',
-        fullName: 'Deleted User',
-      },
-    });
-    return { message: 'Account and personal data deleted' };
   }
 
   async forgotPassword(email: string) {

@@ -1,5 +1,6 @@
-import { Controller, Get, Post, Body, Query, BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, BadRequestException, InternalServerErrorException, Req, UseGuards } from '@nestjs/common';
 import { LivekitService } from './livekit.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('api/livekit')
 export class LivekitController {
@@ -23,15 +24,19 @@ export class LivekitController {
   }
 
   @Post('end-consultation')
-  async endConsultation(@Body() body: { appointmentId: string; notes?: string; durationSeconds?: number }) {
+  @UseGuards(JwtAuthGuard)
+  async endConsultation(@Body() body: { appointmentId: string; notes?: string; durationSeconds?: number; prescription?: any }, @Req() req: any) {
     if (!body.appointmentId) {
       throw new BadRequestException('appointmentId is required');
     }
 
-    const result = await this.livekitService.enqueueConsultationEnd(
+    const result = await this.livekitService.endConsultation(
       body.appointmentId,
+      req.user.userId,
+      req.user.role,
       body.notes,
       body.durationSeconds,
+      body.prescription,
     );
 
     return result;

@@ -83,7 +83,16 @@ const DoctorSearchSection: React.FC = () => {
     );
   };
 
-  const filteredDoctors = doctorsList.filter(doc => {
+  const sarahTestDoctor = doctorsData.find((doctor) => doctor.id === 'd1');
+  const sarahFromCurrentList = doctorsList.find((doctor) =>
+    doctor.id === 'd1' || doctor.name.toLowerCase().includes('sarah jenkins')
+  );
+  const pinnedSarah = sarahFromCurrentList || sarahTestDoctor;
+  const effectiveDoctors = pinnedSarah
+    ? [pinnedSarah, ...doctorsList.filter((doctor) => doctor.id !== pinnedSarah.id && !doctor.name.toLowerCase().includes('sarah jenkins'))]
+    : doctorsList;
+
+  const filteredDoctors = effectiveDoctors.filter(doc => {
     const matchesSearch = (doc.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (doc.specialty || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (doc.hospital || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -97,6 +106,10 @@ const DoctorSearchSection: React.FC = () => {
     return matchesSearch && matchesSpecialty && matchesLocation;
   });
 
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [searchTerm, specialtyFilter, locationFilter, hospitalFilter, experienceFilter, feesFilter]);
+
   const handlePrev = () => {
     setCurrentIndex(prev => (prev > 0 ? prev - 1 : Math.max(0, filteredDoctors.length - 3)));
   };
@@ -104,6 +117,10 @@ const DoctorSearchSection: React.FC = () => {
   const handleNext = () => {
     setCurrentIndex(prev => (prev + 1 < filteredDoctors.length ? prev + 1 : 0));
   };
+
+  const visibleDoctors = searchTerm.trim()
+    ? filteredDoctors.slice(0, 4)
+    : filteredDoctors.slice(currentIndex, currentIndex + 4);
 
   return (
     <section id="doctors" className="doctor-search-section">
@@ -223,7 +240,7 @@ const DoctorSearchSection: React.FC = () => {
           </button>
 
           <div className="doctors-cards-grid">
-            {filteredDoctors.slice(currentIndex, currentIndex + 4).map((doctor: Doctor) => (
+            {visibleDoctors.map((doctor: Doctor) => (
               <div key={doctor.id} className="doctor-card-item">
                 <div className="doctor-card-image-wrap">
                   <img src={doctor.imageUrl} alt={doctor.name} className="doctor-avatar-img" />
@@ -272,6 +289,11 @@ const DoctorSearchSection: React.FC = () => {
                 </div>
               </div>
             ))}
+            {filteredDoctors.length === 0 && (
+              <div className="appointments-empty-state">
+                No doctor matches “{searchTerm}”. Try another name or clear the filters.
+              </div>
+            )}
           </div>
 
           <button type="button" className="carousel-nav-btn next-btn" onClick={handleNext} aria-label="Next">

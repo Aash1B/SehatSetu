@@ -1,7 +1,8 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { AccessToken } from 'livekit-server-sdk';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
+import { prisma } from '../prisma';
 
 @Injectable()
 export class LivekitService {
@@ -49,5 +50,52 @@ export class LivekitService {
         message: 'Could not enqueue background job (Redis offline or unavailable).',
       };
     }
+  }
+
+  async endConsultation(
+    appointmentId: string,
+    userId: string,
+    role: string,
+    notes?: string,
+    durationSeconds?: number,
+    prescription?: any,
+  ) {
+    const appointment = await prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      include: { doctor: true, patient: true },
+    });
+    if (!appointment) throw new NotFoundException('Appointment not found');
+    const isDoctor = role === 'DOCTOR' && appointment.doctor?.userId === userId;
+    const isPatient = role === 'PATIENT' && appointment.patient?.userId === userId;
+    if (!isDoctor && !isPatient) throw new ForbiddenException('You cannot end this consultation');
+
+    let savedPrescription: any = null;
+    if (prescription) {
+      if (!isDoctor || !appointment.patientId) {
+        throw new ForbiddenException('Only the assigned doctor can issue a prescription');
+      }
+      savedPrescription = await prisma.prescription.upsert({
+        where: { appointmentId },
+        create: {
+          appointmentId,
+          patientId: appointment.patientId,
+          doctorId: appointment.doctorId,
+          medicines: Array.isArray(prescription.medications) ? prescription.medications : [],
+          dietAdvice: prescription.dietAdvice || null,
+        },
+        update: {
+          medicines: Array.isArray(prescription.medications) ? prescription.medications : [],
+          dietAdvice: prescription.dietAdvice || null,
+        },
+      });
+      await prisma.ehrRecord.upsert({
+        where: { appointmentId },
+        create: { appointmentId, patientId: appointment.patientId, diagnosis: prescription.diagnosis || appointment.healthConcern, notes: prescription.notes || notes },
+        update: { diagnosis: prescription.diagnosis || appointment.healthConcern, notes: prescription.notes || notes },
+      });
+    }
+    await prisma.appointment.update({ where: { id: appointmentId }, data: { status: 'COMPLETED' } });
+    const queueResult = await this.enqueueConsultationEnd(appointmentId, notes, durationSeconds);
+    return { ...queueResult, prescription: savedPrescription };
   }
 }

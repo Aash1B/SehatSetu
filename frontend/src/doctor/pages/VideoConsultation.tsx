@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { LiveKitRoom, VideoConference } from '@livekit/components-react';
 import '@livekit/components-styles';
@@ -14,18 +14,8 @@ import type { PatientProfile, TranscriptDTO, AIInsightDTO } from '../../types';
 import { Shield, Mic } from 'lucide-react';
 import { useLiveAudioTranscription } from '../../common/hooks/useLiveAudioTranscription';
 import { getConsultationRoomId } from '../../config/consultationTestMode';
-
-// Mock Data
-const mockPatient: PatientProfile = {
-  id: "p2",
-  name: "Sunita Devi",
-  initials: "SD",
-  age: 31,
-  gender: "F",
-  bloodGroup: "B+",
-  weight: "58kg",
-  height: "162cm"
-};
+import { getToken } from '../../auth/authStorage';
+import LowBandwidthMode from '../../common/components/LowBandwidthMode';
 
 const VideoConsultation: React.FC = () => {
   const { id: consultationId = '1' } = useParams<{ id: string }>();
@@ -36,13 +26,24 @@ const VideoConsultation: React.FC = () => {
   const [token, setToken] = useState("");
   const [serverUrl, setServerUrl] = useState("");
   const [connectionError, setConnectionError] = useState("");
+  const [appointment, setAppointment] = useState<any>(null);
+  const [roomConnected, setRoomConnected] = useState(true);
+  const [issuedPrescription, setIssuedPrescription] = useState<any>(null);
+  const intentionalEndRef = useRef(false);
 
   const { isRecording, symptoms, medicines, error: micError, startRecording, stopRecording } = useLiveAudioTranscription();
 
   React.useEffect(() => {
     (async () => {
       try {
-        const resp = await fetch(`/api/livekit/token?room=${encodeURIComponent(roomId)}&username=Doctor`);
+        const appointmentResponse = await fetch(`/api/appointments/${encodeURIComponent(consultationId)}`, {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        });
+        if (!appointmentResponse.ok) throw new Error('Unable to load consultation details');
+        const appointmentData = await appointmentResponse.json();
+        setAppointment(appointmentData);
+        const doctorName = appointmentData.doctor?.name || appointmentData.doctor?.user?.fullName || 'Doctor';
+        const resp = await fetch(`/api/livekit/token?room=${encodeURIComponent(roomId)}&username=${encodeURIComponent(doctorName)}`);
         if (!resp.ok) throw new Error(`Unable to create video-room token (${resp.status})`);
         const data = await resp.json();
         if (!data.token || !data.serverUrl) throw new Error('Video-room configuration is incomplete');
@@ -63,7 +64,7 @@ const VideoConsultation: React.FC = () => {
         <div className="shrink-0 px-6 py-4 flex items-center justify-between border-b border-gray-100 bg-white shadow-sm z-10">
           <div className="flex items-center gap-4">
             <button 
-              onClick={() => navigate(`/doctor/patient/${mockPatient.id}`)}
+              onClick={() => navigate(appointment?.patient?.id ? `/doctor/patient/${appointment.patient.id}` : '/doctor/consultations')}
               className="text-gray-500 hover:text-deep-space font-medium text-sm transition-colors cursor-pointer"
             >
               ← Back to Details
@@ -99,15 +100,19 @@ const VideoConsultation: React.FC = () => {
               <div className="flex-1 min-h-0 relative rounded-2xl overflow-hidden bg-gray-900 border border-gray-200 shadow-sm">
                 {token && serverUrl ? (
                   <LiveKitRoom
+                    connect={roomConnected}
                     video={true}
                     audio={true}
                     token={token}
                     serverUrl={serverUrl}
                     data-lk-theme="default"
                     style={{ height: '100%', minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
-                    onDisconnected={() => setIsEndCallOpen(true)}
+                    onDisconnected={() => {
+                      if (!intentionalEndRef.current) setIsEndCallOpen(true);
+                    }}
                     onError={(error) => setConnectionError(error.message)}
                   >
+                    <LowBandwidthMode />
                     <VideoConference />
                   </LiveKitRoom>
                 ) : (
@@ -120,7 +125,16 @@ const VideoConsultation: React.FC = () => {
 
             {/* Right Column: Tools */}
             <div className="lg:col-span-4 flex flex-col h-full gap-4 overflow-y-auto pr-2 pb-2 custom-scrollbar">
-              <PatientMiniCard patient={mockPatient} />
+              {appointment && <PatientMiniCard patient={{
+                id: appointment.patient?.id || '',
+                name: appointment.patient?.user?.fullName || appointment.patientName || 'Patient',
+                initials: (appointment.patient?.user?.fullName || appointment.patientName || 'Patient').split(/\s+/).filter(Boolean).slice(0, 2).map((part: string) => part[0]).join('').toUpperCase(),
+                age: Number(appointment.patient?.age || appointment.patientAge || 0),
+                gender: appointment.patient?.gender || appointment.patientGender || 'Other',
+                bloodGroup: appointment.patient?.bloodGroup || appointment.patientBloodGroup,
+                weight: appointment.patient?.weight || appointment.patientWeight,
+                height: appointment.patient?.height || appointment.patientHeight,
+              } as PatientProfile} />}
               
               <div className="flex-1 flex flex-col gap-4 min-h-0">
                 <SymptomsEditor className="flex-1 min-h-[200px]" aiExtractedSymptoms={symptoms} />
@@ -137,7 +151,26 @@ const VideoConsultation: React.FC = () => {
         isOpen={isEndCallOpen}
         onClose={() => setIsEndCallOpen(false)}
         consultationId={consultationId}
-        onConfirmRx={() => setShowRxModal(true)}
+        prescriptionData={{
+          doctorName: appointment?.doctor?.name || appointment?.doctor?.user?.fullName || 'Doctor',
+          doctorSpecialty: appointment?.doctor?.specialty || '',
+          doctorHospital: appointment?.doctor?.hospital || 'SehatSetu Digital Health Clinic',
+          patientName: appointment?.patient?.user?.fullName || appointment?.patientName || 'Patient',
+          patientAge: appointment?.patient?.age || appointment?.patientAge || '',
+          patientGender: appointment?.patient?.gender || appointment?.patientGender || '',
+          diagnosis: appointment?.ehrRecord?.diagnosis || appointment?.healthConcern || '',
+          symptoms: symptoms.length ? symptoms : (appointment?.symptoms || []),
+          medications: medicines.map((medicine: any) => ({
+            name: medicine.name || '', dosage: medicine.dosage || '', frequency: medicine.frequency || '', duration: medicine.duration || '', timing: medicine.timing || '',
+          })),
+          notes: appointment?.ehrRecord?.notes || appointment?.notes || '',
+        }}
+        onConfirmRx={(prescription) => {
+          intentionalEndRef.current = true;
+          setIssuedPrescription(prescription);
+          setRoomConnected(false);
+          setShowRxModal(true);
+        }}
       />
 
       <PrescriptionViewModal 
@@ -147,6 +180,7 @@ const VideoConsultation: React.FC = () => {
           setShowRxModal(false);
           navigate('/doctor/dashboard');
         }}
+        data={issuedPrescription || undefined}
       />
     </div>
   );

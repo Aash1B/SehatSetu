@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Delete, UseGuards, Req } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
@@ -49,9 +49,4 @@ resetPassword(@Body() dto: ResetPasswordDto) {
     return req.user;
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Delete('account')
-  deleteAccount(@Req() req: any) {
-    return this.authService.deleteAccount(req.user.userId);
-  }
 }

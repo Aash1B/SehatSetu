@@ -12,6 +12,7 @@ from app.schemas.diet import (
 )
 from app.services.gemini_service import GeminiService
 from app.services.language_service import language_service
+from app.services.nutrition.recommendation_service import NutritionRecommendationService
 
 
 class DietService:
@@ -24,6 +25,8 @@ class DietService:
         self, request: DietRecommendationRequest
     ) -> DietRecommendationData:
         """Generate and safety-stamp a validated recommendation."""
+        if request.conditions or request.symptoms or request.lab_values or request.medications:
+            return await NutritionRecommendationService().generate(request)
         language = language_service.resolve(
             request.summary, request.language, request.output_language
         )

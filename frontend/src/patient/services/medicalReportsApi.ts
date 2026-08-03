@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../utils/constants';
-import { getToken } from '../utils/storage';
+import { getToken } from '../../auth/authStorage';
 
 const ALLOWED_TYPES = new Set([
   'application/pdf',

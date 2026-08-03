@@ -48,23 +48,20 @@ interface PrescriptionViewModalProps {
 }
 
 const defaultPrescription: Required<Omit<PrescriptionData, 'notes'>> & { notes: string } = {
-  id: 'RX-2026-8849',
-  doctorName: 'Dr. Ananya Sharma',
-  doctorSpecialty: 'General Physician & Telehealth Specialist',
-  doctorRegNo: 'MCI-IND-98742',
+  id: '',
+  doctorName: 'Doctor',
+  doctorSpecialty: '',
+  doctorRegNo: '',
   doctorHospital: 'SehatSetu Digital Health Clinic',
-  patientName: 'Sunita Devi',
-  patientAge: 31,
-  patientGender: 'Female',
+  patientName: 'Patient',
+  patientAge: '',
+  patientGender: '',
   date: new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
-  diagnosis: 'Acute Viral Fever with Body Ache',
-  symptoms: ['Persistent Fever (4 days)', 'Body ache & Fatigue'],
-  medications: [
-    { name: 'Tab. Paracetamol 650mg', dosage: '650 mg', frequency: '1-0-1', duration: '5 days', timing: 'After Food' },
-    { name: 'Tab. Cetirizine 10mg', dosage: '10 mg', frequency: '0-0-1', duration: '3 days', timing: 'SOS at Night' },
-  ],
-  dietAdvice: 'Increase fluid intake (min 3L/day), avoid spicy and oily foods, take warm water & rest.',
-  notes: 'Follow up in 5 days if symptoms persist.',
+  diagnosis: '',
+  symptoms: [],
+  medications: [],
+  dietAdvice: '',
+  notes: '',
 };
 
 const PrescriptionViewModal: React.FC<PrescriptionViewModalProps> = ({
@@ -177,10 +174,18 @@ const PrescriptionViewModal: React.FC<PrescriptionViewModalProps> = ({
     </div>
   );
 
-  const content = <div className="rx-viewer"><div className="rx-page-scroll">{page}</div><div className="rx-actions">
+  const content = <div className="rx-viewer">
+    <div className="rx-viewer-header">
+      <div className="rx-viewer-heading">
+        <span className="rx-viewer-icon"><FileText /></span>
+        <div><strong>Prescription ready</strong><span>{rx.patientName} · {rx.doctorName}</span></div>
+      </div>
+      <span className="rx-viewer-status"><CheckCircle2 /> Consultation completed</span>
+      {onClose && <button className="rx-viewer-close" onClick={onClose} aria-label="Close prescription"><X /></button>}
+    </div>
+    <div className="rx-page-scroll">{page}</div><div className="rx-actions">
     <button className="primary" onClick={handleDownload} disabled={isGenerating}><Download /> {isGenerating ? 'Generating A4 PDF…' : 'Download PDF Prescription'}</button>
     <button onClick={handlePrint}><Printer /> Print / Save PDF</button>
-    {onClose && <button onClick={onClose}><X /> Close</button>}
   </div></div>;
 
   return isModal

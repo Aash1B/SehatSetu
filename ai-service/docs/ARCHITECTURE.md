@@ -141,3 +141,8 @@ OCR providers implement a provider-neutral interface. Tesseract is local-first. 
 ## Evaluation dashboard
 
 `python -m evaluation_dashboard.app` reads local JSON artifacts, redacts sensitive keys, preserves missing values as “Not measured,” and generates `test/consolidated/reports/evaluation-dashboard.html`. The entire `test/` tree is ignored and intended for local evaluation output.
+## Hospital interpretation and emergency ranking
+
+`HospitalEnrichmentService` is a deterministic, provider-independent layer called by the doctor-recommendation service. Pydantic accepts partial Google Places records and retains unknown provider fields. Classification follows trusted internal metadata, India-focused keyword rules, an optional AI callback, then `unknown`. Conflicting ownership evidence fails closed to `unknown`.
+
+The 100-point emergency score allocates 25 points to reported-open status, 25 to emergency/trauma indicators, 25 to condition-speciality relevance, up to 20 to distance (`20 / (1 + metres / 5000)`), 10 to an operational listing, and at most 5 combined to rating and review count. Unknown opening/status receives only small neutral-preservation points. Closed or non-operational facilities remain visible with warnings rather than being silently removed.

@@ -1,69 +1,61 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { X, CheckCircle, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import type { PrescriptionData } from '../../common/components/PrescriptionViewModal';
+import { getToken } from '../../auth/authStorage';
 
 interface EndConsultationDialogProps {
   isOpen: boolean;
   onClose: () => void;
   consultationId: string;
-  onConfirmRx?: () => void;
+  onConfirmRx?: (prescription: PrescriptionData) => void;
+  prescriptionData: PrescriptionData;
 }
 
 const EndConsultationDialog: React.FC<EndConsultationDialogProps> = ({
   isOpen,
   onClose,
   consultationId,
-  onConfirmRx
+  onConfirmRx,
+  prescriptionData,
 }) => {
   const navigate = useNavigate();
+  const [isSending, setIsSending] = useState(false);
+  const [sendError, setSendError] = useState('');
 
   if (!isOpen) return null;
 
   const handleEndAndConfirmPrescription = async () => {
-    // Generate confirmed prescription object from doctor's consultation data
+    setIsSending(true);
+    setSendError('');
     const confirmedPrescription = {
       id: `RX-2026-${Math.floor(1000 + Math.random() * 9000)}`,
-      doctorName: "Dr. Ananya Sharma",
-      doctorSpecialty: "General Physician & Telehealth Specialist",
-      doctorRegNo: "MCI-IND-98742",
-      doctorHospital: "SehatSetu Digital Health Clinic",
-      patientName: "Sunita Devi",
-      patientAge: 31,
-      patientGender: "Female",
+      ...prescriptionData,
       date: new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
-      diagnosis: "Acute Viral Fever with Body Ache",
-      symptoms: ["Persistent Fever (4 days)", "Body ache & Fatigue"],
-      medications: [
-        { name: "Tab. Paracetamol 650mg", dosage: "650 mg", frequency: "1-0-1", duration: "5 days", timing: "After Food" },
-        { name: "Tab. Cetirizine 10mg", dosage: "10 mg", frequency: "0-0-1", duration: "3 days", timing: "SOS at Night" }
-      ],
-      dietAdvice: "Increase fluid intake (min 3L/day), avoid spicy and oily foods, take warm water & rest.",
-      notes: "Follow up in 5 days if fever persists. Complete CBC & Dengue NS1 test if body ache continues."
     };
 
-    // Save prescription to local storage for both doctor & patient sync
-    localStorage.setItem(`prescription_${consultationId}`, JSON.stringify(confirmedPrescription));
-    localStorage.setItem('sehatsetu_active_prescription', JSON.stringify(confirmedPrescription));
-
     try {
-      await fetch('/api/livekit/end-consultation', {
+      const response = await fetch('/api/livekit/end-consultation', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
         body: JSON.stringify({
           appointmentId: consultationId,
           notes: 'Consultation ended and prescription confirmed by doctor.',
           prescription: confirmedPrescription,
         }),
       });
+      const result = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(result?.message || 'The prescription could not be saved.');
+      const saved = { ...confirmedPrescription, id: result?.prescription?.id || confirmedPrescription.id };
+      localStorage.setItem(`prescription_${consultationId}`, JSON.stringify(saved));
+      localStorage.setItem('sehatsetu_active_prescription', JSON.stringify(saved));
+      onClose();
+      if (onConfirmRx) onConfirmRx(saved);
+      else navigate('/doctor/dashboard');
     } catch (err) {
-      console.warn('Could not post end-consultation queue job:', err);
-    }
-
-    onClose();
-    if (onConfirmRx) {
-      onConfirmRx();
-    } else {
-      navigate('/doctor/dashboard');
+      setSendError(err instanceof Error ? err.message : 'The prescription could not be saved.');
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -93,8 +85,9 @@ const EndConsultationDialog: React.FC<EndConsultationDialogProps> = ({
           </div>
 
           <p className="text-gray-600 mb-6 text-sm">
-            Are you sure you want to end this video call and generate the final prescription for <strong>Sunita Devi</strong>?
+            Are you sure you want to end this video call and generate the final prescription for <strong>{prescriptionData.patientName || 'this patient'}</strong>?
           </p>
+          {sendError && <p className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700">{sendError}</p>}
 
           <div className="flex gap-4">
             <button 
@@ -105,9 +98,10 @@ const EndConsultationDialog: React.FC<EndConsultationDialogProps> = ({
             </button>
             <button 
               onClick={handleEndAndConfirmPrescription}
+              disabled={isSending}
               className="flex-1 py-3 rounded-xl bg-habanero text-white font-bold hover:bg-[#e0750e] transition-colors shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
             >
-              <span>Confirm & Send Rx</span>
+              <span>{isSending ? 'Saving Prescription…' : 'Confirm & Send Rx'}</span>
             </button>
           </div>
         </div>

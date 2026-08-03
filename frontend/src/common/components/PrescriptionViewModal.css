@@ -22,3 +22,26 @@
 .rx-medications th:nth-child(5),.rx-medications td:nth-child(5){width:22%}
 .rx-medications th,.rx-medications td{box-sizing:border-box;min-width:0;overflow-wrap:anywhere;word-break:normal}
 .rx-medications td b{display:inline-block;max-width:100%;box-sizing:border-box;white-space:nowrap}
+
+/* Polished modal chrome around the printable A4 document. */
+.rx-modal-backdrop{background:rgba(3,12,32,.8);backdrop-filter:blur(10px);padding:24px}
+.rx-viewer{width:min(940px,100%);border:1px solid rgba(255,255,255,.5);border-radius:22px;box-shadow:0 34px 100px rgba(0,0,0,.45)}
+.rx-viewer-header{min-height:72px;box-sizing:border-box;display:flex;align-items:center;gap:18px;padding:12px 18px;background:linear-gradient(135deg,#fff,#f4f8ff);border-bottom:1px solid #dce6f5}
+.rx-viewer-heading{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
+.rx-viewer-icon{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;color:#fff;background:linear-gradient(145deg,#176bd9,#073ba2);box-shadow:0 8px 18px rgba(23,107,217,.24)}
+.rx-viewer-icon svg{width:21px}
+.rx-viewer-heading strong,.rx-viewer-heading span{display:block}
+.rx-viewer-heading strong{font-size:15px;color:#10203d}
+.rx-viewer-heading div>span{margin-top:3px;font-size:12px;color:#66758f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rx-viewer-status{display:flex;align-items:center;gap:6px;padding:7px 11px;border-radius:999px;background:#eafaf1;color:#08783a;font-size:11px;font-weight:800;white-space:nowrap}
+.rx-viewer-status svg{width:15px}
+.rx-viewer-close{width:38px;height:38px;border:0;border-radius:11px;display:grid;place-items:center;background:#edf2f8;color:#43516a;cursor:pointer;transition:.18s ease}
+.rx-viewer-close:hover{background:#fee2e2;color:#b91c1c}
+.rx-viewer-close svg{width:18px}
+.rx-page-scroll{background:linear-gradient(145deg,#e3eaf4,#ced9e8);padding:22px}
+.rx-actions{gap:12px;padding:14px 18px}
+.rx-actions button{min-height:48px;border-radius:13px;padding:0 22px;font-weight:800;transition:transform .18s ease,box-shadow .18s ease,background .18s ease}
+.rx-actions button:hover{transform:translateY(-1px);background:#f8fafc;box-shadow:0 7px 16px rgba(15,35,70,.1)}
+.rx-actions button.primary{box-shadow:0 9px 20px rgba(15,89,205,.24)}
+@media(max-width:850px){.rx-modal-backdrop{padding:10px}.rx-viewer{max-height:98vh;border-radius:16px}.rx-viewer-header{min-height:64px;padding:10px 12px}.rx-viewer-status{display:none}.rx-page-scroll{padding:10px}.rx-actions{padding:10px}}
+@media print{.rx-viewer-header{display:none!important}}

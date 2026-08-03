@@ -1,5 +1,6 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, Req, UseGuards } from '@nestjs/common';
 import { DoctorsService } from './doctors.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('api/doctors')
 export class DoctorsController {
@@ -8,6 +9,12 @@ export class DoctorsController {
   @Get()
   async getDoctors() {
     return this.doctorsService.findAll();
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  async getMyProfile(@Req() req: any) {
+    return this.doctorsService.findForUser(req.user.userId, req.user.role);
   }
 
   @Post('recommend')

@@ -21,9 +21,9 @@ export async function fetchDoctors(): Promise<Doctor[]> {
     }
     const data = await res.json();
     if (Array.isArray(data) && data.length > 0) {
-      return data.map((d: any) => ({
+      const dynamicDoctors: Doctor[] = data.map((d: any) => ({
         id: d.id,
-        name: d.user?.fullName || d.name || 'Dr. Specialist',
+        name: d.name || d.user?.fullName || 'Doctor',
         specialty: d.specialty,
         experience: d.experience || '10+ Years Experience',
         rating: d.rating || 4.8,
@@ -38,6 +38,17 @@ export async function fetchDoctors(): Promise<Doctor[]> {
         degrees: d.degrees || 'MBBS',
         tags: d.tags || [d.specialty],
       }));
+      const dynamicIds = new Set(dynamicDoctors.map((doctor) => doctor.id));
+      const dynamicNames = new Set(dynamicDoctors.map((doctor) => doctor.name.replace(/^dr\.?\s*/i, '').trim().toLowerCase()));
+      const mergedDoctors = [
+        ...doctorsData.filter((doctor) => !dynamicIds.has(doctor.id) && !dynamicNames.has(doctor.name.replace(/^dr\.?\s*/i, '').trim().toLowerCase())),
+        ...dynamicDoctors,
+      ];
+      return mergedDoctors.sort((a, b) => {
+        const aIsSarah = a.id === 'd1' || /sarah jenkins/i.test(a.name);
+        const bIsSarah = b.id === 'd1' || /sarah jenkins/i.test(b.name);
+        return Number(bIsSarah) - Number(aIsSarah);
+      });
     }
     return doctorsData;
   } catch (error) {
@@ -66,7 +77,7 @@ export async function recommendDoctorsApi(issue: string, symptoms: string[]): Pr
       urgency: data.urgency || 'Routine',
       recommendedDoctors: (data.recommendedDoctors || []).map((d: any) => ({
         id: d.id,
-        name: d.user?.fullName || d.name || 'Dr. Specialist',
+        name: d.name || d.user?.fullName || 'Doctor',
         specialty: d.specialty,
         experience: d.experience || '10+ Years Experience',
         rating: d.rating || 4.8,
@@ -90,14 +101,16 @@ export async function recommendDoctorsApi(issue: string, symptoms: string[]): Pr
     else if (combined.includes('heart') || combined.includes('chest')) targetSpec = 'Cardiologist';
     else if (combined.includes('child') || combined.includes('baby')) targetSpec = 'Pediatrician';
     else if (combined.includes('bone') || combined.includes('joint')) targetSpec = 'Orthopedic Doctor';
+    else if (combined.includes('ear') || combined.includes('nose') || combined.includes('throat') || combined.includes('sinus')) targetSpec = 'ENT Specialist';
 
     const matchedDocs = doctorsData.filter(d => d.specialty.toLowerCase().includes(targetSpec.toLowerCase().split(' ')[0]));
+    const generalPhysicians = doctorsData.filter(d => d.specialty.toLowerCase().includes('general physician'));
     return {
       recommendedCategory: targetSpec,
       matchedSymptoms: symptoms,
       reason: `Matched symptom to ${targetSpec}`,
       urgency: 'Routine',
-      recommendedDoctors: matchedDocs.length > 0 ? matchedDocs : doctorsData.slice(0, 3),
+      recommendedDoctors: matchedDocs.length > 0 ? matchedDocs : generalPhysicians,
     };
   }
 }

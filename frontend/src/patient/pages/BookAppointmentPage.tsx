@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { setCurrentPage } from '../store/uiSlice';
 import { doctorsData, type Doctor } from '../data/doctorsData';
-import { recommendDoctorsApi, type RecommendationResult } from '../services/doctorApi';
+import { fetchDoctors, recommendDoctorsApi, type RecommendationResult } from '../services/doctorApi';
 import Footer from '../components/Footer';
+import { getPatientDashboard } from '../services/patientApi';
+import { getToken } from '../../auth/authStorage';
 
 interface BookingFormData {
   // Step 1
@@ -15,6 +17,8 @@ interface BookingFormData {
   consultMode: 'Video Consultation' | 'In-Person Visit' | 'Chat / Message';
   urgency: string;
   notes: string;
+  isFollowUp: boolean;
+  emailRemindersEnabled: boolean;
   // Step 2
   selectedDoctor: Doctor | null;
   // Step 3
@@ -40,6 +44,14 @@ const ALL_SYMPTOMS = [
   'Swelling', 'Weight Loss', 'Weight Gain', 'Loss of Smell / Taste',
   'Eye Irritation', 'Ear Ache', 'Hair Loss', 'Allergies'
 ];
+
+function doctorMatchesCategory(doctor: Doctor, category: string) {
+  const specialty = doctor.specialty.toLowerCase();
+  const normalizedCategory = category.toLowerCase();
+  if (normalizedCategory.includes('ent')) return specialty.includes('ent');
+  if (normalizedCategory.includes('general physician')) return specialty.includes('general physician');
+  return specialty.includes(normalizedCategory.split(/[ (&/]/)[0]);
+}
 
 function parseTimeMinutes(timeStr: string) {
   const [time, modifier] = timeStr.trim().split(/\s+/);
@@ -102,6 +114,9 @@ const BookAppointmentPage: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const rescheduleId = searchParams.get('reschedule');
+  const hasPreselectedDoctor = Boolean(id && id !== 'new' && !rescheduleId);
 
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [symptomSearch, setSymptomSearch] = useState<string>('');
@@ -114,33 +129,66 @@ const BookAppointmentPage: React.FC = () => {
   const [bookingConfirmed, setBookingConfirmed] = useState<boolean>(false);
   const [paymentMethod, setPaymentMethod] = useState<'upi' | 'card' | 'netbanking' | 'wallets'>('upi');
   const [step4Error, setStep4Error] = useState<string>('');
+  const [slotError, setSlotError] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [doctorAvailability, setDoctorAvailability] = useState<any>(null);
   const [loadingAvailability, setLoadingAvailability] = useState<boolean>(false);
   const [aiRecommendation, setAiRecommendation] = useState<RecommendationResult | null>(null);
   const [loadingRecommendation, setLoadingRecommendation] = useState<boolean>(false);
   const [showAllDoctors, setShowAllDoctors] = useState<boolean>(false);
+  const [clockNow, setClockNow] = useState(() => new Date());
 
   const [formData, setFormData] = useState<BookingFormData>({
-    healthConcern: 'specific-symptoms',
-    symptoms: ['Chest Pain', 'Fatigue'],
-    duration: '4-7 days',
-    severity: 'Moderate',
+    healthConcern: '',
+    symptoms: [],
+    duration: '',
+    severity: 'Mild',
     consultMode: 'Video Consultation',
-    urgency: 'This Week',
+    urgency: '',
     notes: '',
-    selectedDoctor: doctorsData[0],
-    selectedDate: 'Tomorrow, 10:00 AM',
-    selectedTimeSlot: '10:30 AM',
-    patientName: 'Ananya Sharma',
-    patientAge: '28',
-    patientGender: 'Female',
-    patientHeight: '165',
-    patientWeight: '62',
-    patientBloodGroup: 'O+',
-    patientPhone: '+91 98765 43210',
-    patientEmail: 'ananya.sharma@example.com',
+    isFollowUp: false,
+    emailRemindersEnabled: true,
+    selectedDoctor: null,
+    selectedDate: '',
+    selectedTimeSlot: '',
+    patientName: '', patientAge: '', patientGender: '', patientHeight: '',
+    patientWeight: '', patientBloodGroup: '', patientPhone: '', patientEmail: '',
   });
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setClockNow(new Date()), 30_000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    getPatientDashboard().then(({ profile }) => {
+      setFormData((current) => ({
+        ...current, patientName: profile.fullName || '', patientAge: profile.age || '',
+        patientGender: profile.gender || '', patientHeight: profile.height || '',
+        patientWeight: profile.weight || '', patientBloodGroup: profile.bloodGroup || '',
+        patientPhone: profile.phone || '', patientEmail: profile.email || '',
+      }));
+    }).catch(() => navigate('/patient/signup'));
+  }, [navigate]);
+
+  useEffect(() => {
+    if (!rescheduleId) return;
+    fetch(`/api/appointments/${encodeURIComponent(rescheduleId)}`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    }).then(async (response) => {
+      if (!response.ok) throw new Error('Unable to load the appointment being rescheduled.');
+      const appointment = await response.json();
+      const selectedDoctor = doctorsData.find((doctor) => doctor.id === appointment.doctorId) || null;
+      setFormData((current) => ({
+        ...current,
+        healthConcern: appointment.healthConcern || '', symptoms: appointment.symptoms || [],
+        duration: appointment.duration || '', severity: appointment.severity || 'Mild',
+        consultMode: appointment.consultMode === 'CHAT' ? 'Chat / Message' : appointment.consultMode === 'IN_PERSON' ? 'In-Person Visit' : 'Video Consultation',
+        urgency: appointment.urgency || '', notes: appointment.notes || '', selectedDoctor,
+      }));
+      setCurrentStep(3);
+    }).catch((error) => setSlotError(error instanceof Error ? error.message : 'Unable to reschedule appointment.'));
+  }, [rescheduleId]);
 
   useEffect(() => {
     if (currentStep === 2) {
@@ -148,9 +196,22 @@ const BookAppointmentPage: React.FC = () => {
       recommendDoctorsApi(formData.healthConcern, formData.symptoms)
         .then(rec => {
           setAiRecommendation(rec);
-          if (rec && rec.recommendedDoctors && rec.recommendedDoctors.length > 0) {
-            setFormData(prev => ({ ...prev, selectedDoctor: rec.recommendedDoctors[0] }));
-          }
+          const matchingSpecialists = rec.recommendedDoctors.filter((doctor) =>
+            doctorMatchesCategory(doctor, rec.recommendedCategory),
+          );
+          const localSpecialists = doctorsData.filter((doctor) =>
+            doctorMatchesCategory(doctor, rec.recommendedCategory),
+          );
+          const generalPhysicians = doctorsData.filter((doctor) =>
+            doctorMatchesCategory(doctor, 'General Physician'),
+          );
+          const recommended = matchingSpecialists.length
+            ? matchingSpecialists
+            : localSpecialists.length
+              ? localSpecialists
+              : generalPhysicians;
+          setAiRecommendation({ ...rec, recommendedDoctors: recommended });
+          setFormData(prev => ({ ...prev, selectedDoctor: recommended[0] || null }));
         })
         .catch(() => setAiRecommendation(null))
         .finally(() => setLoadingRecommendation(false));
@@ -159,10 +220,13 @@ const BookAppointmentPage: React.FC = () => {
 
   useEffect(() => {
     if (id && id !== 'new') {
-      const match = doctorsData.find(d => d.id === id);
-      if (match) {
-        setFormData(prev => ({ ...prev, selectedDoctor: match }));
-      }
+      fetchDoctors().then((doctors) => {
+        const match = doctors.find((doctor) => doctor.id === id) || doctorsData.find((doctor) => doctor.id === id);
+        if (match) setFormData((current) => ({ ...current, selectedDoctor: match }));
+      }).catch(() => {
+        const match = doctorsData.find((doctor) => doctor.id === id);
+        if (match) setFormData((current) => ({ ...current, selectedDoctor: match }));
+      });
     }
   }, [id]);
 
@@ -185,7 +249,7 @@ const BookAppointmentPage: React.FC = () => {
         .catch(() => setDoctorAvailability(null))
         .finally(() => setLoadingAvailability(false));
     }
-  }, [formData.selectedDoctor?.id]);
+  }, [formData.selectedDoctor?.id, formData.selectedDate]);
 
   const filteredStep2Doctors = doctorsData.filter(doc => {
     const matchesSearch = 
@@ -200,6 +264,8 @@ const BookAppointmentPage: React.FC = () => {
 
     return matchesSearch && matchesSpecialty;
   });
+
+  const recommendedDoctorsForDisplay = aiRecommendation?.recommendedDoctors || [];
 
   const filteredSymptoms = ALL_SYMPTOMS.filter(s =>
     s.toLowerCase().includes(symptomSearch.toLowerCase())
@@ -217,6 +283,10 @@ const BookAppointmentPage: React.FC = () => {
 
 
   const handleNextStep = async () => {
+    if (currentStep === 3 && (!formData.selectedDate || !formData.selectedTimeSlot)) {
+      setSlotError('Please select an available date and time slot.');
+      return;
+    }
     if (currentStep === 4) {
       if (!formData.patientName.trim()) {
         setStep4Error('Please enter full name.');
@@ -233,14 +303,15 @@ const BookAppointmentPage: React.FC = () => {
     }
 
     setStep4Error('');
+    setSlotError('');
     if (currentStep < 4) {
-      setCurrentStep(prev => prev + 1);
+      setCurrentStep(currentStep === 1 && hasPreselectedDoctor && formData.selectedDoctor ? 3 : currentStep + 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (currentStep === 4) {
       setIsSubmitting(true);
       try {
         const payload = {
-          doctorId: formData.selectedDoctor?.id || 'd1', // fallback if null
+          doctorId: formData.selectedDoctor?.id || (rescheduleId ? undefined : 'd1'),
           patientName: formData.patientName,
           patientAge: formData.patientAge,
           patientGender: formData.patientGender,
@@ -256,24 +327,28 @@ const BookAppointmentPage: React.FC = () => {
           consultMode: formData.consultMode,
           urgency: formData.urgency,
           notes: formData.notes,
+          isFollowUp: formData.isFollowUp,
+          emailRemindersEnabled: formData.emailRemindersEnabled,
           date: formData.selectedDate,
           timeSlot: formData.selectedTimeSlot,
         };
 
         try {
-          const response = await fetch('/api/appointments', {
-            method: 'POST',
+          const response = await fetch(rescheduleId ? `/api/appointments/${encodeURIComponent(rescheduleId)}/reschedule` : '/api/appointments', {
+            method: rescheduleId ? 'PATCH' : 'POST',
             headers: {
               'Content-Type': 'application/json',
+              Authorization: `Bearer ${getToken()}`,
             },
             body: JSON.stringify(payload),
           });
 
           if (!response.ok) {
-            console.warn('Backend booking returned non-ok status, proceeding with local appointment confirmation.');
+            const body = await response.json().catch(() => null);
+            throw new Error(body?.message || `The appointment could not be ${rescheduleId ? 'rescheduled' : 'booked'}. Please try again.`);
           }
         } catch (apiErr) {
-          console.warn('Backend server offline or unreachable, proceeding with client-side booking confirmation.', apiErr);
+          throw apiErr;
         }
 
         setBookingConfirmed(true);
@@ -281,9 +356,7 @@ const BookAppointmentPage: React.FC = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } catch (err) {
         console.error(err);
-        setBookingConfirmed(true);
-        setCurrentStep(5);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setStep4Error(err instanceof Error ? err.message : 'The appointment could not be booked.');
       } finally {
         setIsSubmitting(false);
       }
@@ -292,7 +365,7 @@ const BookAppointmentPage: React.FC = () => {
 
   const handlePrevStep = () => {
     if (currentStep > 1) {
-      setCurrentStep(prev => prev - 1);
+      setCurrentStep(currentStep === 3 && hasPreselectedDoctor ? 1 : currentStep - 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       navigate('/');
@@ -347,7 +420,6 @@ const BookAppointmentPage: React.FC = () => {
           </nav>
 
           <div className="booking-nav-actions">
-            <button type="button" className="btn-booking-sign-in">Sign In</button>
             <button type="button" className="btn-booking-get-started" onClick={() => navigate('/')}>
               Home
             </button>
@@ -680,6 +752,22 @@ const BookAppointmentPage: React.FC = () => {
 
                   {/* Q4: Additional Details */}
                   <div className="form-question-block">
+                    <label className="question-label">Follow-up reminders</label>
+                    <button
+                      type="button"
+                      className={`urgency-radio-card ${formData.isFollowUp ? 'selected' : ''}`}
+                      onClick={() => setFormData({ ...formData, isFollowUp: !formData.isFollowUp, emailRemindersEnabled: true })}
+                    >
+                      <span className={`radio-dot ${formData.isFollowUp ? 'checked' : ''}`} />
+                      <span className="urgency-label">This is a follow-up consultation</span>
+                    </button>
+                    {formData.isFollowUp && (
+                      <p className="mt-2 text-xs text-blue-700">Email reminders will be sent automatically up to four times before the follow-up.</p>
+                    )}
+                  </div>
+
+                  {/* Q4: Additional Details */}
+                  <div className="form-question-block">
                     <label className="question-label">Any additional details for the doctor? (Optional)</label>
                     <div className="notes-textarea-card">
                       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#94A3B8" strokeWidth="2" className="notes-icon">
@@ -788,7 +876,9 @@ const BookAppointmentPage: React.FC = () => {
                   {/* Doctor Cards Horizontal Rows List */}
                   <div className="step2-doctors-list">
                     {(() => {
-                      const docsToRender = showAllDoctors ? filteredStep2Doctors : filteredStep2Doctors.slice(0, 1);
+                      const docsToRender = showAllDoctors
+                        ? filteredStep2Doctors
+                        : recommendedDoctorsForDisplay.slice(0, 1);
                       return docsToRender.map(doc => {
                         const isSelected = formData.selectedDoctor?.id === doc.id;
                         return (
@@ -887,7 +977,19 @@ const BookAppointmentPage: React.FC = () => {
 
                 // Find active date object
                 const activeDayObj = upcomingDays.find(d => formData.selectedDate.includes(d.dateNum)) || upcomingDays[0];
-                const activeSlots = getSlotsForDoctorAndDay(doctorAvailability, activeDayObj.dayFull);
+                const scheduledSlots = getSlotsForDoctorAndDay(doctorAvailability, activeDayObj.dayFull);
+                const activeDateKey = [
+                  activeDayObj.rawDate.getFullYear(),
+                  String(activeDayObj.rawDate.getMonth() + 1).padStart(2, '0'),
+                  String(activeDayObj.rawDate.getDate()).padStart(2, '0'),
+                ].join('-');
+                const bookedSlots = new Set<string>(doctorAvailability?.bookedSlots?.[activeDateKey] || []);
+                const unbookedSlots = scheduledSlots.filter((slot) => !bookedSlots.has(slot));
+                const minimumBookingMinutes = clockNow.getHours() * 60 + clockNow.getMinutes() + 30
+                  + (clockNow.getSeconds() > 0 ? 1 : 0);
+                const activeSlots = activeDayObj.label === 'Today'
+                  ? unbookedSlots.filter((slot) => parseTimeMinutes(slot) >= minimumBookingMinutes)
+                  : unbookedSlots;
                 const isDoctorOnLeave = doctorAvailability?.status === 'On Leave';
 
                 return (
@@ -913,7 +1015,10 @@ const BookAppointmentPage: React.FC = () => {
                                 key={d.fullDate}
                                 type="button"
                                 className={`date-card-box ${isSelected ? 'selected' : ''}`}
-                                onClick={() => setFormData({ ...formData, selectedDate: d.fullDate })}
+                                onClick={() => {
+                                  setSlotError('');
+                                  setFormData({ ...formData, selectedDate: d.fullDate, selectedTimeSlot: '' });
+                                }}
                               >
                                 <span className="date-card-tag">{d.label}</span>
                                 <span className="date-card-day">{d.dayShort}</span>
@@ -937,6 +1042,16 @@ const BookAppointmentPage: React.FC = () => {
                         </h3>
                       </div>
 
+                      {activeDayObj.label === 'Today' && (
+                        <p className="text-xs text-blue-700 mb-3">
+                          Today’s slots are shown only when they are at least 30 minutes from the current time.
+                        </p>
+                      )}
+                      {bookedSlots.size > 0 && (
+                        <p className="text-xs text-amber-700 mb-3">Already-booked times are hidden automatically.</p>
+                      )}
+                      {slotError && <p role="alert" className="text-sm text-red-600 mb-3">{slotError}</p>}
+
                       {loadingAvailability ? (
                         <div className="py-8 text-center text-gray-500 font-medium">Checking doctor availability...</div>
                       ) : isDoctorOnLeave ? (
@@ -956,7 +1071,10 @@ const BookAppointmentPage: React.FC = () => {
                                 key={slot}
                                 type="button"
                                 className={`time-slot-pill ${isSelected ? 'selected' : ''}`}
-                                onClick={() => setFormData({ ...formData, selectedTimeSlot: slot })}
+                                onClick={() => {
+                                  setSlotError('');
+                                  setFormData({ ...formData, selectedTimeSlot: slot });
+                                }}
                               >
                                 <span>{slot}</span>
                                 {isSelected && <span className="slot-check-icon">✓</span>}
@@ -1006,7 +1124,7 @@ const BookAppointmentPage: React.FC = () => {
                       <input 
                         type="text" 
                         className="form-control-input"
-                        placeholder="e.g. Ananya Sharma"
+                        placeholder="Enter your full name"
                         value={formData.patientName} 
                         onChange={(e) => {
                           setStep4Error('');
@@ -1173,7 +1291,7 @@ const BookAppointmentPage: React.FC = () => {
                         <div className="item-icon-box green-box">👨‍⚕️</div>
                         <div className="item-content">
                           <span className="item-label">Doctor</span>
-                          <span className="item-value">{formData.selectedDoctor?.name || 'Dr. Ananya Sharma'}</span>
+                          <span className="item-value">{formData.selectedDoctor?.name || 'No doctor selected'}</span>
                           <span className="item-sub">
                             {formData.selectedDoctor?.specialty || 'Dermatologist'} • {formData.selectedDoctor?.experience || '11+ Years Experience'}
                           </span>
@@ -1281,7 +1399,7 @@ const BookAppointmentPage: React.FC = () => {
                   className="btn-form-next-orange"
                   onClick={handleNextStep}
                 >
-                  {currentStep === 1 && 'Next: Select Doctor →'}
+                  {currentStep === 1 && (hasPreselectedDoctor && formData.selectedDoctor ? 'Next: Choose Slot →' : 'Next: Select Doctor →')}
                   {currentStep === 2 && 'Next: Choose Slot →'}
                   {currentStep === 3 && 'Next: Patient Info →'}
                   {currentStep === 4 && 'Next: Review & Pay →'}

@@ -18,7 +18,10 @@ from app.schemas.language import LanguageMetadata
 class DietRecommendationRequest(BaseModel):
     """Consultation context for a practical diet recommendation."""
 
+    model_config = ConfigDict(json_schema_extra={"examples": [{"conditions": ["type 2 diabetes", "vitamin D deficiency"], "symptoms": ["fatigue"], "medications": ["metformin"], "allergies": [], "age": 45, "gender": "male", "dietary_preference": "vegetarian", "lab_values": [{"name": "vitamin D", "value": 14, "unit": "ng/mL"}]}]})
+
     summary: str = Field(
+        default="",
         validation_alias=AliasChoices("summary", "condition"),
         min_length=1,
         max_length=20_000,
@@ -32,6 +35,10 @@ class DietRecommendationRequest(BaseModel):
     output_language: str | None = None
     dietary_preferences: list[str] = Field(default_factory=list, max_length=20)
     allergies: list[str] = Field(default_factory=list, max_length=50)
+    conditions: list[str] = Field(default_factory=list, max_length=50)
+    symptoms: list[str] = Field(default_factory=list, max_length=50)
+    medications: list[str] = Field(default_factory=list, max_length=50)
+    lab_values: list["LabValue"] = Field(default_factory=list, max_length=100)
     legacy_input: bool = Field(default=False, exclude=True)
 
     @model_validator(mode="before")
@@ -42,6 +49,14 @@ class DietRecommendationRequest(BaseModel):
             return {**value, "legacy_input": True}
         return value
 
+    @model_validator(mode="after")
+    def require_clinical_context(self) -> "DietRecommendationRequest":
+        if not self.summary and not self.conditions and not self.symptoms:
+            raise ValueError("Provide summary, conditions, or symptoms")
+        if not self.summary:
+            self.summary = "; ".join([*self.conditions, *self.symptoms])
+        return self
+
     @field_validator("summary")
     @classmethod
     def validate_summary(cls, value: str) -> str:
@@ -50,6 +65,42 @@ class DietRecommendationRequest(BaseModel):
         if not normalized:
             raise ValueError("summary must not be empty")
         return normalized
+
+
+class LabValue(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+    value: float | str
+    unit: str = Field(default="", max_length=50)
+
+
+class DietStrategy(BaseModel):
+    diet_type: list[str] = Field(default_factory=list)
+    goals: list[str] = Field(default_factory=list)
+    reasoning: list[str] = Field(default_factory=list)
+
+
+class ProteinRecommendation(BaseModel):
+    recommended: bool = True
+    strategy: str = "moderate-protein"
+    food_sources: list[str] = Field(default_factory=list)
+    cautions: list[str] = Field(default_factory=list)
+
+
+class GlycemicGuidance(BaseModel):
+    low_gi_recommended: bool = False
+    preferred_carbohydrates: list[str] = Field(default_factory=list)
+    foods_to_limit: list[str] = Field(default_factory=list)
+    meal_pairing_tips: list[str] = Field(default_factory=list)
+
+
+class SampleMealPlan(BaseModel):
+    early_morning: list[str] = Field(default_factory=list)
+    breakfast: list[str] = Field(default_factory=list)
+    mid_morning: list[str] = Field(default_factory=list)
+    lunch: list[str] = Field(default_factory=list)
+    evening_snack: list[str] = Field(default_factory=list)
+    dinner: list[str] = Field(default_factory=list)
+    bedtime: list[str] = Field(default_factory=list)
 
 
 class DietStructuredOutput(BaseModel):
@@ -83,6 +134,9 @@ class NutrientRecommendation(BaseModel):
     reason: str = ""
     food_sources: list[str] = Field(default_factory=list)
     supplementation_note: str = ""
+    supplement_note: str = ""
+    priority: str = "medium"
+    evidence: list[str] = Field(default_factory=list)
 
 
 class DietRecommendationData(DietStructuredOutput):
@@ -93,6 +147,13 @@ class DietRecommendationData(DietStructuredOutput):
     condition: str | None = None
     general_advice: list[str] | None = None
     is_dummy: Literal[True] | None = None
+    diet_strategy: DietStrategy = Field(default_factory=DietStrategy)
+    vitamins: list[NutrientRecommendation] = Field(default_factory=list)
+    minerals: list[NutrientRecommendation] = Field(default_factory=list)
+    protein_recommendation: ProteinRecommendation = Field(default_factory=ProteinRecommendation)
+    glycemic_guidance: GlycemicGuidance = Field(default_factory=GlycemicGuidance)
+    sample_meal_plan: SampleMealPlan = Field(default_factory=SampleMealPlan)
+    warnings: list[str] = Field(default_factory=list)
 
 
 class DietRecommendationResponse(ApiResponse[DietRecommendationData]):

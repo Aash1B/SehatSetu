@@ -99,10 +99,16 @@ const getInitials = (name?: string) => {
 };
 
 import { fetchConsultationSummary } from '../../common/services/aiApi';
+import { getToken, getUser } from '../../auth/authStorage';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [activeDoctor, setActiveDoctor] = useState<DoctorProfile>(getActiveDoctor());
+  const signedInUser = getUser();
+  const [activeDoctor, setActiveDoctor] = useState<DoctorProfile>({
+    ...getActiveDoctor(),
+    name: signedInUser?.fullName || getActiveDoctor().name,
+    initials: getInitials(signedInUser?.fullName || getActiveDoctor().name),
+  });
   const [consultations, setConsultations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [summaryModalData, setSummaryModalData] = useState<{
@@ -112,18 +118,16 @@ const Dashboard = () => {
   } | null>(null);
 
   useEffect(() => {
-    const handleDoctorChange = () => {
-      setActiveDoctor(getActiveDoctor());
-    };
-    window.addEventListener('sehat_doctor_changed', handleDoctorChange);
-    return () => window.removeEventListener('sehat_doctor_changed', handleDoctorChange);
-  }, []);
-
-  useEffect(() => {
     const fetchAppointments = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/appointments/doctor/${activeDoctor.id}`);
+        const headers = { Authorization: `Bearer ${getToken()}` };
+        const profileResponse = await fetch('/api/doctors/me', { headers });
+        if (!profileResponse.ok) throw new Error('Unable to load signed-in doctor profile');
+        const profile = await profileResponse.json();
+        const doctorName = profile.name || profile.user?.fullName || signedInUser?.fullName || 'Doctor';
+        setActiveDoctor({ id: profile.id, name: doctorName, initials: getInitials(doctorName), specialization: profile.specialty || 'General Physician' });
+        const res = await fetch('/api/appointments', { headers });
         if (res.ok) {
           const dbAppointments = await res.json();
           if (Array.isArray(dbAppointments)) {
@@ -168,7 +172,7 @@ const Dashboard = () => {
     };
 
     fetchAppointments();
-  }, [activeDoctor.id]);
+  }, []);
 
   return (
     <div className="flex h-screen bg-luster-white font-sans text-deadly-depths">

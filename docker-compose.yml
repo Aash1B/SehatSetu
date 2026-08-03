@@ -12,5 +12,20 @@ services:
     volumes:
       - sehat_setu_pgdata:/var/lib/postgresql/data
 
+  redis:
+    image: redis:7-alpine
+    container_name: sehat-setu-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - sehat_setu_redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
 volumes:
   sehat_setu_pgdata:
+  sehat_setu_redisdata:

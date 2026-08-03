@@ -2,22 +2,47 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import PrescriptionViewModal from '../../common/components/PrescriptionViewModal';
 import { generatePrescriptionDraft } from '../../common/services/aiApi';
+import { getToken, getUser } from '../../auth/authStorage';
 
 const DoctorPrescription: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [transcription, setTranscription] = useState('Patient reported fever for 4 days with body ache and fatigue.');
-  const [medications, setMedications] = useState([
-    { name: 'Tab. Paracetamol 650mg', dosage: '650 mg', frequency: '1-0-1', duration: '5 days', timing: 'After Food' },
-    { name: 'Tab. Cetirizine 10mg', dosage: '10 mg', frequency: '0-0-1', duration: '3 days', timing: 'SOS at Night' }
-  ]);
-  const [dietRecommendations, setDietRecommendations] = useState('Increase fluid intake (min 3L/day), avoid spicy and oily foods, take warm water & rest.');
+  const [transcription, setTranscription] = useState('');
+  const [medications, setMedications] = useState([{ name: '', dosage: '', frequency: '', duration: '', timing: '' }]);
+  const [dietRecommendations, setDietRecommendations] = useState('');
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [isAiDrafting, setIsAiDrafting] = useState(false);
   const [loadedPrescription, setLoadedPrescription] = useState<any>(null);
+  const [prescriptionContext, setPrescriptionContext] = useState<any>(null);
 
   useEffect(() => {
-    const raw = localStorage.getItem(`prescription_${id}`) || localStorage.getItem('sehatsetu_active_prescription');
+    if (id) {
+      fetch(`/api/appointments/${encodeURIComponent(id)}`, { headers: { Authorization: `Bearer ${getToken()}` } })
+        .then(async (response) => response.ok ? response.json() : Promise.reject())
+        .then((appointment) => {
+          const context = {
+            doctorName: appointment.doctor?.name || appointment.doctor?.user?.fullName || getUser()?.fullName || 'Doctor',
+            doctorSpecialty: appointment.doctor?.specialty || '',
+            doctorHospital: appointment.doctor?.hospital || 'SehatSetu Digital Health Clinic',
+            patientName: appointment.patient?.user?.fullName || appointment.patientName || 'Patient',
+            patientAge: appointment.patient?.age || appointment.patientAge || '',
+            patientGender: appointment.patient?.gender || appointment.patientGender || '',
+            diagnosis: appointment.ehrRecord?.diagnosis || appointment.healthConcern || '',
+            symptoms: appointment.symptoms || [],
+            notes: appointment.ehrRecord?.notes || appointment.notes || '',
+          };
+          setPrescriptionContext(context);
+          setTranscription(context.notes || context.diagnosis || '');
+          if (appointment.prescription) {
+            const saved = { ...context, ...appointment.prescription, medications: appointment.prescription.medicines || [] };
+            setLoadedPrescription(saved);
+            setMedications(saved.medications);
+            setDietRecommendations(saved.dietAdvice || '');
+          }
+        })
+        .catch(() => undefined);
+    }
+    const raw = id ? localStorage.getItem(`prescription_${id}`) : null;
     if (raw) {
       try {
         const parsed = JSON.parse(raw);
@@ -179,11 +204,9 @@ const DoctorPrescription: React.FC = () => {
         isModal={true}
         onClose={() => setShowPreviewModal(false)}
         data={loadedPrescription || {
-          doctorName: "Dr. Ananya Sharma",
-          doctorSpecialty: "General Physician & Telehealth Specialist",
-          patientName: "Sunita Devi",
-          patientAge: 31,
-          patientGender: "Female",
+          ...prescriptionContext,
+          doctorName: prescriptionContext?.doctorName || getUser()?.fullName || 'Doctor',
+          patientName: prescriptionContext?.patientName || 'Patient',
           medications: medications.filter(m => m.name.trim() !== ''),
           dietAdvice: dietRecommendations,
         }}

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { prisma } from '../prisma';
 import { AiService } from '../ai/ai.service';
 
@@ -58,8 +58,11 @@ export class DoctorsService {
   ) {}
 
   async findAll() {
-    const doctors = await prisma.doctor.findMany();
-    return doctors;
+    const doctors = await prisma.doctor.findMany({ include: { user: true } });
+    return doctors.map((doctor) => ({
+      ...doctor,
+      name: doctor.name || doctor.user?.fullName || 'Doctor',
+    }));
   }
 
   async findOne(id: string) {
@@ -70,6 +73,41 @@ export class DoctorsService {
       throw new NotFoundException(`Doctor with ID ${id} not found`);
     }
     return doctor;
+  }
+
+  async findForUser(userId: string, role: string) {
+    if (role !== 'DOCTOR') throw new ForbiddenException('Doctor account required');
+    const user = await prisma.user.findUnique({ where: { id: userId }, include: { doctor: true } });
+    if (!user?.doctor) throw new NotFoundException('Doctor profile not found');
+
+    // Older bookings used catalog doctor IDs. Reattach the matching catalog
+    // profile to the authenticated doctor so ownership and prescriptions agree.
+    const normalizedUserName = user.fullName.replace(/^dr\.?\s*/i, '').trim().toLowerCase();
+    const catalogDoctors = await prisma.doctor.findMany({ where: { userId: null } });
+    const catalogMatch = catalogDoctors.find((doctor) =>
+      doctor.name?.replace(/^dr\.?\s*/i, '').trim().toLowerCase() === normalizedUserName,
+    );
+    let doctor = user.doctor;
+    if (catalogMatch && catalogMatch.id !== doctor.id) {
+      doctor = await prisma.$transaction(async (tx) => {
+        await tx.appointment.updateMany({ where: { doctorId: catalogMatch.id }, data: { doctorId: doctor.id } });
+        await tx.prescription.updateMany({ where: { doctorId: catalogMatch.id }, data: { doctorId: doctor.id } });
+        return tx.doctor.update({
+          where: { id: doctor.id },
+          data: {
+            name: catalogMatch.name || user.fullName,
+            specialty: catalogMatch.specialty || doctor.specialty,
+            experience: catalogMatch.experience || doctor.experience,
+            degrees: catalogMatch.degrees || doctor.degrees,
+            hospital: catalogMatch.hospital || doctor.hospital,
+            location: catalogMatch.location || doctor.location,
+            imageUrl: catalogMatch.imageUrl || doctor.imageUrl,
+            consultationFee: catalogMatch.consultationFee || doctor.consultationFee,
+          },
+        });
+      });
+    }
+    return { ...doctor, name: doctor.name || user.fullName, user: { id: user.id, fullName: user.fullName, email: user.email } };
   }
 
   async recommendDoctors(issue: string, symptoms: string[] = []) {
@@ -109,20 +147,29 @@ export class DoctorsService {
 
     // Extract core keyword for matching database specialty (e.g., 'Dermatologist')
     const searchKeyword = recommendedCategory.split(' ')[0];
+    const specialtyFilter = recommendedCategory.toLowerCase().includes('ent')
+      ? { startsWith: 'ENT', mode: 'insensitive' as const }
+      : { contains: searchKeyword, mode: 'insensitive' as const };
 
     let doctors = await prisma.doctor.findMany({
       where: {
-        specialty: {
-          contains: searchKeyword,
-          mode: 'insensitive',
-        },
+        specialty: specialtyFilter,
       },
+      include: { user: true },
     });
 
-    // Fallback if no specific doctors match
+    // If the requested specialist is unavailable, route to primary care rather
+    // than returning an unrelated doctor.
     if (doctors.length === 0) {
       doctors = await prisma.doctor.findMany({
+        where: {
+          specialty: {
+            contains: 'General Physician',
+            mode: 'insensitive',
+          },
+        },
         take: 5,
+        include: { user: true },
       });
     }
 
@@ -131,7 +178,10 @@ export class DoctorsService {
       matchedSymptoms,
       reason,
       urgency,
-      recommendedDoctors: doctors,
+      recommendedDoctors: doctors.map((doctor) => ({
+        ...doctor,
+        name: doctor.name || doctor.user?.fullName || 'Doctor',
+      })),
     };
   }
 }
