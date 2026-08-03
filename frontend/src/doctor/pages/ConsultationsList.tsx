@@ -103,7 +103,9 @@ const ConsultationsList: React.FC = () => {
               const patientName = app.patientName || app.patient?.user?.fullName || 'Unknown Patient';
               const patientAge = app.patientAge ? (parseInt(String(app.patientAge), 10) || 28) : 28;
               const patientGenderStr = app.patientGender || app.patient?.gender || 'Female';
-              const genderChar = patientGenderStr.toUpperCase().startsWith('M') ? 'M' : (patientGenderStr.toUpperCase().startsWith('F') ? 'F' : 'O');
+              const genderChar: ConsultationSummary['patient']['gender'] = patientGenderStr.toUpperCase().startsWith('M')
+                ? 'M'
+                : (patientGenderStr.toUpperCase().startsWith('F') ? 'F' : 'Other');
 
               return {
                 id: String(app.id || Math.random()),

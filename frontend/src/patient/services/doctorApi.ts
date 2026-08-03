@@ -1,6 +1,8 @@
 // Doctor API service - Fetch, Search, Filter doctors
 // TODO: Implement RTK Query endpoints
 
+import { doctorsData, type Doctor } from '../data/doctorsData';
+
 const API_BASE = '/api/doctors';
 
 export interface RecommendationResult {

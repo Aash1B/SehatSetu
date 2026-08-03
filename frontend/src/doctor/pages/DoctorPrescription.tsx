@@ -78,6 +78,7 @@ const DoctorPrescription: React.FC = () => {
                         dosage: m.dosage || '',
                         frequency: m.frequency || '1-0-1',
                         duration: m.duration || '5 days',
+                        timing: 'After Food',
                       })));
                       if (res.data.guidance_and_followup) {
                         setDietRecommendations(res.data.guidance_and_followup);

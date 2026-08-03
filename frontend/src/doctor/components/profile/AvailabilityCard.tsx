@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import SectionCard from '../SectionCard';
-import { Availability, DaySlot } from '../../types/profile.types';
+import { Availability } from '../../types/profile.types';
 import { CalendarClock, Clock, Check, Save } from 'lucide-react';
 import { cn } from '../../../lib/utils';
 
@@ -18,7 +18,7 @@ const AvailabilityCard: React.FC<Props> = ({ availability, onSave, isSaving = fa
     setData(availability);
   }, [availability]);
 
-  const handleStatusChange = (newStatus: string) => {
+  const handleStatusChange = (newStatus: Availability['status']) => {
     setData(prev => ({ ...prev, status: newStatus }));
   };
 
@@ -77,7 +77,7 @@ const AvailabilityCard: React.FC<Props> = ({ availability, onSave, isSaving = fa
               <label className="block text-xs font-bold text-gray-500 uppercase">Overall Doctor Status</label>
               <select
                 value={data.status}
-                onChange={(e) => handleStatusChange(e.target.value)}
+                onChange={(e) => handleStatusChange(e.target.value as Availability['status'])}
                 className="mt-1 bg-white border border-gray-200 text-deep-space text-sm font-semibold rounded-lg p-1.5 focus:ring-2 focus:ring-habanero focus:outline-none"
               >
                 <option value="Available">Available for Appointments</option>

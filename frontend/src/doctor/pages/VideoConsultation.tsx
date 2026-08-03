@@ -13,6 +13,7 @@ import PrescriptionViewModal from '../../common/components/PrescriptionViewModal
 import type { PatientProfile, TranscriptDTO, AIInsightDTO } from '../../types';
 import { Shield, Mic } from 'lucide-react';
 import { useLiveAudioTranscription } from '../../common/hooks/useLiveAudioTranscription';
+import { getConsultationRoomId } from '../../config/consultationTestMode';
 
 // Mock Data
 const mockPatient: PatientProfile = {
@@ -27,33 +28,39 @@ const mockPatient: PatientProfile = {
 };
 
 const VideoConsultation: React.FC = () => {
-  const { consultationId = '1' } = useParams<{ consultationId: string }>();
+  const { id: consultationId = '1' } = useParams<{ id: string }>();
+  const roomId = getConsultationRoomId(consultationId);
   const navigate = useNavigate();
   const [isEndCallOpen, setIsEndCallOpen] = useState(false);
   const [showRxModal, setShowRxModal] = useState(false);
   const [token, setToken] = useState("");
-  const serverUrl = import.meta.env.VITE_LIVEKIT_URL;
+  const [serverUrl, setServerUrl] = useState("");
+  const [connectionError, setConnectionError] = useState("");
 
-  const { isRecording, symptoms, medicines, startRecording, stopRecording } = useLiveAudioTranscription();
+  const { isRecording, symptoms, medicines, error: micError, startRecording, stopRecording } = useLiveAudioTranscription();
 
   React.useEffect(() => {
     (async () => {
       try {
-        const resp = await fetch(`/api/livekit/token?room=${consultationId}&username=Doctor`);
+        const resp = await fetch(`/api/livekit/token?room=${encodeURIComponent(roomId)}&username=Doctor`);
+        if (!resp.ok) throw new Error(`Unable to create video-room token (${resp.status})`);
         const data = await resp.json();
+        if (!data.token || !data.serverUrl) throw new Error('Video-room configuration is incomplete');
         setToken(data.token);
+        setServerUrl(data.serverUrl);
       } catch (e) {
         console.error(e);
+        setConnectionError(e instanceof Error ? e.message : 'Unable to connect to the video room');
       }
     })();
-  }, [consultationId]);
+  }, [roomId]);
 
   return (
-    <div className="flex h-screen bg-luster-white font-sans text-deep-space">
+    <div className="flex h-dvh overflow-hidden bg-luster-white font-sans text-deep-space">
 
-      <main className="flex-1 flex flex-col h-screen overflow-hidden">
+      <main className="flex-1 flex flex-col h-full min-h-0 overflow-hidden">
         {/* Header Area */}
-        <div className="px-6 py-4 flex items-center justify-between border-b border-gray-100 bg-white shadow-sm z-10">
+        <div className="shrink-0 px-6 py-4 flex items-center justify-between border-b border-gray-100 bg-white shadow-sm z-10">
           <div className="flex items-center gap-4">
             <button 
               onClick={() => navigate(`/doctor/patient/${mockPatient.id}`)}
@@ -61,6 +68,7 @@ const VideoConsultation: React.FC = () => {
             >
               ← Back to Details
             </button>
+            {micError && <span className="text-xs font-semibold text-red-600">{micError}</span>}
             <div className="h-6 w-px bg-gray-200"></div>
             <div className="flex items-center gap-2 text-green-600 bg-green-50 px-3 py-1 rounded-full text-xs font-bold border border-green-200">
               <Shield className="w-4 h-4" />
@@ -83,27 +91,28 @@ const VideoConsultation: React.FC = () => {
         </div>
 
         {/* Main Consultation Area */}
-        <div className="flex-1 overflow-hidden p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
+        <div className="flex-1 min-h-0 overflow-hidden p-6">
+          <div className="grid h-full min-h-0 grid-cols-1 grid-rows-[minmax(0,1fr)] lg:grid-cols-12 gap-6">
             
             {/* Left Column: Video & Controls */}
             <div className="lg:col-span-8 flex flex-col h-full gap-4">
               <div className="flex-1 min-h-0 relative rounded-2xl overflow-hidden bg-gray-900 border border-gray-200 shadow-sm">
-                {token ? (
+                {token && serverUrl ? (
                   <LiveKitRoom
                     video={true}
                     audio={true}
                     token={token}
                     serverUrl={serverUrl}
                     data-lk-theme="default"
-                    style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+                    style={{ height: '100%', minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
                     onDisconnected={() => setIsEndCallOpen(true)}
+                    onError={(error) => setConnectionError(error.message)}
                   >
                     <VideoConference />
                   </LiveKitRoom>
                 ) : (
                   <div className="flex h-full items-center justify-center text-white/50 font-medium">
-                    Connecting to secure room...
+                    {connectionError || 'Connecting to secure room...'}
                   </div>
                 )}
               </div>

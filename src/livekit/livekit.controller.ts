@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { LivekitService } from './livekit.service';
 
 @Controller('api/livekit')
@@ -15,7 +15,11 @@ export class LivekitController {
     }
 
     const token = await this.livekitService.createToken(room, username);
-    return { token };
+    const serverUrl = process.env.LIVEKIT_URL;
+    if (!serverUrl) {
+      throw new InternalServerErrorException('LiveKit server URL is not configured');
+    }
+    return { token, serverUrl };
   }
 
   @Post('end-consultation')

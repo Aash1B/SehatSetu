@@ -26,17 +26,25 @@ export function useLiveAudioTranscription() {
 
   const startRecording = useCallback(async () => {
     try {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        throw new Error('Live speech recognition is not supported in this browser. Use Chrome or Edge.');
+      }
+
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error('Microphone access requires HTTPS or localhost.');
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
       setState(prev => ({ ...prev, isRecording: true, error: null }));
 
-      // Web Speech API for real-time speech-to-text fallback
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        const recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = 'en-US';
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
 
-        recognition.onresult = async (event: any) => {
+      recognition.onresult = async (event: any) => {
           let currentTranscript = '';
           for (let i = event.resultIndex; i < event.results.length; ++i) {
             currentTranscript += event.results[i][0].transcript;
@@ -65,23 +73,34 @@ export function useLiveAudioTranscription() {
               }
             } catch (e) {
               console.error('Live AI Extraction Error:', e);
+              setState(prev => ({
+                ...prev,
+                error: e instanceof Error ? e.message : 'AI extraction failed',
+              }));
             }
           }
-        };
+      };
 
-        recognition.onerror = (e: any) => {
-          console.warn('Speech Recognition notice:', e.error);
-        };
+      recognition.onerror = (e: any) => {
+        console.warn('Speech Recognition notice:', e.error);
+        const fatalErrors = ['not-allowed', 'service-not-allowed', 'audio-capture'];
+        setState(prev => ({
+          ...prev,
+          isRecording: fatalErrors.includes(e.error) ? false : prev.isRecording,
+          error: e.error === 'not-allowed'
+            ? 'Microphone permission was denied. Allow it in the browser address bar.'
+            : `Speech recognition error: ${e.error}`,
+        }));
+        if (fatalErrors.includes(e.error)) {
+          streamRef.current?.getTracks().forEach(track => track.stop());
+          streamRef.current = null;
+        }
+      };
 
-        recognition.start();
-        recognitionRef.current = recognition;
-      }
+      recognition.start();
+      recognitionRef.current = recognition;
 
-      // Also acquire Microphone stream
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
-
-      const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      const recorder = new MediaRecorder(stream);
       mediaRecorderRef.current = recorder;
       recorder.start(3000); // 3-second slices
     } catch (err: any) {

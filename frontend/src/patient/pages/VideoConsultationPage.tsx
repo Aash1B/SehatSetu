@@ -5,6 +5,7 @@ import '@livekit/components-styles';
 import { Shield, Mic, MicOff, Video as VideoIcon, VideoOff, PhoneOff, MonitorUp, MoreVertical, User, MessageSquare } from 'lucide-react';
 import ConsultationTimer from '../../doctor/components/ConsultationTimer';
 import { cn } from '../../lib/utils';
+import { getConsultationRoomId } from '../../config/consultationTestMode';
 
 import PrescriptionViewModal from '../../common/components/PrescriptionViewModal';
 
@@ -22,20 +23,26 @@ const VideoConsultationPage: React.FC = () => {
 
   // Call states
   const [token, setToken] = useState("");
-  const serverUrl = import.meta.env.VITE_LIVEKIT_URL;
+  const [serverUrl, setServerUrl] = useState("");
+  const [connectionError, setConnectionError] = useState("");
   const consultationId = id;
+  const roomId = getConsultationRoomId(consultationId);
 
   useEffect(() => {
     (async () => {
       try {
-        const resp = await fetch(`/api/livekit/token?room=${consultationId}&username=Patient`);
+        const resp = await fetch(`/api/livekit/token?room=${encodeURIComponent(roomId)}&username=Patient`);
+        if (!resp.ok) throw new Error(`Unable to create video-room token (${resp.status})`);
         const data = await resp.json();
+        if (!data.token || !data.serverUrl) throw new Error('Video-room configuration is incomplete');
         setToken(data.token);
+        setServerUrl(data.serverUrl);
       } catch (e) {
         console.error(e);
+        setConnectionError(e instanceof Error ? e.message : 'Unable to connect to the video room');
       }
     })();
-  }, [consultationId]);
+  }, [roomId]);
 
   // Timer interval effect
   useEffect(() => {
@@ -83,10 +90,10 @@ const VideoConsultationPage: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-luster-white font-sans text-deep-space">
-      <main className="flex-1 flex flex-col h-screen overflow-hidden">
+    <div className="flex h-dvh overflow-hidden bg-luster-white font-sans text-deep-space">
+      <main className="flex-1 flex flex-col h-full min-h-0 overflow-hidden">
         {/* Header Area */}
-        <div className="px-6 py-4 flex items-center justify-between border-b border-gray-100 bg-white shadow-sm z-10">
+        <div className="shrink-0 px-6 py-4 flex items-center justify-between border-b border-gray-100 bg-white shadow-sm z-10">
           <div className="flex items-center gap-4">
             <button 
               onClick={() => navigate('/patient/dashboard')}
@@ -104,21 +111,22 @@ const VideoConsultationPage: React.FC = () => {
         </div>
 
         {/* Main Consultation Area */}
-        <div className="flex-1 overflow-hidden p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
+        <div className="flex-1 min-h-0 overflow-hidden p-6">
+          <div className="grid h-full min-h-0 grid-cols-1 grid-rows-[minmax(0,1fr)] lg:grid-cols-12 gap-6">
             
             {/* Left Column: Video & Controls */}
             <div className="lg:col-span-8 flex flex-col h-full gap-4">
               <div className="flex-1 min-h-0 relative rounded-2xl overflow-hidden bg-deep-space shadow-sm border border-gray-200">
-                {token ? (
+                {token && serverUrl ? (
                   <LiveKitRoom
                     video={true}
                     audio={true}
                     token={token}
                     serverUrl={serverUrl}
                     data-lk-theme="default"
-                    style={{ height: '100%', flex: 1, display: 'flex', flexDirection: 'column' }}
+                    style={{ height: '100%', minHeight: 0, overflow: 'hidden', flex: 1, display: 'flex', flexDirection: 'column' }}
                     onDisconnected={handleEndCallTrigger}
+                    onError={(error) => setConnectionError(error.message)}
                   >
                     <VideoConference />
                   </LiveKitRoom>
@@ -126,7 +134,7 @@ const VideoConsultationPage: React.FC = () => {
                   <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
                     <div className="text-white/40 flex flex-col items-center gap-3">
                       <User className="w-20 h-20" />
-                      <p className="font-medium text-lg">Dr. Ananya Sharma (Connecting...)</p>
+                      <p className="font-medium text-lg">{connectionError || 'Dr. Ananya Sharma (Connecting...)'}</p>
                     </div>
                   </div>
                 )}

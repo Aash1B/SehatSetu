@@ -4,6 +4,8 @@
  * within the scheduled appointment time window using local laptop time.
  */
 
+import { TEMP_CONSULTATION_TEST_MODE } from '../config/consultationTestMode';
+
 export interface AppointmentTimeStatus {
   isJoinable: boolean;
   status: 'UPCOMING' | 'JOIN_NOW' | 'COMPLETED' | 'EXPIRED';
@@ -67,6 +69,17 @@ export function getAppointmentTimeStatus(
   timeSlotStr?: string,
   durationMinutes: number = 30
 ): AppointmentTimeStatus {
+  if (TEMP_CONSULTATION_TEST_MODE) {
+    return {
+      isJoinable: true,
+      status: 'JOIN_NOW',
+      label: 'Join Test Consultation',
+      sublabel: 'Temporary device testing enabled',
+      minutesUntilStart: 0,
+      scheduledDateTime: null,
+    };
+  }
+
   let apptDate: Date | null = null;
 
   if (scheduledAtInput instanceof Date) {

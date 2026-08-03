@@ -705,6 +705,7 @@ button {
   border-radius: 10px;
 }
 
+}
 @keyframes selectMenuFadeIn {
   from {
     opacity: 0;
@@ -715,6 +716,7 @@ button {
     transform: translateY(0) scale(1);
   }
 }
+.patient-portal {
 
 .custom-select-option {
   display: flex;
@@ -1477,11 +1479,13 @@ button {
   pointer-events: none;
 }
 
+}
 @keyframes emergencyPulse {
   0% { transform: scale(0.95); opacity: 0.9; }
   50% { transform: scale(1.15); opacity: 0.3; }
   100% { transform: scale(0.95); opacity: 0.9; }
 }
+.patient-portal {
 
 .emergency-icon-wrap {
   width: 32px;
@@ -1530,10 +1534,12 @@ button {
   animation: modalSlideUp 0.25s ease-out;
 }
 
+}
 @keyframes modalSlideUp {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
+.patient-portal {
 
 .close-modal-btn {
   position: absolute;
@@ -1922,6 +1928,7 @@ button {
   animation: pulse-red 2s infinite;
 }
 
+}
 @keyframes pulse-red {
   0% {
     box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.5);
@@ -1933,6 +1940,7 @@ button {
     box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
   }
 }
+.patient-portal {
 
 .emergency-card-title {
   display: block;
@@ -2537,6 +2545,7 @@ button {
   animation: popoverFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+}
 @keyframes popoverFadeIn {
   from {
     opacity: 0;
@@ -2547,6 +2556,7 @@ button {
     transform: translateY(0) scale(1);
   }
 }
+.patient-portal {
 
 .custom-dropdown-item {
   display: flex;
@@ -3532,6 +3542,7 @@ button {
   animation: pulseDot 1.5s infinite;
 }
 
+}
 @keyframes pulseDot {
   0% {
     box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
@@ -3543,6 +3554,7 @@ button {
     box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
   }
 }
+.patient-portal {
 
 .p1-banner-tag {
   font-size: 0.75rem;
@@ -5738,11 +5750,13 @@ button {
   animation: pulse-red 1.5s infinite;
 }
 
+}
 @keyframes pulse-red {
   0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
   70% { transform: scale(1.2); box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
   100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
+.patient-portal {
 
 /* 2. Vitals Summary Strip */
 .vitals-summary-strip {
@@ -5883,10 +5897,12 @@ button {
   animation: fadeIn 0.3s ease-in-out;
 }
 
+}
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
+.patient-portal {
 
 /* Highlighted Upcoming Card */
 .upcoming-highlight-card {
@@ -5925,11 +5941,13 @@ button {
   animation: pulse-blue 1.5s infinite;
 }
 
+}
 @keyframes pulse-blue {
   0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7); }
   70% { transform: scale(1.2); box-shadow: 0 0 0 8px rgba(37, 99, 235, 0); }
   100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
 }
+.patient-portal {
 
 .time-countdown {
   font-size: 0.85rem;
@@ -7119,6 +7137,7 @@ button {
   transform-origin: 70% 70%;
 }
 
+}
 @keyframes wave-hand {
   0% { transform: rotate( 0.0deg) }
   10% { transform: rotate(14.0deg) }
@@ -7129,6 +7148,7 @@ button {
   60% { transform: rotate( 0.0deg) }
  100% { transform: rotate( 0.0deg) }
 }
+.patient-portal {
 
 .greeting-subtitle {
   font-size: 0.92rem;
@@ -8082,4 +8102,4 @@ button {
 .profile-save-btn:hover {
   background-color: #1d4ed8;
   transform: translateY(-1px);
-}
+}

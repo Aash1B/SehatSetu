@@ -826,7 +826,7 @@ const DashboardPage: React.FC = () => {
                   },
                 ];
 
-                const displayReminders = doctorPrescribedReminders.length > 0 
+                const displayReminders: Array<{ icon: string; title: string; sub: string; time: string }> = doctorPrescribedReminders.length > 0 
                   ? doctorPrescribedReminders 
                   : defaultGenericReminders;
 

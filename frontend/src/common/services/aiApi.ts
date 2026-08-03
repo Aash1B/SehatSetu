@@ -82,6 +82,10 @@ export async function extractMedicalInfo(transcript: string): Promise<MedicalInf
     headers: getHeaders(),
     body: JSON.stringify({ transcript }),
   });
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new Error(body?.message || `AI extraction failed (${response.status})`);
+  }
   return response.json();
 }
 
