@@ -143,7 +143,8 @@ export class AuthService {
     }
 
     if (!user.emailVerified) {
-      throw new UnauthorizedException('Please verify your email before logging in. Check your inbox for the verification code.');
+      await this.resendOtp(user.email);
+      throw new UnauthorizedException('Please verify your email before logging in. A new verification code has been sent to your email.');
     }
 
     if (user.accountStatus !== 'ACTIVE') throw new UnauthorizedException('This account is no longer active');

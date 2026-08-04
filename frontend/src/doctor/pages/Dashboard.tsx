@@ -125,7 +125,7 @@ const Dashboard = () => {
         const profileResponse = await fetch('/api/doctors/me', { headers });
         if (!profileResponse.ok) throw new Error('Unable to load signed-in doctor profile');
         const profile = await profileResponse.json();
-        const doctorName = profile.name || profile.user?.fullName || signedInUser?.fullName || 'Doctor';
+        const doctorName = profile.user?.fullName || signedInUser?.fullName || profile.name || 'Doctor';
         setActiveDoctor({ id: profile.id, name: doctorName, initials: getInitials(doctorName), specialization: profile.specialty || 'General Physician' });
         const res = await fetch('/api/appointments', { headers });
         if (res.ok) {

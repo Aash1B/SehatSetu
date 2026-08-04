@@ -136,6 +136,23 @@ const BookAppointmentPage: React.FC = () => {
   const [aiRecommendation, setAiRecommendation] = useState<RecommendationResult | null>(null);
   const [loadingRecommendation, setLoadingRecommendation] = useState<boolean>(false);
   const [showAllDoctors, setShowAllDoctors] = useState<boolean>(false);
+  const [allDoctorsList, setAllDoctorsList] = useState(doctorsData);
+
+  // Load real registered doctors from backend and merge with static list
+  useEffect(() => {
+    (async () => {
+      try {
+        const fetched = await fetchDoctors();
+        if (fetched && fetched.length > 0) {
+          const fetchedIds = new Set(fetched.map(d => d.id));
+          const staticOnly = doctorsData.filter(d => !fetchedIds.has(d.id));
+          setAllDoctorsList([...fetched, ...staticOnly]);
+        }
+      } catch (err) {
+        console.warn('BookAppointment: backend doctors fetch failed, using static list:', err);
+      }
+    })();
+  }, []);
   const [clockNow, setClockNow] = useState(() => new Date());
 
   const [formData, setFormData] = useState<BookingFormData>({
@@ -220,15 +237,12 @@ const BookAppointmentPage: React.FC = () => {
 
   useEffect(() => {
     if (id && id !== 'new') {
-      fetchDoctors().then((doctors) => {
-        const match = doctors.find((doctor) => doctor.id === id) || doctorsData.find((doctor) => doctor.id === id);
-        if (match) setFormData((current) => ({ ...current, selectedDoctor: match }));
-      }).catch(() => {
-        const match = doctorsData.find((doctor) => doctor.id === id);
-        if (match) setFormData((current) => ({ ...current, selectedDoctor: match }));
-      });
+      const match = allDoctorsList.find(d => d.id === id) || doctorsData.find(d => d.id === id);
+      if (match) {
+        setFormData(prev => ({ ...prev, selectedDoctor: match }));
+      }
     }
-  }, [id]);
+  }, [id, allDoctorsList]);
 
   useEffect(() => {
     const docId = formData.selectedDoctor?.id;
@@ -251,7 +265,7 @@ const BookAppointmentPage: React.FC = () => {
     }
   }, [formData.selectedDoctor?.id, formData.selectedDate]);
 
-  const filteredStep2Doctors = doctorsData.filter(doc => {
+  const filteredStep2Doctors = allDoctorsList.filter(doc => {
     const matchesSearch = 
       doc.name.toLowerCase().includes(step2SearchTerm.toLowerCase()) ||
       doc.specialty.toLowerCase().includes(step2SearchTerm.toLowerCase()) ||

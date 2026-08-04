@@ -48,7 +48,10 @@ const DoctorSearchPage: React.FC = () => {
       try {
         const fetched = await fetchDoctors();
         if (fetched && fetched.length > 0) {
-          setDoctorsList(fetched);
+          // Real registered doctors go first (highest priority), then deduplicated static list
+          const fetchedIds = new Set(fetched.map(d => d.id));
+          const staticOnly = doctorsData.filter(d => !fetchedIds.has(d.id));
+          setDoctorsList([...fetched, ...staticOnly]);
         }
       } catch (err) {
         console.warn('Backend doctors fetch fallback:', err);
@@ -89,9 +92,11 @@ const DoctorSearchPage: React.FC = () => {
 
         if (isGenA && !isGenB) return -1;
         if (!isGenA && isGenB) return 1;
-        return b.priorityScore - a.priorityScore;
+        // Handle null/undefined priorityScore from newly registered doctors
+        return (b.priorityScore ?? 0) - (a.priorityScore ?? 0);
       });
-  }, [searchTerm, specialtyFilter, locationFilter, onlyAvailableToday]);
+  }, [doctorsList, searchTerm, specialtyFilter, locationFilter, onlyAvailableToday]);
+
 
   return (
     <div className="all-doctors-page">

@@ -83,9 +83,11 @@ export class DoctorService {
     let resolvedDoctorIds = [doctorId];
     let availability: any = null;
     try {
-      const doctor = await prisma.doctor.findUnique({
-        where: { id: doctorId },
-      });
+      // Try by Doctor.id first, then by userId
+      let doctor = await prisma.doctor.findUnique({ where: { id: doctorId } });
+      if (!doctor) {
+        doctor = await prisma.doctor.findUnique({ where: { userId: doctorId } });
+      }
       if (doctor) {
         availability = doctor.availability;
         if (!doctor.userId && doctor.name) {
@@ -149,13 +151,21 @@ export class DoctorService {
   }
 
   async getProfile(doctorId: string) {
+    // Try by Doctor.id first
     let doctor = await prisma.doctor.findUnique({
       where: { id: doctorId },
-      include: {
-        user: true,
-      },
+      include: { user: true },
     });
 
+    // Try by userId (auth user's UUID)
+    if (!doctor) {
+      doctor = await prisma.doctor.findUnique({
+        where: { userId: doctorId },
+        include: { user: true },
+      });
+    }
+
+    // Legacy fallback for 'd1' dev testing
     if (!doctor && doctorId === 'd1') {
       doctor = await prisma.doctor.findFirst({
         include: { user: true }
@@ -171,10 +181,23 @@ export class DoctorService {
 
   async updateProfile(doctorId: string, profileData: any) {
     let targetId = doctorId;
+
+    // First try: find Doctor by its own primary key (Doctor.id)
     let doctor = await prisma.doctor.findUnique({
       where: { id: targetId },
     });
 
+    // Second try: find Doctor by userId (auth user's UUID — sent from frontend after onboarding)
+    if (!doctor) {
+      doctor = await prisma.doctor.findUnique({
+        where: { userId: doctorId },
+      });
+      if (doctor) {
+        targetId = doctor.id;
+      }
+    }
+
+    // Third try: legacy fallback for 'd1' (dev testing)
     if (!doctor && doctorId === 'd1') {
       const firstDoc = await prisma.doctor.findFirst();
       if (firstDoc) {
@@ -208,6 +231,10 @@ export class DoctorService {
     if (doctorData.languagesSpoken) cleanedDoctorData.tags = doctorData.languagesSpoken;
     if (doctorData.availability) cleanedDoctorData.availability = doctorData.availability;
     cleanedDoctorData.availableToday = true;
+    if (doctorData.priorityLevel) cleanedDoctorData.priorityLevel = doctorData.priorityLevel;
+    cleanedDoctorData.priorityScore = 150; // Real registered doctors get high priority
+    cleanedDoctorData.reviewsCount = cleanedDoctorData.reviewsCount || 0;
+    cleanedDoctorData.rating = cleanedDoctorData.rating || 5.0;
 
     if (doctor) {
       return prisma.$transaction(async (tx) => {
@@ -224,26 +251,41 @@ export class DoctorService {
         });
       });
     } else {
-      // Create new Doctor if not existing
+      // Create new Doctor row linked to the authenticated user (doctorId = user.id here)
+      // Check if the user actually exists before linking
+      let userLink: { connect: { id: string } } | undefined;
+      try {
+        const userExists = await prisma.user.findUnique({ where: { id: doctorId } });
+        if (userExists) {
+          userLink = { connect: { id: doctorId } };
+        }
+      } catch (_) {}
+
       return prisma.doctor.create({
         data: {
-          id: targetId,
           specialty: cleanedDoctorData.specialty || 'General Physician',
-          name: cleanedDoctorData.name || 'Dr. New Doctor',
+          name: cleanedDoctorData.name || 'Dr. Specialist',
           experience: cleanedDoctorData.experience || '5+ Years Exp.',
           degrees: cleanedDoctorData.degrees || 'MBBS',
-          hospital: cleanedDoctorData.hospital || 'Apollo Medical Center',
-          location: cleanedDoctorData.location || 'Mumbai',
+          hospital: cleanedDoctorData.hospital || 'SehatSetu Medical Network',
+          location: cleanedDoctorData.location || 'India',
           imageUrl: cleanedDoctorData.imageUrl || 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=400',
           fee: cleanedDoctorData.fee || '₹500',
           consultationFee: cleanedDoctorData.consultationFee || 500,
           availability: cleanedDoctorData.availability || {},
           availableToday: true,
-          tags: cleanedDoctorData.tags || ['English', 'Hindi']
-        }
+          tags: cleanedDoctorData.tags || ['English', 'Hindi'],
+          priorityLevel: 'P1',
+          priorityScore: 150,
+          rating: 5.0,
+          reviewsCount: 0,
+          ...(userLink ? { user: userLink } : {}),
+        },
+        include: { user: true },
       });
     }
   }
+
 
   async saveOnboardingProfile(doctorId: string, onboardingPayload: any) {
     const availabilityData = {
