@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import QRCode from 'qrcode'; // Vite HMR trigger
+import QRCode from 'qrcode';
 import './PrescriptionViewModal.css';
 
 export interface PrescriptionData {

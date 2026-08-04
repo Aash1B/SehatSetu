@@ -26,11 +26,11 @@ export default function PatientLogin() {
       const requestedPath = (location.state as { from?: string } | null)?.from;
       navigate(requestedPath?.startsWith('/patient/') ? requestedPath : '/patient/dashboard', { replace: true });
     } catch (err: any) {
-      setError(err.message);
-      if (err.message.toLowerCase().includes('verify your email')) {
-        navigate('/verify-otp', { state: { email, role: 'PATIENT' } });
-      }
-    } finally {
+  setError(err.message);
+  if (err.message.toLowerCase().includes('verify your email')) {
+    navigate('/verify-otp', { state: { email, role: 'PATIENT' } }); // 'DOCTOR' in DoctorLogin.tsx
+  }
+}finally {
       setLoading(false);
     }
   };

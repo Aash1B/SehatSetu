@@ -12,6 +12,9 @@ import ForgotPassword from './auth/pages/ForgotPassword';
 import ResetPassword from './auth/pages/ResetPassword';
 import { getToken, getUser } from './auth/authStorage';
 
+
+import PaymentTestPage from './payments/PaymentTestPage';
+
 const PatientLayout = () => (
   <div className="patient-portal min-h-screen">
     <Outlet />
@@ -66,6 +69,9 @@ function App() {
            <Route path="/verify-otp" element={<VerifyOtp />} />
            <Route path="/forgot-password" element={<ForgotPassword />} />
            <Route path="/reset-password" element={<ResetPassword />} />
+
+           <Route path="/payment-test" element={<PaymentTestPage />} />
+      
           {/* Patient Portal Layout */}
           <Route element={<PatientLayout />}>
             {/* Landing Page */}

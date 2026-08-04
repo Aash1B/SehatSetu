@@ -1,1 +1,1 @@
-ALTER TABLE "Patient" ADD COLUMN "profileImagePath" TEXT;
+-- No-op: superseded by 0_init baseline

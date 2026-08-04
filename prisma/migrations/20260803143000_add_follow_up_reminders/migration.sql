@@ -1,3 +1,1 @@
-ALTER TABLE "Appointment"
-ADD COLUMN "isFollowUp" BOOLEAN NOT NULL DEFAULT false,
-ADD COLUMN "emailRemindersEnabled" BOOLEAN NOT NULL DEFAULT true;
+-- No-op: superseded by 0_init baseline

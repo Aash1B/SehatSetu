@@ -6,7 +6,7 @@ export class ApiKeyGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const apiKey = request.headers['x-api-key'];
 
-    if (!apiKey || apiKey !== process.env.AI_SERVICE_API_KEY) {
+    if (!apiKey || apiKey !== process.env.EHR_SUMMARY_API_KEY) {
       throw new UnauthorizedException('Invalid or missing API key');
     }
 

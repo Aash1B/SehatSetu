@@ -24,14 +24,13 @@ export default function DoctorLogin() {
       }
       saveAuth(res.accessToken, { id: res.id, email: res.email, fullName: res.fullName, role: res.role });
       const requestedPath = (location.state as { from?: string } | null)?.from;
-      navigate(requestedPath?.startsWith('/doctor/') ? requestedPath : '/doctor/onboarding', { replace: true });
+      navigate(requestedPath?.startsWith('/doctor/') ? requestedPath : '/doctor/dashboard', { replace: true });
     } catch (err: any) {
-      if (err.message.toLowerCase().includes('verify your email')) {
-        navigate('/verify-otp', { state: { email, role: 'DOCTOR' } });
-      } else {
-        setError(err.message);
-      }
-    } finally {
+  setError(err.message);
+  if (err.message.toLowerCase().includes('verify your email')) {
+    navigate('/verify-otp', { state: { email, role: 'DOCTOR' } });
+  }
+}finally {
       setLoading(false);
     }
   };

@@ -1,4 +1,4 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
+const API_BASE_URL = 'http://localhost:8000';
 
 export interface AuthResponse {
   id: string;
@@ -50,30 +50,11 @@ function extractErrorMessage(data: any): string {
 }
 
 async function handleResponse<T>(res: Response): Promise<T> {
-  const text = await res.text();
-
-  if (!text) {
-    if (!res.ok) {
-      throw new Error(`Request failed with status ${res.status}`);
-    }
-    return {} as T;
-  }
-
-  let data: unknown;
-  try {
-    data = JSON.parse(text);
-  } catch {
-    if (!res.ok) {
-      throw new Error(`Request failed with status ${res.status}`);
-    }
-    throw new Error('Invalid response from the server.');
-  }
-
+  const data = await res.json();
   if (!res.ok) {
     throw new Error(extractErrorMessage(data));
   }
-
-  return data as T;
+  return data;
 }
 
 export async function signup(payload: SignupPayload): Promise<SignupResponse> {

@@ -9,7 +9,7 @@ import { ConsultationProcessor } from './processors/consultation.processor';
     BullModule.forRootAsync({
       useFactory: () => ({
         connection: {
-          host: process.env.REDIS_HOST || '127.0.0.1',
+          host: process.env.REDIS_HOST || 'localhost',
           port: Number(process.env.REDIS_PORT) || 6379,
           password: process.env.REDIS_PASSWORD || undefined,
           maxRetriesPerRequest: null,

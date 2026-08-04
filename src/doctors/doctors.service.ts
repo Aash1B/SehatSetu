@@ -107,7 +107,7 @@ export class DoctorsService {
         });
       });
     }
-    return { ...doctor, name: user.fullName || doctor.name || 'Doctor', user: { id: user.id, fullName: user.fullName, email: user.email } };
+    return { ...doctor, name: doctor.name || user.fullName, user: { id: user.id, fullName: user.fullName, email: user.email } };
   }
 
   async recommendDoctors(issue: string, symptoms: string[] = []) {
