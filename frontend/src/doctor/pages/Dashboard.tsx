@@ -1,92 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CalendarCheck, CheckCircle2, Stethoscope, ChevronRight, Activity, CalendarPlus, Phone, FileText, ActivityIcon } from 'lucide-react';
+import { CalendarCheck, CheckCircle2, Stethoscope, ChevronRight } from 'lucide-react';
 
 import DoctorSidebar from '../components/DoctorSidebar';
 import DashboardHeader from '../components/DashboardHeader';
 import StatCard from '../components/StatCard';
 import AIBanner from '../components/AIBanner';
 import ConsultationCard from '../components/ConsultationCard';
-import QuickActionButton from '../components/QuickActionButton';
-import ActivityItem from '../components/ActivityItem';
-import { Specialization, ConsultationStatus, Priority } from '../../types';
-import type { DashboardResponse } from '../../types';
-
-// Mock Data
-const dashboardData: DashboardResponse = {
-  doctor: {
-    id: "d1",
-    name: "Dr. Sarah Jenkins",
-    initials: "SJ",
-    specialization: Specialization.CARDIOLOGIST
-  },
-  stats: {
-    todayAppointments: 8,
-    completedAppointments: 3,
-    aiInsightsReady: true
-  },
-  todayConsultations: [
-    {
-      id: "c1",
-      patient: { id: "p1", name: "Ramesh Kumar", initials: "RK", age: 42, gender: "M", avatarColorClass: "bg-blue-50 text-blue-600" },
-      tags: [
-        { label: "Chest Pain", variant: "default" },
-        { label: "Scheduled", variant: "primary" }
-      ],
-      time: "10:00 AM",
-      chiefComplaint: "Chest Pain",
-      status: ConsultationStatus.WAITING,
-      priority: Priority.ROUTINE
-    },
-    {
-      id: "c2",
-      patient: { id: "p2", name: "Sunita Devi", initials: "SD", age: 31, gender: "F", avatarColorClass: "bg-orange-50 text-orange-600" },
-      tags: [
-        { label: "Fever", variant: "default" },
-        { label: "Urgent", variant: "warning" }
-      ],
-      time: "11:30 AM",
-      chiefComplaint: "Fever",
-      status: ConsultationStatus.WAITING,
-      priority: Priority.URGENT
-    },
-    {
-      id: "c3",
-      patient: { id: "p3", name: "Arjun Singh", initials: "AS", age: 58, gender: "M", avatarColorClass: "bg-green-50 text-green-600" },
-      tags: [
-        { label: "Diabetes Follow-up", variant: "default" },
-        { label: "Follow-up", variant: "success" }
-      ],
-      time: "2:00 PM",
-      chiefComplaint: "Diabetes Follow-up",
-      status: ConsultationStatus.WAITING,
-      priority: Priority.ROUTINE
-    }
-  ],
-  recentActivities: [
-    {
-      id: "a1",
-      message: "Prescription sent to Meena Patel",
-      timeAgo: "12 min ago",
-      iconName: "FileText",
-      colorScheme: "blue"
-    },
-    {
-      id: "a2",
-      message: "Follow-up scheduled for Ravi Singh",
-      timeAgo: "34 min ago",
-      iconName: "CalendarCheck",
-      colorScheme: "purple"
-    },
-    {
-      id: "a3",
-      message: "AI flagged drug interaction for Sunita Devi",
-      timeAgo: "1 hr ago",
-      iconName: "ActivityIcon",
-      colorScheme: "red"
-    }
-  ]
-};
+import { ConsultationStatus, Priority } from '../../types';
 
 import { getActiveDoctor, type DoctorProfile } from '../utils/doctorProfile';
 

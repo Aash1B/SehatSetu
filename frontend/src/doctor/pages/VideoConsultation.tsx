@@ -13,13 +13,11 @@ import PrescriptionViewModal from '../../common/components/PrescriptionViewModal
 import type { PatientProfile, TranscriptDTO, AIInsightDTO } from '../../types';
 import { Shield, Mic } from 'lucide-react';
 import { useLiveAudioTranscription } from '../../common/hooks/useLiveAudioTranscription';
-import { getConsultationRoomId } from '../../config/consultationTestMode';
 import { getToken } from '../../auth/authStorage';
 import LowBandwidthMode from '../../common/components/LowBandwidthMode';
 
 const VideoConsultation: React.FC = () => {
   const { id: consultationId = '1' } = useParams<{ id: string }>();
-  const roomId = getConsultationRoomId(consultationId);
   const navigate = useNavigate();
   const [isEndCallOpen, setIsEndCallOpen] = useState(false);
   const [showRxModal, setShowRxModal] = useState(false);
@@ -29,6 +27,11 @@ const VideoConsultation: React.FC = () => {
   const [appointment, setAppointment] = useState<any>(null);
   const [roomConnected, setRoomConnected] = useState(true);
   const [issuedPrescription, setIssuedPrescription] = useState<any>(null);
+  const [consultationSymptoms, setConsultationSymptoms] = useState<string[]>([]);
+  const [consultationMedicines, setConsultationMedicines] = useState<string[]>([]);
+  const [clinicalNotes, setClinicalNotes] = useState('');
+  const [consultationLabTests, setConsultationLabTests] = useState<string[]>([]);
+  const [consultationDiet, setConsultationDiet] = useState<string[]>([]);
   const intentionalEndRef = useRef(false);
 
   const { isRecording, symptoms, medicines, error: micError, startRecording, stopRecording } = useLiveAudioTranscription();
@@ -42,8 +45,9 @@ const VideoConsultation: React.FC = () => {
         if (!appointmentResponse.ok) throw new Error('Unable to load consultation details');
         const appointmentData = await appointmentResponse.json();
         setAppointment(appointmentData);
-        const doctorName = appointmentData.doctor?.name || appointmentData.doctor?.user?.fullName || 'Doctor';
-        const resp = await fetch(`/api/livekit/token?room=${encodeURIComponent(roomId)}&username=${encodeURIComponent(doctorName)}`);
+        const resp = await fetch(`/api/livekit/token?appointmentId=${encodeURIComponent(consultationId)}`, {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        });
         if (!resp.ok) throw new Error(`Unable to create video-room token (${resp.status})`);
         const data = await resp.json();
         if (!data.token || !data.serverUrl) throw new Error('Video-room configuration is incomplete');
@@ -54,7 +58,7 @@ const VideoConsultation: React.FC = () => {
         setConnectionError(e instanceof Error ? e.message : 'Unable to connect to the video room');
       }
     })();
-  }, [roomId]);
+  }, [consultationId]);
 
   return (
     <div className="flex h-dvh overflow-hidden bg-luster-white font-sans text-deep-space">
@@ -69,7 +73,7 @@ const VideoConsultation: React.FC = () => {
             >
               ← Back to Details
             </button>
-            {micError && <span className="text-xs font-semibold text-red-600">{micError}</span>}
+            {micError && <span className="text-xs font-semibold text-red-600">{micError} You can continue with manual entry.</span>}
             <div className="h-6 w-px bg-gray-200"></div>
             <div className="flex items-center gap-2 text-green-600 bg-green-50 px-3 py-1 rounded-full text-xs font-bold border border-green-200">
               <Shield className="w-4 h-4" />
@@ -137,10 +141,34 @@ const VideoConsultation: React.FC = () => {
               } as PatientProfile} />}
               
               <div className="flex-1 flex flex-col gap-4 min-h-0">
-                <SymptomsEditor className="flex-1 min-h-[200px]" aiExtractedSymptoms={symptoms} />
-                <MedicineEditor className="flex-1 min-h-[200px]" aiExtractedMedicines={medicines} />
-                <LabTestEditor className="flex-1 min-h-[200px]" />
-                <DietEditor className="flex-1 min-h-[200px]" />
+                <section className="rounded-2xl bg-white p-3 shadow-sm border border-gray-200">
+                  <label htmlFor="doctor-clinical-notes" className="mb-2 block text-sm font-bold text-deep-space">
+                    Doctor's Clinical Notes
+                  </label>
+                  <textarea
+                    id="doctor-clinical-notes"
+                    value={clinicalNotes}
+                    onChange={(event) => setClinicalNotes(event.target.value)}
+                    rows={3}
+                    placeholder="Type observations, diagnosis, advice, or anything missed by voice recognition..."
+                    className="w-full resize-y rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-deep-space outline-none transition focus:border-purple-400 focus:ring-2 focus:ring-purple-100"
+                  />
+                  <p className="mt-1 text-[11px] text-gray-500">Manual notes are saved with the consultation.</p>
+                </section>
+                <SymptomsEditor
+                  className="flex-1 min-h-[200px]"
+                  aiExtractedSymptoms={symptoms}
+                  isListening={isRecording}
+                  onChange={setConsultationSymptoms}
+                />
+                <MedicineEditor
+                  className="flex-1 min-h-[200px]"
+                  aiExtractedMedicines={medicines}
+                  isListening={isRecording}
+                  onChange={setConsultationMedicines}
+                />
+                <LabTestEditor className="flex-1 min-h-[200px]" isListening={isRecording} onChange={setConsultationLabTests} />
+                <DietEditor className="flex-1 min-h-[200px]" isListening={isRecording} onChange={setConsultationDiet} />
               </div>
             </div>
           </div>
@@ -156,14 +184,18 @@ const VideoConsultation: React.FC = () => {
           doctorSpecialty: appointment?.doctor?.specialty || '',
           doctorHospital: appointment?.doctor?.hospital || 'SehatSetu Digital Health Clinic',
           patientName: appointment?.patient?.user?.fullName || appointment?.patientName || 'Patient',
-          patientAge: appointment?.patient?.age || appointment?.patientAge || '',
-          patientGender: appointment?.patient?.gender || appointment?.patientGender || '',
+          patientAge: appointment?.patientAge || appointment?.patient?.age || '',
+          patientGender: appointment?.patientGender || appointment?.patient?.gender || '',
           diagnosis: appointment?.ehrRecord?.diagnosis || appointment?.healthConcern || '',
-          symptoms: symptoms.length ? symptoms : (appointment?.symptoms || []),
-          medications: medicines.map((medicine: any) => ({
-            name: medicine.name || '', dosage: medicine.dosage || '', frequency: medicine.frequency || '', duration: medicine.duration || '', timing: medicine.timing || '',
+          symptoms: consultationSymptoms.length ? consultationSymptoms : (appointment?.symptoms || []),
+          medications: consultationMedicines.map((medicine) => ({
+            name: medicine, dosage: '', frequency: '', duration: '', timing: '',
           })),
-          notes: appointment?.ehrRecord?.notes || appointment?.notes || '',
+          dietAdvice: consultationDiet.join('\n'),
+          notes: [
+            clinicalNotes.trim() || appointment?.ehrRecord?.notes || appointment?.notes || '',
+            consultationLabTests.length ? `Recommended lab tests: ${consultationLabTests.join(', ')}` : '',
+          ].filter(Boolean).join('\n'),
         }}
         onConfirmRx={(prescription) => {
           intentionalEndRef.current = true;

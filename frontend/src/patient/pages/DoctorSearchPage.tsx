@@ -6,7 +6,7 @@ import Sidebar from '../components/Sidebar';
 import Footer from '../components/Footer';
 import FloatingEmergencyButton from '../components/FloatingEmergencyButton';
 import CustomSelect, { type OptionItem } from '../components/CustomSelect';
-import { doctorsData, PRIORITY_CONFIG, type Doctor } from '../data/doctorsData';
+import { PRIORITY_CONFIG, type Doctor } from '../data/doctorsData';
 import { fetchDoctors } from '../services/doctorApi';
 import { setCurrentPage } from '../store/uiSlice';
 
@@ -36,7 +36,7 @@ const LOCATION_OPTIONS: OptionItem[] = [
 const DoctorSearchPage: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [doctorsList, setDoctorsList] = useState<Doctor[]>(doctorsData);
+  const [doctorsList, setDoctorsList] = useState<Doctor[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [specialtyFilter, setSpecialtyFilter] = useState('All');
   const [locationFilter, setLocationFilter] = useState('All');

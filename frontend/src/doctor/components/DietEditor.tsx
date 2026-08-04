@@ -11,6 +11,8 @@ interface DietRec {
 
 interface DietEditorProps {
   className?: string;
+  isListening?: boolean;
+  onChange?: (recommendations: string[]) => void;
 }
 
 const POPULAR_DIET_RECS = [
@@ -26,10 +28,9 @@ const POPULAR_DIET_RECS = [
   'Include citrus fruits & green leafy vegetables',
 ];
 
-const DietEditor: React.FC<DietEditorProps> = ({ className }) => {
+const DietEditor: React.FC<DietEditorProps> = ({ className, isListening = false, onChange }) => {
   const [recommendations, setRecommendations] = useState<DietRec[]>([]);
   const [newRec, setNewRec] = useState('');
-  const [isListening, setIsListening] = useState(true);
   const [editText, setEditText] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -51,13 +52,9 @@ const DietEditor: React.FC<DietEditorProps> = ({ className }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Simulate live transcription
   useEffect(() => {
-    const t1 = setTimeout(() => setRecommendations(prev => [...prev, { id: '1', text: 'Increase fluid intake (min 3L/day)', isAi: true }]), 5000);
-    const t2 = setTimeout(() => setRecommendations(prev => [...prev, { id: '2', text: 'Avoid spicy and oily foods', isAi: true }]), 10000);
-    const t3 = setTimeout(() => setIsListening(false), 11500);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
-  }, []);
+    onChange?.(recommendations.map((recommendation) => recommendation.text));
+  }, [recommendations, onChange]);
 
   const addManual = (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,15 +118,16 @@ const DietEditor: React.FC<DietEditorProps> = ({ className }) => {
         <div className="flex items-center gap-2">
           <button
             type="button"
+            disabled
             onClick={() => {
               const aiItem = { id: Date.now().toString(), text: 'Low sodium diet & hydration with 3L water daily', isAi: true };
               setRecommendations(prev => [...prev, aiItem]);
             }}
             className="flex items-center gap-1.5 text-[10px] font-bold text-green-300 uppercase tracking-wider hover:text-white transition-colors cursor-pointer bg-white/10 px-2 py-0.5 rounded-full"
-            title="Click to trigger AI auto-extraction"
+            title={isListening ? 'Voice extraction is active' : 'Use the manual field below'}
           >
             <Sparkles className="w-3 h-3" />
-            AI Listening
+            {isListening ? 'AI Listening' : 'Manual Entry'}
           </button>
         </div>
       </div>

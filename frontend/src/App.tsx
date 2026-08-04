@@ -1,15 +1,16 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 import { Provider } from 'react-redux';
 import { store } from './patient/store';
 import './Patient.css';
 // Auth Pages (new)
-import PatientLogin from './auth/pages/PatientLogin';
-import PatientSignup from './auth/pages/PatientSignup';
-import DoctorLogin from './auth/pages/DoctorLogin';
-import DoctorSignup from './auth/pages/DoctorSignup';
-import VerifyOtp from './auth/pages/VerifyOtp';
-import ForgotPassword from './auth/pages/ForgotPassword';
-import ResetPassword from './auth/pages/ResetPassword';
+const PatientLogin = lazy(() => import('./auth/pages/PatientLogin'));
+const PatientSignup = lazy(() => import('./auth/pages/PatientSignup'));
+const DoctorLogin = lazy(() => import('./auth/pages/DoctorLogin'));
+const DoctorSignup = lazy(() => import('./auth/pages/DoctorSignup'));
+const VerifyOtp = lazy(() => import('./auth/pages/VerifyOtp'));
+const ForgotPassword = lazy(() => import('./auth/pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./auth/pages/ResetPassword'));
 import { getToken, getUser } from './auth/authStorage';
 
 
@@ -34,31 +35,32 @@ const RoleProtectedRoute = ({ role }: { role: 'PATIENT' | 'DOCTOR' }) => {
 };
 
 // Doctor Pages
-import DoctorDashboard from './doctor/pages/Dashboard';
-import ConsultationsList from './doctor/pages/ConsultationsList';
-import PatientDetails from './doctor/pages/PatientDetails';
-import DoctorPrescription from './doctor/pages/DoctorPrescription';
-import VideoConsultation from './doctor/pages/VideoConsultation';
-import DoctorProfile from './doctor/pages/DoctorProfile';
-import DoctorAvailability from './doctor/pages/DoctorAvailability';
-import DoctorOnboarding from './doctor/pages/DoctorOnboarding';
+const DoctorDashboard = lazy(() => import('./doctor/pages/Dashboard'));
+const ConsultationsList = lazy(() => import('./doctor/pages/ConsultationsList'));
+const PatientDetails = lazy(() => import('./doctor/pages/PatientDetails'));
+const DoctorPrescription = lazy(() => import('./doctor/pages/DoctorPrescription'));
+const VideoConsultation = lazy(() => import('./doctor/pages/VideoConsultation'));
+const DoctorProfile = lazy(() => import('./doctor/pages/DoctorProfile'));
+const DoctorAvailability = lazy(() => import('./doctor/pages/DoctorAvailability'));
+const DoctorOnboarding = lazy(() => import('./doctor/pages/DoctorOnboarding'));
 
 // Landing Page
-import LandingPage from './patient/pages/LandingPage';
+const LandingPage = lazy(() => import('./patient/pages/LandingPage'));
 
 // Patient Pages
 
-import DashboardPage from './patient/pages/DashboardPage';
-import DoctorSearchPage from './patient/pages/DoctorSearchPage';
-import BookAppointmentPage from './patient/pages/BookAppointmentPage';
-import HealthQuestionnairePage from './patient/pages/HealthQuestionnairePage';
-import AppointmentsPage from './patient/pages/AppointmentsPage';
-import VideoConsultationPage from './patient/pages/VideoConsultationPage';
+const DashboardPage = lazy(() => import('./patient/pages/DashboardPage'));
+const DoctorSearchPage = lazy(() => import('./patient/pages/DoctorSearchPage'));
+const BookAppointmentPage = lazy(() => import('./patient/pages/BookAppointmentPage'));
+const HealthQuestionnairePage = lazy(() => import('./patient/pages/HealthQuestionnairePage'));
+const AppointmentsPage = lazy(() => import('./patient/pages/AppointmentsPage'));
+const VideoConsultationPage = lazy(() => import('./patient/pages/VideoConsultationPage'));
 
 function App() {
   return (
     <Provider store={store}>
       <Router>
+        <Suspense fallback={<div className="flex min-h-screen items-center justify-center text-slate-500">Loading SehatSetu…</div>}>
         <Routes>
 
           {/* Auth Routes (new) */}
@@ -103,6 +105,7 @@ function App() {
             <Route path="/doctor/setup-profile" element={<DoctorOnboarding />} />
           </Route>
         </Routes>
+        </Suspense>
       </Router>
     </Provider>
   );

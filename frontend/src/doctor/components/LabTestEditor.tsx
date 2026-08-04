@@ -11,6 +11,8 @@ interface LabTest {
 
 interface LabTestEditorProps {
   className?: string;
+  isListening?: boolean;
+  onChange?: (tests: string[]) => void;
 }
 
 const POPULAR_LAB_TESTS = [
@@ -28,10 +30,9 @@ const POPULAR_LAB_TESTS = [
   'Vitamin D & B12 Test',
 ];
 
-const LabTestEditor: React.FC<LabTestEditorProps> = ({ className }) => {
+const LabTestEditor: React.FC<LabTestEditorProps> = ({ className, isListening = false, onChange }) => {
   const [tests, setTests] = useState<LabTest[]>([]);
   const [newTest, setNewTest] = useState('');
-  const [isListening, setIsListening] = useState(true);
   const [editText, setEditText] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -53,13 +54,9 @@ const LabTestEditor: React.FC<LabTestEditorProps> = ({ className }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Simulate live transcription
   useEffect(() => {
-    const t1 = setTimeout(() => setTests(prev => [...prev, { id: '1', text: 'Complete Blood Count (CBC)', isAi: true }]), 3500);
-    const t2 = setTimeout(() => setTests(prev => [...prev, { id: '2', text: 'Dengue NS1 Antigen', isAi: true }]), 7500);
-    const t3 = setTimeout(() => setIsListening(false), 9000);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
-  }, []);
+    onChange?.(tests.map((test) => test.text));
+  }, [tests, onChange]);
 
   const addManual = (e: React.FormEvent) => {
     e.preventDefault();
@@ -123,15 +120,16 @@ const LabTestEditor: React.FC<LabTestEditorProps> = ({ className }) => {
         <div className="flex items-center gap-2">
           <button
             type="button"
+            disabled
             onClick={() => {
               const aiItem = { id: Date.now().toString(), text: 'Dengue NS1 Antigen & CBC Test', isAi: true };
               setTests(prev => [...prev, aiItem]);
             }}
             className="flex items-center gap-1.5 text-[10px] font-bold text-orange-300 uppercase tracking-wider hover:text-white transition-colors cursor-pointer bg-white/10 px-2 py-0.5 rounded-full"
-            title="Click to trigger AI auto-extraction"
+            title={isListening ? 'Voice extraction is active' : 'Use the manual field below'}
           >
             <Sparkles className="w-3 h-3" />
-            AI Listening
+            {isListening ? 'AI Listening' : 'Manual Entry'}
           </button>
         </div>
       </div>

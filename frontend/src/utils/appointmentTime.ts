@@ -4,8 +4,6 @@
  * within the scheduled appointment time window using local laptop time.
  */
 
-import { TEMP_CONSULTATION_TEST_MODE } from '../config/consultationTestMode';
-
 export interface AppointmentTimeStatus {
   isJoinable: boolean;
   status: 'UPCOMING' | 'JOIN_NOW' | 'COMPLETED' | 'EXPIRED';
@@ -14,6 +12,10 @@ export interface AppointmentTimeStatus {
   minutesUntilStart: number;
   scheduledDateTime: Date | null;
 }
+
+// Temporary QA switch: keep appointment-specific rooms and authorization,
+// but allow the assigned doctor and patient to join outside the scheduled window.
+export const TEMP_DISABLE_CONSULTATION_TIME_WINDOW = false;
 
 /**
  * Parses appointment date and time strings or ISO timestamps into a JavaScript Date object (Laptop System Time)
@@ -69,12 +71,12 @@ export function getAppointmentTimeStatus(
   timeSlotStr?: string,
   durationMinutes: number = 30
 ): AppointmentTimeStatus {
-  if (TEMP_CONSULTATION_TEST_MODE) {
+  if (TEMP_DISABLE_CONSULTATION_TIME_WINDOW) {
     return {
       isJoinable: true,
       status: 'JOIN_NOW',
-      label: 'Join Test Consultation',
-      sublabel: 'Temporary device testing enabled',
+      label: 'Join Consultation Now',
+      sublabel: 'Available for testing',
       minutesUntilStart: 0,
       scheduledDateTime: null,
     };

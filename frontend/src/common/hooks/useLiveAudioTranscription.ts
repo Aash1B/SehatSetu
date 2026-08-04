@@ -83,7 +83,7 @@ export function useLiveAudioTranscription() {
 
       recognition.onerror = (e: any) => {
         console.warn('Speech Recognition notice:', e.error);
-        const fatalErrors = ['not-allowed', 'service-not-allowed', 'audio-capture'];
+        const fatalErrors = ['not-allowed', 'service-not-allowed', 'audio-capture', 'network'];
         setState(prev => ({
           ...prev,
           isRecording: fatalErrors.includes(e.error) ? false : prev.isRecording,
@@ -95,6 +95,13 @@ export function useLiveAudioTranscription() {
           streamRef.current?.getTracks().forEach(track => track.stop());
           streamRef.current = null;
         }
+      };
+
+      recognition.onend = () => {
+        recognitionRef.current = null;
+        streamRef.current?.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+        setState(prev => ({ ...prev, isRecording: false }));
       };
 
       recognition.start();

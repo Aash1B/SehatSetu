@@ -4,7 +4,8 @@ import DashboardHeader from '../components/DashboardHeader';
 import AvailabilityCard from '../components/profile/AvailabilityCard';
 import { DoctorProfileData, Availability } from '../types/profile.types';
 import { getActiveDoctor, type DoctorProfile as ActiveDoc } from '../utils/doctorProfile';
-import { mockDoctorProfile } from '../utils/profileMockData';
+import { getDoctorProfileData } from '../utils/doctorProfile';
+import { getToken } from '../../auth/authStorage';
 
 const DoctorAvailability: React.FC = () => {
   const [activeDoctor, setActiveDoctor] = useState<ActiveDoc>(getActiveDoctor());
@@ -15,14 +16,20 @@ const DoctorAvailability: React.FC = () => {
   const fetchAvailability = async (docId: string) => {
     setIsLoading(true);
     try {
-      setProfile({
-        ...mockDoctorProfile,
-        id: activeDoctor.id,
-        fullName: activeDoctor.name,
-        specialization: activeDoctor.specialization
+      const profileResponse = await fetch('/api/doctors/me', {
+        headers: { Authorization: `Bearer ${getToken()}` },
       });
-      
-      const response = await fetch(`/api/doctor/${docId}/availability`);
+      if (!profileResponse.ok) throw new Error('Unable to load doctor profile');
+      const doctor = await profileResponse.json();
+      const stored = getDoctorProfileData();
+      setProfile({
+        ...stored,
+        id: doctor.id,
+        fullName: doctor.user?.fullName || doctor.name,
+        specialization: doctor.specialty,
+      });
+
+      const response = await fetch(`/api/doctor/${doctor.id}/availability`);
       if (response.ok) {
         const availabilityData = await response.json();
         if (availabilityData) {
@@ -55,7 +62,8 @@ const DoctorAvailability: React.FC = () => {
       const res = await fetch(`/api/doctor/${activeDoctor.id}/availability`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getToken()}`,
         },
         body: JSON.stringify(updatedAvailability)
       });

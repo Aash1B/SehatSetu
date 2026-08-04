@@ -1,6 +1,5 @@
-import { doctorsData } from '../../patient/data/doctorsData';
-import { mockDoctorProfile } from './profileMockData';
 import type { DoctorProfileData } from '../types/profile.types';
+import { getUser } from '../../auth/authStorage';
 
 export interface DoctorProfile {
   id: string;
@@ -9,21 +8,48 @@ export interface DoctorProfile {
   initials: string;
 }
 
-export const DOCTORS_LIST: DoctorProfile[] = [
-  { id: 'd1', name: 'Dr. Sarah Jenkins', specialization: 'Cardiologist', initials: 'SJ' },
-  { id: 'doc-6', name: 'Dr. Sunita Deshmukh', specialization: 'General Physician', initials: 'SD' },
-  { id: 'doc-11', name: 'Dr. Ananya Sharma', specialization: 'Dermatologist', initials: 'AS' },
-  { id: 'doc-1', name: 'Dr. Alok Verma', specialization: 'Pediatrician', initials: 'AV' },
-  { id: 'doc-2', name: 'Dr. Priya Mehta', specialization: 'Gynecologist', initials: 'PM' },
-  { id: 'doc-3', name: 'Dr. Amit Verma', specialization: 'Neurologist', initials: 'AV' },
-  { id: 'doc-5', name: 'Dr. Rajesh Gupta', specialization: 'Orthopedic Doctor', initials: 'RG' },
-  { id: 'doc-4', name: 'Dr. Vikramaditya Roy', specialization: 'Cardiologist', initials: 'VR' },
-];
+const initialsFor = (name: string) => name
+  .replace(/^Dr\.?\s*/i, '')
+  .split(/\s+/)
+  .filter(Boolean)
+  .map((part) => part[0])
+  .join('')
+  .slice(0, 2)
+  .toUpperCase() || 'DR';
+
+const emptyAvailability: DoctorProfileData['availability'] = {
+  slotDurationMinutes: 30,
+  status: 'Available',
+  slots: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => ({
+    day,
+    isWorking: false,
+    workingHours: 'Closed',
+    breakTime: 'None',
+  })),
+};
+
+function readStoredProfile(userId?: string): DoctorProfileData | null {
+  if (!userId) return null;
+  const raw = localStorage.getItem(`sehat_doctor_profile_${userId}`);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as DoctorProfileData;
+  } catch {
+    return null;
+  }
+}
 
 export function getActiveDoctor(): DoctorProfile {
-  const savedId = localStorage.getItem('sehat_active_doctor_id');
-  const found = DOCTORS_LIST.find((d) => d.id === savedId);
-  return found || DOCTORS_LIST[0]; // Default: Dr. Sarah Jenkins (d1)
+  const user = getUser();
+  const stored = readStoredProfile(user?.id);
+  const rawName = stored?.fullName || user?.fullName || 'Doctor';
+  const name = rawName.startsWith('Dr.') ? rawName : `Dr. ${rawName}`;
+  return {
+    id: stored?.id || user?.id || '',
+    name,
+    specialization: stored?.specialization || 'General Physician',
+    initials: initialsFor(name),
+  };
 }
 
 export function setActiveDoctorId(id: string) {
@@ -32,35 +58,35 @@ export function setActiveDoctorId(id: string) {
 }
 
 export function getDoctorProfileData(docId?: string): DoctorProfileData {
-  const activeDoc = getActiveDoctor();
-  const targetId = docId || activeDoc.id;
-  const match = doctorsData.find(d => d.id === targetId) || doctorsData[0];
-
-  const emailName = match.name.toLowerCase().replace(/dr\.\s*/i, '').replace(/\s+/g, '.');
-
+  const user = getUser();
+  const targetId = docId || user?.id || '';
+  const stored = readStoredProfile(targetId);
+  if (stored) return stored;
+  const rawName = user?.fullName || 'Doctor';
   return {
-    id: `DOC-${match.id.toUpperCase()}`,
-    fullName: match.name,
-    photoUrl: match.imageUrl || 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=400',
-    specialization: match.specialty,
-    qualification: match.degrees || `MBBS, MD (${match.specialty})`,
-    yearsOfExperience: parseInt(match.experience) || 10,
-    medicalLicenseNumber: `MED-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}`,
-    isVerified: true,
-    languagesSpoken: ['English', 'Hindi', 'Marathi'],
-    aboutMe: `Dedicated and compassionate ${match.specialty} with ${match.experience} of experience in diagnosing and treating patients at ${match.hospital || 'SehatSetu Medical Network'}.`,
-    email: `${emailName}@sehatsetu.com`,
-    phoneNumber: '+91 98765 43210',
-    clinicName: match.hospital || 'Apollo Medical Center',
-    address: `123 Health Ave, Wellness District, ${match.location || 'Mumbai'}, MH 400001`,
+    id: targetId,
+    fullName: rawName.startsWith('Dr.') ? rawName : `Dr. ${rawName}`,
+    photoUrl: '',
+    specialization: 'General Physician',
+    qualification: '',
+    yearsOfExperience: 0,
+    medicalLicenseNumber: '',
+    isVerified: false,
+    languagesSpoken: [],
+    aboutMe: '',
+    email: user?.email || '',
+    phoneNumber: '',
+    clinicName: '',
+    address: '',
     stats: {
-      totalConsultations: 1200 + (match.reviewsCount || 100) * 2,
-      patientsTreated: match.reviewsCount || 450,
-      todaysAppointments: 5,
-      averageRating: match.rating || 4.8,
-      completedConsultations: 1190 + (match.reviewsCount || 100) * 2
+      totalConsultations: 0,
+      patientsTreated: 0,
+      todaysAppointments: 0,
+      averageRating: null,
+      completedConsultations: 0,
+      reviewsCount: 0,
     },
-    availability: mockDoctorProfile.availability,
-    documents: mockDoctorProfile.documents
+    availability: emptyAvailability,
+    documents: [],
   };
 }

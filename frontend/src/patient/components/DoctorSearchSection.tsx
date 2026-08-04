@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { doctorsData, type Doctor } from '../data/doctorsData';
+import type { Doctor } from '../data/doctorsData';
 import { fetchDoctors } from '../services/doctorApi';
 import CustomSelect, { type OptionItem } from './CustomSelect';
 import { useNavigate } from 'react-router-dom';
@@ -57,7 +57,7 @@ const FEES_OPTIONS: OptionItem[] = [
 const DoctorSearchSection: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [doctorsList, setDoctorsList] = useState<Doctor[]>(doctorsData);
+  const [doctorsList, setDoctorsList] = useState<Doctor[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [specialtyFilter, setSpecialtyFilter] = useState('All');
   const [locationFilter, setLocationFilter] = useState('All');
@@ -72,9 +72,7 @@ const DoctorSearchSection: React.FC = () => {
       if (docs && docs.length > 0) {
         setDoctorsList(docs);
       }
-    }).catch(err => {
-      console.warn("Could not fetch dynamic doctors, using static fallback", err);
-    });
+    }).catch(err => console.error('Could not load registered doctors', err));
   }, []);
 
   const toggleFavorite = (id: string) => {
@@ -83,16 +81,7 @@ const DoctorSearchSection: React.FC = () => {
     );
   };
 
-  const sarahTestDoctor = doctorsData.find((doctor) => doctor.id === 'd1');
-  const sarahFromCurrentList = doctorsList.find((doctor) =>
-    doctor.id === 'd1' || doctor.name.toLowerCase().includes('sarah jenkins')
-  );
-  const pinnedSarah = sarahFromCurrentList || sarahTestDoctor;
-  const effectiveDoctors = pinnedSarah
-    ? [pinnedSarah, ...doctorsList.filter((doctor) => doctor.id !== pinnedSarah.id && !doctor.name.toLowerCase().includes('sarah jenkins'))]
-    : doctorsList;
-
-  const filteredDoctors = effectiveDoctors.filter(doc => {
+  const filteredDoctors = doctorsList.filter(doc => {
     const matchesSearch = (doc.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (doc.specialty || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (doc.hospital || '').toLowerCase().includes(searchTerm.toLowerCase()) ||

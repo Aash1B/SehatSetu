@@ -10,7 +10,7 @@ export class LivekitService {
     @InjectQueue('consultation-queue') private readonly consultationQueue: Queue,
   ) {}
 
-  async createToken(roomName: string, participantName: string): Promise<string> {
+  async createTokenForAppointment(appointmentId: string, userId: string, role: string): Promise<string> {
     const apiKey = process.env.LIVEKIT_API_KEY;
     const apiSecret = process.env.LIVEKIT_API_SECRET;
 
@@ -18,12 +18,38 @@ export class LivekitService {
       throw new InternalServerErrorException('LiveKit credentials are not configured');
     }
 
+    const appointment = await prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      include: {
+        doctor: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } },
+        patient: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } },
+      },
+    });
+    if (!appointment) throw new NotFoundException('Appointment not found');
+
+    const isDoctor = role === 'DOCTOR' && appointment.doctor?.userId === userId;
+    const isPatient = role === 'PATIENT' && appointment.patient?.userId === userId;
+    if (!isDoctor && !isPatient) {
+      throw new ForbiddenException('You are not a participant in this consultation');
+    }
+
+    const participantName = isDoctor
+      ? appointment.doctor?.user?.fullName || appointment.doctor?.name || 'Doctor'
+      : appointment.patient?.user?.fullName || appointment.patientName || 'Patient';
+    const roomName = `consultation-${appointment.id}`;
     const at = new AccessToken(apiKey, apiSecret, {
-      identity: participantName,
+      identity: `${role.toLowerCase()}-${userId}`,
       name: participantName,
+      ttl: '2h',
     });
 
-    at.addGrant({ roomJoin: true, room: roomName });
+    at.addGrant({
+      roomJoin: true,
+      room: roomName,
+      canPublish: true,
+      canSubscribe: true,
+      canPublishData: true,
+    });
     
     return await at.toJwt();
   }

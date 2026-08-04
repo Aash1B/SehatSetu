@@ -12,6 +12,8 @@ interface Symptom {
 interface SymptomsEditorProps {
   className?: string;
   aiExtractedSymptoms?: string[];
+  isListening?: boolean;
+  onChange?: (symptoms: string[]) => void;
 }
 
 const POPULAR_SYMPTOMS = [
@@ -29,13 +31,9 @@ const POPULAR_SYMPTOMS = [
   'Chest Tightness & Discomfort',
 ];
 
-const SymptomsEditor: React.FC<SymptomsEditorProps> = ({ className, aiExtractedSymptoms }) => {
-  const [symptoms, setSymptoms] = useState<Symptom[]>([
-    { id: '1', text: 'Persistent Fever (4 days)', isAi: true },
-    { id: '2', text: 'Body ache & Fatigue', isAi: true }
-  ]);
+const SymptomsEditor: React.FC<SymptomsEditorProps> = ({ className, aiExtractedSymptoms, isListening = false, onChange }) => {
+  const [symptoms, setSymptoms] = useState<Symptom[]>([]);
   const [newSymptom, setNewSymptom] = useState('');
-  const [isListening, setIsListening] = useState(true);
   const [editText, setEditText] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -69,6 +67,10 @@ const SymptomsEditor: React.FC<SymptomsEditorProps> = ({ className, aiExtractedS
       });
     }
   }, [aiExtractedSymptoms]);
+
+  useEffect(() => {
+    onChange?.(symptoms.map((symptom) => symptom.text));
+  }, [symptoms, onChange]);
 
   const addManual = (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,15 +134,16 @@ const SymptomsEditor: React.FC<SymptomsEditorProps> = ({ className, aiExtractedS
         <div className="flex items-center gap-2">
           <button
             type="button"
+            disabled
             onClick={() => {
               const aiItem = { id: Date.now().toString(), text: 'High grade fever (102°F) with fatigue', isAi: true };
               setSymptoms(prev => [...prev, aiItem]);
             }}
             className="flex items-center gap-1.5 text-[10px] font-bold text-purple-300 uppercase tracking-wider hover:text-white transition-colors cursor-pointer bg-white/10 px-2 py-0.5 rounded-full"
-            title="Click to trigger AI auto-extraction"
+            title={isListening ? 'Voice extraction is active' : 'Use the manual field below'}
           >
             <Sparkles className="w-3 h-3" />
-            AI Listening
+            {isListening ? 'AI Listening' : 'Manual Entry'}
           </button>
         </div>
       </div>
@@ -197,6 +200,7 @@ const SymptomsEditor: React.FC<SymptomsEditorProps> = ({ className, aiExtractedS
 
         {/* Manual Input with Autocomplete Recommendations */}
         <div ref={containerRef} className="relative pt-2 border-t border-gray-100 mt-2">
+          <p className="mb-2 text-xs font-semibold text-gray-600">Type a symptom manually</p>
           {showSuggestions && filteredSuggestions.length > 0 && (
             <div className="absolute bottom-full mb-1 left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden divide-y divide-gray-100 max-h-48 overflow-y-auto">
               <div className="bg-purple-50 px-3 py-1.5 text-[11px] font-semibold text-purple-700 uppercase tracking-wider flex justify-between items-center">
@@ -231,7 +235,7 @@ const SymptomsEditor: React.FC<SymptomsEditorProps> = ({ className, aiExtractedS
               }}
               onFocus={() => setShowSuggestions(true)}
               onKeyDown={handleKeyDown}
-              placeholder="Add manually (e.g. Fever, Cough)..."
+              placeholder="Type symptom (e.g. Fever, Cough)..."
               className="flex-1 text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-habanero"
             />
             <button 

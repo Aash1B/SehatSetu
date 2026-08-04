@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { login } from '../api';
+import { login, googleLogin } from '../api';
 import { saveAuth } from '../authStorage';
+import GoogleSignInButton from '../components/GoogleSignInButton';
 
 export default function DoctorLogin() {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ export default function DoctorLogin() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -24,14 +26,50 @@ export default function DoctorLogin() {
       }
       saveAuth(res.accessToken, { id: res.id, email: res.email, fullName: res.fullName, role: res.role });
       const requestedPath = (location.state as { from?: string } | null)?.from;
-      navigate(requestedPath?.startsWith('/doctor/') ? requestedPath : '/doctor/dashboard', { replace: true });
+      const requestedDoctorPath = requestedPath?.startsWith('/doctor/')
+        && requestedPath !== '/doctor/onboarding'
+        && requestedPath !== '/doctor/setup-profile'
+        ? requestedPath
+        : null;
+      navigate(
+        requestedDoctorPath || (res.onboardingCompleted ? '/doctor/dashboard' : '/doctor/onboarding'),
+        { replace: true },
+      );
     } catch (err: any) {
-  setError(err.message);
-  if (err.message.toLowerCase().includes('verify your email')) {
-    navigate('/verify-otp', { state: { email, role: 'DOCTOR' } });
-  }
-}finally {
+      if (err.message.toLowerCase().includes('verify your email')) {
+        navigate('/verify-otp', { state: { email, role: 'DOCTOR' } });
+      } else {
+        setError(err.message);
+      }
+    } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleCredential = async (credential: string) => {
+    setError('');
+    setGoogleLoading(true);
+    try {
+      const res = await googleLogin({ credential, role: 'DOCTOR' });
+      if (res.role !== 'DOCTOR') {
+        setError('This account is registered as a Patient. Please use the Patient login.');
+        return;
+      }
+      saveAuth(res.accessToken, { id: res.id, email: res.email, fullName: res.fullName, role: res.role });
+      const requestedPath = (location.state as { from?: string } | null)?.from;
+      const requestedDoctorPath = requestedPath?.startsWith('/doctor/')
+        && requestedPath !== '/doctor/onboarding'
+        && requestedPath !== '/doctor/setup-profile'
+        ? requestedPath
+        : null;
+      navigate(
+        requestedDoctorPath || (res.onboardingCompleted ? '/doctor/dashboard' : '/doctor/onboarding'),
+        { replace: true },
+      );
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -81,12 +119,29 @@ export default function DoctorLogin() {
             </div>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || googleLoading}
               className="w-full bg-indigo-900 hover:bg-indigo-800 disabled:opacity-50 text-white font-medium py-2.5 rounded-lg transition"
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
+
+          <div className="my-6 flex items-center gap-3">
+            <div className="h-px flex-1 bg-slate-200" />
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">or</span>
+            <div className="h-px flex-1 bg-slate-200" />
+          </div>
+
+          <GoogleSignInButton
+            role="DOCTOR"
+            mode="login"
+            onCredential={handleGoogleCredential}
+            onError={setError}
+          />
+
+          {googleLoading && (
+            <p className="mt-3 text-center text-xs text-slate-500">Completing Google sign-in...</p>
+          )}
 
           <p className="text-center text-sm text-slate-500 mt-6">
             Don't have an account?{' '}

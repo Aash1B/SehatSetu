@@ -12,6 +12,8 @@ interface Medicine {
 interface MedicineEditorProps {
   className?: string;
   aiExtractedMedicines?: string[];
+  isListening?: boolean;
+  onChange?: (medicines: string[]) => void;
 }
 
 const POPULAR_MEDICINES = [
@@ -39,13 +41,9 @@ const POPULAR_MEDICINES = [
   'Syp. Cough Syrup 10ml - 1-1-1 (5 days)',
 ];
 
-const MedicineEditor: React.FC<MedicineEditorProps> = ({ className, aiExtractedMedicines }) => {
-  const [medicines, setMedicines] = useState<Medicine[]>([
-    { id: '1', text: 'Tab. Paracetamol 650mg - 1-0-1 (5 days)', isAi: true },
-    { id: '2', text: 'Tab. Cetirizine 10mg - SOS', isAi: true }
-  ]);
+const MedicineEditor: React.FC<MedicineEditorProps> = ({ className, aiExtractedMedicines, isListening = false, onChange }) => {
+  const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [newMedicine, setNewMedicine] = useState('');
-  const [isListening, setIsListening] = useState(true);
   const [editText, setEditText] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -80,6 +78,10 @@ const MedicineEditor: React.FC<MedicineEditorProps> = ({ className, aiExtractedM
       });
     }
   }, [aiExtractedMedicines]);
+
+  useEffect(() => {
+    onChange?.(medicines.map((medicine) => medicine.text));
+  }, [medicines, onChange]);
 
   const addManual = (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,15 +145,16 @@ const MedicineEditor: React.FC<MedicineEditorProps> = ({ className, aiExtractedM
         <div className="flex items-center gap-2">
           <button
             type="button"
+            disabled
             onClick={() => {
               const aiItem = { id: Date.now().toString(), text: 'Tab. Paracetamol 650mg - 1-0-1 (5 days)', isAi: true };
               setMedicines(prev => [...prev, aiItem]);
             }}
             className="flex items-center gap-1.5 text-[10px] font-bold text-blue-300 uppercase tracking-wider hover:text-white transition-colors cursor-pointer bg-white/10 px-2 py-0.5 rounded-full"
-            title="Click to trigger AI auto-extraction"
+            title={isListening ? 'Voice extraction is active' : 'Use the manual field below'}
           >
             <Sparkles className="w-3 h-3" />
-            AI Listening
+            {isListening ? 'AI Listening' : 'Manual Entry'}
           </button>
         </div>
       </div>
@@ -208,6 +211,7 @@ const MedicineEditor: React.FC<MedicineEditorProps> = ({ className, aiExtractedM
 
         {/* Manual Input with Autocomplete Recommendations */}
         <div ref={containerRef} className="relative pt-2 border-t border-gray-100 mt-2">
+          <p className="mb-2 text-xs font-semibold text-gray-600">Type a medicine manually</p>
           {showSuggestions && filteredSuggestions.length > 0 && (
             <div className="absolute bottom-full mb-1 left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden divide-y divide-gray-100 max-h-48 overflow-y-auto">
               <div className="bg-blue-50 px-3 py-1.5 text-[11px] font-semibold text-blue-700 uppercase tracking-wider flex justify-between items-center">
@@ -242,7 +246,7 @@ const MedicineEditor: React.FC<MedicineEditorProps> = ({ className, aiExtractedM
               }}
               onFocus={() => setShowSuggestions(true)}
               onKeyDown={handleKeyDown}
-              placeholder="Add manually (e.g. Paracetamol, Cetirizine)..."
+              placeholder="Type medicine, dose and frequency..."
               className="flex-1 text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-habanero"
             />
             <button 

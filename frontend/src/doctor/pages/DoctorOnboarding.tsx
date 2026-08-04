@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { getUser } from '../../auth/authStorage';
 import { 
   User, 
   Stethoscope, 
@@ -23,6 +24,7 @@ import {
   Briefcase
 } from 'lucide-react';
 import { getDoctorProfileData, setActiveDoctorId } from '../utils/doctorProfile';
+import { getToken } from '../../auth/authStorage';
 import { DoctorProfileData } from '../types/profile.types';
 
 const SPECIALIZATIONS = [
@@ -54,8 +56,8 @@ const DoctorOnboarding: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [stepErrors, setStepErrors] = useState<string[]>([]);
 
-  // Initial Form State - Clean & Empty for brand-new doctor signup
   const [formData, setFormData] = useState({
     fullName: '',
     photoUrl: '',
@@ -79,8 +81,57 @@ const DoctorOnboarding: React.FC = () => {
     availableDays: 'Monday - Saturday (09:00 AM - 05:00 PM)'
   });
 
+  useEffect(() => {
+    const user = getUser();
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        fullName: prev.fullName || user.fullName || '',
+        email: prev.email || user.email || '',
+      }));
+    }
+  }, []);
+
   const handleTextChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear errors when user starts filling
+    if (stepErrors.length > 0) setStepErrors([]);
+  };
+
+  // Returns array of error messages for the given step
+  const validateStep = (step: number): string[] => {
+    const errors: string[] = [];
+    if (step === 1) {
+      if (!formData.fullName.trim()) errors.push('Full name is required.');
+      if (!formData.email.trim()) errors.push('Email address is required.');
+      if (!formData.phoneNumber.trim()) errors.push('Phone number is required.');
+      if (formData.languagesSpoken.length === 0) errors.push('Select at least one language spoken.');
+    } else if (step === 2) {
+      if (!formData.specialization.trim()) errors.push('Specialization is required.');
+      if (!formData.qualification.trim()) errors.push('Qualification / degrees are required.');
+      if (!formData.yearsOfExperience.toString().trim() || Number(formData.yearsOfExperience) < 0) errors.push('Years of experience is required.');
+      if (!formData.medicalLicenseNumber.trim()) errors.push('Medical registration / license number is required.');
+      if (!formData.aboutMe.trim()) errors.push('Doctor bio / profile summary is required.');
+    } else if (step === 3) {
+      if (!formData.clinicName.trim()) errors.push('Hospital / clinic name is required.');
+      if (!formData.address.trim()) errors.push('Clinic address is required.');
+      if (!formData.consultationFee.toString().trim() || Number(formData.consultationFee) <= 0) errors.push('Consultation fee is required and must be greater than 0.');
+    } else if (step === 4) {
+      if (!documentFiles['medical-license']) errors.push('Medical Registration License document is required.');
+      if (!documentFiles['degree-certificate']) errors.push('Medical Degree Certificate document is required.');
+      if (!documentFiles['id-proof']) errors.push('Government Photo ID document is required.');
+    }
+    return errors;
+  };
+
+  const handleNextStep = () => {
+    const errors = validateStep(currentStep);
+    if (errors.length > 0) {
+      setStepErrors(errors);
+      return;
+    }
+    setStepErrors([]);
+    setCurrentStep(prev => prev + 1);
   };
 
   const toggleLanguage = (lang: string) => {
@@ -100,16 +151,13 @@ const DoctorOnboarding: React.FC = () => {
     'id-proof': null,
   });
   const [uploadingDocs, setUploadingDocs] = useState<Record<string, boolean>>({});
-  const [uploadedDocsInfo, setUploadedDocsInfo] = useState<any[]>([
-    { id: 'doc-1', name: 'Medical License Certificate', type: 'PDF', status: 'Verified', uploadDate: new Date().toISOString().split('T')[0] },
-    { id: 'doc-2', name: 'MD Degree Certificate', type: 'PDF', status: 'Verified', uploadDate: new Date().toISOString().split('T')[0] },
-    { id: 'doc-3', name: 'Identity Proof (Aadhaar/Passport)', type: 'PDF', status: 'Verified', uploadDate: new Date().toISOString().split('T')[0] }
-  ]);
+  const [uploadedDocsInfo, setUploadedDocsInfo] = useState<any[]>([]);
 
   const uploadDocToSupabase = async (docType: string, fileObj?: File) => {
     setUploadingDocs(prev => ({ ...prev, [docType]: true }));
     try {
-      const activeDocId = 'd1';
+      const activeDocId = getUser()?.id;
+      if (!activeDocId || !fileObj) throw new Error('Sign in and choose a document file');
       const formDataUpload = new FormData();
       formDataUpload.append('documentType', docType);
       if (fileObj) {
@@ -118,8 +166,8 @@ const DoctorOnboarding: React.FC = () => {
 
       const res = await fetch(`/api/doctor/${activeDocId}/documents/upload`, {
         method: 'POST',
-        body: fileObj ? formDataUpload : JSON.stringify({ documentType: docType }),
-        headers: fileObj ? {} : { 'Content-Type': 'application/json' }
+        body: formDataUpload,
+        headers: { Authorization: `Bearer ${getToken()}` },
       });
 
       if (res.ok) {
@@ -146,7 +194,8 @@ const DoctorOnboarding: React.FC = () => {
       
       setIsUploadingPhoto(true);
       try {
-        const activeDocId = 'd1';
+        const activeDocId = getUser()?.id;
+        if (!activeDocId) throw new Error('Sign in before uploading a profile photo');
         const formDataUpload = new FormData();
         formDataUpload.append('documentType', 'profile-photo');
         formDataUpload.append('file', file);
@@ -154,6 +203,7 @@ const DoctorOnboarding: React.FC = () => {
         const res = await fetch(`/api/doctor/${activeDocId}/documents/upload`, {
           method: 'POST',
           body: formDataUpload,
+          headers: { Authorization: `Bearer ${getToken()}` },
         });
 
         if (res.ok) {
@@ -178,22 +228,24 @@ const DoctorOnboarding: React.FC = () => {
     }
   };
 
-  const handleCompleteSetup = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCompleteSetup = async () => {
+    // Validate step 4 before submitting
+    const errors = validateStep(4);
+    if (errors.length > 0) {
+      setStepErrors(errors);
+      return;
+    }
+    setStepErrors([]);
     setIsSaving(true);
 
-    const activeDocId = 'd1';
-
-    // Upload documents to Supabase Storage Bucket first
-    await uploadDocToSupabase('medical-license');
-    await uploadDocToSupabase('degree-certificate');
-    await uploadDocToSupabase('id-proof');
+    const user = getUser();
+    const activeDocId = user?.id || 'd-active';
 
     // Create updated profile payload
     const updatedProfile: DoctorProfileData = {
       id: activeDocId,
       fullName: formData.fullName.startsWith('Dr.') ? formData.fullName : `Dr. ${formData.fullName}`,
-      photoUrl: formData.photoUrl,
+      photoUrl: formData.photoUrl || 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=400',
       specialization: formData.specialization,
       qualification: formData.qualification,
       yearsOfExperience: Number(formData.yearsOfExperience),
@@ -206,11 +258,11 @@ const DoctorOnboarding: React.FC = () => {
       clinicName: formData.clinicName,
       address: formData.address,
       stats: {
-        totalConsultations: 120,
-        patientsTreated: 95,
-        todaysAppointments: 5,
-        averageRating: 4.9,
-        completedConsultations: 115
+        totalConsultations: 0,
+        patientsTreated: 0,
+        todaysAppointments: 0,
+        averageRating: 5.0,
+        completedConsultations: 0
       },
       availability: {
         slots: [
@@ -230,22 +282,33 @@ const DoctorOnboarding: React.FC = () => {
 
     // Save doctor onboarding data to PostgreSQL Database via NestJS API
     try {
-      await fetch(`/api/doctor/${activeDocId}/onboarding`, {
+      const token = getToken();
+      const response = await fetch(`/api/doctor/${activeDocId}/onboarding`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
         body: JSON.stringify(updatedProfile)
       });
+      if (!response.ok) {
+        const error = await response.json().catch(() => null);
+        throw new Error(error?.message || 'Unable to save doctor profile');
+      }
     } catch (apiErr) {
-      console.warn('Backend API save warning:', apiErr);
+      setStepErrors([apiErr instanceof Error ? apiErr.message : 'Unable to save doctor profile']);
+      setIsSaving(false);
+      return;
     }
 
-    // Save onboarding details in local storage for instant sync across components
+    // Save onboarding details in local storage keyed by user ID for personalized access
     localStorage.setItem('sehat_doctor_onboarding_data', JSON.stringify(updatedProfile));
+    localStorage.setItem(`sehat_doctor_profile_${activeDocId}`, JSON.stringify(updatedProfile));
     localStorage.setItem('sehat_active_doctor_id', activeDocId);
     window.dispatchEvent(new Event('sehat_doctor_changed'));
 
-    // Directly navigate to Doctor Dashboard
-    navigate('/doctor/dashboard');
+    setIsSubmitted(true);
+    setIsSaving(false);
   };
 
   return (
@@ -263,15 +326,9 @@ const DoctorOnboarding: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          <span className="hidden sm:inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full bg-white/10 text-white/90">
-            <ShieldCheck className="w-4 h-4 text-emerald-400" /> Medical Verification Portal
+          <span className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full bg-white/10 text-white/90">
+            <ShieldCheck className="w-4 h-4 text-emerald-400" /> All fields are mandatory
           </span>
-          <button 
-            onClick={() => navigate('/doctor/dashboard')}
-            className="text-xs text-white/70 hover:text-white underline font-medium cursor-pointer"
-          >
-            Skip for now &rarr;
-          </button>
         </div>
       </header>
 
@@ -294,16 +351,25 @@ const DoctorOnboarding: React.FC = () => {
               <span className="text-xs text-slate-500 font-semibold">{currentStep * 25}% Completed</span>
             </div>
 
-            {/* Step Bar */}
+            {/* Step Bar - can only go back to completed steps */}
             <div className="grid grid-cols-4 gap-2">
               {[1, 2, 3, 4].map(step => (
                 <div 
                   key={step}
-                  onClick={() => setCurrentStep(step)}
-                  className={`h-2 rounded-full cursor-pointer transition-all duration-300 ${
-                    step <= currentStep ? 'bg-aster-blue' : 'bg-slate-200'
+                  onClick={() => {
+                    if (step < currentStep) {
+                      setStepErrors([]);
+                      setCurrentStep(step);
+                    }
+                  }}
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    step < currentStep
+                      ? 'bg-aster-blue cursor-pointer hover:bg-aster-blue/70'
+                      : step === currentStep
+                      ? 'bg-aster-blue cursor-default'
+                      : 'bg-slate-200 cursor-not-allowed'
                   }`}
-                  title={`Go to Step ${step}`}
+                  title={step < currentStep ? `Go back to Step ${step}` : step === currentStep ? `Current step` : `Complete current step first`}
                 />
               ))}
             </div>
@@ -785,46 +851,63 @@ const DoctorOnboarding: React.FC = () => {
             )}
 
             {/* Stepper Navigation Buttons */}
-            <div className="flex items-center justify-between mt-8 pt-4 border-t border-slate-100">
-              {currentStep > 1 ? (
-                <button
-                  type="button"
-                  onClick={() => setCurrentStep(prev => prev - 1)}
-                  className="flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-slate-900 px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer"
-                >
-                  <ArrowLeft className="w-4 h-4" /> Back
-                </button>
-              ) : (
-                <div />
+            <div className="flex flex-col gap-3 mt-8 pt-4 border-t border-slate-100">
+              {/* Validation Errors */}
+              {stepErrors.length > 0 && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-3 flex flex-col gap-1.5">
+                  <p className="text-xs font-bold text-red-700 flex items-center gap-1.5">
+                    <svg className="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+                    Please complete the following required fields:
+                  </p>
+                  <ul className="list-disc list-inside space-y-0.5">
+                    {stepErrors.map((err, i) => (
+                      <li key={i} className="text-[11px] text-red-600">{err}</li>
+                    ))}
+                  </ul>
+                </div>
               )}
 
-              {currentStep < 4 ? (
-                <button
-                  type="button"
-                  onClick={() => setCurrentStep(prev => prev + 1)}
-                  className="flex items-center gap-2 text-xs font-bold text-white bg-aster-blue hover:bg-aster-blue/90 px-6 py-2.5 rounded-xl shadow-xs transition-all cursor-pointer"
-                >
-                  Next Step <ArrowRight className="w-4 h-4" />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  disabled={isSaving}
-                  onClick={handleCompleteSetup}
-                  className="flex items-center gap-2 text-xs font-bold text-white bg-habanero hover:bg-habanero/90 disabled:opacity-75 px-6 py-2.5 rounded-xl shadow-md transition-all cursor-pointer"
-                >
-                  {isSaving ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                      Saving & Opening Dashboard...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="w-4 h-4" /> Complete Profile Setup
-                    </>
-                  )}
-                </button>
-              )}
+              <div className="flex items-center justify-between">
+                {currentStep > 1 ? (
+                  <button
+                    type="button"
+                    onClick={() => { setStepErrors([]); setCurrentStep(prev => prev - 1); }}
+                    className="flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-slate-900 px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer"
+                  >
+                    <ArrowLeft className="w-4 h-4" /> Back
+                  </button>
+                ) : (
+                  <div />
+                )}
+
+                {currentStep < 4 ? (
+                  <button
+                    type="button"
+                    onClick={handleNextStep}
+                    className="flex items-center gap-2 text-xs font-bold text-white bg-aster-blue hover:bg-aster-blue/90 px-6 py-2.5 rounded-xl shadow-xs transition-all cursor-pointer"
+                  >
+                    Next Step <ArrowRight className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={isSaving}
+                    onClick={handleCompleteSetup}
+                    className="flex items-center gap-2 text-xs font-bold text-white bg-habanero hover:bg-habanero/90 disabled:opacity-75 px-6 py-2.5 rounded-xl shadow-md transition-all cursor-pointer"
+                  >
+                    {isSaving ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                        Saving Profile...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-4 h-4" /> Complete Profile Setup
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

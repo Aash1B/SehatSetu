@@ -1,7 +1,4 @@
-// Doctor API service - Fetch, Search, Filter doctors
-// TODO: Implement RTK Query endpoints
-
-import { doctorsData, type Doctor } from '../data/doctorsData';
+import type { Doctor } from '../data/doctorsData';
 
 const API_BASE = '/api/doctors';
 
@@ -13,104 +10,50 @@ export interface RecommendationResult {
   recommendedDoctors: Doctor[];
 }
 
+function mapDoctorRow(doctor: any): Doctor {
+  const rawName = doctor.user?.fullName || doctor.fullName || doctor.name || 'Doctor';
+  const name = rawName.startsWith('Dr.') ? rawName : `Dr. ${rawName}`;
+  return {
+    id: doctor.id,
+    name,
+    specialty: doctor.specialty || 'General Physician',
+    experience: doctor.experience || 'Not provided',
+    rating: doctor.reviewsCount > 0 && doctor.rating ? doctor.rating : 0,
+    reviewsCount: doctor.reviewsCount || 0,
+    hospital: doctor.hospital || 'Not provided',
+    location: doctor.location || 'Not provided',
+    imageUrl: doctor.imageUrl || '',
+    fee: doctor.fee || (doctor.consultationFee ? `₹${doctor.consultationFee}` : 'Not provided'),
+    availableToday: Boolean(doctor.availableToday),
+    priorityLevel: doctor.priorityLevel || '',
+    priorityScore: doctor.priorityScore || 0,
+    degrees: doctor.degrees || 'Not provided',
+    tags: Array.isArray(doctor.tags) ? doctor.tags : [],
+  };
+}
+
 export async function fetchDoctors(): Promise<Doctor[]> {
-  try {
-    const res = await fetch(API_BASE);
-    if (!res.ok) {
-      throw new Error('Failed to fetch doctors from backend');
-    }
-    const data = await res.json();
-    if (Array.isArray(data) && data.length > 0) {
-      const dynamicDoctors: Doctor[] = data.map((d: any) => ({
-        id: d.id,
-        name: d.name || d.user?.fullName || 'Doctor',
-        specialty: d.specialty,
-        experience: d.experience || '10+ Years Experience',
-        rating: d.rating || 4.8,
-        reviewsCount: d.reviewsCount || 200,
-        hospital: d.hospital || 'SehatSetu Medical Center',
-        location: d.location || 'Delhi',
-        imageUrl: d.imageUrl || 'https://images.unsplash.com/photo-1594824813566-88855376a911?auto=format&fit=crop&q=80&w=400',
-        fee: d.fee || `₹${d.consultationFee || 500}`,
-        availableToday: d.availableToday ?? true,
-        priorityLevel: d.priorityLevel || 'P1',
-        priorityScore: d.priorityScore || 100,
-        degrees: d.degrees || 'MBBS',
-        tags: d.tags || [d.specialty],
-      }));
-      const dynamicIds = new Set(dynamicDoctors.map((doctor) => doctor.id));
-      const dynamicNames = new Set(dynamicDoctors.map((doctor) => doctor.name.replace(/^dr\.?\s*/i, '').trim().toLowerCase()));
-      const mergedDoctors = [
-        ...doctorsData.filter((doctor) => !dynamicIds.has(doctor.id) && !dynamicNames.has(doctor.name.replace(/^dr\.?\s*/i, '').trim().toLowerCase())),
-        ...dynamicDoctors,
-      ];
-      return mergedDoctors.sort((a, b) => {
-        const aIsSarah = a.id === 'd1' || /sarah jenkins/i.test(a.name);
-        const bIsSarah = b.id === 'd1' || /sarah jenkins/i.test(b.name);
-        return Number(bIsSarah) - Number(aIsSarah);
-      });
-    }
-    return doctorsData;
-  } catch (error) {
-    console.warn('Backend fetch failed, falling back to static doctors data:', error);
-    return doctorsData;
-  }
+  const response = await fetch(API_BASE);
+  if (!response.ok) throw new Error('Unable to load registered doctors');
+  const doctors = await response.json();
+  return Array.isArray(doctors) ? doctors.map(mapDoctorRow) : [];
 }
 
 export async function recommendDoctorsApi(issue: string, symptoms: string[]): Promise<RecommendationResult> {
-  try {
-    const res = await fetch(`${API_BASE}/recommend`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ issue, symptoms }),
-    });
-
-    if (!res.ok) {
-      throw new Error('Failed to fetch recommendation from backend');
-    }
-
-    const data = await res.json();
-    return {
-      recommendedCategory: data.recommendedCategory || 'General Physician',
-      matchedSymptoms: data.matchedSymptoms || [],
-      reason: data.reason || '',
-      urgency: data.urgency || 'Routine',
-      recommendedDoctors: (data.recommendedDoctors || []).map((d: any) => ({
-        id: d.id,
-        name: d.name || d.user?.fullName || 'Doctor',
-        specialty: d.specialty,
-        experience: d.experience || '10+ Years Experience',
-        rating: d.rating || 4.8,
-        reviewsCount: d.reviewsCount || 200,
-        hospital: d.hospital || 'SehatSetu Medical Center',
-        location: d.location || 'Delhi',
-        imageUrl: d.imageUrl || 'https://images.unsplash.com/photo-1594824813566-88855376a911?auto=format&fit=crop&q=80&w=400',
-        fee: d.fee || `₹${d.consultationFee || 500}`,
-        availableToday: d.availableToday ?? true,
-        priorityLevel: d.priorityLevel || 'P1',
-        priorityScore: d.priorityScore || 100,
-        degrees: d.degrees || 'MBBS',
-        tags: d.tags || [d.specialty],
-      })),
-    };
-  } catch (error) {
-    console.warn('Recommendation API failed, using fallback:', error);
-    const combined = `${issue} ${symptoms.join(' ')}`.toLowerCase();
-    let targetSpec = 'General Physician';
-    if (combined.includes('skin') || combined.includes('rash') || combined.includes('itch')) targetSpec = 'Dermatologist';
-    else if (combined.includes('heart') || combined.includes('chest')) targetSpec = 'Cardiologist';
-    else if (combined.includes('child') || combined.includes('baby')) targetSpec = 'Pediatrician';
-    else if (combined.includes('bone') || combined.includes('joint')) targetSpec = 'Orthopedic Doctor';
-    else if (combined.includes('ear') || combined.includes('nose') || combined.includes('throat') || combined.includes('sinus')) targetSpec = 'ENT Specialist';
-
-    const matchedDocs = doctorsData.filter(d => d.specialty.toLowerCase().includes(targetSpec.toLowerCase().split(' ')[0]));
-    const generalPhysicians = doctorsData.filter(d => d.specialty.toLowerCase().includes('general physician'));
-    return {
-      recommendedCategory: targetSpec,
-      matchedSymptoms: symptoms,
-      reason: `Matched symptom to ${targetSpec}`,
-      urgency: 'Routine',
-      recommendedDoctors: matchedDocs.length > 0 ? matchedDocs : generalPhysicians,
-    };
-  }
+  const response = await fetch(`${API_BASE}/recommend`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ issue, symptoms }),
+  });
+  if (!response.ok) throw new Error('Unable to generate doctor recommendations');
+  const result = await response.json();
+  return {
+    recommendedCategory: result.recommendedCategory || 'General Physician',
+    matchedSymptoms: result.matchedSymptoms || [],
+    reason: result.reason || '',
+    urgency: result.urgency || 'Routine',
+    recommendedDoctors: Array.isArray(result.recommendedDoctors)
+      ? result.recommendedDoctors.map(mapDoctorRow)
+      : [],
+  };
 }

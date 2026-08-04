@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
+import { OAuth2Client } from 'google-auth-library';
 import { randomInt, randomBytes, createHash } from 'crypto';
 
 const OTP_EXPIRY_MINUTES = 10;
@@ -132,7 +133,10 @@ export class AuthService {
   }
 
   async login(email: string, password: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+      include: { doctor: true, patient: true },
+    });
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -147,15 +151,129 @@ export class AuthService {
     }
 
     if (user.accountStatus !== 'ACTIVE') throw new UnauthorizedException('This account is no longer active');
-    const accessToken = this.jwtService.sign({ sub: user.id, role: user.role, ver: user.tokenVersion });
+    return this.buildAuthResponse(user);
+  }
 
-    return {
-      id: user.id,
-      email: user.email,
-      fullName: user.fullName,
-      role: user.role,
-      accessToken,
-    };
+  async googleLogin(credential: string, role: 'PATIENT' | 'DOCTOR', dataConsent?: boolean) {
+    if (dataConsent === false) {
+      throw new BadRequestException('You must consent to data processing to create an account.');
+    }
+
+    const payload = await this.verifyGoogleCredential(credential);
+    const email = payload.email?.trim().toLowerCase();
+    const googleId = payload.sub;
+    const fullName = payload.name?.trim() || email?.split('@')[0] || 'Google User';
+    const avatarUrl = payload.picture?.trim() || null;
+
+    if (!email) {
+      throw new BadRequestException('Google account email is required');
+    }
+
+    if (payload.email_verified !== true) {
+      throw new UnauthorizedException('Your Google account email is not verified');
+    }
+
+    const existingByGoogleId = await this.findUserByGoogleId(googleId);
+
+    if (existingByGoogleId) {
+      if (existingByGoogleId.role !== role) {
+        throw new ConflictException(this.roleMismatchMessage(existingByGoogleId.role));
+      }
+
+      if (existingByGoogleId.accountStatus !== 'ACTIVE') {
+        throw new UnauthorizedException('This account is no longer active');
+      }
+
+      const refreshedUser = await this.prisma.user.update({
+        where: { id: existingByGoogleId.id },
+        data: {
+          authProvider: 'GOOGLE',
+          avatarUrl: avatarUrl ?? existingByGoogleId.avatarUrl,
+        },
+        include: { doctor: true, patient: true },
+      });
+
+      return this.buildAuthResponse(refreshedUser);
+    }
+
+    const existingByEmail = await this.prisma.user.findUnique({
+      where: { email },
+      include: { doctor: true, patient: true },
+    });
+
+    if (existingByEmail) {
+      if (existingByEmail.role !== role) {
+        throw new ConflictException(this.roleMismatchMessage(existingByEmail.role));
+      }
+
+      if (existingByEmail.accountStatus !== 'ACTIVE') {
+        throw new UnauthorizedException('This account is no longer active');
+      }
+
+      const linkedUser = await this.prisma.$transaction(async (tx) => {
+        const existingAvatarUrl = (existingByEmail as { avatarUrl?: string | null }).avatarUrl ?? null;
+        const updatedUser = await tx.user.update({
+          where: { id: existingByEmail.id },
+          data: {
+            googleId,
+            authProvider: 'GOOGLE',
+            avatarUrl: avatarUrl ?? existingAvatarUrl,
+            emailVerified: true,
+            emailOtpHash: null,
+            emailOtpExpiresAt: null,
+          },
+          include: { doctor: true, patient: true },
+        });
+
+        if (role === 'PATIENT' && !updatedUser.patient) {
+          await tx.patient.create({ data: { userId: updatedUser.id } });
+        }
+
+        if (role === 'DOCTOR' && !updatedUser.doctor) {
+          await tx.doctor.create({ data: { userId: updatedUser.id, specialty: 'General Physician' } });
+        }
+
+        return tx.user.findUniqueOrThrow({
+          where: { id: updatedUser.id },
+          include: { doctor: true, patient: true },
+        });
+      });
+
+      return this.buildAuthResponse(linkedUser);
+    }
+
+    const passwordHash = await bcrypt.hash(randomBytes(32).toString('hex'), 10);
+
+    const createdUser = await this.prisma.$transaction(async (tx) => {
+      const newUser = await tx.user.create({
+        data: {
+          email,
+          passwordHash,
+          fullName,
+          role,
+          dataConsentGiven: dataConsent ?? true,
+          dataConsentAt: new Date(),
+          emailVerified: true,
+          googleId,
+          avatarUrl,
+          authProvider: 'GOOGLE',
+        },
+        include: { doctor: true, patient: true },
+      });
+
+      if (role === 'PATIENT') {
+        await tx.patient.create({ data: { userId: newUser.id } });
+      } else {
+        await tx.doctor.create({ data: { userId: newUser.id, specialty: 'General Physician' } });
+      }
+
+      return tx.user.findUniqueOrThrow({
+        where: { id: newUser.id },
+        include: { doctor: true, patient: true },
+      });
+    });
+
+    return this.buildAuthResponse(createdUser);
   }
 
   async forgotPassword(email: string) {
@@ -210,4 +328,107 @@ export class AuthService {
 
     return { message: 'Password reset successfully. You can now log in with your new password.' };
   }
+
+  private async verifyGoogleCredential(credential: string) {
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+
+    if (!clientId) {
+      throw new BadRequestException('Google Sign-In is not configured');
+    }
+
+    const client = new OAuth2Client(clientId);
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: clientId,
+    });
+    const payload = ticket.getPayload();
+
+    if (!payload) {
+      throw new UnauthorizedException('Invalid Google token');
+    }
+
+    return payload;
+  }
+
+  private async findUserByGoogleId(googleId: string) {
+    const rows = await this.prisma.$queryRaw<Array<{
+      id: string;
+      email: string;
+      fullName: string;
+      role: 'PATIENT' | 'DOCTOR';
+      tokenVersion: number;
+      accountStatus: string;
+      avatarUrl: string | null;
+    }>>`
+      SELECT "id", "email", "fullName", "role", "tokenVersion", "accountStatus", "avatarUrl"
+      FROM "User"
+      WHERE "googleId" = ${googleId}
+      LIMIT 1
+    `;
+
+    if (!rows.length) {
+      return null;
+    }
+
+    const row = rows[0];
+    return this.prisma.user.findUnique({
+      where: { id: row.id },
+      include: { doctor: true, patient: true },
+    }) as Promise<{
+      id: string;
+      email: string;
+      fullName: string;
+      role: 'PATIENT' | 'DOCTOR';
+      tokenVersion: number;
+      accountStatus: string;
+      avatarUrl: string | null;
+      doctor: { degrees: string | null; experience: string | null; hospital: string | null; availability: unknown | null } | null;
+      patient: unknown;
+    } | null>;
+  }
+
+  private roleMismatchMessage(role: 'PATIENT' | 'DOCTOR') {
+    return role === 'DOCTOR'
+      ? 'This account is registered as a Doctor. Please use the Doctor login.'
+      : 'This account is registered as a Patient. Please use the Patient login.';
+  }
+
+  private buildAuthResponse(user: {
+    id: string;
+    email: string;
+    fullName: string;
+    role: 'PATIENT' | 'DOCTOR';
+    tokenVersion: number;
+    doctor?: { degrees: string | null; experience: string | null; hospital: string | null; availability: unknown | null } | null;
+  }) {
+    const accessToken = this.jwtService.sign({ sub: user.id, role: user.role, ver: user.tokenVersion });
+
+    return {
+      id: user.id,
+      email: user.email,
+      fullName: user.fullName,
+      role: user.role,
+      accessToken,
+      onboardingCompleted: this.isOnboardingCompleted(user),
+    };
+  }
+
+  private isOnboardingCompleted(user: {
+    role: 'PATIENT' | 'DOCTOR';
+    doctor?: { degrees: string | null; experience: string | null; hospital: string | null; availability: unknown | null } | null;
+  }) {
+    if (user.role === 'PATIENT') {
+      return true;
+    }
+
+    const doctorAvailability = user.doctor?.availability as Record<string, unknown> | null;
+
+    return Boolean(
+      user.doctor?.degrees &&
+      user.doctor?.experience &&
+      user.doctor?.hospital &&
+      (doctorAvailability?.medicalLicenseNumber || user.doctor?.availability),
+    );
+  }
 }
+  

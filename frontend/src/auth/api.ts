@@ -6,6 +6,7 @@ export interface AuthResponse {
   fullName: string;
   role: 'PATIENT' | 'DOCTOR';
   accessToken: string;
+  onboardingCompleted: boolean;
 }
 
 export interface SignupResponse {
@@ -28,6 +29,12 @@ export interface SignupPayload {
 export interface LoginPayload {
   email: string;
   password: string;
+}
+
+export interface GoogleAuthPayload {
+  credential: string;
+  role: 'PATIENT' | 'DOCTOR';
+  dataConsent?: boolean;
 }
 
 export interface VerifyOtpPayload {
@@ -68,6 +75,15 @@ export async function signup(payload: SignupPayload): Promise<SignupResponse> {
 
 export async function login(payload: LoginPayload): Promise<AuthResponse> {
   const res = await fetch(`${API_BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  return handleResponse<AuthResponse>(res);
+}
+
+export async function googleLogin(payload: GoogleAuthPayload): Promise<AuthResponse> {
+  const res = await fetch(`${API_BASE_URL}/auth/google`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),

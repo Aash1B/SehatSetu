@@ -7,6 +7,7 @@ import { ResendOtpDto } from './dto/resend-otp.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { GoogleAuthDto } from './dto/google-auth.dto';
 
 
 @Controller('auth')
@@ -31,6 +32,11 @@ export class AuthController {
   @Post('login')
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto.email, dto.password);
+  }
+
+  @Post('google')
+  google(@Body() dto: GoogleAuthDto) {
+    return this.authService.googleLogin(dto.credential, dto.role, dto.dataConsent);
   }
 
   @Post('forgot-password')

@@ -28,11 +28,11 @@ const StatisticsGrid: React.FC<Props> = ({ stats }) => {
         title="Average Rating"
         value={
           <div className="flex items-baseline gap-1">
-            {stats.averageRating}
-            <Star className="w-6 h-6 text-yellow-400 fill-yellow-400" />
+            {stats.averageRating === null ? '—' : stats.averageRating.toFixed(1)}
+            {stats.averageRating !== null && <Star className="w-6 h-6 text-yellow-400 fill-yellow-400" />}
           </div>
         }
-        subtitle="From patient reviews"
+        subtitle={stats.reviewsCount ? `From ${stats.reviewsCount} patient review${stats.reviewsCount === 1 ? '' : 's'}` : 'No patient reviews yet'}
         icon={Star}
         iconColorClass="text-yellow-500"
       />

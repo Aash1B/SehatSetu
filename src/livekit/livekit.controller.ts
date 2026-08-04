@@ -7,15 +7,20 @@ export class LivekitController {
   constructor(private readonly livekitService: LivekitService) {}
 
   @Get('token')
+  @UseGuards(JwtAuthGuard)
   async getToken(
-    @Query('room') room: string,
-    @Query('username') username: string,
+    @Query('appointmentId') appointmentId: string,
+    @Req() req: any,
   ) {
-    if (!room || !username) {
-      throw new BadRequestException('room and username query parameters are required');
+    if (!appointmentId) {
+      throw new BadRequestException('appointmentId query parameter is required');
     }
 
-    const token = await this.livekitService.createToken(room, username);
+    const token = await this.livekitService.createTokenForAppointment(
+      appointmentId,
+      req.user.userId,
+      req.user.role,
+    );
     const serverUrl = process.env.LIVEKIT_URL;
     if (!serverUrl) {
       throw new InternalServerErrorException('LiveKit server URL is not configured');

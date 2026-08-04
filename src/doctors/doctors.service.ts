@@ -58,7 +58,7 @@ export class DoctorsService {
   ) {}
 
   async findAll() {
-    const doctors = await prisma.doctor.findMany({ include: { user: true } });
+    const doctors = await prisma.doctor.findMany({ where: { userId: { not: null } }, include: { user: { select: { id: true, fullName: true, email: true, role: true } } } });
     return doctors.map((doctor) => ({
       ...doctor,
       name: doctor.name || doctor.user?.fullName || 'Doctor',
@@ -107,7 +107,37 @@ export class DoctorsService {
         });
       });
     }
-    return { ...doctor, name: doctor.name || user.fullName, user: { id: user.id, fullName: user.fullName, email: user.email } };
+
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const startOfTomorrow = new Date(startOfToday);
+    startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
+
+    const appointments = await prisma.appointment.findMany({
+      where: { doctorId: doctor.id },
+      select: { patientId: true, status: true, scheduledAt: true },
+    });
+    const consultations = appointments.filter((appointment) => appointment.status !== 'CANCELLED');
+    const completed = consultations.filter((appointment) => appointment.status === 'COMPLETED');
+    const todaysAppointments = consultations.filter((appointment) =>
+      appointment.scheduledAt &&
+      appointment.scheduledAt >= startOfToday &&
+      appointment.scheduledAt < startOfTomorrow,
+    ).length;
+
+    return {
+      ...doctor,
+      name: user.fullName || doctor.name || 'Doctor',
+      user: { id: user.id, fullName: user.fullName, email: user.email },
+      stats: {
+        totalConsultations: consultations.length,
+        completedConsultations: completed.length,
+        patientsTreated: new Set(completed.map((appointment) => appointment.patientId).filter(Boolean)).size,
+        todaysAppointments,
+        averageRating: doctor.reviewsCount && doctor.reviewsCount > 0 ? doctor.rating : null,
+        reviewsCount: doctor.reviewsCount || 0,
+      },
+    };
   }
 
   async recommendDoctors(issue: string, symptoms: string[] = []) {
@@ -155,7 +185,7 @@ export class DoctorsService {
       where: {
         specialty: specialtyFilter,
       },
-      include: { user: true },
+      include: { user: { select: { id: true, fullName: true, email: true, role: true } } },
     });
 
     // If the requested specialist is unavailable, route to primary care rather
@@ -169,7 +199,7 @@ export class DoctorsService {
           },
         },
         take: 5,
-        include: { user: true },
+        include: { user: { select: { id: true, fullName: true, email: true, role: true } } },
       });
     }
 

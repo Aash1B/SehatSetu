@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { setCurrentPage } from '../store/uiSlice';
-import { doctorsData, type Doctor } from '../data/doctorsData';
+import type { Doctor } from '../data/doctorsData';
 import { fetchDoctors, recommendDoctorsApi, type RecommendationResult } from '../services/doctorApi';
 import Footer from '../components/Footer';
 import { getPatientDashboard } from '../services/patientApi';
@@ -136,6 +136,21 @@ const BookAppointmentPage: React.FC = () => {
   const [aiRecommendation, setAiRecommendation] = useState<RecommendationResult | null>(null);
   const [loadingRecommendation, setLoadingRecommendation] = useState<boolean>(false);
   const [showAllDoctors, setShowAllDoctors] = useState<boolean>(false);
+  const [allDoctorsList, setAllDoctorsList] = useState<Doctor[]>([]);
+
+    // Load registered doctors from the backend.
+  useEffect(() => {
+    (async () => {
+      try {
+        const fetched = await fetchDoctors();
+        if (fetched && fetched.length > 0) {
+          setAllDoctorsList(fetched);
+        }
+      } catch (err) {
+        console.error('BookAppointment: registered doctors could not be loaded:', err);
+      }
+    })();
+  }, []);
   const [clockNow, setClockNow] = useState(() => new Date());
 
   const [formData, setFormData] = useState<BookingFormData>({
@@ -178,7 +193,8 @@ const BookAppointmentPage: React.FC = () => {
     }).then(async (response) => {
       if (!response.ok) throw new Error('Unable to load the appointment being rescheduled.');
       const appointment = await response.json();
-      const selectedDoctor = doctorsData.find((doctor) => doctor.id === appointment.doctorId) || null;
+      const availableDoctors = await fetchDoctors();
+      const selectedDoctor = availableDoctors.find((doctor) => doctor.id === appointment.doctorId) || null;
       setFormData((current) => ({
         ...current,
         healthConcern: appointment.healthConcern || '', symptoms: appointment.symptoms || [],
@@ -199,10 +215,10 @@ const BookAppointmentPage: React.FC = () => {
           const matchingSpecialists = rec.recommendedDoctors.filter((doctor) =>
             doctorMatchesCategory(doctor, rec.recommendedCategory),
           );
-          const localSpecialists = doctorsData.filter((doctor) =>
+          const localSpecialists = allDoctorsList.filter((doctor) =>
             doctorMatchesCategory(doctor, rec.recommendedCategory),
           );
-          const generalPhysicians = doctorsData.filter((doctor) =>
+          const generalPhysicians = allDoctorsList.filter((doctor) =>
             doctorMatchesCategory(doctor, 'General Physician'),
           );
           const recommended = matchingSpecialists.length
@@ -220,15 +236,12 @@ const BookAppointmentPage: React.FC = () => {
 
   useEffect(() => {
     if (id && id !== 'new') {
-      fetchDoctors().then((doctors) => {
-        const match = doctors.find((doctor) => doctor.id === id) || doctorsData.find((doctor) => doctor.id === id);
-        if (match) setFormData((current) => ({ ...current, selectedDoctor: match }));
-      }).catch(() => {
-        const match = doctorsData.find((doctor) => doctor.id === id);
-        if (match) setFormData((current) => ({ ...current, selectedDoctor: match }));
-      });
+      const match = allDoctorsList.find(d => d.id === id);
+      if (match) {
+        setFormData(prev => ({ ...prev, selectedDoctor: match }));
+      }
     }
-  }, [id]);
+  }, [id, allDoctorsList]);
 
   useEffect(() => {
     const docId = formData.selectedDoctor?.id;
@@ -251,7 +264,7 @@ const BookAppointmentPage: React.FC = () => {
     }
   }, [formData.selectedDoctor?.id, formData.selectedDate]);
 
-  const filteredStep2Doctors = doctorsData.filter(doc => {
+  const filteredStep2Doctors = allDoctorsList.filter(doc => {
     const matchesSearch = 
       doc.name.toLowerCase().includes(step2SearchTerm.toLowerCase()) ||
       doc.specialty.toLowerCase().includes(step2SearchTerm.toLowerCase()) ||
@@ -311,7 +324,7 @@ const BookAppointmentPage: React.FC = () => {
       setIsSubmitting(true);
       try {
         const payload = {
-          doctorId: formData.selectedDoctor?.id || (rescheduleId ? undefined : 'd1'),
+          doctorId: formData.selectedDoctor?.id,
           patientName: formData.patientName,
           patientAge: formData.patientAge,
           patientGender: formData.patientGender,

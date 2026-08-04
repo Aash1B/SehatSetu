@@ -188,10 +188,10 @@ export class PatientService {
       },
       orderBy: { createdAt: 'desc' },
       include: {
-        doctor: { include: { user: true } },
+        doctor: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } },
         ehrRecord: true,
         prescription: {
-          include: { doctor: { include: { user: true } } },
+          include: { doctor: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } } },
         },
         payment: true,
       },
@@ -206,7 +206,7 @@ export class PatientService {
         where: { patientId: profile.id },
         orderBy: { createdAt: 'desc' },
         include: {
-          doctor: { include: { user: true } },
+          doctor: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } },
           appointment: { include: { ehrRecord: true } },
         },
       }),
