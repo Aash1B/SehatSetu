@@ -14,7 +14,7 @@ const services = [
     title: 'Specialist Referral',
     description: 'Get connected to the right specialist for your condition.',
     icon: '➡️',
-    route: '/patient/search',
+    route: '/patient/book/new',
   },
   {
     id: 'emergency',
@@ -30,7 +30,7 @@ const ServicesSection: React.FC = () => {
 
   const handleCardClick = (id: string, route: string) => {
     if (id === 'lab_nearby') {
-      window.open('https://www.google.com/search?q=lab+tests+nearby', '_blank', 'noopener,noreferrer');
+      window.open('https://www.google.com/maps/search/?api=1&query=lab+tests+nearby', '_blank', 'noopener,noreferrer');
       return;
     }
     if (id === 'emergency') {

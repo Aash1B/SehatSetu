@@ -351,28 +351,8 @@ export class AuthService {
   }
 
   private async findUserByGoogleId(googleId: string) {
-    const rows = await this.prisma.$queryRaw<Array<{
-      id: string;
-      email: string;
-      fullName: string;
-      role: 'PATIENT' | 'DOCTOR';
-      tokenVersion: number;
-      accountStatus: string;
-      avatarUrl: string | null;
-    }>>`
-      SELECT "id", "email", "fullName", "role", "tokenVersion", "accountStatus", "avatarUrl"
-      FROM "User"
-      WHERE "googleId" = ${googleId}
-      LIMIT 1
-    `;
-
-    if (!rows.length) {
-      return null;
-    }
-
-    const row = rows[0];
     return this.prisma.user.findUnique({
-      where: { id: row.id },
+      where: { googleId },
       include: { doctor: true, patient: true },
     }) as Promise<{
       id: string;

@@ -107,11 +107,11 @@ export class AppointmentsService {
         where: {
           doctorId: doctor.id,
           scheduledAt,
-          status: { in: ['SCHEDULED', 'WAITING'] },
+          status: { notIn: ['CANCELLED', 'REJECTED', 'EXPIRED'] },
         },
         select: { id: true },
       });
-      if (occupiedSlot) throw new ConflictException('This appointment slot was just booked. Please choose another time.');
+      if (occupiedSlot) throw new ConflictException('This appointment slot is already booked. Please choose another time.');
 
       // 5. Create Appointment in DB
       const appointment = await tx.appointment.create({
@@ -174,7 +174,9 @@ export class AppointmentsService {
       return createdAppt;
     }).catch((error) => {
       if (error instanceof HttpException) throw error;
-      if (error?.code === 'P2034') throw new ConflictException('This appointment slot was just booked. Please choose another time.');
+      if (error?.code === 'P2002' || error?.code === 'P2034') {
+        throw new ConflictException('This appointment slot is already booked. Please choose another time.');
+      }
       console.error('Error booking appointment in transaction:', error);
       throw new InternalServerErrorException('Failed to book appointment');
     });
@@ -355,20 +357,41 @@ export class AppointmentsService {
       throw new BadRequestException('Appointments must be scheduled at least 30 minutes in advance');
     }
 
-    const updated = await prisma.appointment.update({
-      where: { id: appointmentId },
-      data: {
-        scheduledAt,
-        date: data.date,
-        timeSlot: data.timeSlot,
-        doctorId: data.doctorId || appointment.doctorId,
-        status: 'SCHEDULED',
-      },
-      include: { doctor: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } }, prescription: true, ehrRecord: true },
+    return prisma.$transaction(async (tx) => {
+      const existingConflict = await tx.appointment.findFirst({
+        where: {
+          doctorId: data.doctorId || appointment.doctorId,
+          scheduledAt,
+          status: { notIn: ['CANCELLED', 'REJECTED', 'EXPIRED'] },
+          id: { not: appointmentId },
+        },
+      });
+      if (existingConflict) {
+        throw new ConflictException('The requested reschedule time slot is already booked');
+      }
+
+      return tx.appointment.update({
+        where: { id: appointmentId },
+        data: {
+          scheduledAt,
+          date: data.date,
+          timeSlot: data.timeSlot,
+          doctorId: data.doctorId || appointment.doctorId,
+          status: 'SCHEDULED',
+        },
+        include: { doctor: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } }, prescription: true, ehrRecord: true },
+      });
+    }, { isolationLevel: 'Serializable' }).then(async (updated) => {
+      await this.scheduleStandardReminders(updated);
+      if (updated.isFollowUp && updated.emailRemindersEnabled) await this.scheduleFollowUpReminders(updated);
+      return updated;
+    }).catch((err) => {
+      if (err instanceof HttpException) throw err;
+      if (err?.code === 'P2002' || err?.code === 'P2034') {
+        throw new ConflictException('The requested reschedule time slot is already booked');
+      }
+      throw new InternalServerErrorException('Failed to reschedule appointment');
     });
-    await this.scheduleStandardReminders(updated);
-    if (updated.isFollowUp && updated.emailRemindersEnabled) await this.scheduleFollowUpReminders(updated);
-    return updated;
   }
 
   async getAppointmentsForDoctor(doctorId: string) {

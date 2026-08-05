@@ -18,8 +18,6 @@ function mapDoctorRow(doctor: any): Doctor {
     name,
     specialty: doctor.specialty || 'General Physician',
     experience: doctor.experience || 'Not provided',
-    rating: doctor.reviewsCount > 0 && doctor.rating ? doctor.rating : 0,
-    reviewsCount: doctor.reviewsCount || 0,
     hospital: doctor.hospital || 'Not provided',
     location: doctor.location || 'Not provided',
     imageUrl: doctor.imageUrl || '',

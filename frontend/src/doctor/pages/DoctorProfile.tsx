@@ -62,9 +62,7 @@ const DoctorProfile: React.FC = () => {
           totalConsultations: 0,
           patientsTreated: 0,
           todaysAppointments: 0,
-          averageRating: null,
           completedConsultations: 0,
-          reviewsCount: 0,
         },
       };
       setProfile(unavailableProfile);

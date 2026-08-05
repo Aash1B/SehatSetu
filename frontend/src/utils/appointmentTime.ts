@@ -15,7 +15,7 @@ export interface AppointmentTimeStatus {
 
 // Temporary QA switch: keep appointment-specific rooms and authorization,
 // but allow the assigned doctor and patient to join outside the scheduled window.
-export const TEMP_DISABLE_CONSULTATION_TIME_WINDOW = false;
+export const TEMP_DISABLE_CONSULTATION_TIME_WINDOW = true;
 
 /**
  * Parses appointment date and time strings or ISO timestamps into a JavaScript Date object (Laptop System Time)

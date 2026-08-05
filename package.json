@@ -19,6 +19,8 @@
     "lint": "eslint .",
     "prisma:generate": "prisma generate",
     "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:seed": "tsx prisma/seed.ts",
+    "verify:doctor-images": "tsx scripts/verify-doctor-images.ts",
     "postinstall": "prisma generate",
     "start:prod": "node dist/main.js"
   },
@@ -64,6 +66,7 @@
     "@vitejs/plugin-react": "^6.0.4",
     "concurrently": "^10.0.4",
     "dotenv": "^17.4.2",
+    "tsx": "^4.23.5",
     "typescript": "^5.5.4"
   }
 }

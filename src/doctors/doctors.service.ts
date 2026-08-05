@@ -58,7 +58,13 @@ export class DoctorsService {
   ) {}
 
   async findAll() {
-    const doctors = await prisma.doctor.findMany({ where: { userId: { not: null } }, include: { user: { select: { id: true, fullName: true, email: true, role: true } } } });
+    const doctors = await prisma.doctor.findMany({
+      where: {
+        userId: { not: null },
+        imageUrl: { not: null },
+      },
+      include: { user: { select: { id: true, fullName: true, email: true, role: true } } },
+    });
     return doctors.map((doctor) => ({
       ...doctor,
       name: doctor.name || doctor.user?.fullName || 'Doctor',
@@ -134,8 +140,6 @@ export class DoctorsService {
         completedConsultations: completed.length,
         patientsTreated: new Set(completed.map((appointment) => appointment.patientId).filter(Boolean)).size,
         todaysAppointments,
-        averageRating: doctor.reviewsCount && doctor.reviewsCount > 0 ? doctor.rating : null,
-        reviewsCount: doctor.reviewsCount || 0,
       },
     };
   }
@@ -177,13 +181,15 @@ export class DoctorsService {
 
     // Extract core keyword for matching database specialty (e.g., 'Dermatologist')
     const searchKeyword = recommendedCategory.split(' ')[0];
-    const specialtyFilter = recommendedCategory.toLowerCase().includes('ent')
-      ? { startsWith: 'ENT', mode: 'insensitive' as const }
-      : { contains: searchKeyword, mode: 'insensitive' as const };
+    const specialtyFilter = { startsWith: searchKeyword, mode: 'insensitive' as const };
 
     let doctors = await prisma.doctor.findMany({
       where: {
         specialty: specialtyFilter,
+        profileCompleted: true,
+        isActive: true,
+        isVerified: true,
+        imageUrl: { not: null },
       },
       include: { user: { select: { id: true, fullName: true, email: true, role: true } } },
     });
@@ -197,6 +203,10 @@ export class DoctorsService {
             contains: 'General Physician',
             mode: 'insensitive',
           },
+          profileCompleted: true,
+          isActive: true,
+          isVerified: true,
+          imageUrl: { not: null },
         },
         take: 5,
         include: { user: { select: { id: true, fullName: true, email: true, role: true } } },

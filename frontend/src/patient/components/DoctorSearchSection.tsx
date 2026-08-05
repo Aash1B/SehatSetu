@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import type { Doctor } from '../data/doctorsData';
+import { doctorsData, type Doctor } from '../data/doctorsData';
 import { fetchDoctors } from '../services/doctorApi';
 import CustomSelect, { type OptionItem } from './CustomSelect';
 import { useNavigate } from 'react-router-dom';
@@ -67,12 +67,25 @@ const DoctorSearchSection: React.FC = () => {
   const [favorites, setFavorites] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  const handleImageError = (event: React.SyntheticEvent<HTMLImageElement>) => {
+    const image = event.currentTarget;
+    const defaultDoctor = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23cccccc"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
+    if (image.src === defaultDoctor) return;
+    image.onerror = null;
+    image.src = defaultDoctor;
+  };
+
   useEffect(() => {
     fetchDoctors().then(docs => {
       if (docs && docs.length > 0) {
         setDoctorsList(docs);
+      } else {
+        setDoctorsList(doctorsData);
       }
-    }).catch(err => console.error('Could not load registered doctors', err));
+    }).catch(err => {
+      console.error('Could not load registered doctors', err);
+      setDoctorsList(doctorsData);
+    });
   }, []);
 
   const toggleFavorite = (id: string) => {
@@ -88,8 +101,7 @@ const DoctorSearchSection: React.FC = () => {
       (doc.location || '').toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesSpecialty = specialtyFilter === 'All' || 
-      doc.specialty.toLowerCase().includes(specialtyFilter.toLowerCase().split(' ')[0]) ||
-      specialtyFilter.toLowerCase().includes(doc.specialty.toLowerCase().split(' ')[0]);
+      doc.specialty.toLowerCase().split(' ')[0] === specialtyFilter.toLowerCase().split(' ')[0];
     const matchesLocation = locationFilter === 'All' || doc.location === locationFilter;
 
     return matchesSearch && matchesSpecialty && matchesLocation;
@@ -232,7 +244,7 @@ const DoctorSearchSection: React.FC = () => {
             {visibleDoctors.map((doctor: Doctor) => (
               <div key={doctor.id} className="doctor-card-item">
                 <div className="doctor-card-image-wrap">
-                  <img src={doctor.imageUrl} alt={doctor.name} className="doctor-avatar-img" />
+                  <img src={doctor.imageUrl} alt={doctor.name} className="doctor-avatar-img" loading="lazy" onError={handleImageError} />
                   <button 
                     type="button" 
                     className={`favorite-btn ${favorites.includes(doctor.id) ? 'active' : ''}`}
@@ -247,12 +259,6 @@ const DoctorSearchSection: React.FC = () => {
                   <h4 className="doctor-name">{doctor.name}</h4>
                   <p className="doctor-specialty">{doctor.specialty}</p>
                   <p className="doctor-experience-tag">{doctor.experience}</p>
-
-                  <div className="doctor-rating-row">
-                    <span className="star-icon">⭐</span>
-                    <span className="rating-score">{doctor.rating}</span>
-                    <span className="reviews-count">({doctor.reviewsCount} reviews)</span>
-                  </div>
 
                   <p className="doctor-hospital-location">
                     <span className="location-pin">📍</span>

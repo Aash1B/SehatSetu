@@ -8,7 +8,7 @@ export class HospitalsService {
       headers: {
         'Content-Type': 'application/json',
         'X-Goog-Api-Key': process.env.GOOGLE_MAPS_API_KEY as string,
-        'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.currentOpeningHours.openNow,places.internationalPhoneNumber',
+        'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.location,places.currentOpeningHours.openNow,places.internationalPhoneNumber',
       },
       body: JSON.stringify({
         includedTypes: ['hospital'],
@@ -36,8 +36,6 @@ export class HospitalsService {
       address: place.formattedAddress,
       latitude: place.location?.latitude,
       longitude: place.location?.longitude,
-      rating: place.rating,
-      ratingCount: place.userRatingCount,
       openNow: place.currentOpeningHours?.openNow,
       phone: place.internationalPhoneNumber,
     }));

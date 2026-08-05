@@ -85,7 +85,7 @@ model Patient {
   phone             String?
   weight            String?
   profileImagePath  String?
-  abhaId            String?          @unique
+  abhaId            String?         @unique
   appointments      Appointment[]
   ehrRecords        EhrRecord[]
   medicalReports    MedicalReport[]
@@ -94,28 +94,40 @@ model Patient {
   prescriptions     Prescription[]
 }
 
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
 model Doctor {
-  id              String         @id @default(uuid())
-  userId          String?        @unique
-  specialty       String
-  consultationFee Int?
-  availableToday  Boolean?
-  degrees         String?
-  experience      String?
-  fee             String?
-  hospital        String?
-  imageUrl        String?
-  location        String?
-  name            String?
-  priorityLevel   String?
-  priorityScore   Int?
-  rating          Float?
-  reviewsCount    Int?
-  tags            String[]
-  availability    Json?
-  appointments    Appointment[]
-  user            User?          @relation(fields: [userId], references: [id])
-  prescriptions   Prescription[]
+  id               String         @id @default(uuid())
+  userId           String?        @unique
+  name             String?
+  gender           Gender?
+  specialty        String
+  consultationFee  Int?
+  availableToday   Boolean?       @default(true)
+  degrees          String?
+  experience       String?
+  fee              String?
+  hospital         String?
+  imageUrl         String?
+  imageStoragePath String?
+  location         String?
+  priorityLevel    String?
+  priorityScore    Int?
+  rating           Float?         @default(4.8)
+  reviewsCount     Int?           @default(12)
+  tags             String[]
+  availability     Json?
+  profileCompleted Boolean        @default(false)
+  isVerified       Boolean        @default(false)
+  isActive         Boolean        @default(true)
+  appointments     Appointment[]
+  user             User?          @relation(fields: [userId], references: [id])
+  prescriptions    Prescription[]
 }
 
 model Appointment {
@@ -152,6 +164,8 @@ model Appointment {
   medicalReports        MedicalReport[]
   payment               Payment?
   prescription          Prescription?
+
+  @@index([doctorId, date, timeSlot])
 }
 
 model MedicalReport {

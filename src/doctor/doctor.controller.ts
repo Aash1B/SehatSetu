@@ -52,6 +52,21 @@ export class DoctorController {
     return this.doctorService.saveOnboardingProfile(req.user.userId, onboardingData);
   }
 
+  @Post(':id/profile-image')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('DOCTOR')
+  @UseInterceptors(FileInterceptor('image', { limits: { fileSize: 5 * 1024 * 1024, files: 1 } }))
+  async uploadProfileImage(
+    @UploadedFile() file: any,
+    @Req() req: any,
+  ) {
+    if (!file) throw new BadRequestException('Profile image file is required');
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype)) {
+      throw new BadRequestException('Only JPEG, PNG, and WebP image formats are allowed');
+    }
+    return this.doctorService.uploadProfileImageToSupabase(file, req.user.userId);
+  }
+
   @Post(':id/documents/upload')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('DOCTOR')
