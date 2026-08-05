@@ -27,7 +27,7 @@ export default function DoctorLogin() {
       if (requestedPath && requestedPath.startsWith('/doctor/') && requestedPath !== '/doctor/onboarding' && requestedPath !== '/doctor/login') {
         navigate(requestedPath, { replace: true });
       } else {
-        navigate('/doctor/dashboard', { replace: true });
+        navigate(res.onboardingCompleted ? '/doctor/dashboard' : '/doctor/onboarding', { replace: true });
       }
     } catch (err: any) {
       if (err.message.toLowerCase().includes('verify your email')) {

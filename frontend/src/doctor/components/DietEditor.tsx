@@ -12,6 +12,8 @@ interface DietRec {
 
 interface DietEditorProps {
   className?: string;
+  isListening?: boolean;
+  onChange?: (items: string[]) => void;
 }
 
 const DietEditor: React.FC<DietEditorProps> = ({ className }) => {

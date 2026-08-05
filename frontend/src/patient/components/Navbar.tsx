@@ -84,15 +84,7 @@ const Navbar: React.FC = () => {
           <button
             type="button"
             className="btn-get-started cursor-pointer"
-            onClick={() => {
-              if (!isAuthenticated) {
-                navigate('/patient/login');
-              } else if (isDoctor) {
-                navigate('/doctor/dashboard');
-              } else {
-                navigate('/patient/dashboard');
-              }
-            }}
+            onClick={() => navigate('/patient/dashboard')}
           >
             Dashboard
           </button>

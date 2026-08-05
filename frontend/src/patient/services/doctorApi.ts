@@ -3,7 +3,8 @@
 // Fallback: Local NestJS backend proxy (/api/doctors)
 
 import { doctorsData, type Doctor } from '../data/doctorsData';
-import { supabase } from '../../lib/supabaseClient';
+
+const supabase: any = null;
 
 const API_BASE = '/api/doctors';
 

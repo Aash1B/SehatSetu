@@ -61,14 +61,26 @@ export class DoctorsService {
     const doctors = await prisma.doctor.findMany({
       where: {
         userId: { not: null },
-        imageUrl: { not: null },
       },
       include: { user: { select: { id: true, fullName: true, email: true, role: true } } },
     });
-    return doctors.map((doctor) => ({
-      ...doctor,
-      name: doctor.name || doctor.user?.fullName || 'Doctor',
-    }));
+    return doctors.map((doctor) => {
+      const rawName = doctor.user?.fullName || doctor.name || 'Doctor';
+      const displayName = rawName.startsWith('Dr.') ? rawName : `Dr. ${rawName}`;
+      return {
+        ...doctor,
+        name: displayName,
+        imageUrl:
+          doctor.imageUrl ||
+          'https://images.unsplash.com/photo-1594824813566-88855376a911?auto=format&fit=crop&q=80&w=400',
+        fee: doctor.fee || `₹${doctor.consultationFee || 500}`,
+        experience: doctor.experience || '5+ Years Experience',
+        degrees: doctor.degrees || 'MBBS',
+        priorityScore: doctor.priorityScore ?? 150,
+        priorityLevel: doctor.priorityLevel || 'P1',
+        availableToday: doctor.availableToday ?? true,
+      };
+    });
   }
 
   async findOne(id: string) {
@@ -186,10 +198,7 @@ export class DoctorsService {
     let doctors = await prisma.doctor.findMany({
       where: {
         specialty: specialtyFilter,
-        profileCompleted: true,
         isActive: true,
-        isVerified: true,
-        imageUrl: { not: null },
       },
       include: { user: { select: { id: true, fullName: true, email: true, role: true } } },
     });
@@ -203,10 +212,7 @@ export class DoctorsService {
             contains: 'General Physician',
             mode: 'insensitive',
           },
-          profileCompleted: true,
           isActive: true,
-          isVerified: true,
-          imageUrl: { not: null },
         },
         take: 5,
         include: { user: { select: { id: true, fullName: true, email: true, role: true } } },

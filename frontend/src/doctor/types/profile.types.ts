@@ -3,6 +3,7 @@ export interface ProfessionalStats {
   patientsTreated: number;
   todaysAppointments: number;
   completedConsultations: number;
+  averageRating?: number;
 }
 
 export interface AvailabilitySlot {

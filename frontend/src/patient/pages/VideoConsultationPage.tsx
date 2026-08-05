@@ -48,29 +48,37 @@ const VideoConsultationPage: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        const authHeaders = { Authorization: `Bearer ${getToken()}` };
-        const appointmentResponse = await fetch(`/api/appointments/${encodeURIComponent(consultationId)}`, { headers: authHeaders });
-        if (!appointmentResponse.ok) throw new Error('Unable to load consultation details');
-        const appointmentData = await appointmentResponse.json() as ConsultationAppointment;
-        setAppointment(appointmentData);
-        const prescription = appointmentData.prescription;
-        if (prescription) {
-          setPatientPrescription({
-            id: prescription.id,
-            doctorName: appointmentData.doctor?.name || appointmentData.doctor?.user?.fullName || 'Doctor',
-            doctorSpecialty: appointmentData.doctor?.specialty || '',
-            doctorHospital: appointmentData.doctor?.hospital || 'SehatSetu Digital Health Clinic',
-            patientName: appointmentData.patient?.user?.fullName || appointmentData.patientName || 'Patient',
-            patientAge: appointmentData.patientAge || appointmentData.patient?.age || '',
-            patientGender: appointmentData.patientGender || appointmentData.patient?.gender || '',
-            date: new Date(prescription.createdAt).toLocaleDateString(),
-            diagnosis: appointmentData.ehrRecord?.diagnosis || appointmentData.healthConcern || '',
-            symptoms: appointmentData.symptoms || [],
-            medications: Array.isArray(prescription.medicines) ? prescription.medicines : [],
-            dietAdvice: prescription.dietAdvice || '',
-            notes: appointmentData.ehrRecord?.notes || '',
-          });
+        const rawToken = getToken();
+        const authHeaders: Record<string, string> = rawToken ? { Authorization: `Bearer ${rawToken}` } : {};
+        
+        try {
+          const appointmentResponse = await fetch(`/api/appointments/${encodeURIComponent(consultationId)}`, { headers: authHeaders });
+          if (appointmentResponse.ok) {
+            const appointmentData = await appointmentResponse.json() as ConsultationAppointment;
+            setAppointment(appointmentData);
+            const prescription = appointmentData.prescription;
+            if (prescription) {
+              setPatientPrescription({
+                id: prescription.id,
+                doctorName: appointmentData.doctor?.name || appointmentData.doctor?.user?.fullName || 'Doctor',
+                doctorSpecialty: appointmentData.doctor?.specialty || '',
+                doctorHospital: appointmentData.doctor?.hospital || 'SehatSetu Digital Health Clinic',
+                patientName: appointmentData.patient?.user?.fullName || appointmentData.patientName || 'Patient',
+                patientAge: appointmentData.patientAge || appointmentData.patient?.age || '',
+                patientGender: appointmentData.patientGender || appointmentData.patient?.gender || '',
+                date: new Date(prescription.createdAt).toLocaleDateString(),
+                diagnosis: appointmentData.ehrRecord?.diagnosis || appointmentData.healthConcern || '',
+                symptoms: appointmentData.symptoms || [],
+                medications: Array.isArray(prescription.medicines) ? prescription.medicines : [],
+                dietAdvice: prescription.dietAdvice || '',
+                notes: appointmentData.ehrRecord?.notes || '',
+              });
+            }
+          }
+        } catch (appErr) {
+          console.warn('[Consultation] Could not load appointment details:', appErr);
         }
+
         const resp = await fetch(`/api/livekit/token?appointmentId=${encodeURIComponent(consultationId)}`, {
           headers: authHeaders,
         });
@@ -79,6 +87,7 @@ const VideoConsultationPage: React.FC = () => {
         if (!data.token || !data.serverUrl) throw new Error('Video-room configuration is incomplete');
         setToken(data.token);
         setServerUrl(data.serverUrl);
+        setConnectionError('');
       } catch (e) {
         console.error(e);
         setConnectionError(e instanceof Error ? e.message : 'Unable to connect to the video room');

@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = '';
 
 export interface AuthResponse {
   id: string;
@@ -57,9 +57,15 @@ function extractErrorMessage(data: any): string {
 }
 
 async function handleResponse<T>(res: Response): Promise<T> {
-  const data = await res.json();
+  const text = await res.text();
+  let data: any = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch (err) {
+    console.error('Invalid JSON response from server:', text);
+  }
   if (!res.ok) {
-    throw new Error(extractErrorMessage(data));
+    throw new Error(extractErrorMessage(data) || `Server returned ${res.status}`);
   }
   return data;
 }

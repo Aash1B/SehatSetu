@@ -9,6 +9,8 @@ export interface Doctor {
   profileImage?: string;
   availableSlots?: TimeSlot[];
   consultationFee: number;
+  rating?: number;
+  reviewsCount?: number;
 }
 
 export interface TimeSlot {

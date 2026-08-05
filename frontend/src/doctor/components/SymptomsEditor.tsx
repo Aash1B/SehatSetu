@@ -13,6 +13,8 @@ interface Symptom {
 interface SymptomsEditorProps {
   className?: string;
   aiExtractedSymptoms?: string[];
+  isListening?: boolean;
+  onChange?: (items: string[]) => void;
 }
 
 const SymptomsEditor: React.FC<SymptomsEditorProps> = ({ className, aiExtractedSymptoms }) => {

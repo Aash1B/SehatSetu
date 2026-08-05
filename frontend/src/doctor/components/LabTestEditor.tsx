@@ -12,6 +12,8 @@ interface LabTest {
 
 interface LabTestEditorProps {
   className?: string;
+  isListening?: boolean;
+  onChange?: (items: string[]) => void;
 }
 
 const LabTestEditor: React.FC<LabTestEditorProps> = ({ className }) => {

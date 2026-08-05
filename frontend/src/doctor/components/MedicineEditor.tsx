@@ -13,6 +13,8 @@ interface Medicine {
 interface MedicineEditorProps {
   className?: string;
   aiExtractedMedicines?: string[];
+  isListening?: boolean;
+  onChange?: (items: string[]) => void;
 }
 
 const MedicineEditor: React.FC<MedicineEditorProps> = ({ className, aiExtractedMedicines }) => {

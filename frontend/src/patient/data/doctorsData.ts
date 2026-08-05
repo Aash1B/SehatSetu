@@ -43,13 +43,16 @@ export interface Doctor {
   id: string;
   name: string;
   specialty: string;
-  experience: string;  hospital: string;
+  experience: string;
+  hospital: string;
   location: string;
   imageUrl: string;
   fee: string;
   availableToday: boolean;
   priorityLevel: PriorityLevel;
   priorityScore: number;
+  rating?: number;
+  reviewsCount?: number;
   degrees?: string;
   tags?: string[];
 }

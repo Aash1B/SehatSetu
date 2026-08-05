@@ -36,6 +36,56 @@ export class LivekitService {
     return await at.toJwt();
   }
 
+  async createTokenForAppointment(appointmentId: string, userId: string, role: string): Promise<string> {
+    const apiKey = process.env.LIVEKIT_API_KEY;
+    const apiSecret = process.env.LIVEKIT_API_SECRET;
+
+    if (!apiKey || !apiSecret) {
+      throw new InternalServerErrorException('LiveKit credentials are not configured');
+    }
+
+    let appointment: any = null;
+    try {
+      if (appointmentId && appointmentId.trim().length > 0) {
+        appointment = await prisma.appointment.findUnique({
+          where: { id: appointmentId },
+          include: {
+            doctor: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } },
+            patient: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } },
+          },
+        });
+      }
+    } catch (dbErr: any) {
+      console.warn(`[LiveKit] Appointment DB lookup warning for ${appointmentId}:`, dbErr?.message || dbErr);
+    }
+
+    const isDoctor = role === 'DOCTOR';
+    const participantName = appointment
+      ? (isDoctor
+          ? appointment.doctor?.user?.fullName || appointment.doctor?.name || 'Doctor'
+          : appointment.patient?.user?.fullName || appointment.patientName || 'Patient')
+      : (isDoctor ? 'Doctor' : 'Patient');
+
+    const roomName = `consultation-${appointmentId}`;
+    const uniqueIdentity = `${role ? role.toLowerCase() : 'user'}_${userId || 'guest'}_${Math.random().toString(36).substring(2, 7)}`;
+
+    const at = new AccessToken(apiKey, apiSecret, {
+      identity: uniqueIdentity,
+      name: participantName,
+      ttl: '2h',
+    });
+
+    at.addGrant({
+      roomJoin: true,
+      room: roomName,
+      canPublish: true,
+      canSubscribe: true,
+      canPublishData: true,
+    });
+
+    return await at.toJwt();
+  }
+
   async enqueueConsultationEnd(appointmentId: string, notes?: string, durationSeconds?: number) {
     try {
       const job = await this.consultationQueue.add('process-consultation-end', {

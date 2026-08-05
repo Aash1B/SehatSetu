@@ -266,6 +266,7 @@ export class DoctorService {
     }
     if (doctorData.languagesSpoken) cleanedDoctorData.tags = doctorData.languagesSpoken;
     if (doctorData.availability) cleanedDoctorData.availability = doctorData.availability;
+    if (doctorData.profileCompleted !== undefined) cleanedDoctorData.profileCompleted = Boolean(doctorData.profileCompleted);
     cleanedDoctorData.availableToday = true;
 
     if (doctor) {
