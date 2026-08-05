@@ -79,6 +79,7 @@ export class DoctorsService {
         priorityScore: doctor.priorityScore ?? 150,
         priorityLevel: doctor.priorityLevel || 'P1',
         availableToday: doctor.availableToday ?? true,
+        imagePosition: doctor.imagePosition || '50% 20%',
       };
     });
   }

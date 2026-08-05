@@ -33,14 +33,6 @@ body,
   --color-blue-600: #223382;
   --color-blue-700: #223382;
   --color-blue-800: #223382;
-  --color-blue-900: #223382;
   --color-blue-950: #223382;
   --color-deadly-depths: #0B0F19;
-}
-
-@media (min-width: 1200px) {
-  .max-w-7xl,
-  .max-w-6xl {
-    max-width: 100% !important;
-  }
 }

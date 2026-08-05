@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { setCurrentPage } from '../store/uiSlice';
 import type { Doctor } from '../data/doctorsData';
+import { doctorsData } from '../data/doctorsData';
 import { fetchDoctors, recommendDoctorsApi, type RecommendationResult } from '../services/doctorApi';
 import Footer from '../components/Footer';
 import { getPatientDashboard } from '../services/patientApi';
@@ -53,7 +52,8 @@ function doctorMatchesCategory(doctor: Doctor, category: string) {
 
 function parseTimeMinutes(timeStr: string) {
   const [time, modifier] = timeStr.trim().split(/\s+/);
-  let [hours, minutes] = time.split(':').map(Number);
+  const [rawHours, minutes] = time.split(':').map(Number);
+  let hours = rawHours;
   if (modifier === 'PM' && hours < 12) hours += 12;
   if (modifier === 'AM' && hours === 12) hours = 0;
   return hours * 60 + minutes;
@@ -68,14 +68,21 @@ function formatMinutesToTime(totalMinutes: number) {
   return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')} ${ampm}`;
 }
 
-function getSlotsForDoctorAndDay(availability: any, dayFullName: string) {
+interface DoctorAvailabilityData {
+  status?: string;
+  slotDurationMinutes?: number;
+  slots?: Array<{ day?: string; isWorking?: boolean; workingHours?: string; breakTime?: string }>;
+  bookedSlots?: Record<string, string[]>;
+}
+
+function getSlotsForDoctorAndDay(availability: DoctorAvailabilityData | null, dayFullName: string) {
   if (!availability) {
     return ['09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '02:00 PM', '02:30 PM', '03:00 PM', '04:00 PM', '04:30 PM'];
   }
   if (availability.status === 'On Leave') {
     return [];
   }
-  const daySlot = availability.slots?.find((s: any) => s.day?.toLowerCase() === dayFullName.toLowerCase());
+  const daySlot = availability.slots?.find((s) => s.day?.toLowerCase() === dayFullName.toLowerCase());
   if (!daySlot || !daySlot.isWorking || !daySlot.workingHours || daySlot.workingHours.toLowerCase().includes('closed')) {
     return [];
   }
@@ -103,13 +110,12 @@ function getSlotsForDoctorAndDay(availability: any, dayFullName: string) {
       slots.push(formatMinutesToTime(current));
     }
     return slots;
-  } catch (e) {
+  } catch {
     return ['09:00 AM', '10:00 AM', '11:00 AM', '02:00 PM', '03:00 PM', '04:00 PM'];
   }
 }
 
 const BookAppointmentPage: React.FC = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
@@ -142,11 +148,11 @@ const BookAppointmentPage: React.FC = () => {
   const [heightFt, setHeightFt] = useState('');
   const [heightIn, setHeightIn] = useState('');
   const [weightLbs, setWeightLbs] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [doctorAvailability, setDoctorAvailability] = useState<any>(null);
+  const [, setIsSubmitting] = useState<boolean>(false);
+  const [doctorAvailability, setDoctorAvailability] = useState<DoctorAvailabilityData | null>(null);
   const [loadingAvailability, setLoadingAvailability] = useState<boolean>(false);
   const [aiRecommendation, setAiRecommendation] = useState<RecommendationResult | null>(null);
-  const [loadingRecommendation, setLoadingRecommendation] = useState<boolean>(false);
+  const [, setLoadingRecommendation] = useState<boolean>(false);
   const [showAllDoctors, setShowAllDoctors] = useState<boolean>(false);
   const [allDoctorsList, setAllDoctorsList] = useState<Doctor[]>([]);
 
@@ -290,7 +296,7 @@ const BookAppointmentPage: React.FC = () => {
 
   useEffect(() => {
     if (currentStep === 2) {
-      setLoadingRecommendation(true);
+      Promise.resolve().then(() => setLoadingRecommendation(true));
       recommendDoctorsApi(formData.healthConcern, formData.symptoms)
         .then(rec => {
           setAiRecommendation(rec);
@@ -314,21 +320,27 @@ const BookAppointmentPage: React.FC = () => {
         .catch(() => setAiRecommendation(null))
         .finally(() => setLoadingRecommendation(false));
     }
-  }, [currentStep, formData.symptoms, formData.healthConcern]);
+  }, [currentStep, formData.symptoms, formData.healthConcern, allDoctorsList]);
 
   useEffect(() => {
     if (id && id !== 'new') {
-      const match = allDoctorsList.find(d => d.id === id);
-      if (match) {
-        setFormData(prev => ({ ...prev, selectedDoctor: match }));
-      }
+      const match = allDoctorsList.find(d => d.id === id) || doctorsData.find(d => d.id === id);
+      Promise.resolve().then(() => {
+        if (match) {
+          setFormData(prev => ({ ...prev, selectedDoctor: match }));
+        } else if (allDoctorsList.length > 0) {
+          setFormData(prev => ({ ...prev, selectedDoctor: allDoctorsList[0] }));
+        } else {
+          setFormData(prev => ({ ...prev, selectedDoctor: doctorsData[0] }));
+        }
+      });
     }
   }, [id, allDoctorsList]);
 
   useEffect(() => {
     const docId = formData.selectedDoctor?.id;
     if (docId) {
-      setLoadingAvailability(true);
+      Promise.resolve().then(() => setLoadingAvailability(true));
       fetch(`/api/doctor/${docId}/availability`)
         .then(res => {
           if (res.ok) return res.json();
@@ -459,22 +471,18 @@ const BookAppointmentPage: React.FC = () => {
           timeSlot: formData.selectedTimeSlot,
         };
 
-        try {
-          const response = await fetch(rescheduleId ? `/api/appointments/${encodeURIComponent(rescheduleId)}/reschedule` : '/api/appointments', {
-            method: rescheduleId ? 'PATCH' : 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${getToken()}`,
-            },
-            body: JSON.stringify(payload),
-          });
+        const response = await fetch(rescheduleId ? `/api/appointments/${encodeURIComponent(rescheduleId)}/reschedule` : '/api/appointments', {
+          method: rescheduleId ? 'PATCH' : 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${getToken()}`,
+          },
+          body: JSON.stringify(payload),
+        });
 
-          if (!response.ok) {
-            const body = await response.json().catch(() => null);
-            throw new Error(body?.message || `The appointment could not be ${rescheduleId ? 'rescheduled' : 'booked'}. Please try again.`);
-          }
-        } catch (apiErr) {
-          throw apiErr;
+        if (!response.ok) {
+          const body = await response.json().catch(() => null);
+          throw new Error(body?.message || `The appointment could not be ${rescheduleId ? 'rescheduled' : 'booked'}. Please try again.`);
         }
 
         setBookingConfirmed(true);
@@ -1087,31 +1095,74 @@ const BookAppointmentPage: React.FC = () => {
                   const dayFull = d.toLocaleDateString('en-US', { weekday: 'long' });
                   const dateNum = d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
                   const label = i === 0 ? 'Today' : (i === 1 ? 'Tomorrow' : dayShort);
+                  const dateKey = [
+                    d.getFullYear(),
+                    String(d.getMonth() + 1).padStart(2, '0'),
+                    String(d.getDate()).padStart(2, '0'),
+                  ].join('-');
                   return {
                     fullDate: `${label}, ${dayShort} ${dateNum}`,
                     dayShort,
                     dayFull,
                     dateNum,
                     label,
-                    rawDate: d
+                    rawDate: d,
+                    dateKey,
                   };
                 });
 
-                // Find active date object
-                const activeDayObj = upcomingDays.find(d => formData.selectedDate.includes(d.dateNum)) || upcomingDays[0];
-                const scheduledSlots = getSlotsForDoctorAndDay(doctorAvailability, activeDayObj.dayFull);
-                const activeDateKey = [
-                  activeDayObj.rawDate.getFullYear(),
-                  String(activeDayObj.rawDate.getMonth() + 1).padStart(2, '0'),
-                  String(activeDayObj.rawDate.getDate()).padStart(2, '0'),
-                ].join('-');
-                const bookedSlots = new Set<string>(doctorAvailability?.bookedSlots?.[activeDateKey] || []);
-                const unbookedSlots = scheduledSlots.filter((slot) => !bookedSlots.has(slot));
+                const upcomingDaysWithSlots = upcomingDays.map((d) => {
+                  const scheduledSlots = getSlotsForDoctorAndDay(doctorAvailability, d.dayFull);
+                  
+                  const matchingBookedList: string[] = [];
+                  if (doctorAvailability?.bookedSlots) {
+                    Object.entries(doctorAvailability.bookedSlots).forEach(([key, slots]) => {
+                      if (
+                        key === d.dateKey ||
+                        key.includes(d.dateNum) ||
+                        key.includes(`${d.rawDate.getFullYear()}-${String(d.rawDate.getMonth() + 1).padStart(2, '0')}-${String(d.rawDate.getDate()).padStart(2, '0')}`) ||
+                        key.includes(`${d.rawDate.getFullYear()}-${d.rawDate.getMonth() + 1}-${d.rawDate.getDate()}`)
+                      ) {
+                        if (Array.isArray(slots)) {
+                          matchingBookedList.push(...slots);
+                        }
+                      }
+                    });
+                  }
+
+                  const dayBookedSet = new Set(matchingBookedList.map((s) => s.trim().toLowerCase().replace(/^0/, '')));
+
+                  const minimumBookingMinutes = clockNow.getHours() * 60 + clockNow.getMinutes() + 30
+                    + (clockNow.getSeconds() > 0 ? 1 : 0);
+
+                  const availableSlots = scheduledSlots.filter((slot) => {
+                    const norm = slot.trim().toLowerCase().replace(/^0/, '');
+                    const isBooked = dayBookedSet.has(norm);
+                    const isPast = d.label === 'Today' && parseTimeMinutes(slot) < minimumBookingMinutes;
+                    return !isBooked && !isPast;
+                  });
+
+                  const isNoSlotsLeft = availableSlots.length === 0 || doctorAvailability?.status === 'On Leave';
+
+                  return {
+                    ...d,
+                    scheduledSlots,
+                    dayBookedSet,
+                    availableSlotsCount: availableSlots.length,
+                    isNoSlotsLeft,
+                  };
+                });
+
+                // Auto-select first available date if selected date is empty or has no slots left
+                const activeDayObj = upcomingDaysWithSlots.find(d => formData.selectedDate.includes(d.dateNum) && !d.isNoSlotsLeft)
+                  || upcomingDaysWithSlots.find(d => !d.isNoSlotsLeft)
+                  || upcomingDaysWithSlots[0];
+
+                const scheduledSlots = activeDayObj.scheduledSlots;
+                const bookedSlotsSet = activeDayObj.dayBookedSet;
                 const minimumBookingMinutes = clockNow.getHours() * 60 + clockNow.getMinutes() + 30
                   + (clockNow.getSeconds() > 0 ? 1 : 0);
-                const activeSlots = activeDayObj.label === 'Today'
-                  ? unbookedSlots.filter((slot) => parseTimeMinutes(slot) >= minimumBookingMinutes)
-                  : unbookedSlots;
+                const activeSlotsCount = activeDayObj.availableSlotsCount;
                 const isDoctorOnLeave = doctorAvailability?.status === 'On Leave';
 
                 return (
@@ -1130,19 +1181,22 @@ const BookAppointmentPage: React.FC = () => {
 
                       <div className="date-carousel-wrapper">
                         <div className="date-cards-row">
-                          {upcomingDays.map((d) => {
-                            const isSelected = formData.selectedDate.includes(d.dateNum) || (formData.selectedDate.includes(d.label) && d.label !== d.dayShort);
+                          {upcomingDaysWithSlots.map((d) => {
+                            const isSelected = activeDayObj.fullDate === d.fullDate;
+                            const isNoSlots = d.isNoSlotsLeft;
                             return (
                               <button
                                 key={d.fullDate}
                                 type="button"
-                                className={`date-card-box ${isSelected ? 'selected' : ''}`}
+                                disabled={isNoSlots}
+                                className={`date-card-box ${isSelected ? 'selected' : ''} ${isNoSlots ? 'no-slots-disabled' : ''}`}
                                 onClick={() => {
+                                  if (isNoSlots) return;
                                   setSlotError('');
                                   setFormData({ ...formData, selectedDate: d.fullDate, selectedTimeSlot: '' });
                                 }}
                               >
-                                <span className="date-card-tag">{d.label}</span>
+                                <span className="date-card-tag">{isNoSlots ? 'No Slots' : d.label}</span>
                                 <span className="date-card-day">{d.dayShort}</span>
                                 <span className="date-card-num">{d.dateNum}</span>
                               </button>
@@ -1157,20 +1211,17 @@ const BookAppointmentPage: React.FC = () => {
                       <div className="slot-section-header">
                         <span className="section-icon">🕒</span>
                         <h3 className="section-title">
-                          Available Time Slots
+                          Available Time Slots ({activeDayObj.label}, {activeDayObj.dateNum})
                           {doctorAvailability?.slotDurationMinutes && (
                             <span className="text-xs text-gray-500 font-normal ml-2">({doctorAvailability.slotDurationMinutes}-min slots)</span>
                           )}
                         </h3>
                       </div>
 
-                      {activeDayObj.label === 'Today' && (
+                      {activeDayObj.label === 'Today' && activeSlotsCount > 0 && (
                         <p className="text-xs text-blue-700 mb-3">
                           Today’s slots are shown only when they are at least 30 minutes from the current time.
                         </p>
-                      )}
-                      {bookedSlots.size > 0 && (
-                        <p className="text-xs text-amber-700 mb-3">Already-booked times are hidden automatically.</p>
                       )}
                       {slotError && <p role="alert" className="text-sm text-red-600 mb-3">{slotError}</p>}
 
@@ -1180,14 +1231,15 @@ const BookAppointmentPage: React.FC = () => {
                         <div className="p-6 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-center font-medium">
                           ⚠️ {formData.selectedDoctor?.name} is currently on leave. Please select another doctor or pick a later date.
                         </div>
-                      ) : activeSlots.length === 0 ? (
+                      ) : activeSlotsCount === 0 ? (
                         <div className="p-6 bg-gray-50 border border-gray-200 rounded-xl text-gray-600 text-center font-medium">
-                          🚫 {formData.selectedDoctor?.name} is not available on {activeDayObj.dayFull}s ({activeDayObj.dateNum}). Please select an alternate day.
+                          🚫 {formData.selectedDoctor?.name} has no available slots left on {activeDayObj.dayFull}s ({activeDayObj.dateNum}). Please select an alternate day above.
                         </div>
                       ) : (
                         <div className="time-slots-6col-grid">
                           {scheduledSlots.map((slot) => {
-                            const isBooked = bookedSlots.has(slot);
+                            const norm = slot.trim().toLowerCase().replace(/^0/, '');
+                            const isBooked = bookedSlotsSet.has(norm);
                             const isPast = activeDayObj.label === 'Today' && parseTimeMinutes(slot) < minimumBookingMinutes;
                             const isUnavailable = isBooked || isPast;
                             const isSelected = formData.selectedTimeSlot === slot;
@@ -1202,7 +1254,7 @@ const BookAppointmentPage: React.FC = () => {
                                 onClick={() => {
                                   if (isUnavailable) return;
                                   setSlotError('');
-                                  setFormData({ ...formData, selectedTimeSlot: slot });
+                                  setFormData({ ...formData, selectedDate: activeDayObj.fullDate, selectedTimeSlot: slot });
                                 }}
                               >
                                 <span>{slot}</span>

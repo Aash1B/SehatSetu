@@ -173,20 +173,47 @@ export class DoctorService {
         { day: 'Sunday', isWorking: false, workingHours: 'Closed', breakTime: '-' }
       ]
     };
+    const allDoctorsInDb = await prisma.doctor.findMany({ select: { id: true } });
+    const queryDoctorIds = Array.from(new Set([...resolvedDoctorIds, ...allDoctorsInDb.map((d) => d.id)]));
+
     const appointments = await prisma.appointment.findMany({
       where: {
-        doctorId: { in: resolvedDoctorIds },
+        doctorId: { in: queryDoctorIds },
         status: { in: ['SCHEDULED', 'WAITING', 'PENDING', 'ACCEPTED', 'CONFIRMED', 'IN_PROGRESS'] },
-        scheduledAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
       },
-      select: { scheduledAt: true, timeSlot: true },
+      select: { scheduledAt: true, timeSlot: true, date: true },
     });
     const bookedSlots: Record<string, string[]> = {};
     appointments.forEach((appointment) => {
-      if (!appointment.scheduledAt) return;
-      const dateKey = appointment.scheduledAt.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
-      const slot = appointment.timeSlot || appointment.scheduledAt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' });
-      bookedSlots[dateKey] = [...new Set([...(bookedSlots[dateKey] || []), slot])];
+      let dateKey = '';
+      if (appointment.scheduledAt) {
+        const d = new Date(appointment.scheduledAt);
+        if (!isNaN(d.getTime())) {
+          dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+      }
+      if (!dateKey && appointment.date) {
+        dateKey = appointment.date;
+      }
+      if (!dateKey) return;
+
+      const rawSlot = appointment.timeSlot || '';
+      let formattedSlot = rawSlot.trim();
+      if (appointment.scheduledAt && !formattedSlot) {
+        const d = new Date(appointment.scheduledAt);
+        if (!isNaN(d.getTime())) {
+          let hours = d.getHours();
+          const mins = String(d.getMinutes()).padStart(2, '0');
+          const ampm = hours >= 12 ? 'PM' : 'AM';
+          hours = hours % 12;
+          hours = hours ? hours : 12;
+          formattedSlot = `${String(hours).padStart(2, '0')}:${mins} ${ampm}`;
+        }
+      }
+      if (formattedSlot) {
+        const existing = bookedSlots[dateKey] || [];
+        bookedSlots[dateKey] = Array.from(new Set([...existing, formattedSlot]));
+      }
     });
     return { ...(baseAvailability as object), bookedSlots };
   }

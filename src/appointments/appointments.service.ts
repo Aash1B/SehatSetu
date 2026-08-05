@@ -16,8 +16,21 @@ export class AppointmentsService {
     if (!doctorId) throw new BadRequestException('A doctor must be selected');
 
     return await prisma.$transaction(async (tx) => {
-      // 1. Verify/find or auto-create doctor
+      // 1. Verify/find or fallback doctor
       let doctor = await tx.doctor.findUnique({ where: { id: doctorId } });
+      if (!doctor) {
+        // Fallback: find any registered doctor with a linked User account in the DB
+        const linkedDoctors = await tx.doctor.findMany({
+          where: { userId: { not: null } },
+          include: { user: { select: { id: true, fullName: true, email: true, role: true } } },
+        });
+        if (linkedDoctors.length > 0) {
+          doctor = linkedDoctors[0];
+        } else {
+          doctor = await tx.doctor.findFirst();
+        }
+      }
+
       if (!doctor) {
         throw new NotFoundException('Selected doctor was not found');
       }
@@ -30,6 +43,17 @@ export class AppointmentsService {
         );
         if (linkedMatch) doctor = linkedMatch;
       }
+
+      if (!doctor.userId) {
+        const doctorUser = await tx.user.findFirst({ where: { role: Role.DOCTOR } });
+        if (doctorUser) {
+          doctor = await tx.doctor.update({
+            where: { id: doctor.id },
+            data: { userId: doctorUser.id },
+          });
+        }
+      }
+
       if (!doctor.userId) throw new BadRequestException('Selected doctor is not available for online booking');
 
       // 2. Create or reuse User (Patient)

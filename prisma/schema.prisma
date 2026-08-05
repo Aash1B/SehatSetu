@@ -115,6 +115,7 @@ model Doctor {
   hospital         String?
   imageUrl         String?
   imageStoragePath String?
+  imagePosition    String?        @default("50% 20%")
   location         String?
   priorityLevel    String?
   priorityScore    Int?

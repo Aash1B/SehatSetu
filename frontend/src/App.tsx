@@ -56,10 +56,17 @@ const HealthQuestionnairePage = lazy(() => import('./patient/pages/HealthQuestio
 const AppointmentsPage = lazy(() => import('./patient/pages/AppointmentsPage'));
 const VideoConsultationPage = lazy(() => import('./patient/pages/VideoConsultationPage'));
 
+import OfflineStatusIndicator from './common/components/OfflineStatusIndicator';
+import PWAUpdatePrompt from './common/components/PWAUpdatePrompt';
+import PWAInstallPrompt from './common/components/PWAInstallPrompt';
+
 function App() {
   return (
     <Provider store={store}>
       <Router>
+        <OfflineStatusIndicator />
+        <PWAUpdatePrompt />
+        <PWAInstallPrompt />
         <Suspense fallback={<div className="flex min-h-screen items-center justify-center text-slate-500">Loading SehatSetu…</div>}>
         <Routes>
 
