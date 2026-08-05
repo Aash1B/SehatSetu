@@ -1,6 +1,9 @@
-import { Controller, Get, Put, Post, Param, Body, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Put, Post, Param, Body, UseInterceptors, UploadedFile, UseGuards, Req } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { DoctorService } from './doctor.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 
 @Controller('api/doctor')
 export class DoctorController {
@@ -12,58 +15,73 @@ export class DoctorController {
   }
 
   @Put(':id/availability')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('DOCTOR')
   async updateAvailability(
-    @Param('id') doctorId: string,
     @Body() availability: any,
+    @Req() req: any,
   ) {
-    const updatedDoctor = await this.doctorService.updateAvailability(doctorId, availability);
+    const updatedDoctor = await this.doctorService.updateAvailability(req.user.userId, availability);
     return updatedDoctor;
   }
 
   @Get(':id/profile')
-  async getProfile(@Param('id') doctorId: string) {
-    return this.doctorService.getProfile(doctorId);
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('DOCTOR')
+  async getProfile(@Req() req: any) {
+    return this.doctorService.getProfile(req.user.userId);
   }
 
   @Put(':id/profile')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('DOCTOR')
   async updateProfile(
-    @Param('id') doctorId: string,
     @Body() profileData: any,
+    @Req() req: any,
   ) {
-    return this.doctorService.updateProfile(doctorId, profileData);
+    return this.doctorService.updateProfile(req.user.userId, profileData);
   }
 
   @Post(':id/onboarding')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('DOCTOR')
   async saveOnboarding(
-    @Param('id') doctorId: string,
     @Body() onboardingData: any,
+    @Req() req: any,
   ) {
-    return this.doctorService.saveOnboardingProfile(doctorId, onboardingData);
+    return this.doctorService.saveOnboardingProfile(req.user.userId, onboardingData);
+  }
+
+  @Post(':id/profile-image')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('DOCTOR')
+  @UseInterceptors(FileInterceptor('image', { limits: { fileSize: 5 * 1024 * 1024, files: 1 } }))
+  async uploadProfileImage(
+    @UploadedFile() file: any,
+    @Req() req: any,
+  ) {
+    if (!file) throw new BadRequestException('Profile image file is required');
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype)) {
+      throw new BadRequestException('Only JPEG, PNG, and WebP image formats are allowed');
+    }
+    return this.doctorService.uploadProfileImageToSupabase(file, req.user.userId);
   }
 
   @Post(':id/documents/upload')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('DOCTOR')
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 10 * 1024 * 1024, files: 1 } }))
   async uploadDocument(
-    @Param('id') doctorId: string,
     @UploadedFile() file: any,
     @Body('documentType') documentType: string,
+    @Req() req: any,
   ) {
     const docType = documentType || 'verification-document';
-    
-    // If no file binary sent (e.g. simulated upload from frontend), generate document metadata
-    if (!file) {
-      return this.doctorService.uploadDocumentToSupabase(
-        {
-          buffer: Buffer.from('SIMULATED_MEDICAL_DOCUMENT_CONTENT'),
-          originalname: `${docType}.pdf`,
-          mimetype: 'application/pdf',
-          size: 204800,
-        },
-        docType,
-        doctorId,
-      );
+    if (!file) throw new BadRequestException('A verification document file is required');
+    if (!['application/pdf', 'image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype)) {
+      throw new BadRequestException('Only PDF, JPEG, PNG, and WebP documents are allowed');
     }
 
-    return this.doctorService.uploadDocumentToSupabase(file, docType, doctorId);
+    return this.doctorService.uploadDocumentToSupabase(file, docType, req.user.userId);
   }
 }

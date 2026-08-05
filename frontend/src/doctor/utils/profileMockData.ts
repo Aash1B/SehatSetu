@@ -19,7 +19,6 @@ export const mockDoctorProfile: DoctorProfileData = {
     totalConsultations: 4520,
     patientsTreated: 3100,
     todaysAppointments: 8,
-    averageRating: 4.8,
     completedConsultations: 4512
   },
   availability: {

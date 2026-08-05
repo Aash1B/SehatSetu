@@ -7,7 +7,7 @@ interface DoctorCardProps {
 const DoctorCard: React.FC<DoctorCardProps> = () => {
   return (
     <div className="doctor-card">
-      {/* Doctor name, specialty, rating, availability */}
+      {/* Doctor name, specialty, availability */}
     </div>
   );
 };

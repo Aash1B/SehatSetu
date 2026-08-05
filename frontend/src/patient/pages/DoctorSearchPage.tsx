@@ -6,7 +6,7 @@ import Sidebar from '../components/Sidebar';
 import Footer from '../components/Footer';
 import FloatingEmergencyButton from '../components/FloatingEmergencyButton';
 import CustomSelect, { type OptionItem } from '../components/CustomSelect';
-import { doctorsData, PRIORITY_CONFIG, type Doctor } from '../data/doctorsData';
+import { PRIORITY_CONFIG, doctorsData, type Doctor } from '../data/doctorsData';
 import { fetchDoctors } from '../services/doctorApi';
 import { setCurrentPage } from '../store/uiSlice';
 
@@ -36,25 +36,33 @@ const LOCATION_OPTIONS: OptionItem[] = [
 const DoctorSearchPage: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [doctorsList, setDoctorsList] = useState<Doctor[]>(doctorsData);
+  const [doctorsList, setDoctorsList] = useState<Doctor[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [specialtyFilter, setSpecialtyFilter] = useState('All');
   const [locationFilter, setLocationFilter] = useState('All');
   const [favorites, setFavorites] = useState<string[]>([]);
   const [onlyAvailableToday, setOnlyAvailableToday] = useState(false);
 
+  const handleImageError = (event: React.SyntheticEvent<HTMLImageElement>) => {
+    const image = event.currentTarget;
+    const defaultDoctor = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23cccccc"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
+    if (image.src === defaultDoctor) return;
+    image.onerror = null;
+    image.src = defaultDoctor;
+  };
+
   useEffect(() => {
     (async () => {
       try {
         const fetched = await fetchDoctors();
         if (fetched && fetched.length > 0) {
-          // Real registered doctors go first (highest priority), then deduplicated static list
-          const fetchedIds = new Set(fetched.map(d => d.id));
-          const staticOnly = doctorsData.filter(d => !fetchedIds.has(d.id));
-          setDoctorsList([...fetched, ...staticOnly]);
+          setDoctorsList(fetched);
+        } else {
+          setDoctorsList(doctorsData);
         }
       } catch (err) {
         console.warn('Backend doctors fetch fallback:', err);
+        setDoctorsList(doctorsData);
       }
     })();
   }, []);
@@ -77,7 +85,7 @@ const DoctorSearchPage: React.FC = () => {
 
         const matchesSpecialty = 
           specialtyFilter === 'All' || 
-          doc.specialty.toLowerCase().includes(specialtyFilter.toLowerCase());
+          doc.specialty.toLowerCase().split(' ')[0] === specialtyFilter.toLowerCase().split(' ')[0];
 
         const matchesLocation = 
           locationFilter === 'All' || doc.location === locationFilter;
@@ -92,11 +100,9 @@ const DoctorSearchPage: React.FC = () => {
 
         if (isGenA && !isGenB) return -1;
         if (!isGenA && isGenB) return 1;
-        // Handle null/undefined priorityScore from newly registered doctors
-        return (b.priorityScore ?? 0) - (a.priorityScore ?? 0);
+        return b.priorityScore - a.priorityScore;
       });
-  }, [doctorsList, searchTerm, specialtyFilter, locationFilter, onlyAvailableToday]);
-
+  }, [searchTerm, specialtyFilter, locationFilter, onlyAvailableToday]);
 
   return (
     <div className="all-doctors-page">
@@ -227,7 +233,7 @@ const DoctorSearchPage: React.FC = () => {
 
                     <div className="doctor-card-top">
                       <div className="doctor-avatar-container">
-                        <img src={doctor.imageUrl} alt={doctor.name} className="doctor-full-avatar" />
+                        <img src={doctor.imageUrl} alt={doctor.name} className="doctor-full-avatar" loading="lazy" onError={handleImageError} />
                         {doctor.availableToday && (
                           <span className="status-online-dot" title="Available Today for Booking"></span>
                         )}
@@ -250,9 +256,6 @@ const DoctorSearchPage: React.FC = () => {
                       <div className="doctor-meta-tags-row">
                         <span className="meta-tag exp-tag">
                           ⌛ {doctor.experience}
-                        </span>
-                        <span className="meta-tag rating-tag">
-                          ⭐ {doctor.rating} ({doctor.reviewsCount} reviews)
                         </span>
                       </div>
 

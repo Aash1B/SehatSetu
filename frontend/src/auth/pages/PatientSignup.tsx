@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { CheckCircle2, FileText, LockKeyhole, ShieldCheck, X } from 'lucide-react';
-import { signup } from '../api';
+import { signup, googleLogin } from '../api';
 import { validatePassword } from '../validatePassword';
+import GoogleSignInButton from '../components/GoogleSignInButton';
+import { saveAuth } from '../authStorage';
 
 
 export default function PatientSignup() {
@@ -14,6 +16,7 @@ export default function PatientSignup() {
   const [dataConsent, setDataConsent] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [passwordHint, setPasswordHint] = useState('');
   const [privacyOpen, setPrivacyOpen] = useState(false);
 
@@ -50,6 +53,24 @@ navigate('/verify-otp', { state: { email, role: 'PATIENT' } });
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleCredential = async (credential: string) => {
+    setError('');
+    if (!dataConsent) {
+      setError('You must consent to data processing to continue with Google.');
+      return;
+    }
+    setGoogleLoading(true);
+    try {
+      const res = await googleLogin({ credential, role: 'PATIENT', dataConsent });
+      saveAuth(res.accessToken, { id: res.id, email: res.email, fullName: res.fullName, role: res.role });
+      navigate('/patient/dashboard', { replace: true });
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -137,12 +158,30 @@ navigate('/verify-otp', { state: { email, role: 'PATIENT' } });
             </div>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || googleLoading}
               className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-medium py-2.5 rounded-lg transition"
             >
               {loading ? 'Creating account...' : 'Create account'}
             </button>
           </form>
+
+          <div className="my-6 flex items-center gap-3">
+            <div className="h-px flex-1 bg-slate-200" />
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">or</span>
+            <div className="h-px flex-1 bg-slate-200" />
+          </div>
+
+          <GoogleSignInButton
+            role="PATIENT"
+            mode="signup"
+            dataConsent={dataConsent}
+            onCredential={handleGoogleCredential}
+            onError={setError}
+          />
+
+          {googleLoading && (
+            <p className="mt-3 text-center text-xs text-slate-500">Completing Google sign-in...</p>
+          )}
 
           <p className="text-center text-sm text-slate-500 mt-6">
             Already have an account?{' '}

@@ -1,9 +1,5 @@
-import { Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
-const prisma = new PrismaClient({ adapter });
+import { Injectable, NotFoundException, BadRequestException, ServiceUnavailableException } from '@nestjs/common';
+import { prisma } from '../prisma';
 
 export interface DocumentUploadResult {
   id: string;
@@ -20,6 +16,69 @@ export interface DocumentUploadResult {
 @Injectable()
 export class DoctorService {
   
+  /**
+   * Uploads doctor profile image to Supabase Storage Bucket 'doctor-profile-images'
+   */
+  async uploadProfileImageToSupabase(
+    file: { buffer: Buffer; originalname?: string; mimetype?: string; size?: number } | any,
+    userId: string,
+  ): Promise<{ imageUrl: string; imageStoragePath: string }> {
+    if (!file || !file.buffer) {
+      throw new BadRequestException('Profile image file is required');
+    }
+    if (file.size && file.size > 5 * 1024 * 1024) {
+      throw new BadRequestException('Profile image size must not exceed 5MB');
+    }
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (file.mimetype && !allowedMimeTypes.includes(file.mimetype)) {
+      throw new BadRequestException('Only JPEG, PNG, and WebP image formats are allowed');
+    }
+
+    const doctor = await prisma.doctor.findFirst({ where: { userId } });
+    if (!doctor) throw new NotFoundException('Doctor profile not found for user');
+
+    const projectUrl = process.env.SUPABASE_URL?.replace(/\/+$/, '') || 'https://jxsfimnztuoorcpttikz.supabase.co';
+    const secretKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+    const bucket = 'doctor-profile-images';
+    const storagePath = `doctors/${doctor.id}/profile.webp`;
+    const publicUrl = `${projectUrl}/storage/v1/object/public/${bucket}/${storagePath}`;
+
+    if (secretKey && !secretKey.includes('placeholder')) {
+      try {
+        const uploadUrl = `${projectUrl}/storage/v1/object/${bucket}/${storagePath}`;
+        const response = await fetch(uploadUrl, {
+          method: 'POST',
+          headers: {
+            apikey: secretKey,
+            Authorization: `Bearer ${secretKey}`,
+            'Content-Type': 'image/webp',
+            'x-upsert': 'true',
+          },
+          body: file.buffer as unknown as BodyInit,
+        });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          console.warn(`Supabase profile image upload non-200 (${response.status}):`, errText);
+        } else {
+          console.log(`Successfully stored profile image in [${bucket}]: ${storagePath}`);
+        }
+      } catch (error) {
+        console.error('Error uploading profile image to Supabase:', error);
+      }
+    }
+
+    await prisma.doctor.update({
+      where: { id: doctor.id },
+      data: {
+        imageUrl: publicUrl,
+        imageStoragePath: storagePath,
+      },
+    });
+
+    return { imageUrl: publicUrl, imageStoragePath: storagePath };
+  }
+
   /**
    * Uploads doctor verification document to Supabase Storage Bucket
    */
@@ -83,11 +142,9 @@ export class DoctorService {
     let resolvedDoctorIds = [doctorId];
     let availability: any = null;
     try {
-      // Try by Doctor.id first, then by userId
-      let doctor = await prisma.doctor.findUnique({ where: { id: doctorId } });
-      if (!doctor) {
-        doctor = await prisma.doctor.findUnique({ where: { userId: doctorId } });
-      }
+      const doctor = await prisma.doctor.findUnique({
+        where: { id: doctorId },
+      });
       if (doctor) {
         availability = doctor.availability;
         if (!doctor.userId && doctor.name) {
@@ -119,7 +176,7 @@ export class DoctorService {
     const appointments = await prisma.appointment.findMany({
       where: {
         doctorId: { in: resolvedDoctorIds },
-        status: { in: ['SCHEDULED', 'WAITING'] },
+        status: { in: ['SCHEDULED', 'WAITING', 'PENDING', 'ACCEPTED', 'CONFIRMED', 'IN_PROGRESS'] },
         scheduledAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
       },
       select: { scheduledAt: true, timeSlot: true },
@@ -127,8 +184,8 @@ export class DoctorService {
     const bookedSlots: Record<string, string[]> = {};
     appointments.forEach((appointment) => {
       if (!appointment.scheduledAt) return;
-      const dateKey = appointment.scheduledAt.toLocaleDateString('en-CA');
-      const slot = appointment.timeSlot || appointment.scheduledAt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      const dateKey = appointment.scheduledAt.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+      const slot = appointment.timeSlot || appointment.scheduledAt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' });
       bookedSlots[dateKey] = [...new Set([...(bookedSlots[dateKey] || []), slot])];
     });
     return { ...(baseAvailability as object), bookedSlots };
@@ -151,21 +208,13 @@ export class DoctorService {
   }
 
   async getProfile(doctorId: string) {
-    // Try by Doctor.id first
     let doctor = await prisma.doctor.findUnique({
       where: { id: doctorId },
-      include: { user: true },
+      include: {
+        user: true,
+      },
     });
 
-    // Try by userId (auth user's UUID)
-    if (!doctor) {
-      doctor = await prisma.doctor.findUnique({
-        where: { userId: doctorId },
-        include: { user: true },
-      });
-    }
-
-    // Legacy fallback for 'd1' dev testing
     if (!doctor && doctorId === 'd1') {
       doctor = await prisma.doctor.findFirst({
         include: { user: true }
@@ -181,23 +230,10 @@ export class DoctorService {
 
   async updateProfile(doctorId: string, profileData: any) {
     let targetId = doctorId;
-
-    // First try: find Doctor by its own primary key (Doctor.id)
     let doctor = await prisma.doctor.findUnique({
       where: { id: targetId },
     });
 
-    // Second try: find Doctor by userId (auth user's UUID — sent from frontend after onboarding)
-    if (!doctor) {
-      doctor = await prisma.doctor.findUnique({
-        where: { userId: doctorId },
-      });
-      if (doctor) {
-        targetId = doctor.id;
-      }
-    }
-
-    // Third try: legacy fallback for 'd1' (dev testing)
     if (!doctor && doctorId === 'd1') {
       const firstDoc = await prisma.doctor.findFirst();
       if (firstDoc) {
@@ -231,10 +267,6 @@ export class DoctorService {
     if (doctorData.languagesSpoken) cleanedDoctorData.tags = doctorData.languagesSpoken;
     if (doctorData.availability) cleanedDoctorData.availability = doctorData.availability;
     cleanedDoctorData.availableToday = true;
-    if (doctorData.priorityLevel) cleanedDoctorData.priorityLevel = doctorData.priorityLevel;
-    cleanedDoctorData.priorityScore = 150; // Real registered doctors get high priority
-    cleanedDoctorData.reviewsCount = cleanedDoctorData.reviewsCount || 0;
-    cleanedDoctorData.rating = cleanedDoctorData.rating || 5.0;
 
     if (doctor) {
       return prisma.$transaction(async (tx) => {
@@ -251,41 +283,26 @@ export class DoctorService {
         });
       });
     } else {
-      // Create new Doctor row linked to the authenticated user (doctorId = user.id here)
-      // Check if the user actually exists before linking
-      let userLink: { connect: { id: string } } | undefined;
-      try {
-        const userExists = await prisma.user.findUnique({ where: { id: doctorId } });
-        if (userExists) {
-          userLink = { connect: { id: doctorId } };
-        }
-      } catch (_) {}
-
+      // Create new Doctor if not existing
       return prisma.doctor.create({
         data: {
+          id: targetId,
           specialty: cleanedDoctorData.specialty || 'General Physician',
-          name: cleanedDoctorData.name || 'Dr. Specialist',
+          name: cleanedDoctorData.name || 'Dr. New Doctor',
           experience: cleanedDoctorData.experience || '5+ Years Exp.',
           degrees: cleanedDoctorData.degrees || 'MBBS',
-          hospital: cleanedDoctorData.hospital || 'SehatSetu Medical Network',
-          location: cleanedDoctorData.location || 'India',
+          hospital: cleanedDoctorData.hospital || 'Apollo Medical Center',
+          location: cleanedDoctorData.location || 'Mumbai',
           imageUrl: cleanedDoctorData.imageUrl || 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=400',
           fee: cleanedDoctorData.fee || '₹500',
           consultationFee: cleanedDoctorData.consultationFee || 500,
           availability: cleanedDoctorData.availability || {},
           availableToday: true,
-          tags: cleanedDoctorData.tags || ['English', 'Hindi'],
-          priorityLevel: 'P1',
-          priorityScore: 150,
-          rating: 5.0,
-          reviewsCount: 0,
-          ...(userLink ? { user: userLink } : {}),
-        },
-        include: { user: true },
+          tags: cleanedDoctorData.tags || ['English', 'Hindi']
+        }
       });
     }
   }
-
 
   async saveOnboardingProfile(doctorId: string, onboardingPayload: any) {
     const availabilityData = {
@@ -307,9 +324,17 @@ export class DoctorService {
       documents: onboardingPayload.documents || []
     };
 
+    const doctor = await prisma.doctor.findFirst({ where: { id: doctorId } });
+    if (!doctor?.imageUrl && !onboardingPayload.photoUrl && !onboardingPayload.imageUrl) {
+      throw new BadRequestException('Doctor profile image is required before finishing onboarding');
+    }
+
     return this.updateProfile(doctorId, {
       ...onboardingPayload,
-      availability: availabilityData
+      availability: availabilityData,
+      profileCompleted: true,
+      isVerified: true,
+      isActive: true,
     });
   }
 }

@@ -126,7 +126,7 @@ export class AppointmentProcessor extends WorkerHost {
   private async handleFollowUpEmailReminder(data: AppointmentReminderJobData) {
     const appointment = await prisma.appointment.findUnique({
       where: { id: data.appointmentId },
-      include: { patient: { include: { user: true } }, doctor: { include: { user: true } } },
+      include: { patient: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } }, doctor: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } } },
     });
     if (!appointment || !appointment.isFollowUp || !appointment.emailRemindersEnabled || ['CANCELLED', 'COMPLETED'].includes(appointment.status)) {
       return { status: 'skipped', reason: 'Follow-up is inactive or no longer upcoming' };

@@ -199,8 +199,4 @@ class HospitalEnrichmentService:
             score += 3
             factors.append("business status unavailable")
 
-        if hospital.rating is not None:
-            score += min(3, hospital.rating / 5 * 3)
-        if hospital.user_rating_count:
-            score += min(2, hospital.user_rating_count / 500)
         return round(min(100, score), 2), factors

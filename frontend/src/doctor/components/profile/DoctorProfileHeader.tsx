@@ -15,11 +15,13 @@ const DoctorProfileHeader: React.FC<Props> = ({ profile, isEditing, onEdit, onCa
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-jodhpur-tan/30 mb-8 flex flex-col md:flex-row items-start md:items-center gap-6">
       <div className="relative shrink-0">
-        <img 
-          src={profile.photoUrl} 
-          alt={profile.fullName} 
-          className="w-24 h-24 rounded-full object-cover border border-jodhpur-tan/30 shadow-sm"
-        />
+        {profile.photoUrl ? (
+          <img src={profile.photoUrl} alt={profile.fullName} className="w-24 h-24 rounded-full object-cover border border-jodhpur-tan/30 shadow-sm" />
+        ) : (
+          <div className="w-24 h-24 rounded-full bg-indigo-100 text-indigo-800 flex items-center justify-center text-2xl font-bold border border-indigo-200">
+            {profile.fullName.replace(/^Dr\.\s*/i, '').split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase()}
+          </div>
+        )}
         {profile.isVerified && (
           <div className="absolute bottom-0 right-0 bg-white rounded-full p-0.5 shadow-sm border border-gray-100">
             <CheckCircle2 className="w-5 h-5 text-green-500 fill-green-50" />

@@ -58,7 +58,13 @@ export class DoctorsService {
   ) {}
 
   async findAll() {
-    const doctors = await prisma.doctor.findMany({ include: { user: true } });
+    const doctors = await prisma.doctor.findMany({
+      where: {
+        userId: { not: null },
+        imageUrl: { not: null },
+      },
+      include: { user: { select: { id: true, fullName: true, email: true, role: true } } },
+    });
     return doctors.map((doctor) => ({
       ...doctor,
       name: doctor.name || doctor.user?.fullName || 'Doctor',
@@ -107,7 +113,35 @@ export class DoctorsService {
         });
       });
     }
-    return { ...doctor, name: user.fullName || doctor.name || 'Doctor', user: { id: user.id, fullName: user.fullName, email: user.email } };
+
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const startOfTomorrow = new Date(startOfToday);
+    startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
+
+    const appointments = await prisma.appointment.findMany({
+      where: { doctorId: doctor.id },
+      select: { patientId: true, status: true, scheduledAt: true },
+    });
+    const consultations = appointments.filter((appointment) => appointment.status !== 'CANCELLED');
+    const completed = consultations.filter((appointment) => appointment.status === 'COMPLETED');
+    const todaysAppointments = consultations.filter((appointment) =>
+      appointment.scheduledAt &&
+      appointment.scheduledAt >= startOfToday &&
+      appointment.scheduledAt < startOfTomorrow,
+    ).length;
+
+    return {
+      ...doctor,
+      name: user.fullName || doctor.name || 'Doctor',
+      user: { id: user.id, fullName: user.fullName, email: user.email },
+      stats: {
+        totalConsultations: consultations.length,
+        completedConsultations: completed.length,
+        patientsTreated: new Set(completed.map((appointment) => appointment.patientId).filter(Boolean)).size,
+        todaysAppointments,
+      },
+    };
   }
 
   async recommendDoctors(issue: string, symptoms: string[] = []) {
@@ -147,15 +181,17 @@ export class DoctorsService {
 
     // Extract core keyword for matching database specialty (e.g., 'Dermatologist')
     const searchKeyword = recommendedCategory.split(' ')[0];
-    const specialtyFilter = recommendedCategory.toLowerCase().includes('ent')
-      ? { startsWith: 'ENT', mode: 'insensitive' as const }
-      : { contains: searchKeyword, mode: 'insensitive' as const };
+    const specialtyFilter = { startsWith: searchKeyword, mode: 'insensitive' as const };
 
     let doctors = await prisma.doctor.findMany({
       where: {
         specialty: specialtyFilter,
+        profileCompleted: true,
+        isActive: true,
+        isVerified: true,
+        imageUrl: { not: null },
       },
-      include: { user: true },
+      include: { user: { select: { id: true, fullName: true, email: true, role: true } } },
     });
 
     // If the requested specialist is unavailable, route to primary care rather
@@ -167,9 +203,13 @@ export class DoctorsService {
             contains: 'General Physician',
             mode: 'insensitive',
           },
+          profileCompleted: true,
+          isActive: true,
+          isVerified: true,
+          imageUrl: { not: null },
         },
         take: 5,
-        include: { user: true },
+        include: { user: { select: { id: true, fullName: true, email: true, role: true } } },
       });
     }
 

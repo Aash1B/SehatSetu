@@ -5,10 +5,41 @@ CREATE SCHEMA IF NOT EXISTS "public";
 CREATE TYPE "public"."AppointmentStatus" AS ENUM ('SCHEDULED', 'COMPLETED', 'CANCELLED', 'WAITING');
 
 -- CreateEnum
-CREATE TYPE "public"."Role" AS ENUM ('PATIENT', 'DOCTOR');
+CREATE TYPE "public"."MedicalReportOcrStatus" AS ENUM ('NOT_STARTED', 'PROCESSING', 'SUCCEEDED', 'FAILED');
 
 -- CreateEnum
-CREATE TYPE "public"."SlotStatus" AS ENUM ('AVAILABLE', 'RESERVED', 'BOOKED', 'BLOCKED');
+CREATE TYPE "public"."MedicalReportStatus" AS ENUM ('PENDING_UPLOAD', 'UPLOADED', 'PROCESSING', 'PROCESSED', 'OCR_FAILED', 'DELETED');
+
+-- CreateEnum
+CREATE TYPE "public"."MedicalReportType" AS ENUM ('LAB_REPORT', 'PRESCRIPTION', 'DISCHARGE_SUMMARY', 'SCAN', 'OTHER');
+
+-- CreateEnum
+CREATE TYPE "public"."Role" AS ENUM ('PATIENT', 'DOCTOR');
+
+-- CreateTable
+CREATE TABLE "public"."AccountDeletionAudit" (
+    "id" TEXT NOT NULL,
+    "userIdentifier" TEXT NOT NULL,
+    "role" "public"."Role" NOT NULL,
+    "outcome" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "AccountDeletionAudit_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."AccountDeletionOtp" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "otpHash" TEXT NOT NULL,
+    "purpose" TEXT NOT NULL DEFAULT 'ACCOUNT_DELETION',
+    "expiresAt" TIMESTAMP(3) NOT NULL,
+    "attempts" INTEGER NOT NULL DEFAULT 0,
+    "consumedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "AccountDeletionOtp_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "public"."Appointment" (
@@ -37,6 +68,8 @@ CREATE TABLE "public"."Appointment" (
     "date" TEXT,
     "timeSlot" TEXT,
     "priority" TEXT NOT NULL DEFAULT 'ROUTINE',
+    "isFollowUp" BOOLEAN NOT NULL DEFAULT false,
+    "emailRemindersEnabled" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "Appointment_pkey" PRIMARY KEY ("id")
 );
@@ -44,39 +77,25 @@ CREATE TABLE "public"."Appointment" (
 -- CreateTable
 CREATE TABLE "public"."Doctor" (
     "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
-    "specialty" TEXT NOT NULL DEFAULT 'General Physician',
-    "consultationFee" INTEGER DEFAULT 500,
-    "availableToday" BOOLEAN NOT NULL DEFAULT true,
-    "degrees" TEXT DEFAULT 'MBBS',
-    "experience" TEXT DEFAULT '10+ Years Experience',
-    "fee" TEXT DEFAULT '₹500',
-    "hospital" TEXT DEFAULT 'Apollo Medical Center',
+    "userId" TEXT,
+    "specialty" TEXT NOT NULL,
+    "consultationFee" INTEGER,
+    "availableToday" BOOLEAN,
+    "degrees" TEXT,
+    "experience" TEXT,
+    "fee" TEXT,
+    "hospital" TEXT,
     "imageUrl" TEXT,
-    "location" TEXT DEFAULT 'Delhi',
-    "name" TEXT NOT NULL DEFAULT 'Dr. Doctor',
-    "priorityLevel" TEXT NOT NULL DEFAULT 'P1',
-    "priorityScore" INTEGER NOT NULL DEFAULT 90,
-    "rating" DOUBLE PRECISION NOT NULL DEFAULT 4.8,
-    "reviewsCount" INTEGER NOT NULL DEFAULT 0,
+    "location" TEXT,
+    "name" TEXT,
+    "priorityLevel" TEXT,
+    "priorityScore" INTEGER,
+    "rating" DOUBLE PRECISION,
+    "reviewsCount" INTEGER,
     "tags" TEXT[],
+    "availability" JSONB,
 
     CONSTRAINT "Doctor_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "public"."DoctorAvailability" (
-    "id" TEXT NOT NULL,
-    "doctorId" TEXT NOT NULL,
-    "dayOfWeek" INTEGER NOT NULL,
-    "startTime" TEXT NOT NULL,
-    "endTime" TEXT NOT NULL,
-    "slotMinutes" INTEGER NOT NULL DEFAULT 15,
-    "isActive" BOOLEAN NOT NULL DEFAULT true,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "DoctorAvailability_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -104,6 +123,33 @@ CREATE TABLE "public"."Hospital" (
 );
 
 -- CreateTable
+CREATE TABLE "public"."MedicalReport" (
+    "id" TEXT NOT NULL,
+    "patientId" TEXT NOT NULL,
+    "uploadedByUserId" TEXT NOT NULL,
+    "appointmentId" TEXT,
+    "originalFileName" TEXT NOT NULL,
+    "storageBucket" TEXT NOT NULL,
+    "storagePath" TEXT NOT NULL,
+    "mimeType" TEXT NOT NULL,
+    "fileSizeBytes" BIGINT NOT NULL,
+    "reportType" "public"."MedicalReportType" NOT NULL,
+    "status" "public"."MedicalReportStatus" NOT NULL DEFAULT 'PENDING_UPLOAD',
+    "ocrStatus" "public"."MedicalReportOcrStatus" NOT NULL DEFAULT 'NOT_STARTED',
+    "extractedText" TEXT,
+    "extractedData" JSONB,
+    "processingErrorCode" TEXT,
+    "processingErrorMessage" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "uploadedAt" TIMESTAMP(3),
+    "processingStartedAt" TIMESTAMP(3),
+    "processedAt" TIMESTAMP(3),
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "MedicalReport_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "public"."Patient" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -111,15 +157,13 @@ CREATE TABLE "public"."Patient" (
     "dateOfBirth" TIMESTAMP(3),
     "allergies" TEXT[],
     "chronicConditions" TEXT[],
-    "address" TEXT,
     "age" TEXT,
     "bloodGroup" TEXT,
     "emergencyContact" TEXT,
     "height" TEXT,
     "phone" TEXT,
-    "phoneNumber" TEXT,
-    "profilePhoto" TEXT,
     "weight" TEXT,
+    "profileImagePath" TEXT,
 
     CONSTRAINT "Patient_pkey" PRIMARY KEY ("id")
 );
@@ -151,17 +195,17 @@ CREATE TABLE "public"."Prescription" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."Slot" (
+CREATE TABLE "public"."StorageCleanupJob" (
     "id" TEXT NOT NULL,
-    "doctorId" TEXT NOT NULL,
-    "date" TEXT NOT NULL,
-    "startTime" TEXT NOT NULL,
-    "endTime" TEXT NOT NULL,
-    "status" "public"."SlotStatus" NOT NULL DEFAULT 'AVAILABLE',
-    "appointmentId" TEXT,
+    "bucket" TEXT NOT NULL,
+    "path" TEXT NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'PENDING',
+    "attempts" INTEGER NOT NULL DEFAULT 0,
+    "lastError" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "completedAt" TIMESTAMP(3),
 
-    CONSTRAINT "Slot_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "StorageCleanupJob_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -174,18 +218,47 @@ CREATE TABLE "public"."User" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "dataConsentAt" TIMESTAMP(3),
     "dataConsentGiven" BOOLEAN NOT NULL DEFAULT false,
+    "emailVerified" BOOLEAN NOT NULL DEFAULT false,
+    "emailOtpHash" TEXT,
+    "emailOtpExpiresAt" TIMESTAMP(3),
+    "resetTokenHash" TEXT,
+    "resetTokenExpiresAt" TIMESTAMP(3),
+    "accountStatus" TEXT NOT NULL DEFAULT 'ACTIVE',
+    "tokenVersion" INTEGER NOT NULL DEFAULT 0,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
+CREATE INDEX "AccountDeletionAudit_userIdentifier_createdAt_idx" ON "public"."AccountDeletionAudit"("userIdentifier" ASC, "createdAt" ASC);
+
+-- CreateIndex
+CREATE INDEX "AccountDeletionOtp_expiresAt_idx" ON "public"."AccountDeletionOtp"("expiresAt" ASC);
+
+-- CreateIndex
+CREATE INDEX "AccountDeletionOtp_userId_purpose_createdAt_idx" ON "public"."AccountDeletionOtp"("userId" ASC, "purpose" ASC, "createdAt" ASC);
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Doctor_userId_key" ON "public"."Doctor"("userId" ASC);
 
 -- CreateIndex
-CREATE UNIQUE INDEX "DoctorAvailability_doctorId_dayOfWeek_key" ON "public"."DoctorAvailability"("doctorId" ASC, "dayOfWeek" ASC);
+CREATE UNIQUE INDEX "EhrRecord_appointmentId_key" ON "public"."EhrRecord"("appointmentId" ASC);
 
 -- CreateIndex
-CREATE UNIQUE INDEX "EhrRecord_appointmentId_key" ON "public"."EhrRecord"("appointmentId" ASC);
+CREATE INDEX "MedicalReport_appointmentId_idx" ON "public"."MedicalReport"("appointmentId" ASC);
+
+-- CreateIndex
+CREATE INDEX "MedicalReport_patientId_createdAt_idx" ON "public"."MedicalReport"("patientId" ASC, "createdAt" ASC);
+
+-- CreateIndex
+CREATE INDEX "MedicalReport_status_idx" ON "public"."MedicalReport"("status" ASC);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "MedicalReport_storagePath_key" ON "public"."MedicalReport"("storagePath" ASC);
+
+-- CreateIndex
+CREATE INDEX "MedicalReport_uploadedByUserId_idx" ON "public"."MedicalReport"("uploadedByUserId" ASC);
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Patient_userId_key" ON "public"."Patient"("userId" ASC);
@@ -197,16 +270,16 @@ CREATE UNIQUE INDEX "Payment_appointmentId_key" ON "public"."Payment"("appointme
 CREATE UNIQUE INDEX "Prescription_appointmentId_key" ON "public"."Prescription"("appointmentId" ASC);
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Slot_appointmentId_key" ON "public"."Slot"("appointmentId" ASC);
+CREATE UNIQUE INDEX "StorageCleanupJob_bucket_path_key" ON "public"."StorageCleanupJob"("bucket" ASC, "path" ASC);
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Slot_doctorId_date_startTime_key" ON "public"."Slot"("doctorId" ASC, "date" ASC, "startTime" ASC);
-
--- CreateIndex
-CREATE INDEX "Slot_doctorId_date_status_idx" ON "public"."Slot"("doctorId" ASC, "date" ASC, "status" ASC);
+CREATE INDEX "StorageCleanupJob_status_createdAt_idx" ON "public"."StorageCleanupJob"("status" ASC, "createdAt" ASC);
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "public"."User"("email" ASC);
+
+-- AddForeignKey
+ALTER TABLE "public"."AccountDeletionOtp" ADD CONSTRAINT "AccountDeletionOtp_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."Appointment" ADD CONSTRAINT "Appointment_doctorId_fkey" FOREIGN KEY ("doctorId") REFERENCES "public"."Doctor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -215,16 +288,22 @@ ALTER TABLE "public"."Appointment" ADD CONSTRAINT "Appointment_doctorId_fkey" FO
 ALTER TABLE "public"."Appointment" ADD CONSTRAINT "Appointment_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patient"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Doctor" ADD CONSTRAINT "Doctor_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "public"."DoctorAvailability" ADD CONSTRAINT "DoctorAvailability_doctorId_fkey" FOREIGN KEY ("doctorId") REFERENCES "public"."Doctor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."Doctor" ADD CONSTRAINT "Doctor_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."EhrRecord" ADD CONSTRAINT "EhrRecord_appointmentId_fkey" FOREIGN KEY ("appointmentId") REFERENCES "public"."Appointment"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."EhrRecord" ADD CONSTRAINT "EhrRecord_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patient"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."MedicalReport" ADD CONSTRAINT "MedicalReport_appointmentId_fkey" FOREIGN KEY ("appointmentId") REFERENCES "public"."Appointment"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."MedicalReport" ADD CONSTRAINT "MedicalReport_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patient"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."MedicalReport" ADD CONSTRAINT "MedicalReport_uploadedByUserId_fkey" FOREIGN KEY ("uploadedByUserId") REFERENCES "public"."User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."Patient" ADD CONSTRAINT "Patient_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -243,9 +322,3 @@ ALTER TABLE "public"."Prescription" ADD CONSTRAINT "Prescription_doctorId_fkey" 
 
 -- AddForeignKey
 ALTER TABLE "public"."Prescription" ADD CONSTRAINT "Prescription_patientId_fkey" FOREIGN KEY ("patientId") REFERENCES "public"."Patient"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "public"."Slot" ADD CONSTRAINT "Slot_appointmentId_fkey" FOREIGN KEY ("appointmentId") REFERENCES "public"."Appointment"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "public"."Slot" ADD CONSTRAINT "Slot_doctorId_fkey" FOREIGN KEY ("doctorId") REFERENCES "public"."Doctor"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -2,7 +2,6 @@ export interface ProfessionalStats {
   totalConsultations: number;
   patientsTreated: number;
   todaysAppointments: number;
-  averageRating: number;
   completedConsultations: number;
 }
 

@@ -22,6 +22,9 @@ audio conversion).
 The browser calls NestJS. Authenticated JSON AI operations are available under
 `/api/ai/:operation`; NestJS supplies the internal service key to FastAPI.
 
+Google Sign-In setup and environment details are documented in
+[docs/GOOGLE_SIGN_IN.md](docs/GOOGLE_SIGN_IN.md).
+
 ## Production
 
 - Vercel root directory: `frontend`; output directory: `dist`.

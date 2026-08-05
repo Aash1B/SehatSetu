@@ -8,29 +8,75 @@ import StatisticsGrid from '../components/profile/StatisticsGrid';
 import SettingsCard from '../components/profile/SettingsCard';
 import DocumentCard from '../components/profile/DocumentCard';
 import { DoctorProfileData } from '../types/profile.types';
-import { getActiveDoctor, getDoctorProfileData, type DoctorProfile as ActiveDoc } from '../utils/doctorProfile';
+import { getDoctorProfileData } from '../utils/doctorProfile';
+import { getToken } from '../../auth/authStorage';
 
 const DoctorProfile: React.FC = () => {
-  const [activeDoc, setActiveDoc] = useState<ActiveDoc>(getActiveDoctor());
   const [profile, setProfile] = useState<DoctorProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<DoctorProfileData | null>(null);
 
-  const loadProfile = () => {
+  const loadProfile = async () => {
     setIsLoading(true);
-    const docData = getDoctorProfileData();
-    setProfile(docData);
-    setFormData(docData);
-    setActiveDoc(getActiveDoctor());
-    setIsLoading(false);
+    try {
+      const storedProfile = getDoctorProfileData();
+      const response = await fetch('/api/doctors/me', {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      if (!response.ok) throw new Error('Unable to load doctor profile');
+      const doctor = await response.json();
+      const availability = doctor.availability && typeof doctor.availability === 'object' ? doctor.availability : {};
+      const actualProfile: DoctorProfileData = {
+        ...storedProfile,
+        id: doctor.id,
+        fullName: doctor.user?.fullName || doctor.name || storedProfile.fullName,
+        specialization: doctor.specialty || storedProfile.specialization,
+        qualification: doctor.degrees || storedProfile.qualification,
+        yearsOfExperience: Number.parseInt(String(doctor.experience || storedProfile.yearsOfExperience), 10) || 0,
+        photoUrl: doctor.imageUrl || storedProfile.photoUrl,
+        email: doctor.user?.email || storedProfile.email,
+        clinicName: doctor.hospital || storedProfile.clinicName,
+        address: doctor.location || storedProfile.address,
+        languagesSpoken: Array.isArray(doctor.tags) && doctor.tags.length ? doctor.tags : storedProfile.languagesSpoken,
+        medicalLicenseNumber: availability.medicalLicenseNumber || '',
+        phoneNumber: availability.phoneNumber || '',
+        aboutMe: availability.aboutMe || '',
+        availability: {
+          slots: Array.isArray(availability.slots) ? availability.slots : storedProfile.availability.slots,
+          slotDurationMinutes: availability.slotDurationMinutes || storedProfile.availability.slotDurationMinutes,
+          status: availability.status || storedProfile.availability.status,
+        },
+        documents: Array.isArray(availability.documents) ? availability.documents : [],
+        isVerified: Array.isArray(availability.documents) && availability.documents.length >= 3,
+        stats: doctor.stats,
+      };
+      setProfile(actualProfile);
+      setFormData(actualProfile);
+    } catch (error) {
+      console.error('Failed to load doctor profile', error);
+      const fallback = getDoctorProfileData();
+      const unavailableProfile = {
+        ...fallback,
+        stats: {
+          totalConsultations: 0,
+          patientsTreated: 0,
+          todaysAppointments: 0,
+          completedConsultations: 0,
+        },
+      };
+      setProfile(unavailableProfile);
+      setFormData(unavailableProfile);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
-    loadProfile();
+    void loadProfile();
 
     const handleDoctorChange = () => {
-      loadProfile();
+      void loadProfile();
     };
 
     window.addEventListener('sehat_doctor_changed', handleDoctorChange);
@@ -48,12 +94,29 @@ const DoctorProfile: React.FC = () => {
   };
 
   const handleSave = async () => {
-    // Simulate API call to save data
+    if (!formData) return;
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setProfile(formData);
-    setIsEditing(false);
-    setIsLoading(false);
+    try {
+      const response = await fetch(`/api/doctor/${formData.id}/profile`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+        body: JSON.stringify({
+          ...formData,
+          availability: {
+            ...formData.availability,
+            aboutMe: formData.aboutMe,
+            medicalLicenseNumber: formData.medicalLicenseNumber,
+            phoneNumber: formData.phoneNumber,
+            documents: formData.documents,
+          },
+        }),
+      });
+      if (!response.ok) throw new Error('Unable to save doctor profile');
+      setProfile(formData);
+      setIsEditing(false);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (field: keyof DoctorProfileData, value: any) => {

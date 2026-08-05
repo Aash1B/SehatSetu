@@ -1,7 +1,7 @@
 import React from 'react';
 import StatCard from '../StatCard';
 import { ProfessionalStats } from '../../types/profile.types';
-import { Calendar, CheckSquare, Star, Users, Video } from 'lucide-react';
+import { Calendar, CheckSquare, Users, Video } from 'lucide-react';
 
 interface Props {
   stats: ProfessionalStats;
@@ -25,16 +25,11 @@ const StatisticsGrid: React.FC<Props> = ({ stats }) => {
         iconColorClass="text-habanero"
       />
       <StatCard
-        title="Average Rating"
-        value={
-          <div className="flex items-baseline gap-1">
-            {stats.averageRating}
-            <Star className="w-6 h-6 text-yellow-400 fill-yellow-400" />
-          </div>
-        }
-        subtitle="From patient reviews"
-        icon={Star}
-        iconColorClass="text-yellow-500"
+        title="Completed Consultations"
+        value={stats.completedConsultations}
+        subtitle="Successfully completed"
+        icon={CheckSquare}
+        iconColorClass="text-emerald-500"
       />
       <StatCard
         title="Today's Appointments"

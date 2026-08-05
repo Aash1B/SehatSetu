@@ -119,7 +119,15 @@ const DoctorOnboarding: React.FC = () => {
   }, []);
 
   const handleTextChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    let cleanVal = value;
+    if (field === 'phoneNumber') {
+      cleanVal = value.replace(/[^0-9]/g, '').substring(0, 10);
+    } else if (field === 'yearsOfExperience' || field === 'consultationFee') {
+      cleanVal = value.replace(/[^0-9]/g, '');
+    } else if (field === 'fullName') {
+      cleanVal = value.replace(/[^a-zA-Z\s.-]/g, '');
+    }
+    setFormData(prev => ({ ...prev, [field]: cleanVal }));
     // Clear errors when user starts filling
     if (stepErrors.length > 0) setStepErrors([]);
   };
@@ -128,20 +136,41 @@ const DoctorOnboarding: React.FC = () => {
   const validateStep = (step: number): string[] => {
     const errors: string[] = [];
     if (step === 1) {
-      if (!formData.fullName.trim()) errors.push('Full name is required.');
-      if (!formData.email.trim()) errors.push('Email address is required.');
-      if (!formData.phoneNumber.trim()) errors.push('Phone number is required.');
+      if (!formData.fullName.trim()) {
+        errors.push('Full name is required.');
+      } else if (!/^[a-zA-Z\s.]+$/.test(formData.fullName.trim())) {
+        errors.push('Full Name should only contain letters, spaces, and dots.');
+      }
+      if (!formData.email.trim()) {
+        errors.push('Email address is required.');
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+        errors.push('Please enter a valid email address.');
+      }
+      if (!formData.phoneNumber.trim()) {
+        errors.push('Phone number is required.');
+      } else if (formData.phoneNumber.trim().length !== 10) {
+        errors.push('Phone number must be exactly 10 digits.');
+      }
       if (formData.languagesSpoken.length === 0) errors.push('Select at least one language spoken.');
     } else if (step === 2) {
       if (!formData.specialization.trim()) errors.push('Specialization is required.');
       if (!formData.qualification.trim()) errors.push('Qualification / degrees are required.');
-      if (!formData.yearsOfExperience.toString().trim() || Number(formData.yearsOfExperience) < 0) errors.push('Years of experience is required.');
+      
+      const expNum = parseInt(formData.yearsOfExperience, 10);
+      if (isNaN(expNum) || expNum < 0 || expNum > 60) {
+        errors.push('Please enter a valid years of experience between 0 and 60.');
+      }
+      
       if (!formData.medicalLicenseNumber.trim()) errors.push('Medical registration / license number is required.');
       if (!formData.aboutMe.trim()) errors.push('Doctor bio / profile summary is required.');
     } else if (step === 3) {
       if (!formData.clinicName.trim()) errors.push('Hospital / clinic name is required.');
       if (!formData.address.trim()) errors.push('Clinic address is required.');
-      if (!formData.consultationFee.toString().trim() || Number(formData.consultationFee) <= 0) errors.push('Consultation fee is required and must be greater than 0.');
+      
+      const feeNum = parseInt(formData.consultationFee, 10);
+      if (isNaN(feeNum) || feeNum <= 0) {
+        errors.push('Consultation fee must be a valid number greater than 0.');
+      }
     } else if (step === 4) {
       if (!documentFiles['medical-license']) errors.push('Medical Registration License document is required.');
       if (!documentFiles['degree-certificate']) errors.push('Medical Degree Certificate document is required.');
@@ -177,16 +206,13 @@ const DoctorOnboarding: React.FC = () => {
     'id-proof': null,
   });
   const [uploadingDocs, setUploadingDocs] = useState<Record<string, boolean>>({});
-  const [uploadedDocsInfo, setUploadedDocsInfo] = useState<any[]>([
-    { id: 'doc-1', name: 'Medical License Certificate', type: 'PDF', status: 'Verified', uploadDate: new Date().toISOString().split('T')[0] },
-    { id: 'doc-2', name: 'MD Degree Certificate', type: 'PDF', status: 'Verified', uploadDate: new Date().toISOString().split('T')[0] },
-    { id: 'doc-3', name: 'Identity Proof (Aadhaar/Passport)', type: 'PDF', status: 'Verified', uploadDate: new Date().toISOString().split('T')[0] }
-  ]);
+  const [uploadedDocsInfo, setUploadedDocsInfo] = useState<any[]>([]);
 
   const uploadDocToSupabase = async (docType: string, fileObj?: File) => {
     setUploadingDocs(prev => ({ ...prev, [docType]: true }));
     try {
-      const activeDocId = 'd1';
+      const activeDocId = getUser()?.id;
+      if (!activeDocId || !fileObj) throw new Error('Sign in and choose a document file');
       const formDataUpload = new FormData();
       formDataUpload.append('documentType', docType);
       if (fileObj) {
@@ -195,8 +221,8 @@ const DoctorOnboarding: React.FC = () => {
 
       const res = await fetch(`/api/doctor/${activeDocId}/documents/upload`, {
         method: 'POST',
-        body: fileObj ? formDataUpload : JSON.stringify({ documentType: docType }),
-        headers: fileObj ? {} : { 'Content-Type': 'application/json' }
+        body: formDataUpload,
+        headers: { Authorization: `Bearer ${getToken()}` },
       });
 
       if (res.ok) {
@@ -223,7 +249,8 @@ const DoctorOnboarding: React.FC = () => {
       
       setIsUploadingPhoto(true);
       try {
-        const activeDocId = 'd1';
+        const activeDocId = getUser()?.id;
+        if (!activeDocId) throw new Error('Sign in before uploading a profile photo');
         const formDataUpload = new FormData();
         formDataUpload.append('documentType', 'profile-photo');
         formDataUpload.append('file', file);
@@ -231,6 +258,7 @@ const DoctorOnboarding: React.FC = () => {
         const res = await fetch(`/api/doctor/${activeDocId}/documents/upload`, {
           method: 'POST',
           body: formDataUpload,
+          headers: { Authorization: `Bearer ${getToken()}` },
         });
 
         if (res.ok) {
@@ -268,11 +296,6 @@ const DoctorOnboarding: React.FC = () => {
     const user = getUser();
     const activeDocId = user?.id || 'd-active';
 
-    // Upload documents to Supabase Storage Bucket first
-    await uploadDocToSupabase('medical-license');
-    await uploadDocToSupabase('degree-certificate');
-    await uploadDocToSupabase('id-proof');
-
     // Create updated profile payload
     const updatedProfile: DoctorProfileData = {
       id: activeDocId,
@@ -293,7 +316,6 @@ const DoctorOnboarding: React.FC = () => {
         totalConsultations: 0,
         patientsTreated: 0,
         todaysAppointments: 0,
-        averageRating: 5.0,
         completedConsultations: 0
       },
       availability: {
@@ -315,7 +337,7 @@ const DoctorOnboarding: React.FC = () => {
     // Save doctor onboarding data to PostgreSQL Database via NestJS API
     try {
       const token = getToken();
-      await fetch(`/api/doctor/${activeDocId}/onboarding`, {
+      const response = await fetch(`/api/doctor/${activeDocId}/onboarding`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -323,8 +345,14 @@ const DoctorOnboarding: React.FC = () => {
         },
         body: JSON.stringify(updatedProfile)
       });
+      if (!response.ok) {
+        const error = await response.json().catch(() => null);
+        throw new Error(error?.message || 'Unable to save doctor profile');
+      }
     } catch (apiErr) {
-      console.warn('Backend API save warning:', apiErr);
+      setStepErrors([apiErr instanceof Error ? apiErr.message : 'Unable to save doctor profile']);
+      setIsSaving(false);
+      return;
     }
 
     // Save onboarding details in local storage keyed by user ID for personalized access
@@ -507,11 +535,11 @@ const DoctorOnboarding: React.FC = () => {
                     <div className="relative">
                       <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
                       <input 
-                        type="tel"
+                        type="text"
                         required
                         value={formData.phoneNumber}
                         onChange={(e) => handleTextChange('phoneNumber', e.target.value)}
-                        placeholder="+91 98765 43210"
+                        placeholder="10-digit number"
                         className="w-full text-sm p-3 pl-9 rounded-xl border border-slate-300 focus:ring-2 focus:ring-aster-blue outline-none"
                       />
                     </div>
@@ -589,9 +617,7 @@ const DoctorOnboarding: React.FC = () => {
                     <div className="relative">
                       <Briefcase className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
                       <input 
-                        type="number"
-                        min="0"
-                        max="60"
+                        type="text"
                         required
                         value={formData.yearsOfExperience}
                         onChange={(e) => handleTextChange('yearsOfExperience', e.target.value)}
@@ -678,13 +704,12 @@ const DoctorOnboarding: React.FC = () => {
                     <div className="relative">
                       <span className="text-slate-400 font-bold text-sm absolute left-3 top-3">₹</span>
                       <input 
-                        type="number"
-                        min="0"
-                        step="50"
+                        type="text"
                         required
                         value={formData.consultationFee}
-                        onChange={(e) => handleTextChange('consultationFee', e.target.value)}
-                        className="w-full text-sm p-3 pl-8 rounded-xl border border-slate-300 focus:ring-2 focus:ring-aster-blue outline-none font-bold text-slate-800"
+                        onChange={(e) => handleTextChange('consultationFee', e.target.value.replace(/[^0-9]/g, ''))}
+                        placeholder="e.g. 500"
+                        className="w-full text-sm p-3 pl-9 rounded-xl border border-slate-300 focus:ring-2 focus:ring-aster-blue outline-none"
                       />
                     </div>
                   </div>

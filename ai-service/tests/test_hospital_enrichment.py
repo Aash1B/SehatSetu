@@ -93,8 +93,6 @@ def test_raw_google_data_and_extra_fields_are_preserved() -> None:
         "latitude": 18.52,
         "longitude": 73.85,
         "distance": 1250,
-        "rating": 4.1,
-        "userRatingCount": 321,
         "googleTypes": ["hospital"],
         "primaryType": "hospital",
         "businessStatus": "OPERATIONAL",

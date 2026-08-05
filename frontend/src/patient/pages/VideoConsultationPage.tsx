@@ -4,7 +4,6 @@ import { LiveKitRoom, VideoConference } from '@livekit/components-react';
 import '@livekit/components-styles';
 import { Shield, User, MessageSquare, BadgeCheck, Clock3, Send } from 'lucide-react';
 import ConsultationTimer from '../../doctor/components/ConsultationTimer';
-import { getConsultationRoomId } from '../../config/consultationTestMode';
 
 import PrescriptionViewModal from '../../common/components/PrescriptionViewModal';
 import { getToken } from '../../auth/authStorage';
@@ -45,7 +44,6 @@ const VideoConsultationPage: React.FC = () => {
   const [serverUrl, setServerUrl] = useState("");
   const [connectionError, setConnectionError] = useState("");
   const consultationId = id;
-  const roomId = getConsultationRoomId(consultationId);
 
   useEffect(() => {
     (async () => {
@@ -63,8 +61,8 @@ const VideoConsultationPage: React.FC = () => {
             doctorSpecialty: appointmentData.doctor?.specialty || '',
             doctorHospital: appointmentData.doctor?.hospital || 'SehatSetu Digital Health Clinic',
             patientName: appointmentData.patient?.user?.fullName || appointmentData.patientName || 'Patient',
-            patientAge: appointmentData.patient?.age || appointmentData.patientAge || '',
-            patientGender: appointmentData.patient?.gender || appointmentData.patientGender || '',
+            patientAge: appointmentData.patientAge || appointmentData.patient?.age || '',
+            patientGender: appointmentData.patientGender || appointmentData.patient?.gender || '',
             date: new Date(prescription.createdAt).toLocaleDateString(),
             diagnosis: appointmentData.ehrRecord?.diagnosis || appointmentData.healthConcern || '',
             symptoms: appointmentData.symptoms || [],
@@ -73,8 +71,9 @@ const VideoConsultationPage: React.FC = () => {
             notes: appointmentData.ehrRecord?.notes || '',
           });
         }
-        const participantName = appointmentData.patient?.user?.fullName || 'Patient';
-        const resp = await fetch(`/api/livekit/token?room=${encodeURIComponent(roomId)}&username=${encodeURIComponent(participantName)}`);
+        const resp = await fetch(`/api/livekit/token?appointmentId=${encodeURIComponent(consultationId)}`, {
+          headers: authHeaders,
+        });
         if (!resp.ok) throw new Error(`Unable to create video-room token (${resp.status})`);
         const data = await resp.json();
         if (!data.token || !data.serverUrl) throw new Error('Video-room configuration is incomplete');
@@ -85,7 +84,7 @@ const VideoConsultationPage: React.FC = () => {
         setConnectionError(e instanceof Error ? e.message : 'Unable to connect to the video room');
       }
     })();
-  }, [roomId, consultationId]);
+  }, [consultationId]);
 
   // Timer interval effect
   useEffect(() => {
@@ -126,8 +125,8 @@ const VideoConsultationPage: React.FC = () => {
           doctorSpecialty: latest.doctor?.specialty || '',
           doctorHospital: latest.doctor?.hospital || 'SehatSetu Digital Health Clinic',
           patientName: latest.patient?.user?.fullName || latest.patientName || 'Patient',
-          patientAge: latest.patient?.age || latest.patientAge || '',
-          patientGender: latest.patient?.gender || latest.patientGender || '',
+          patientAge: latest.patientAge || latest.patient?.age || '',
+          patientGender: latest.patientGender || latest.patient?.gender || '',
           date: new Date(rx.createdAt).toLocaleDateString(),
           diagnosis: latest.ehrRecord?.diagnosis || latest.healthConcern || '',
           symptoms: latest.symptoms || [],

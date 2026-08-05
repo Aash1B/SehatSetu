@@ -1,4 +1,4 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
+const API_BASE_URL = 'http://localhost:8000';
 
 export interface AuthResponse {
   id: string;
@@ -6,6 +6,7 @@ export interface AuthResponse {
   fullName: string;
   role: 'PATIENT' | 'DOCTOR';
   accessToken: string;
+  onboardingCompleted: boolean;
 }
 
 export interface SignupResponse {
@@ -30,6 +31,12 @@ export interface LoginPayload {
   password: string;
 }
 
+export interface GoogleAuthPayload {
+  credential: string;
+  role: 'PATIENT' | 'DOCTOR';
+  dataConsent?: boolean;
+}
+
 export interface VerifyOtpPayload {
   email: string;
   otp: string;
@@ -50,30 +57,11 @@ function extractErrorMessage(data: any): string {
 }
 
 async function handleResponse<T>(res: Response): Promise<T> {
-  const text = await res.text();
-
-  if (!text) {
-    if (!res.ok) {
-      throw new Error(`Request failed with status ${res.status}`);
-    }
-    return {} as T;
-  }
-
-  let data: unknown;
-  try {
-    data = JSON.parse(text);
-  } catch {
-    if (!res.ok) {
-      throw new Error(`Request failed with status ${res.status}`);
-    }
-    throw new Error('Invalid response from the server.');
-  }
-
+  const data = await res.json();
   if (!res.ok) {
     throw new Error(extractErrorMessage(data));
   }
-
-  return data as T;
+  return data;
 }
 
 export async function signup(payload: SignupPayload): Promise<SignupResponse> {
@@ -87,6 +75,15 @@ export async function signup(payload: SignupPayload): Promise<SignupResponse> {
 
 export async function login(payload: LoginPayload): Promise<AuthResponse> {
   const res = await fetch(`${API_BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  return handleResponse<AuthResponse>(res);
+}
+
+export async function googleLogin(payload: GoogleAuthPayload): Promise<AuthResponse> {
+  const res = await fetch(`${API_BASE_URL}/auth/google`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),

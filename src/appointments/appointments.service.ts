@@ -1,8 +1,6 @@
 import { Injectable, BadRequestException, ConflictException, HttpException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { prisma } from '../prisma';
-import * as bcrypt from 'bcrypt';
-import { v4 as uuidv4 } from 'uuid';
 
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
@@ -14,42 +12,25 @@ export class AppointmentsService {
   ) {}
 
   async createAppointment(data: any, authenticatedUserId: string) {
-    const doctorId = data.doctorId || 'd1';
+    const doctorId = data.doctorId;
+    if (!doctorId) throw new BadRequestException('A doctor must be selected');
 
     return await prisma.$transaction(async (tx) => {
       // 1. Verify/find or auto-create doctor
       let doctor = await tx.doctor.findUnique({ where: { id: doctorId } });
       if (!doctor) {
-        let doctorUser = await tx.user.findFirst({ where: { role: Role.DOCTOR } });
-        if (!doctorUser) {
-          const passwordHash = await bcrypt.hash('dummy_password', 10);
-          doctorUser = await tx.user.create({
-            data: {
-              email: `doctor-${uuidv4()}@sehatsetu.invalid`,
-              fullName: 'Dr. Sarah Jenkins',
-              passwordHash,
-              role: Role.DOCTOR,
-            },
-          });
-        }
-        doctor = await tx.doctor.create({
-          data: {
-            id: doctorId,
-            userId: doctorUser.id,
-            specialty: 'Cardiologist',
-            consultationFee: 1000,
-          },
-        });
+        throw new NotFoundException('Selected doctor was not found');
       }
 
       if (!doctor.userId && doctor.name) {
         const normalizedName = doctor.name.replace(/^dr\.?\s*/i, '').trim().toLowerCase();
-        const linkedDoctors = await tx.doctor.findMany({ where: { userId: { not: null } }, include: { user: true } });
+        const linkedDoctors = await tx.doctor.findMany({ where: { userId: { not: null } }, include: { user: { select: { id: true, fullName: true, email: true, role: true } } } });
         const linkedMatch = linkedDoctors.find((candidate) =>
           candidate.user?.fullName.replace(/^dr\.?\s*/i, '').trim().toLowerCase() === normalizedName,
         );
         if (linkedMatch) doctor = linkedMatch;
       }
+      if (!doctor.userId) throw new BadRequestException('Selected doctor is not available for online booking');
 
       // 2. Create or reuse User (Patient)
       const user = await tx.user.findUnique({ where: { id: authenticatedUserId } });
@@ -66,6 +47,18 @@ export class AppointmentsService {
             gender: data.patientGender || null,
             allergies: [],
             chronicConditions: [],
+          },
+        });
+      } else {
+        patient = await tx.patient.update({
+          where: { id: patient.id },
+          data: {
+            ...(data.patientAge && { age: String(data.patientAge) }),
+            ...(data.patientGender && { gender: data.patientGender }),
+            ...(data.patientHeight && { height: String(data.patientHeight) }),
+            ...(data.patientWeight && { weight: String(data.patientWeight) }),
+            ...(data.patientBloodGroup && { bloodGroup: data.patientBloodGroup }),
+            ...(data.patientPhone && { phone: data.patientPhone }),
           },
         });
       }
@@ -114,11 +107,11 @@ export class AppointmentsService {
         where: {
           doctorId: doctor.id,
           scheduledAt,
-          status: { in: ['SCHEDULED', 'WAITING'] },
+          status: { notIn: ['CANCELLED', 'REJECTED', 'EXPIRED'] },
         },
         select: { id: true },
       });
-      if (occupiedSlot) throw new ConflictException('This appointment slot was just booked. Please choose another time.');
+      if (occupiedSlot) throw new ConflictException('This appointment slot is already booked. Please choose another time.');
 
       // 5. Create Appointment in DB
       const appointment = await tx.appointment.create({
@@ -181,7 +174,9 @@ export class AppointmentsService {
       return createdAppt;
     }).catch((error) => {
       if (error instanceof HttpException) throw error;
-      if (error?.code === 'P2034') throw new ConflictException('This appointment slot was just booked. Please choose another time.');
+      if (error?.code === 'P2002' || error?.code === 'P2034') {
+        throw new ConflictException('This appointment slot is already booked. Please choose another time.');
+      }
       console.error('Error booking appointment in transaction:', error);
       throw new InternalServerErrorException('Failed to book appointment');
     });
@@ -280,14 +275,14 @@ export class AppointmentsService {
       return prisma.appointment.findMany({
         where: { patient: { is: { userId } } },
         orderBy: { createdAt: 'desc' },
-        include: { doctor: { include: { user: true } }, prescription: true, ehrRecord: true },
+        include: { doctor: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } }, prescription: true, ehrRecord: true },
       });
     }
     if (role === Role.DOCTOR) {
       return prisma.appointment.findMany({
         where: { doctor: { is: { userId } } },
         orderBy: { createdAt: 'desc' },
-        include: { patient: { include: { user: true } }, prescription: true, ehrRecord: true },
+        include: { patient: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } }, prescription: true, ehrRecord: true },
       });
     }
     return [];
@@ -308,14 +303,33 @@ export class AppointmentsService {
       },
       orderBy: { createdAt: 'desc' },
       include: {
-        patient: { include: { user: true } },
-        doctor: { include: { user: true } },
+        patient: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } },
+        doctor: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } },
         prescription: true,
         ehrRecord: true,
       },
     });
     if (!appointment) throw new NotFoundException('Appointment not found');
-    return appointment;
+
+    let ageFromDateOfBirth = '';
+    if (appointment.patient?.dateOfBirth) {
+      const today = new Date();
+      const birthDate = new Date(appointment.patient.dateOfBirth);
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDifference = today.getMonth() - birthDate.getMonth();
+      if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) age -= 1;
+      if (age >= 0) ageFromDateOfBirth = String(age);
+    }
+
+    return {
+      ...appointment,
+      patientAge: appointment.patientAge || appointment.patient?.age || ageFromDateOfBirth,
+      patientGender: appointment.patientGender || appointment.patient?.gender || '',
+      patientHeight: appointment.patientHeight || appointment.patient?.height || '',
+      patientWeight: appointment.patientWeight || appointment.patient?.weight || '',
+      patientBloodGroup: appointment.patientBloodGroup || appointment.patient?.bloodGroup || '',
+      patientPhone: appointment.patientPhone || appointment.patient?.phone || '',
+    };
   }
 
   async rescheduleAppointment(appointmentId: string, data: any, userId: string, role: string) {
@@ -347,20 +361,41 @@ export class AppointmentsService {
       throw new BadRequestException('Appointments must be scheduled at least 30 minutes in advance');
     }
 
-    const updated = await prisma.appointment.update({
-      where: { id: appointmentId },
-      data: {
-        scheduledAt,
-        date: data.date,
-        timeSlot: data.timeSlot,
-        doctorId: data.doctorId || appointment.doctorId,
-        status: 'SCHEDULED',
-      },
-      include: { doctor: { include: { user: true } }, prescription: true, ehrRecord: true },
+    return prisma.$transaction(async (tx) => {
+      const existingConflict = await tx.appointment.findFirst({
+        where: {
+          doctorId: data.doctorId || appointment.doctorId,
+          scheduledAt,
+          status: { notIn: ['CANCELLED', 'REJECTED', 'EXPIRED'] },
+          id: { not: appointmentId },
+        },
+      });
+      if (existingConflict) {
+        throw new ConflictException('The requested reschedule time slot is already booked');
+      }
+
+      return tx.appointment.update({
+        where: { id: appointmentId },
+        data: {
+          scheduledAt,
+          date: data.date,
+          timeSlot: data.timeSlot,
+          doctorId: data.doctorId || appointment.doctorId,
+          status: 'SCHEDULED',
+        },
+        include: { doctor: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } }, prescription: true, ehrRecord: true },
+      });
+    }, { isolationLevel: 'Serializable' }).then(async (updated) => {
+      await this.scheduleStandardReminders(updated);
+      if (updated.isFollowUp && updated.emailRemindersEnabled) await this.scheduleFollowUpReminders(updated);
+      return updated;
+    }).catch((err) => {
+      if (err instanceof HttpException) throw err;
+      if (err?.code === 'P2002' || err?.code === 'P2034') {
+        throw new ConflictException('The requested reschedule time slot is already booked');
+      }
+      throw new InternalServerErrorException('Failed to reschedule appointment');
     });
-    await this.scheduleStandardReminders(updated);
-    if (updated.isFollowUp && updated.emailRemindersEnabled) await this.scheduleFollowUpReminders(updated);
-    return updated;
   }
 
   async getAppointmentsForDoctor(doctorId: string) {
@@ -370,7 +405,7 @@ export class AppointmentsService {
       include: {
         patient: {
           include: {
-            user: true
+            user: { select: { id: true, fullName: true, email: true, role: true } }
           }
         },
         ehrRecord: true,
