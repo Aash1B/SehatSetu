@@ -178,6 +178,7 @@ const VideoConsultationPage: React.FC = () => {
               <div className="flex-1 min-h-0 relative rounded-2xl overflow-hidden bg-deep-space shadow-sm border border-gray-200">
                 {token && serverUrl ? (
                   <LiveKitRoom
+                    connect={Boolean(token && serverUrl)}
                     video={true}
                     audio={true}
                     token={token}

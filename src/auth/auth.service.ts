@@ -65,7 +65,25 @@ export class AuthService {
       if (role === 'PATIENT') {
         await tx.patient.create({ data: { userId: newUser.id } });
       } else if (role === 'DOCTOR') {
-        await tx.doctor.create({ data: { userId: newUser.id, specialty: 'General Physician' } });
+        await tx.doctor.create({
+          data: {
+            userId: newUser.id,
+            specialty: 'General Physician',
+            name: fullName.startsWith('Dr.') ? fullName : `Dr. ${fullName}`,
+            availableToday: true,
+            priorityLevel: 'P1',
+            priorityScore: 150,
+            rating: 5.0,
+            reviewsCount: 0,
+            fee: '₹500',
+            consultationFee: 500,
+            hospital: 'SehatSetu Medical Network',
+            location: 'India',
+            imageUrl: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=400',
+            experience: 'New Doctor',
+            tags: ['English', 'Hindi'],
+          },
+        });
       }
 
       return newUser;

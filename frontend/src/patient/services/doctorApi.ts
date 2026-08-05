@@ -85,6 +85,8 @@ export async function fetchDoctors(): Promise<Doctor[]> {
           const userRow = Array.isArray(d.User) ? d.User[0] : d.User;
           return mapDoctorRow({ ...d, user: userRow });
         });
+        // Sort: highest priorityScore first (registered real doctors score 150)
+        mapped.sort((a, b) => (b.priorityScore ?? 0) - (a.priorityScore ?? 0));
         console.log(`[Supabase] Fetched ${mapped.length} doctors directly from Supabase ✅`);
         return mapped;
       }
@@ -111,11 +113,8 @@ export async function fetchDoctors(): Promise<Doctor[]> {
         ...doctorsData.filter((doctor) => !dynamicIds.has(doctor.id) && !dynamicNames.has(doctor.name.replace(/^dr\.?\s*/i, '').trim().toLowerCase())),
         ...dynamicDoctors,
       ];
-      return mergedDoctors.sort((a, b) => {
-        const aIsSarah = a.id === 'd1' || /sarah jenkins/i.test(a.name);
-        const bIsSarah = b.id === 'd1' || /sarah jenkins/i.test(b.name);
-        return Number(bIsSarah) - Number(aIsSarah);
-      });
+      // Sort: real registered doctors (priorityScore 150) first, then by score descending
+      return mergedDoctors.sort((a, b) => (b.priorityScore ?? 0) - (a.priorityScore ?? 0));
     }
   } catch (apiErr) {
     console.warn('[API] Local backend unavailable, using static data:', apiErr);
@@ -136,7 +135,6 @@ export async function recommendDoctorsApi(issue: string, symptoms: string[]): Pr
       else if (combined.includes('heart') || combined.includes('chest')) targetSpec = 'Cardiologist';
       else if (combined.includes('child') || combined.includes('baby')) targetSpec = 'Pediatrician';
       else if (combined.includes('bone') || combined.includes('joint')) targetSpec = 'Orthopedic Doctor';
-      else if (combined.includes('skin')) targetSpec = 'Dermatologist';
       else if (combined.includes('migraine') || combined.includes('seizure')) targetSpec = 'Neurologist';
       else if (combined.includes('period') || combined.includes('pregnancy')) targetSpec = 'Gynecologist';
       else if (combined.includes('tooth') || combined.includes('teeth')) targetSpec = 'Dentist';

@@ -215,7 +215,7 @@ export class AppointmentsService {
     if (!appointment.scheduledAt) return;
     const now = Date.now();
     const scheduled = new Date(appointment.scheduledAt).getTime();
-    for (const minutes of [40, 30]) {
+    for (const minutes of [60, 30]) {
       const triggerAt = scheduled - minutes * 60 * 1000;
       if (triggerAt <= now) continue;
       const jobId = `appointment-${appointment.id}-${minutes}min`;
@@ -296,13 +296,17 @@ export class AppointmentsService {
   async getAppointmentForUser(appointmentId: string, userId: string, role: string) {
     const appointment = await prisma.appointment.findFirst({
       where: {
-        id: appointmentId,
+        OR: [
+          { id: appointmentId },
+          { patientId: appointmentId },
+        ],
         ...(role === Role.PATIENT
           ? { patient: { is: { userId } } }
           : role === Role.DOCTOR
             ? { doctor: { is: { userId } } }
             : { id: '__unauthorized__' }),
       },
+      orderBy: { createdAt: 'desc' },
       include: {
         patient: { include: { user: true } },
         doctor: { include: { user: true } },

@@ -78,7 +78,7 @@ const DoctorSearchSection: React.FC = () => {
   }, []);
 
   const toggleFavorite = (id: string) => {
-    setFavorites(prev => 
+    setFavorites(prev =>
       prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
     );
   };
@@ -98,7 +98,7 @@ const DoctorSearchSection: React.FC = () => {
       (doc.hospital || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (doc.location || '').toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesSpecialty = specialtyFilter === 'All' || 
+    const matchesSpecialty = specialtyFilter === 'All' ||
       doc.specialty.toLowerCase().includes(specialtyFilter.toLowerCase().split(' ')[0]) ||
       specialtyFilter.toLowerCase().includes(doc.specialty.toLowerCase().split(' ')[0]);
     const matchesLocation = locationFilter === 'All' || doc.location === locationFilter;
@@ -135,8 +135,8 @@ const DoctorSearchSection: React.FC = () => {
         <div className="search-box-wrapper">
           <div className="search-input-group">
             <svg className="search-magnifier-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8"/>
-              <path d="M21 21l-4.35-4.35"/>
+              <circle cx="11" cy="11" r="8" />
+              <path d="M21 21l-4.35-4.35" />
             </svg>
             <input
               type="text"
@@ -145,9 +145,9 @@ const DoctorSearchSection: React.FC = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <button 
-              type="button" 
-              className="btn-voice-search" 
+            <button
+              type="button"
+              className="btn-voice-search"
               title="AI Recommend Specialist"
               onClick={async () => {
                 if (!searchTerm.trim()) return;
@@ -165,8 +165,8 @@ const DoctorSearchSection: React.FC = () => {
             </button>
             <button type="button" className="btn-search-submit">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
-                <circle cx="11" cy="11" r="8"/>
-                <path d="M21 21l-4.35-4.35"/>
+                <circle cx="11" cy="11" r="8" />
+                <path d="M21 21l-4.35-4.35" />
               </svg>
               Search
             </button>
@@ -211,7 +211,7 @@ const DoctorSearchSection: React.FC = () => {
 
             <button type="button" className="btn-more-filters">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
-                <path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>
+                <path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" />
               </svg>
               More Filters
             </button>
@@ -221,14 +221,14 @@ const DoctorSearchSection: React.FC = () => {
         {/* Doctor Cards Carousel Header */}
         <div className="doctors-carousel-header">
           <h3 className="doctors-carousel-title">Top Doctors Near You</h3>
-          <button 
-            type="button" 
-            className="link-view-all" 
+          <button
+            type="button"
+            className="link-view-all"
             onClick={() => navigate('/patient/search')}
           >
             View All Doctors
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
+              <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
           </button>
         </div>
@@ -244,8 +244,8 @@ const DoctorSearchSection: React.FC = () => {
               <div key={doctor.id} className="doctor-card-item">
                 <div className="doctor-card-image-wrap">
                   <img src={doctor.imageUrl} alt={doctor.name} className="doctor-avatar-img" />
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className={`favorite-btn ${favorites.includes(doctor.id) ? 'active' : ''}`}
                     onClick={() => toggleFavorite(doctor.id)}
                     aria-label="Favorite doctor"
@@ -271,15 +271,15 @@ const DoctorSearchSection: React.FC = () => {
                   </p>
 
                   <div className="doctor-card-actions">
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="btn-view-profile"
                       onClick={() => navigate(`/patient/book/${doctor.id}`)}
                     >
                       View Profile
                     </button>
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="btn-book-doctor"
                       onClick={() => navigate(`/patient/book/${doctor.id}`)}
                     >

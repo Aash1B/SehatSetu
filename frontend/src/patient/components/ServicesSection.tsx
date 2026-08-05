@@ -57,8 +57,8 @@ const ServicesSection: React.FC = () => {
 
         <div className="services-grid">
           {services.map((service) => (
-            <div 
-              key={service.id} 
+            <div
+              key={service.id}
               className="service-card"
               style={{ cursor: 'pointer' }}
               onClick={() => handleCardClick(service.id, service.route)}
@@ -66,8 +66,8 @@ const ServicesSection: React.FC = () => {
               <div className="service-icon-box">{service.icon}</div>
               <h3 className="service-card-title">{service.title}</h3>
               <p className="service-card-desc">{service.description}</p>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="service-learn-more"
                 onClick={(e) => {
                   e.stopPropagation();

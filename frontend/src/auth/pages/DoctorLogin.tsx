@@ -24,7 +24,11 @@ export default function DoctorLogin() {
       }
       saveAuth(res.accessToken, { id: res.id, email: res.email, fullName: res.fullName, role: res.role });
       const requestedPath = (location.state as { from?: string } | null)?.from;
-      navigate(requestedPath?.startsWith('/doctor/') ? requestedPath : '/doctor/onboarding', { replace: true });
+      if (requestedPath && requestedPath.startsWith('/doctor/') && requestedPath !== '/doctor/onboarding' && requestedPath !== '/doctor/login') {
+        navigate(requestedPath, { replace: true });
+      } else {
+        navigate('/doctor/dashboard', { replace: true });
+      }
     } catch (err: any) {
       if (err.message.toLowerCase().includes('verify your email')) {
         navigate('/verify-otp', { state: { email, role: 'DOCTOR' } });
@@ -68,9 +72,9 @@ export default function DoctorLogin() {
             </div>
             <div>
               <div className="flex items-center justify-between mb-1">
-  <label className="block text-sm font-medium text-slate-700">Password</label>
-  <Link to="/forgot-password" className="text-xs text-indigo-700 hover:underline">Forgot password?</Link>
-</div>
+                <label className="block text-sm font-medium text-slate-700">Password</label>
+                <Link to="/forgot-password" className="text-xs text-indigo-700 hover:underline">Forgot password?</Link>
+              </div>
               <input
                 type="password"
                 required
@@ -90,15 +94,20 @@ export default function DoctorLogin() {
           </form>
 
           <p className="text-center text-sm text-slate-500 mt-6">
-            Don't have an account?{' '}
-            <Link to="/doctor/signup" className="text-indigo-700 font-medium hover:underline">Sign up</Link>
+            Don't have a doctor account?{' '}
+            <Link to="/doctor/signup" className="text-[#223382] font-bold hover:underline">Sign up as Doctor</Link>
           </p>
         </div>
 
-        <p className="text-center text-sm text-slate-400 mt-6">
-          Are you a patient?{' '}
-          <Link to="/patient/login" className="text-slate-600 hover:underline">Patient login</Link>
-        </p>
+        <div className="mt-6 text-center bg-white/90 backdrop-blur-xs p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <p className="text-sm font-medium text-slate-700 mb-2">Looking for medical consultations or doctor booking?</p>
+          <Link
+            to="/patient/login"
+            className="inline-flex items-center justify-center gap-2 w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-4 rounded-xl transition-all shadow-xs cursor-pointer"
+          >
+            Patient Sign In
+          </Link>
+        </div>
       </div>
     </div>
   );

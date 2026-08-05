@@ -68,7 +68,7 @@ const recentPrescriptionsData = [
       doctorSpecialty: 'General Physician & Telehealth Specialist',
       doctorRegNo: 'MCI-IND-98742',
       doctorHospital: 'SehatSetu Digital Health Clinic',
-      patientName: 'Sunita Devi',
+      patientName: 'Patient',
       patientAge: 31,
       patientGender: 'Female',
       date: 'Aug 02, 2026',
@@ -93,7 +93,7 @@ const recentPrescriptionsData = [
       doctorSpecialty: 'Pediatrician & General Practitioner',
       doctorRegNo: 'MCI-IND-65412',
       doctorHospital: 'Max Super Speciality Hospital',
-      patientName: 'Sunita Devi',
+      patientName: 'Patient',
       patientAge: 31,
       patientGender: 'Female',
       date: 'Jul 28, 2026',
@@ -1010,13 +1010,16 @@ const DashboardPage: React.FC = () => {
                 <p className="emergency-sub">Talk to our support team or emergency services.</p>
 
                 <div className="emergency-widget-bottom">
-                  <button 
-                    type="button" 
-                    className="btn-emergency-call"
-                    onClick={() => setShowEmergencyModal(false)}
+                  <a 
+                    href="tel:102" 
+                    className="btn-emergency-call cursor-pointer"
+                    style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                    onClick={() => {
+                      window.location.href = 'tel:102';
+                    }}
                   >
-                    📞 Emergency Call
-                  </button>
+                    📞 Emergency Call (102)
+                  </a>
 
                   <div className="headset-badge-247">
                     <span className="headset-emoji">🎧</span>

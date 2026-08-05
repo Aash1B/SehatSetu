@@ -18,12 +18,20 @@ export class LivekitService {
       throw new InternalServerErrorException('LiveKit credentials are not configured');
     }
 
+    const uniqueIdentity = `${participantName}_${Math.random().toString(36).substring(2, 7)}`;
+
     const at = new AccessToken(apiKey, apiSecret, {
-      identity: participantName,
+      identity: uniqueIdentity,
       name: participantName,
     });
 
-    at.addGrant({ roomJoin: true, room: roomName });
+    at.addGrant({
+      roomJoin: true,
+      room: roomName,
+      canPublish: true,
+      canSubscribe: true,
+      canPublishData: true,
+    });
     
     return await at.toJwt();
   }

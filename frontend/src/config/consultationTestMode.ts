@@ -4,7 +4,7 @@
  * Set this to false after LiveKit verification. That single change restores
  * scheduled-time enforcement and appointment-specific room IDs.
  */
-export const TEMP_CONSULTATION_TEST_MODE = true;
+export const TEMP_CONSULTATION_TEST_MODE = false;
 
 const TEMP_TEST_ROOM_ID = 'sehatsetu-device-test-room';
 

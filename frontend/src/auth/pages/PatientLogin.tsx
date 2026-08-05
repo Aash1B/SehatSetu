@@ -96,10 +96,15 @@ export default function PatientLogin() {
           </p>
         </div>
 
-        <p className="text-center text-sm text-slate-400 mt-6">
-          Are you a doctor?{' '}
-          <Link to="/doctor/login" className="text-slate-600 hover:underline">Doctor login</Link>
-        </p>
+        <div className="mt-6 text-center bg-white/90 backdrop-blur-xs p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <p className="text-sm font-medium text-slate-700 mb-2">Are you a doctor or medical practitioner?</p>
+          <Link
+            to="/doctor/login"
+            className="inline-flex items-center justify-center gap-2 w-full bg-[#223382] hover:bg-[#1a2868] text-white font-bold py-2.5 px-4 rounded-xl transition-all shadow-xs cursor-pointer"
+          >
+            Are you a doctor? Sign in
+          </Link>
+        </div>
       </div>
     </div>
   );

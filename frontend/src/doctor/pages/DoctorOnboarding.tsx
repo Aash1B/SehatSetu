@@ -49,7 +49,8 @@ const AVAILABLE_LANGUAGES = [
   'Tamil', 'Telugu', 'Kannada', 'Malayalam', 'Punjabi'
 ];
 
-const DEFAULT_DOCTOR_AVATAR = 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=400';
+// No default avatar — show initials placeholder when no photo is uploaded
+const DEFAULT_DOCTOR_AVATAR = '';
 
 const DoctorOnboarding: React.FC = () => {
   const navigate = useNavigate();
@@ -84,11 +85,36 @@ const DoctorOnboarding: React.FC = () => {
   useEffect(() => {
     const user = getUser();
     if (user) {
+      // Pre-fill from auth user data immediately
       setFormData(prev => ({
         ...prev,
         fullName: prev.fullName || user.fullName || '',
         email: prev.email || user.email || '',
       }));
+
+      // Also try to fetch existing profile from backend (in case of re-login)
+      const token = getToken();
+      fetch(`/api/doctor/${user.id}/profile`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data) {
+            setFormData(prev => ({
+              ...prev,
+              fullName: prev.fullName || data.name || data.user?.fullName || user.fullName || '',
+              email: prev.email || data.user?.email || user.email || '',
+              specialization: prev.specialization || data.specialty || 'General Physician',
+              qualification: prev.qualification || data.degrees || '',
+              yearsOfExperience: prev.yearsOfExperience || (data.experience ? data.experience.replace(/[^0-9]/g, '') : '') || '',
+              clinicName: prev.clinicName || data.hospital || '',
+              address: prev.address || data.location || '',
+              consultationFee: prev.consultationFee || (data.consultationFee ? String(data.consultationFee) : '') || '',
+              photoUrl: prev.photoUrl || data.imageUrl || '',
+            }));
+          }
+        })
+        .catch(() => {/* silently ignore */});
     }
   }, []);
 
@@ -251,7 +277,7 @@ const DoctorOnboarding: React.FC = () => {
     const updatedProfile: DoctorProfileData = {
       id: activeDocId,
       fullName: formData.fullName.startsWith('Dr.') ? formData.fullName : `Dr. ${formData.fullName}`,
-      photoUrl: formData.photoUrl || 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=400',
+      photoUrl: formData.photoUrl || '',
       specialization: formData.specialization,
       qualification: formData.qualification,
       yearsOfExperience: Number(formData.yearsOfExperience),
@@ -408,11 +434,19 @@ const DoctorOnboarding: React.FC = () => {
                       className="hidden"
                     />
                     <label htmlFor="profile-photo-upload" className="cursor-pointer block relative">
-                      <img
-                        src={formData.photoUrl || DEFAULT_DOCTOR_AVATAR}
-                        alt="Doctor Profile Preview"
-                        className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-aster-blue/20 shadow-md bg-slate-100 group-hover:opacity-90 transition-opacity"
-                      />
+                      {formData.photoUrl ? (
+                        <img
+                          src={formData.photoUrl}
+                          alt="Doctor Profile Preview"
+                          className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-aster-blue/20 shadow-md bg-slate-100 group-hover:opacity-90 transition-opacity"
+                        />
+                      ) : (
+                        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-aster-blue/20 shadow-md bg-gradient-to-br from-indigo-100 to-blue-100 flex items-center justify-center group-hover:opacity-90 transition-opacity">
+                          <span className="text-2xl font-bold text-aster-blue">
+                            {formData.fullName ? formData.fullName.replace(/^Dr\.\s*/i, '').trim().split(' ').map((n: string) => n[0]).filter(Boolean).join('').toUpperCase().slice(0, 2) : '+'}
+                          </span>
+                        </div>
+                      )}
                       {/* Floating Plus (+) Badge Button */}
                       <div className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-aster-blue hover:bg-aster-blue/90 text-white flex items-center justify-center border-2 border-white shadow-lg transition-transform group-hover:scale-110">
                         {isUploadingPhoto ? (

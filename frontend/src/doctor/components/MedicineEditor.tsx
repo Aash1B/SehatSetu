@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Pill, X, Sparkles, Plus, Edit2, Check } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { searchCatalog } from '../data/prescriptionCatalog';
 
 interface Medicine {
   id: string;
@@ -14,31 +15,6 @@ interface MedicineEditorProps {
   aiExtractedMedicines?: string[];
 }
 
-const POPULAR_MEDICINES = [
-  'Tab. Paracetamol 650mg - 1-0-1 (5 days)',
-  'Tab. Paracetamol 500mg - 1-0-1 (3 days)',
-  'Tab. Dolo 650mg - 1-0-1 (SOS for fever)',
-  'Tab. Cetirizine 10mg - 0-0-1 (SOS at night)',
-  'Tab. Amoxicillin 500mg - 1-0-1 (5 days)',
-  'Tab. Azithromycin 500mg - 1-0-0 (3 days)',
-  'Tab. Pantoprazole 40mg - 1-0-0 (Before breakfast)',
-  'Tab. Omeprazole 20mg - 1-0-0 (Before food)',
-  'Tab. Ibuprofen 400mg - 1-0-1 (After food)',
-  'Tab. Metformin 500mg - 1-0-1 (After meals)',
-  'Tab. Amlodipine 5mg - 1-0-0 (Morning)',
-  'Tab. Telmisartan 40mg - 1-0-0 (Morning)',
-  'Tab. Montelukast 10mg - 0-0-1 (Night)',
-  'Tab. Ondansetron 4mg - SOS (Before meals)',
-  'Tab. Ranitidine 150mg - 1-0-1',
-  'Tab. Ciprofloxacin 500mg - 1-0-1 (5 days)',
-  'Tab. Atorvastatin 10mg - 0-0-1 (Night)',
-  'Tab. Losartan 50mg - 1-0-0',
-  'Tab. Calpol 650mg - 1-0-1 (SOS)',
-  'Tab. Combiflam - 1-0-1 (After food)',
-  'Syp. Multivitamin 5ml - 0-0-1',
-  'Syp. Cough Syrup 10ml - 1-1-1 (5 days)',
-];
-
 const MedicineEditor: React.FC<MedicineEditorProps> = ({ className, aiExtractedMedicines }) => {
   const [medicines, setMedicines] = useState<Medicine[]>([
     { id: '1', text: 'Tab. Paracetamol 650mg - 1-0-1 (5 days)', isAi: true },
@@ -51,12 +27,7 @@ const MedicineEditor: React.FC<MedicineEditorProps> = ({ className, aiExtractedM
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Filter suggestions based on typed text
-  const filteredSuggestions = newMedicine.trim().length > 0
-    ? POPULAR_MEDICINES.filter(m =>
-        m.toLowerCase().includes(newMedicine.trim().toLowerCase())
-      ).slice(0, 5)
-    : [];
+  const filteredSuggestions = searchCatalog('MEDICINE', newMedicine);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -136,9 +107,20 @@ const MedicineEditor: React.FC<MedicineEditorProps> = ({ className, aiExtractedM
   return (
     <div className={cn("bg-deep-space rounded-2xl shadow-sm overflow-hidden flex flex-col", className)}>
       <div className="p-3 border-b border-white/10 flex items-center justify-between text-white">
-        <div className="flex items-center gap-2">
-          <Pill className="w-4 h-4 text-white" />
-          <h3 className="font-bold text-sm">Medicines</h3>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Pill className="w-4 h-4 text-white" />
+            <h3 className="font-bold text-sm">Medicines</h3>
+          </div>
+          {isListening && (
+            <div className="flex items-center gap-1.5 text-xs text-blue-200 bg-white/10 px-2.5 py-0.5 rounded-full font-medium">
+              <span className="flex h-1.5 w-1.5 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-300 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-300"></span>
+              </span>
+              <span className="animate-pulse text-[11px] font-normal">Waiting for prescription...</span>
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -156,7 +138,7 @@ const MedicineEditor: React.FC<MedicineEditorProps> = ({ className, aiExtractedM
         </div>
       </div>
       
-      <div className="p-3 space-y-3 flex-1 overflow-y-auto bg-white">
+      <div className="p-3 flex-1 min-h-0 overflow-y-auto bg-white">
         <ul className="space-y-2">
           {medicines.map((med) => (
             <li key={med.id} className="flex items-center gap-2 text-sm text-deep-space bg-gray-50 px-3 py-2 rounded-lg group animate-in fade-in slide-in-from-right-2">
@@ -195,65 +177,56 @@ const MedicineEditor: React.FC<MedicineEditorProps> = ({ className, aiExtractedM
               )}
             </li>
           ))}
-          {isListening && (
-            <li className="flex items-center gap-2 text-sm text-gray-400 px-3 py-2">
-              <span className="flex h-1.5 w-1.5 relative ml-1 mr-1">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-500"></span>
-              </span>
-              <span className="animate-pulse">Waiting for prescription...</span>
-            </li>
-          )}
         </ul>
+      </div>
 
-        {/* Manual Input with Autocomplete Recommendations */}
-        <div ref={containerRef} className="relative pt-2 border-t border-gray-100 mt-2">
-          {showSuggestions && filteredSuggestions.length > 0 && (
-            <div className="absolute bottom-full mb-1 left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden divide-y divide-gray-100 max-h-48 overflow-y-auto">
-              <div className="bg-blue-50 px-3 py-1.5 text-[11px] font-semibold text-blue-700 uppercase tracking-wider flex justify-between items-center">
-                <span>Suggested Medicines</span>
-                <span className="text-[10px] text-blue-500 font-normal">Click or press Tab/Enter to select</span>
-              </div>
-              {filteredSuggestions.map((suggestion, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => selectSuggestion(suggestion)}
-                  className={cn(
-                    "w-full text-left px-3 py-2 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-900 transition-colors flex items-center gap-2 cursor-pointer",
-                    selectedIndex === idx && "bg-blue-100 text-blue-900 font-medium"
-                  )}
-                >
-                  <Pill className="w-3 h-3 text-blue-500 shrink-0" />
-                  <span>{suggestion}</span>
-                </button>
-              ))}
+      {/* Fixed Bottom Input with Autocomplete Recommendations */}
+      <div ref={containerRef} className="p-3 bg-white border-t border-gray-100 shrink-0 relative mt-auto">
+        {showSuggestions && filteredSuggestions.length > 0 && (
+          <div className="absolute bottom-full mb-1 left-3 right-3 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden divide-y divide-gray-100 max-h-48 overflow-y-auto">
+            <div className="bg-blue-50 px-3 py-1.5 text-[11px] font-semibold text-blue-700 uppercase tracking-wider flex justify-between items-center">
+              <span>Suggested Medicines</span>
+              <span className="text-[10px] text-blue-500 font-normal">Click or press Tab/Enter to select</span>
             </div>
-          )}
+            {filteredSuggestions.map((suggestion, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => selectSuggestion(suggestion)}
+                className={cn(
+                  "w-full text-left px-3 py-2 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-900 transition-colors flex items-center gap-2 cursor-pointer",
+                  selectedIndex === idx && "bg-blue-100 text-blue-900 font-medium"
+                )}
+              >
+                <Pill className="w-3 h-3 text-blue-500 shrink-0" />
+                <span>{suggestion}</span>
+              </button>
+            ))}
+          </div>
+        )}
 
-          <form onSubmit={addManual} className="flex gap-2">
-            <input
-              type="text"
-              value={newMedicine}
-              onChange={(e) => {
-                setNewMedicine(e.target.value);
-                setShowSuggestions(true);
-                setSelectedIndex(-1);
-              }}
-              onFocus={() => setShowSuggestions(true)}
-              onKeyDown={handleKeyDown}
-              placeholder="Add manually (e.g. Paracetamol, Cetirizine)..."
-              className="flex-1 text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-habanero"
-            />
-            <button 
-              type="submit"
-              disabled={!newMedicine.trim()}
-              className="w-9 h-9 shrink-0 bg-gray-100 text-deep-space hover:bg-gray-200 disabled:opacity-50 rounded-lg flex items-center justify-center transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
-          </form>
-        </div>
+        <form onSubmit={addManual} className="flex gap-2">
+          <input
+            type="text"
+            value={newMedicine}
+            onChange={(e) => {
+              setNewMedicine(e.target.value);
+              setShowSuggestions(true);
+              setSelectedIndex(-1);
+            }}
+            onFocus={() => setShowSuggestions(true)}
+            onKeyDown={handleKeyDown}
+            placeholder="Add manually (e.g. Paracetamol, Cetirizine)..."
+            className="flex-1 text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-habanero"
+          />
+          <button 
+            type="submit"
+            disabled={!newMedicine.trim()}
+            className="w-9 h-9 shrink-0 bg-gray-100 text-deep-space hover:bg-gray-200 disabled:opacity-50 rounded-lg flex items-center justify-center transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+        </form>
       </div>
     </div>
   );
