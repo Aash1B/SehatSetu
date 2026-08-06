@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { TestTube, X, Sparkles, Plus, Edit2, Check } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { searchCatalog } from '../data/prescriptionCatalog';
 
 interface LabTest {
   id: string;
@@ -12,37 +13,19 @@ interface LabTest {
 interface LabTestEditorProps {
   className?: string;
   isListening?: boolean;
-  onChange?: (tests: string[]) => void;
+  onChange?: (items: string[]) => void;
 }
 
-const POPULAR_LAB_TESTS = [
-  'Complete Blood Count (CBC)',
-  'Dengue NS1 Antigen Test',
-  'Fasting Blood Sugar (FBS)',
-  'HbA1c (Glycated Hemoglobin)',
-  'Liver Function Test (LFT)',
-  'Kidney Function Test (KFT)',
-  'Lipid Profile (Cholesterol)',
-  'Thyroid Profile (T3, T4, TSH)',
-  'Urine Routine & Microscopy',
-  'Chest X-Ray (PA View)',
-  'ECG (12-Lead)',
-  'Vitamin D & B12 Test',
-];
-
-const LabTestEditor: React.FC<LabTestEditorProps> = ({ className, isListening = false, onChange }) => {
+const LabTestEditor: React.FC<LabTestEditorProps> = ({ className }) => {
   const [tests, setTests] = useState<LabTest[]>([]);
   const [newTest, setNewTest] = useState('');
+  const [isListening, setIsListening] = useState(true);
   const [editText, setEditText] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const filteredSuggestions = newTest.trim().length > 0
-    ? POPULAR_LAB_TESTS.filter(t =>
-        t.toLowerCase().includes(newTest.trim().toLowerCase())
-      ).slice(0, 5)
-    : [];
+  const filteredSuggestions = searchCatalog('LAB_TEST', newTest);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -54,9 +37,13 @@ const LabTestEditor: React.FC<LabTestEditorProps> = ({ className, isListening = 
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Simulate live transcription
   useEffect(() => {
-    onChange?.(tests.map((test) => test.text));
-  }, [tests, onChange]);
+    const t1 = setTimeout(() => setTests(prev => [...prev, { id: '1', text: 'Complete Blood Count (CBC)', isAi: true }]), 3500);
+    const t2 = setTimeout(() => setTests(prev => [...prev, { id: '2', text: 'Dengue NS1 Antigen', isAi: true }]), 7500);
+    const t3 = setTimeout(() => setIsListening(false), 9000);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, []);
 
   const addManual = (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,28 +100,38 @@ const LabTestEditor: React.FC<LabTestEditorProps> = ({ className, isListening = 
   return (
     <div className={cn("bg-deep-space rounded-2xl shadow-sm overflow-hidden flex flex-col", className)}>
       <div className="p-3 border-b border-white/10 flex items-center justify-between text-white">
-        <div className="flex items-center gap-2">
-          <TestTube className="w-4 h-4 text-white" />
-          <h3 className="font-bold text-sm">Lab Tests</h3>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <TestTube className="w-4 h-4 text-white" />
+            <h3 className="font-bold text-sm">Lab Tests</h3>
+          </div>
+          {isListening && (
+            <div className="flex items-center gap-1.5 text-xs text-orange-200 bg-white/10 px-2.5 py-0.5 rounded-full font-medium">
+              <span className="flex h-1.5 w-1.5 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-300 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-orange-300"></span>
+              </span>
+              <span className="animate-pulse text-[11px] font-normal">Analyzing symptoms for tests...</span>
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <button
             type="button"
-            disabled
             onClick={() => {
               const aiItem = { id: Date.now().toString(), text: 'Dengue NS1 Antigen & CBC Test', isAi: true };
               setTests(prev => [...prev, aiItem]);
             }}
             className="flex items-center gap-1.5 text-[10px] font-bold text-orange-300 uppercase tracking-wider hover:text-white transition-colors cursor-pointer bg-white/10 px-2 py-0.5 rounded-full"
-            title={isListening ? 'Voice extraction is active' : 'Use the manual field below'}
+            title="Click to trigger AI auto-extraction"
           >
             <Sparkles className="w-3 h-3" />
-            {isListening ? 'AI Listening' : 'Manual Entry'}
+            AI Listening
           </button>
         </div>
       </div>
       
-      <div className="p-3 space-y-3 flex-1 overflow-y-auto bg-white">
+      <div className="p-3 flex-1 min-h-0 overflow-y-auto bg-white">
         <ul className="space-y-2">
           {tests.map((test) => (
             <li key={test.id} className="flex items-center gap-2 text-sm text-deep-space bg-gray-50 px-3 py-2 rounded-lg group animate-in fade-in slide-in-from-right-2">
@@ -173,65 +170,56 @@ const LabTestEditor: React.FC<LabTestEditorProps> = ({ className, isListening = 
               )}
             </li>
           ))}
-          {isListening && (
-            <li className="flex items-center gap-2 text-sm text-gray-400 px-3 py-2">
-              <span className="flex h-1.5 w-1.5 relative ml-1 mr-1">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-orange-500"></span>
-              </span>
-              <span className="animate-pulse">Analyzing symptoms for tests...</span>
-            </li>
-          )}
         </ul>
+      </div>
 
-        {/* Manual Input with Autocomplete Recommendations */}
-        <div ref={containerRef} className="relative pt-2 border-t border-gray-100 mt-2">
-          {showSuggestions && filteredSuggestions.length > 0 && (
-            <div className="absolute bottom-full mb-1 left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden divide-y divide-gray-100 max-h-48 overflow-y-auto">
-              <div className="bg-orange-50 px-3 py-1.5 text-[11px] font-semibold text-orange-700 uppercase tracking-wider flex justify-between items-center">
-                <span>Suggested Lab Tests</span>
-                <span className="text-[10px] text-orange-500 font-normal">Click or press Tab/Enter to select</span>
-              </div>
-              {filteredSuggestions.map((suggestion, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => selectSuggestion(suggestion)}
-                  className={cn(
-                    "w-full text-left px-3 py-2 text-xs text-gray-700 hover:bg-orange-50 hover:text-orange-900 transition-colors flex items-center gap-2 cursor-pointer",
-                    selectedIndex === idx && "bg-orange-100 text-orange-900 font-medium"
-                  )}
-                >
-                  <TestTube className="w-3 h-3 text-orange-500 shrink-0" />
-                  <span>{suggestion}</span>
-                </button>
-              ))}
+      {/* Fixed Bottom Input with Autocomplete Recommendations */}
+      <div ref={containerRef} className="p-3 bg-white border-t border-gray-100 shrink-0 relative mt-auto">
+        {showSuggestions && filteredSuggestions.length > 0 && (
+          <div className="absolute bottom-full mb-1 left-3 right-3 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden divide-y divide-gray-100 max-h-48 overflow-y-auto">
+            <div className="bg-orange-50 px-3 py-1.5 text-[11px] font-semibold text-orange-700 uppercase tracking-wider flex justify-between items-center">
+              <span>Suggested Lab Tests</span>
+              <span className="text-[10px] text-orange-500 font-normal">Click or press Tab/Enter to select</span>
             </div>
-          )}
+            {filteredSuggestions.map((suggestion, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => selectSuggestion(suggestion)}
+                className={cn(
+                  "w-full text-left px-3 py-2 text-xs text-gray-700 hover:bg-orange-50 hover:text-orange-900 transition-colors flex items-center gap-2 cursor-pointer",
+                  selectedIndex === idx && "bg-orange-100 text-orange-900 font-medium"
+                )}
+              >
+                <TestTube className="w-3 h-3 text-orange-500 shrink-0" />
+                <span>{suggestion}</span>
+              </button>
+            ))}
+          </div>
+        )}
 
-          <form onSubmit={addManual} className="flex gap-2">
-            <input
-              type="text"
-              value={newTest}
-              onChange={(e) => {
-                setNewTest(e.target.value);
-                setShowSuggestions(true);
-                setSelectedIndex(-1);
-              }}
-              onFocus={() => setShowSuggestions(true)}
-              onKeyDown={handleKeyDown}
-              placeholder="Add manually (e.g. CBC, Dengue)..."
-              className="flex-1 text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-habanero"
-            />
-            <button 
-              type="submit"
-              disabled={!newTest.trim()}
-              className="w-9 h-9 shrink-0 bg-gray-100 text-deep-space hover:bg-gray-200 disabled:opacity-50 rounded-lg flex items-center justify-center transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
-          </form>
-        </div>
+        <form onSubmit={addManual} className="flex gap-2">
+          <input
+            type="text"
+            value={newTest}
+            onChange={(e) => {
+              setNewTest(e.target.value);
+              setShowSuggestions(true);
+              setSelectedIndex(-1);
+            }}
+            onFocus={() => setShowSuggestions(true)}
+            onKeyDown={handleKeyDown}
+            placeholder="Add manually (e.g. CBC, Dengue)..."
+            className="flex-1 text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-habanero"
+          />
+          <button 
+            type="submit"
+            disabled={!newTest.trim()}
+            className="w-9 h-9 shrink-0 bg-gray-100 text-deep-space hover:bg-gray-200 disabled:opacity-50 rounded-lg flex items-center justify-center transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+        </form>
       </div>
     </div>
   );

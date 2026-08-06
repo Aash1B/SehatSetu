@@ -77,16 +77,11 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   return (
     <header className={cn("flex justify-between items-start mb-8", className)}>
       <div>
-        <p className="text-aster-blue text-sm font-medium mb-1">{date}</p>
-        <div className="flex items-end gap-3 mb-2">
-          <h1 className="text-3xl font-bold text-deep-space">Namaste, {doctor.name} 🙏</h1>
-          {doctor.specialization && (
-            <span className="text-sm font-medium bg-habanero/10 text-habanero px-3 py-1 rounded-full mb-1">
-              {doctor.specialization}
-            </span>
-          )}
+        <p className="text-black text-sm font-medium mb-1">{date}</p>
+        <div className="mb-2">
+          <h1 className="text-3xl font-bold text-black">Namaste, {doctor.name}</h1>
         </div>
-        <p className="text-gray-500">Here's your care overview for today.</p>
+        <p className="text-black">Here's your care overview for today.</p>
       </div>
       
       <div className="flex items-center gap-4 relative">
@@ -98,7 +93,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         >
           <Bell className="w-5 h-5" />
           {notifications.length > 0 && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-habanero border-2 border-white rounded-full flex items-center justify-center text-[9px] text-white font-bold shadow-sm">
+            <span className="absolute -top-1 -right-1 w-4 h-4 bg-habanero border-2 border-white rounded-full flex items-center justify-center text-[9px] text-black font-bold shadow-sm">
               {notifications.length}
             </span>
           )}
@@ -107,7 +102,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         {isOpen && (
           <div className="absolute top-12 right-12 w-80 bg-white rounded-xl shadow-lg border border-gray-100 z-50 overflow-hidden">
             <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-              <h3 className="font-bold text-deep-space text-sm">Booked Appointments</h3>
+              <h3 className="font-bold text-black text-sm">Booked Appointments</h3>
               {notifications.length > 0 && (
                 <button
                   type="button"
@@ -120,11 +115,11 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             </div>
             <div className="max-h-[300px] overflow-y-auto">
               {loading ? (
-                <div className="px-4 py-6 text-center text-xs text-gray-400">
+                <div className="px-4 py-6 text-center text-xs text-black">
                   Loading notifications...
                 </div>
               ) : notifications.length === 0 ? (
-                <div className="px-4 py-6 text-center text-xs text-gray-500">
+                <div className="px-4 py-6 text-center text-xs text-black">
                   No new booked appointments
                 </div>
               ) : (
@@ -134,8 +129,8 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                     onClick={() => handleNotificationClick(notif.route)}
                     className="px-4 py-3 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors"
                   >
-                    <p className="text-sm text-deep-space font-medium leading-snug">{notif.text}</p>
-                    <p className="text-xs text-gray-400 mt-1">{notif.time}</p>
+                    <p className="text-sm text-black font-medium leading-snug">{notif.text}</p>
+                    <p className="text-xs text-black mt-1">{notif.time}</p>
                   </div>
                 ))
               )}
@@ -144,7 +139,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               onClick={() => handleNotificationClick('/doctor/consultations')}
               className="px-4 py-2 text-center border-t border-gray-100 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
             >
-              <span className="text-xs text-blue-600 font-bold">View All Appointments</span>
+              <span className="text-xs text-black font-bold">View All Appointments</span>
             </div>
           </div>
         )}
@@ -152,7 +147,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         <button
           type="button"
           onClick={() => navigate('/doctor/profile')}
-          className="w-10 h-10 rounded-full bg-deep-space text-white flex items-center justify-center font-bold hover:opacity-90 transition-all cursor-pointer border-0 shadow-sm"
+          className="w-10 h-10 rounded-full bg-deep-space text-black flex items-center justify-center font-bold hover:opacity-90 transition-all cursor-pointer border-0 shadow-sm"
           title="View Doctor Profile"
         >
           {doctor.initials}

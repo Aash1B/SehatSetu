@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { setCurrentPage } from '../store/uiSlice';
 import type { Doctor } from '../data/doctorsData';
+import { doctorsData } from '../data/doctorsData';
 import { fetchDoctors, recommendDoctorsApi, type RecommendationResult } from '../services/doctorApi';
 import Footer from '../components/Footer';
 import { getPatientDashboard } from '../services/patientApi';
@@ -46,16 +45,15 @@ const ALL_SYMPTOMS = [
 ];
 
 function doctorMatchesCategory(doctor: Doctor, category: string) {
-  const specialty = doctor.specialty.toLowerCase();
-  const normalizedCategory = category.toLowerCase();
-  if (normalizedCategory.includes('ent')) return specialty.includes('ent');
-  if (normalizedCategory.includes('general physician')) return specialty.includes('general physician');
-  return specialty.includes(normalizedCategory.split(/[ (&/]/)[0]);
+  const specialty = doctor.specialty.toLowerCase().split(/[ (&/-]/)[0];
+  const normalizedCategory = category.toLowerCase().split(/[ (&/-]/)[0];
+  return specialty === normalizedCategory;
 }
 
 function parseTimeMinutes(timeStr: string) {
   const [time, modifier] = timeStr.trim().split(/\s+/);
-  let [hours, minutes] = time.split(':').map(Number);
+  const [rawHours, minutes] = time.split(':').map(Number);
+  let hours = rawHours;
   if (modifier === 'PM' && hours < 12) hours += 12;
   if (modifier === 'AM' && hours === 12) hours = 0;
   return hours * 60 + minutes;
@@ -70,14 +68,21 @@ function formatMinutesToTime(totalMinutes: number) {
   return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')} ${ampm}`;
 }
 
-function getSlotsForDoctorAndDay(availability: any, dayFullName: string) {
+interface DoctorAvailabilityData {
+  status?: string;
+  slotDurationMinutes?: number;
+  slots?: Array<{ day?: string; isWorking?: boolean; workingHours?: string; breakTime?: string }>;
+  bookedSlots?: Record<string, string[]>;
+}
+
+function getSlotsForDoctorAndDay(availability: DoctorAvailabilityData | null, dayFullName: string) {
   if (!availability) {
     return ['09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '02:00 PM', '02:30 PM', '03:00 PM', '04:00 PM', '04:30 PM'];
   }
   if (availability.status === 'On Leave') {
     return [];
   }
-  const daySlot = availability.slots?.find((s: any) => s.day?.toLowerCase() === dayFullName.toLowerCase());
+  const daySlot = availability.slots?.find((s) => s.day?.toLowerCase() === dayFullName.toLowerCase());
   if (!daySlot || !daySlot.isWorking || !daySlot.workingHours || daySlot.workingHours.toLowerCase().includes('closed')) {
     return [];
   }
@@ -105,13 +110,12 @@ function getSlotsForDoctorAndDay(availability: any, dayFullName: string) {
       slots.push(formatMinutesToTime(current));
     }
     return slots;
-  } catch (e) {
+  } catch {
     return ['09:00 AM', '10:00 AM', '11:00 AM', '02:00 PM', '03:00 PM', '04:00 PM'];
   }
 }
 
 const BookAppointmentPage: React.FC = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
@@ -119,6 +123,15 @@ const BookAppointmentPage: React.FC = () => {
   const hasPreselectedDoctor = Boolean(id && id !== 'new' && !rescheduleId);
 
   const [currentStep, setCurrentStep] = useState<number>(1);
+  
+  const handleImageError = (event: React.SyntheticEvent<HTMLImageElement>) => {
+    const image = event.currentTarget;
+    const defaultDoctor = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23cccccc"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
+    if (image.src === defaultDoctor) return;
+    image.onerror = null;
+    image.src = defaultDoctor;
+  };
+
   const [symptomSearch, setSymptomSearch] = useState<string>('');
   const [showMoreSymptoms, setShowMoreSymptoms] = useState<boolean>(false);
   const [isDurationDropdownOpen, setIsDurationDropdownOpen] = useState<boolean>(false);
@@ -130,11 +143,16 @@ const BookAppointmentPage: React.FC = () => {
   const [paymentMethod, setPaymentMethod] = useState<'upi' | 'card' | 'netbanking' | 'wallets'>('upi');
   const [step4Error, setStep4Error] = useState<string>('');
   const [slotError, setSlotError] = useState<string>('');
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [doctorAvailability, setDoctorAvailability] = useState<any>(null);
+  const [heightUnit, setHeightUnit] = useState<'cm' | 'ft'>('cm');
+  const [weightUnit, setWeightUnit] = useState<'kg' | 'lbs'>('kg');
+  const [heightFt, setHeightFt] = useState('');
+  const [heightIn, setHeightIn] = useState('');
+  const [weightLbs, setWeightLbs] = useState('');
+  const [, setIsSubmitting] = useState<boolean>(false);
+  const [doctorAvailability, setDoctorAvailability] = useState<DoctorAvailabilityData | null>(null);
   const [loadingAvailability, setLoadingAvailability] = useState<boolean>(false);
   const [aiRecommendation, setAiRecommendation] = useState<RecommendationResult | null>(null);
-  const [loadingRecommendation, setLoadingRecommendation] = useState<boolean>(false);
+  const [, setLoadingRecommendation] = useState<boolean>(false);
   const [showAllDoctors, setShowAllDoctors] = useState<boolean>(false);
   const [allDoctorsList, setAllDoctorsList] = useState<Doctor[]>([]);
 
@@ -183,8 +201,78 @@ const BookAppointmentPage: React.FC = () => {
         patientWeight: profile.weight || '', patientBloodGroup: profile.bloodGroup || '',
         patientPhone: profile.phone || '', patientEmail: profile.email || '',
       }));
+      if (profile.height) {
+        const cm = parseFloat(profile.height);
+        if (!isNaN(cm) && cm > 0) {
+          const totalInches = cm / 2.54;
+          const ft = Math.floor(totalInches / 12);
+          const inch = Math.round(totalInches % 12);
+          setHeightFt(String(ft));
+          setHeightIn(String(inch));
+        }
+      }
+      if (profile.weight) {
+        const kg = parseFloat(profile.weight);
+        if (!isNaN(kg) && kg > 0) {
+          const lbs = Math.round(kg * 2.20462);
+          setWeightLbs(String(lbs));
+        }
+      }
     }).catch(() => navigate('/patient/signup'));
   }, [navigate]);
+
+  const handleNameChange = (val: string) => {
+    const cleanName = val.replace(/[^a-zA-Z\s.-]/g, '');
+    setFormData(prev => ({ ...prev, patientName: cleanName }));
+  };
+
+  const handleAgeChange = (val: string) => {
+    const cleanAge = val.replace(/[^0-9]/g, '');
+    setFormData(prev => ({ ...prev, patientAge: cleanAge }));
+  };
+
+  const handlePhoneChange = (val: string) => {
+    const cleanPhone = val.replace(/[^0-9]/g, '').substring(0, 10);
+    setFormData(prev => ({ ...prev, patientPhone: cleanPhone }));
+  };
+
+  const handleCmChange = (val: string) => {
+    const cleanCm = val.replace(/[^0-9.]/g, '');
+    setFormData(prev => ({ ...prev, patientHeight: cleanCm }));
+  };
+
+  const handleKgChange = (val: string) => {
+    const cleanKg = val.replace(/[^0-9.]/g, '');
+    setFormData(prev => ({ ...prev, patientWeight: cleanKg }));
+  };
+
+  const handleFtInChange = (ftVal: string, inVal: string) => {
+    const cleanFt = ftVal.replace(/[^0-9]/g, '');
+    const cleanIn = inVal.replace(/[^0-9]/g, '');
+    setHeightFt(cleanFt);
+    setHeightIn(cleanIn);
+    
+    const ft = parseInt(cleanFt, 10) || 0;
+    const inch = parseInt(cleanIn, 10) || 0;
+    if (ft > 0 || inch > 0) {
+      const cm = Math.round((ft * 12 + inch) * 2.54);
+      setFormData(prev => ({ ...prev, patientHeight: String(cm) }));
+    } else {
+      setFormData(prev => ({ ...prev, patientHeight: '' }));
+    }
+  };
+
+  const handleLbsChange = (lbsVal: string) => {
+    const cleanLbs = lbsVal.replace(/[^0-9.]/g, '');
+    setWeightLbs(cleanLbs);
+    const lbs = parseFloat(cleanLbs);
+    if (!isNaN(lbs) && lbs > 0) {
+      const kg = Math.round(lbs * 0.45359237);
+      setFormData(prev => ({ ...prev, patientWeight: String(kg) }));
+    } else {
+      setFormData(prev => ({ ...prev, patientWeight: '' }));
+    }
+  };
 
   useEffect(() => {
     if (!rescheduleId) return;
@@ -208,7 +296,7 @@ const BookAppointmentPage: React.FC = () => {
 
   useEffect(() => {
     if (currentStep === 2) {
-      setLoadingRecommendation(true);
+      Promise.resolve().then(() => setLoadingRecommendation(true));
       recommendDoctorsApi(formData.healthConcern, formData.symptoms)
         .then(rec => {
           setAiRecommendation(rec);
@@ -232,21 +320,27 @@ const BookAppointmentPage: React.FC = () => {
         .catch(() => setAiRecommendation(null))
         .finally(() => setLoadingRecommendation(false));
     }
-  }, [currentStep, formData.symptoms, formData.healthConcern]);
+  }, [currentStep, formData.symptoms, formData.healthConcern, allDoctorsList]);
 
   useEffect(() => {
     if (id && id !== 'new') {
-      const match = allDoctorsList.find(d => d.id === id);
-      if (match) {
-        setFormData(prev => ({ ...prev, selectedDoctor: match }));
-      }
+      const match = allDoctorsList.find(d => d.id === id) || doctorsData.find(d => d.id === id);
+      Promise.resolve().then(() => {
+        if (match) {
+          setFormData(prev => ({ ...prev, selectedDoctor: match }));
+        } else if (allDoctorsList.length > 0) {
+          setFormData(prev => ({ ...prev, selectedDoctor: allDoctorsList[0] }));
+        } else {
+          setFormData(prev => ({ ...prev, selectedDoctor: doctorsData[0] }));
+        }
+      });
     }
   }, [id, allDoctorsList]);
 
   useEffect(() => {
     const docId = formData.selectedDoctor?.id;
     if (docId) {
-      setLoadingAvailability(true);
+      Promise.resolve().then(() => setLoadingAvailability(true));
       fetch(`/api/doctor/${docId}/availability`)
         .then(res => {
           if (res.ok) return res.json();
@@ -305,12 +399,43 @@ const BookAppointmentPage: React.FC = () => {
         setStep4Error('Please enter full name.');
         return;
       }
+      if (!/^[a-zA-Z\s.]+$/.test(formData.patientName.trim())) {
+        setStep4Error('Full Name should only contain letters, spaces, and dots.');
+        return;
+      }
       if (!formData.patientAge.trim()) {
         setStep4Error('Please enter age.');
         return;
       }
+      const ageNum = parseInt(formData.patientAge, 10);
+      if (isNaN(ageNum) || ageNum <= 0 || ageNum > 120) {
+        setStep4Error('Please enter a valid age between 1 and 120.');
+        return;
+      }
       if (!formData.patientPhone.trim()) {
         setStep4Error('Please enter phone number.');
+        return;
+      }
+      if (formData.patientPhone.trim().length !== 10 || !/^\d{10}$/.test(formData.patientPhone.trim())) {
+        setStep4Error('Please enter a valid 10-digit phone number.');
+        return;
+      }
+      if (formData.patientHeight.trim()) {
+        const htNum = parseFloat(formData.patientHeight);
+        if (isNaN(htNum) || htNum < 30 || htNum > 300) {
+          setStep4Error('Please enter a valid height between 30 and 300 cm.');
+          return;
+        }
+      }
+      if (formData.patientWeight.trim()) {
+        const wtNum = parseFloat(formData.patientWeight);
+        if (isNaN(wtNum) || wtNum < 2 || wtNum > 500) {
+          setStep4Error('Please enter a valid weight between 2 and 500 kg.');
+          return;
+        }
+      }
+      if (formData.patientEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.patientEmail.trim())) {
+        setStep4Error('Please enter a valid email address.');
         return;
       }
     }
@@ -346,22 +471,18 @@ const BookAppointmentPage: React.FC = () => {
           timeSlot: formData.selectedTimeSlot,
         };
 
-        try {
-          const response = await fetch(rescheduleId ? `/api/appointments/${encodeURIComponent(rescheduleId)}/reschedule` : '/api/appointments', {
-            method: rescheduleId ? 'PATCH' : 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${getToken()}`,
-            },
-            body: JSON.stringify(payload),
-          });
+        const response = await fetch(rescheduleId ? `/api/appointments/${encodeURIComponent(rescheduleId)}/reschedule` : '/api/appointments', {
+          method: rescheduleId ? 'PATCH' : 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${getToken()}`,
+          },
+          body: JSON.stringify(payload),
+        });
 
-          if (!response.ok) {
-            const body = await response.json().catch(() => null);
-            throw new Error(body?.message || `The appointment could not be ${rescheduleId ? 'rescheduled' : 'booked'}. Please try again.`);
-          }
-        } catch (apiErr) {
-          throw apiErr;
+        if (!response.ok) {
+          const body = await response.json().catch(() => null);
+          throw new Error(body?.message || `The appointment could not be ${rescheduleId ? 'rescheduled' : 'booked'}. Please try again.`);
         }
 
         setBookingConfirmed(true);
@@ -901,7 +1022,7 @@ const BookAppointmentPage: React.FC = () => {
                             onClick={() => setFormData({ ...formData, selectedDoctor: doc })}
                           >
                             <div className="step2-doc-avatar-wrap">
-                              <img src={doc.imageUrl} alt={doc.name} className="step2-doc-avatar" />
+                               <img src={doc.imageUrl} alt={doc.name} className="step2-doc-avatar" loading="lazy" onError={handleImageError} />
                             </div>
 
                             <div className="step2-doc-middle-info">
@@ -914,11 +1035,7 @@ const BookAppointmentPage: React.FC = () => {
                               <p className="doc-spec-exp">{doc.specialty} • {doc.experience}</p>
                               <p className="doc-hosp-loc">{doc.hospital}, {doc.location}</p>
                               {doc.degrees && <p className="doc-degrees">{doc.degrees}</p>}
-                              <div className="doc-rating-row">
-                                <span className="star-icon">⭐</span>
-                                <span className="rating-num">{doc.rating}</span>
-                                <span className="reviews-count">({doc.reviewsCount} reviews)</span>
-                              </div>
+
                             </div>
 
                             <div className="step2-doc-right-action">
@@ -978,31 +1095,74 @@ const BookAppointmentPage: React.FC = () => {
                   const dayFull = d.toLocaleDateString('en-US', { weekday: 'long' });
                   const dateNum = d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
                   const label = i === 0 ? 'Today' : (i === 1 ? 'Tomorrow' : dayShort);
+                  const dateKey = [
+                    d.getFullYear(),
+                    String(d.getMonth() + 1).padStart(2, '0'),
+                    String(d.getDate()).padStart(2, '0'),
+                  ].join('-');
                   return {
                     fullDate: `${label}, ${dayShort} ${dateNum}`,
                     dayShort,
                     dayFull,
                     dateNum,
                     label,
-                    rawDate: d
+                    rawDate: d,
+                    dateKey,
                   };
                 });
 
-                // Find active date object
-                const activeDayObj = upcomingDays.find(d => formData.selectedDate.includes(d.dateNum)) || upcomingDays[0];
-                const scheduledSlots = getSlotsForDoctorAndDay(doctorAvailability, activeDayObj.dayFull);
-                const activeDateKey = [
-                  activeDayObj.rawDate.getFullYear(),
-                  String(activeDayObj.rawDate.getMonth() + 1).padStart(2, '0'),
-                  String(activeDayObj.rawDate.getDate()).padStart(2, '0'),
-                ].join('-');
-                const bookedSlots = new Set<string>(doctorAvailability?.bookedSlots?.[activeDateKey] || []);
-                const unbookedSlots = scheduledSlots.filter((slot) => !bookedSlots.has(slot));
+                const upcomingDaysWithSlots = upcomingDays.map((d) => {
+                  const scheduledSlots = getSlotsForDoctorAndDay(doctorAvailability, d.dayFull);
+                  
+                  const matchingBookedList: string[] = [];
+                  if (doctorAvailability?.bookedSlots) {
+                    Object.entries(doctorAvailability.bookedSlots).forEach(([key, slots]) => {
+                      if (
+                        key === d.dateKey ||
+                        key.includes(d.dateNum) ||
+                        key.includes(`${d.rawDate.getFullYear()}-${String(d.rawDate.getMonth() + 1).padStart(2, '0')}-${String(d.rawDate.getDate()).padStart(2, '0')}`) ||
+                        key.includes(`${d.rawDate.getFullYear()}-${d.rawDate.getMonth() + 1}-${d.rawDate.getDate()}`)
+                      ) {
+                        if (Array.isArray(slots)) {
+                          matchingBookedList.push(...slots);
+                        }
+                      }
+                    });
+                  }
+
+                  const dayBookedSet = new Set(matchingBookedList.map((s) => s.trim().toLowerCase().replace(/^0/, '')));
+
+                  const minimumBookingMinutes = clockNow.getHours() * 60 + clockNow.getMinutes() + 30
+                    + (clockNow.getSeconds() > 0 ? 1 : 0);
+
+                  const availableSlots = scheduledSlots.filter((slot) => {
+                    const norm = slot.trim().toLowerCase().replace(/^0/, '');
+                    const isBooked = dayBookedSet.has(norm);
+                    const isPast = d.label === 'Today' && parseTimeMinutes(slot) < minimumBookingMinutes;
+                    return !isBooked && !isPast;
+                  });
+
+                  const isNoSlotsLeft = availableSlots.length === 0 || doctorAvailability?.status === 'On Leave';
+
+                  return {
+                    ...d,
+                    scheduledSlots,
+                    dayBookedSet,
+                    availableSlotsCount: availableSlots.length,
+                    isNoSlotsLeft,
+                  };
+                });
+
+                // Auto-select first available date if selected date is empty or has no slots left
+                const activeDayObj = upcomingDaysWithSlots.find(d => formData.selectedDate.includes(d.dateNum) && !d.isNoSlotsLeft)
+                  || upcomingDaysWithSlots.find(d => !d.isNoSlotsLeft)
+                  || upcomingDaysWithSlots[0];
+
+                const scheduledSlots = activeDayObj.scheduledSlots;
+                const bookedSlotsSet = activeDayObj.dayBookedSet;
                 const minimumBookingMinutes = clockNow.getHours() * 60 + clockNow.getMinutes() + 30
                   + (clockNow.getSeconds() > 0 ? 1 : 0);
-                const activeSlots = activeDayObj.label === 'Today'
-                  ? unbookedSlots.filter((slot) => parseTimeMinutes(slot) >= minimumBookingMinutes)
-                  : unbookedSlots;
+                const activeSlotsCount = activeDayObj.availableSlotsCount;
                 const isDoctorOnLeave = doctorAvailability?.status === 'On Leave';
 
                 return (
@@ -1021,19 +1181,22 @@ const BookAppointmentPage: React.FC = () => {
 
                       <div className="date-carousel-wrapper">
                         <div className="date-cards-row">
-                          {upcomingDays.map((d) => {
-                            const isSelected = formData.selectedDate.includes(d.dateNum) || (formData.selectedDate.includes(d.label) && d.label !== d.dayShort);
+                          {upcomingDaysWithSlots.map((d) => {
+                            const isSelected = activeDayObj.fullDate === d.fullDate;
+                            const isNoSlots = d.isNoSlotsLeft;
                             return (
                               <button
                                 key={d.fullDate}
                                 type="button"
-                                className={`date-card-box ${isSelected ? 'selected' : ''}`}
+                                disabled={isNoSlots}
+                                className={`date-card-box ${isSelected ? 'selected' : ''} ${isNoSlots ? 'no-slots-disabled' : ''}`}
                                 onClick={() => {
+                                  if (isNoSlots) return;
                                   setSlotError('');
                                   setFormData({ ...formData, selectedDate: d.fullDate, selectedTimeSlot: '' });
                                 }}
                               >
-                                <span className="date-card-tag">{d.label}</span>
+                                <span className="date-card-tag">{isNoSlots ? 'No Slots' : d.label}</span>
                                 <span className="date-card-day">{d.dayShort}</span>
                                 <span className="date-card-num">{d.dateNum}</span>
                               </button>
@@ -1048,20 +1211,17 @@ const BookAppointmentPage: React.FC = () => {
                       <div className="slot-section-header">
                         <span className="section-icon">🕒</span>
                         <h3 className="section-title">
-                          Available Time Slots
+                          Available Time Slots ({activeDayObj.label}, {activeDayObj.dateNum})
                           {doctorAvailability?.slotDurationMinutes && (
                             <span className="text-xs text-gray-500 font-normal ml-2">({doctorAvailability.slotDurationMinutes}-min slots)</span>
                           )}
                         </h3>
                       </div>
 
-                      {activeDayObj.label === 'Today' && (
+                      {activeDayObj.label === 'Today' && activeSlotsCount > 0 && (
                         <p className="text-xs text-blue-700 mb-3">
                           Today’s slots are shown only when they are at least 30 minutes from the current time.
                         </p>
-                      )}
-                      {bookedSlots.size > 0 && (
-                        <p className="text-xs text-amber-700 mb-3">Already-booked times are hidden automatically.</p>
                       )}
                       {slotError && <p role="alert" className="text-sm text-red-600 mb-3">{slotError}</p>}
 
@@ -1071,26 +1231,36 @@ const BookAppointmentPage: React.FC = () => {
                         <div className="p-6 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-center font-medium">
                           ⚠️ {formData.selectedDoctor?.name} is currently on leave. Please select another doctor or pick a later date.
                         </div>
-                      ) : activeSlots.length === 0 ? (
+                      ) : activeSlotsCount === 0 ? (
                         <div className="p-6 bg-gray-50 border border-gray-200 rounded-xl text-gray-600 text-center font-medium">
-                          🚫 {formData.selectedDoctor?.name} is not available on {activeDayObj.dayFull}s ({activeDayObj.dateNum}). Please select an alternate day.
+                          🚫 {formData.selectedDoctor?.name} has no available slots left on {activeDayObj.dayFull}s ({activeDayObj.dateNum}). Please select an alternate day above.
                         </div>
                       ) : (
                         <div className="time-slots-6col-grid">
-                          {activeSlots.map((slot) => {
+                          {scheduledSlots.map((slot) => {
+                            const norm = slot.trim().toLowerCase().replace(/^0/, '');
+                            const isBooked = bookedSlotsSet.has(norm);
+                            const isPast = activeDayObj.label === 'Today' && parseTimeMinutes(slot) < minimumBookingMinutes;
+                            const isUnavailable = isBooked || isPast;
                             const isSelected = formData.selectedTimeSlot === slot;
+
                             return (
                               <button
                                 key={slot}
                                 type="button"
-                                className={`time-slot-pill ${isSelected ? 'selected' : ''}`}
+                                disabled={isUnavailable}
+                                className={`time-slot-pill ${isSelected ? 'selected' : ''} ${isUnavailable ? 'booked-unavailable' : ''}`}
+                                style={isUnavailable ? { display: 'flex', flexDirection: 'column', gap: '2px' } : undefined}
                                 onClick={() => {
+                                  if (isUnavailable) return;
                                   setSlotError('');
-                                  setFormData({ ...formData, selectedTimeSlot: slot });
+                                  setFormData({ ...formData, selectedDate: activeDayObj.fullDate, selectedTimeSlot: slot });
                                 }}
                               >
                                 <span>{slot}</span>
-                                {isSelected && <span className="slot-check-icon">✓</span>}
+                                {isBooked && <span className="slot-booked-label">Booked</span>}
+                                {isPast && !isBooked && <span className="slot-booked-label" style={{ color: '#94A3B8' }}>Past</span>}
+                                {isSelected && !isUnavailable && <span className="slot-check-icon">✓</span>}
                               </button>
                             );
                           })}
@@ -1141,7 +1311,7 @@ const BookAppointmentPage: React.FC = () => {
                         value={formData.patientName} 
                         onChange={(e) => {
                           setStep4Error('');
-                          setFormData({ ...formData, patientName: e.target.value });
+                          handleNameChange(e.target.value);
                         }}
                       />
                     </div>
@@ -1149,43 +1319,157 @@ const BookAppointmentPage: React.FC = () => {
                     <div className="input-field-group">
                       <label className="field-label">Age (Years) <span style={{ color: '#EF4444' }}>*</span></label>
                       <input 
-                        type="number" 
+                        type="text" 
                         className="form-control-input"
                         placeholder="e.g. 28"
                         value={formData.patientAge} 
                         onChange={(e) => {
                           setStep4Error('');
-                          setFormData({ ...formData, patientAge: e.target.value });
+                          handleAgeChange(e.target.value);
                         }}
                       />
                     </div>
 
                     <div className="input-field-group">
-                      <label className="field-label">Height (cm) <span style={{ color: '#64748B', fontWeight: 400, fontSize: '0.82rem' }}>(Optional)</span></label>
-                      <input 
-                        type="number" 
-                        className="form-control-input"
-                        placeholder="e.g. 165"
-                        value={formData.patientHeight} 
-                        onChange={(e) => {
-                          setStep4Error('');
-                          setFormData({ ...formData, patientHeight: e.target.value });
-                        }}
-                      />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                        <label className="field-label" style={{ margin: 0 }}>Height <span style={{ color: '#64748B', fontWeight: 400, fontSize: '0.82rem' }}>(Optional)</span></label>
+                        <div style={{ display: 'flex', gap: '4px', background: '#E2E8F0', padding: '2px', borderRadius: '6px' }}>
+                          <button 
+                            type="button" 
+                            onClick={() => setHeightUnit('cm')} 
+                            style={{ 
+                              padding: '2px 8px', 
+                              fontSize: '11px', 
+                              fontWeight: 'bold', 
+                              borderRadius: '4px',
+                              border: 'none',
+                              cursor: 'pointer',
+                              background: heightUnit === 'cm' ? '#FFFFFF' : 'transparent',
+                              color: heightUnit === 'cm' ? '#0F172A' : '#64748B',
+                              boxShadow: heightUnit === 'cm' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >cm</button>
+                          <button 
+                            type="button" 
+                            onClick={() => setHeightUnit('ft')} 
+                            style={{ 
+                              padding: '2px 8px', 
+                              fontSize: '11px', 
+                              fontWeight: 'bold', 
+                              borderRadius: '4px',
+                              border: 'none',
+                              cursor: 'pointer',
+                              background: heightUnit === 'ft' ? '#FFFFFF' : 'transparent',
+                              color: heightUnit === 'ft' ? '#0F172A' : '#64748B',
+                              boxShadow: heightUnit === 'ft' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >ft/in</button>
+                        </div>
+                      </div>
+                      
+                      {heightUnit === 'cm' ? (
+                        <input 
+                          type="text" 
+                          className="form-control-input"
+                          placeholder="e.g. 165"
+                          value={formData.patientHeight} 
+                          onChange={(e) => {
+                            setStep4Error('');
+                            handleCmChange(e.target.value);
+                          }}
+                        />
+                      ) : (
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <input 
+                            type="text" 
+                            className="form-control-input"
+                            style={{ flex: 1 }}
+                            placeholder="ft"
+                            value={heightFt} 
+                            onChange={(e) => {
+                              setStep4Error('');
+                              handleFtInChange(e.target.value, heightIn);
+                            }}
+                          />
+                          <input 
+                            type="text" 
+                            className="form-control-input"
+                            style={{ flex: 1 }}
+                            placeholder="in"
+                            value={heightIn} 
+                            onChange={(e) => {
+                              setStep4Error('');
+                              handleFtInChange(heightFt, e.target.value);
+                            }}
+                          />
+                        </div>
+                      )}
                     </div>
 
                     <div className="input-field-group">
-                      <label className="field-label">Weight (kg) <span style={{ color: '#64748B', fontWeight: 400, fontSize: '0.82rem' }}>(Optional)</span></label>
-                      <input 
-                        type="number" 
-                        className="form-control-input"
-                        placeholder="e.g. 62"
-                        value={formData.patientWeight} 
-                        onChange={(e) => {
-                          setStep4Error('');
-                          setFormData({ ...formData, patientWeight: e.target.value });
-                        }}
-                      />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                        <label className="field-label" style={{ margin: 0 }}>Weight <span style={{ color: '#64748B', fontWeight: 400, fontSize: '0.82rem' }}>(Optional)</span></label>
+                        <div style={{ display: 'flex', gap: '4px', background: '#E2E8F0', padding: '2px', borderRadius: '6px' }}>
+                          <button 
+                            type="button" 
+                            onClick={() => setWeightUnit('kg')} 
+                            style={{ 
+                              padding: '2px 8px', 
+                              fontSize: '11px', 
+                              fontWeight: 'bold', 
+                              borderRadius: '4px',
+                              border: 'none',
+                              cursor: 'pointer',
+                              background: weightUnit === 'kg' ? '#FFFFFF' : 'transparent',
+                              color: weightUnit === 'kg' ? '#0F172A' : '#64748B',
+                              boxShadow: weightUnit === 'kg' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >kg</button>
+                          <button 
+                            type="button" 
+                            onClick={() => setWeightUnit('lbs')} 
+                            style={{ 
+                              padding: '2px 8px', 
+                              fontSize: '11px', 
+                              fontWeight: 'bold', 
+                              borderRadius: '4px',
+                              border: 'none',
+                              cursor: 'pointer',
+                              background: weightUnit === 'lbs' ? '#FFFFFF' : 'transparent',
+                              color: weightUnit === 'lbs' ? '#0F172A' : '#64748B',
+                              boxShadow: weightUnit === 'lbs' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >lbs</button>
+                        </div>
+                      </div>
+                      
+                      {weightUnit === 'kg' ? (
+                        <input 
+                          type="text" 
+                          className="form-control-input"
+                          placeholder="e.g. 62"
+                          value={formData.patientWeight} 
+                          onChange={(e) => {
+                            setStep4Error('');
+                            handleKgChange(e.target.value);
+                          }}
+                        />
+                      ) : (
+                        <input 
+                          type="text" 
+                          className="form-control-input"
+                          placeholder="e.g. 137"
+                          value={weightLbs} 
+                          onChange={(e) => {
+                            setStep4Error('');
+                            handleLbsChange(e.target.value);
+                          }}
+                        />
+                      )}
                     </div>
 
                     <div className="input-field-group">
@@ -1213,11 +1497,11 @@ const BookAppointmentPage: React.FC = () => {
                       <input 
                         type="text" 
                         className="form-control-input"
-                        placeholder="+91 98765 43210"
+                        placeholder="10-digit number"
                         value={formData.patientPhone} 
                         onChange={(e) => {
                           setStep4Error('');
-                          setFormData({ ...formData, patientPhone: e.target.value });
+                          handlePhoneChange(e.target.value);
                         }}
                       />
                     </div>
@@ -1261,12 +1545,12 @@ const BookAppointmentPage: React.FC = () => {
                 </div>
               )}
 
-              {/* Step 5: Review & Pay */}
+              {/* Step 5: Confirm & Pay */}
               {currentStep === 5 && (
                 <div className="step-5-wrapper">
                   <div className="step5-header">
-                    <h1 className="form-main-title">Review & Pay</h1>
-                    <p className="form-main-subtitle">Please review your appointment details and proceed to payment.</p>
+                    <h1 className="form-main-title">Confirm & Pay</h1>
+                    <p className="form-main-subtitle">Please confirm your appointment details and proceed to payment.</p>
                   </div>
 
                   {/* Main Appointment Details Card */}
@@ -1314,6 +1598,8 @@ const BookAppointmentPage: React.FC = () => {
                             src={formData.selectedDoctor.imageUrl} 
                             alt={formData.selectedDoctor.name} 
                             className="item-doc-avatar" 
+                            loading="lazy"
+                            onError={handleImageError}
                           />
                         )}
                       </div>
@@ -1415,7 +1701,7 @@ const BookAppointmentPage: React.FC = () => {
                   {currentStep === 1 && (hasPreselectedDoctor && formData.selectedDoctor ? 'Next: Choose Slot →' : 'Next: Select Doctor →')}
                   {currentStep === 2 && 'Next: Choose Slot →'}
                   {currentStep === 3 && 'Next: Patient Info →'}
-                  {currentStep === 4 && 'Next: Review & Pay →'}
+                  {currentStep === 4 && 'Next: Confirm & Pay →'}
                   {currentStep === 5 && 'Confirm & Pay Now →'}
                 </button>
               </div>
@@ -1569,6 +1855,8 @@ const BookAppointmentPage: React.FC = () => {
                           src={formData.selectedDoctor.imageUrl} 
                           alt={formData.selectedDoctor.name} 
                           className="sidebar-doc-avatar" 
+                          loading="lazy"
+                          onError={handleImageError}
                         />
                         <div className="sidebar-doc-info">
                           <div className="doc-name-badge-row">
@@ -1579,11 +1867,7 @@ const BookAppointmentPage: React.FC = () => {
                           </div>
                           <p className="sidebar-doc-spec">{formData.selectedDoctor.specialty}</p>
                           <p className="sidebar-doc-exp">{formData.selectedDoctor.experience}</p>
-                          <div className="doc-rating-row">
-                            <span className="star-icon">⭐</span>
-                            <span className="rating-num">{formData.selectedDoctor.rating}</span>
-                            <span className="reviews-count">({formData.selectedDoctor.reviewsCount} reviews)</span>
-                          </div>
+
                         </div>
                       </div>
                     </div>

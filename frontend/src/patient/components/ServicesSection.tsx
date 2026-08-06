@@ -14,7 +14,7 @@ const services = [
     title: 'Specialist Referral',
     description: 'Get connected to the right specialist for your condition.',
     icon: '➡️',
-    route: '/patient/search',
+    route: '/patient/book/new',
   },
   {
     id: 'emergency',
@@ -30,7 +30,7 @@ const ServicesSection: React.FC = () => {
 
   const handleCardClick = (id: string, route: string) => {
     if (id === 'lab_nearby') {
-      window.open('https://www.google.com/search?q=lab+tests+nearby', '_blank', 'noopener,noreferrer');
+      window.open('https://www.google.com/maps/search/?api=1&query=lab+tests+nearby', '_blank', 'noopener,noreferrer');
       return;
     }
     if (id === 'emergency') {
@@ -57,8 +57,8 @@ const ServicesSection: React.FC = () => {
 
         <div className="services-grid">
           {services.map((service) => (
-            <div 
-              key={service.id} 
+            <div
+              key={service.id}
               className="service-card"
               style={{ cursor: 'pointer' }}
               onClick={() => handleCardClick(service.id, service.route)}
@@ -66,8 +66,8 @@ const ServicesSection: React.FC = () => {
               <div className="service-icon-box">{service.icon}</div>
               <h3 className="service-card-title">{service.title}</h3>
               <p className="service-card-desc">{service.description}</p>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="service-learn-more"
                 onClick={(e) => {
                   e.stopPropagation();

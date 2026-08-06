@@ -49,7 +49,8 @@ const AVAILABLE_LANGUAGES = [
   'Tamil', 'Telugu', 'Kannada', 'Malayalam', 'Punjabi'
 ];
 
-const DEFAULT_DOCTOR_AVATAR = 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=400';
+// No default avatar — show initials placeholder when no photo is uploaded
+const DEFAULT_DOCTOR_AVATAR = '';
 
 const DoctorOnboarding: React.FC = () => {
   const navigate = useNavigate();
@@ -84,16 +85,49 @@ const DoctorOnboarding: React.FC = () => {
   useEffect(() => {
     const user = getUser();
     if (user) {
+      // Pre-fill from auth user data immediately
       setFormData(prev => ({
         ...prev,
         fullName: prev.fullName || user.fullName || '',
         email: prev.email || user.email || '',
       }));
+
+      // Also try to fetch existing profile from backend (in case of re-login)
+      const token = getToken();
+      fetch(`/api/doctor/${user.id}/profile`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data) {
+            setFormData(prev => ({
+              ...prev,
+              fullName: prev.fullName || data.name || data.user?.fullName || user.fullName || '',
+              email: prev.email || data.user?.email || user.email || '',
+              specialization: prev.specialization || data.specialty || 'General Physician',
+              qualification: prev.qualification || data.degrees || '',
+              yearsOfExperience: prev.yearsOfExperience || (data.experience ? data.experience.replace(/[^0-9]/g, '') : '') || '',
+              clinicName: prev.clinicName || data.hospital || '',
+              address: prev.address || data.location || '',
+              consultationFee: prev.consultationFee || (data.consultationFee ? String(data.consultationFee) : '') || '',
+              photoUrl: prev.photoUrl || data.imageUrl || '',
+            }));
+          }
+        })
+        .catch(() => {/* silently ignore */});
     }
   }, []);
 
   const handleTextChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    let cleanVal = value;
+    if (field === 'phoneNumber') {
+      cleanVal = value.replace(/[^0-9]/g, '').substring(0, 10);
+    } else if (field === 'yearsOfExperience' || field === 'consultationFee') {
+      cleanVal = value.replace(/[^0-9]/g, '');
+    } else if (field === 'fullName') {
+      cleanVal = value.replace(/[^a-zA-Z\s.-]/g, '');
+    }
+    setFormData(prev => ({ ...prev, [field]: cleanVal }));
     // Clear errors when user starts filling
     if (stepErrors.length > 0) setStepErrors([]);
   };
@@ -102,20 +136,41 @@ const DoctorOnboarding: React.FC = () => {
   const validateStep = (step: number): string[] => {
     const errors: string[] = [];
     if (step === 1) {
-      if (!formData.fullName.trim()) errors.push('Full name is required.');
-      if (!formData.email.trim()) errors.push('Email address is required.');
-      if (!formData.phoneNumber.trim()) errors.push('Phone number is required.');
+      if (!formData.fullName.trim()) {
+        errors.push('Full name is required.');
+      } else if (!/^[a-zA-Z\s.]+$/.test(formData.fullName.trim())) {
+        errors.push('Full Name should only contain letters, spaces, and dots.');
+      }
+      if (!formData.email.trim()) {
+        errors.push('Email address is required.');
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+        errors.push('Please enter a valid email address.');
+      }
+      if (!formData.phoneNumber.trim()) {
+        errors.push('Phone number is required.');
+      } else if (formData.phoneNumber.trim().length !== 10) {
+        errors.push('Phone number must be exactly 10 digits.');
+      }
       if (formData.languagesSpoken.length === 0) errors.push('Select at least one language spoken.');
     } else if (step === 2) {
       if (!formData.specialization.trim()) errors.push('Specialization is required.');
       if (!formData.qualification.trim()) errors.push('Qualification / degrees are required.');
-      if (!formData.yearsOfExperience.toString().trim() || Number(formData.yearsOfExperience) < 0) errors.push('Years of experience is required.');
+      
+      const expNum = parseInt(formData.yearsOfExperience, 10);
+      if (isNaN(expNum) || expNum < 0 || expNum > 60) {
+        errors.push('Please enter a valid years of experience between 0 and 60.');
+      }
+      
       if (!formData.medicalLicenseNumber.trim()) errors.push('Medical registration / license number is required.');
       if (!formData.aboutMe.trim()) errors.push('Doctor bio / profile summary is required.');
     } else if (step === 3) {
       if (!formData.clinicName.trim()) errors.push('Hospital / clinic name is required.');
       if (!formData.address.trim()) errors.push('Clinic address is required.');
-      if (!formData.consultationFee.toString().trim() || Number(formData.consultationFee) <= 0) errors.push('Consultation fee is required and must be greater than 0.');
+      
+      const feeNum = parseInt(formData.consultationFee, 10);
+      if (isNaN(feeNum) || feeNum <= 0) {
+        errors.push('Consultation fee must be a valid number greater than 0.');
+      }
     } else if (step === 4) {
       if (!documentFiles['medical-license']) errors.push('Medical Registration License document is required.');
       if (!documentFiles['degree-certificate']) errors.push('Medical Degree Certificate document is required.');
@@ -245,7 +300,7 @@ const DoctorOnboarding: React.FC = () => {
     const updatedProfile: DoctorProfileData = {
       id: activeDocId,
       fullName: formData.fullName.startsWith('Dr.') ? formData.fullName : `Dr. ${formData.fullName}`,
-      photoUrl: formData.photoUrl || 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=400',
+      photoUrl: formData.photoUrl || '',
       specialization: formData.specialization,
       qualification: formData.qualification,
       yearsOfExperience: Number(formData.yearsOfExperience),
@@ -261,7 +316,6 @@ const DoctorOnboarding: React.FC = () => {
         totalConsultations: 0,
         patientsTreated: 0,
         todaysAppointments: 0,
-        averageRating: 5.0,
         completedConsultations: 0
       },
       availability: {
@@ -408,11 +462,19 @@ const DoctorOnboarding: React.FC = () => {
                       className="hidden"
                     />
                     <label htmlFor="profile-photo-upload" className="cursor-pointer block relative">
-                      <img
-                        src={formData.photoUrl || DEFAULT_DOCTOR_AVATAR}
-                        alt="Doctor Profile Preview"
-                        className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-aster-blue/20 shadow-md bg-slate-100 group-hover:opacity-90 transition-opacity"
-                      />
+                      {formData.photoUrl ? (
+                        <img
+                          src={formData.photoUrl}
+                          alt="Doctor Profile Preview"
+                          className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-aster-blue/20 shadow-md bg-slate-100 group-hover:opacity-90 transition-opacity"
+                        />
+                      ) : (
+                        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-aster-blue/20 shadow-md bg-gradient-to-br from-indigo-100 to-blue-100 flex items-center justify-center group-hover:opacity-90 transition-opacity">
+                          <span className="text-2xl font-bold text-aster-blue">
+                            {formData.fullName ? formData.fullName.replace(/^Dr\.\s*/i, '').trim().split(' ').map((n: string) => n[0]).filter(Boolean).join('').toUpperCase().slice(0, 2) : '+'}
+                          </span>
+                        </div>
+                      )}
                       {/* Floating Plus (+) Badge Button */}
                       <div className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-aster-blue hover:bg-aster-blue/90 text-white flex items-center justify-center border-2 border-white shadow-lg transition-transform group-hover:scale-110">
                         {isUploadingPhoto ? (
@@ -473,11 +535,11 @@ const DoctorOnboarding: React.FC = () => {
                     <div className="relative">
                       <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
                       <input 
-                        type="tel"
+                        type="text"
                         required
                         value={formData.phoneNumber}
                         onChange={(e) => handleTextChange('phoneNumber', e.target.value)}
-                        placeholder="+91 98765 43210"
+                        placeholder="10-digit number"
                         className="w-full text-sm p-3 pl-9 rounded-xl border border-slate-300 focus:ring-2 focus:ring-aster-blue outline-none"
                       />
                     </div>
@@ -555,9 +617,7 @@ const DoctorOnboarding: React.FC = () => {
                     <div className="relative">
                       <Briefcase className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
                       <input 
-                        type="number"
-                        min="0"
-                        max="60"
+                        type="text"
                         required
                         value={formData.yearsOfExperience}
                         onChange={(e) => handleTextChange('yearsOfExperience', e.target.value)}
@@ -644,13 +704,12 @@ const DoctorOnboarding: React.FC = () => {
                     <div className="relative">
                       <span className="text-slate-400 font-bold text-sm absolute left-3 top-3">₹</span>
                       <input 
-                        type="number"
-                        min="0"
-                        step="50"
+                        type="text"
                         required
                         value={formData.consultationFee}
-                        onChange={(e) => handleTextChange('consultationFee', e.target.value)}
-                        className="w-full text-sm p-3 pl-8 rounded-xl border border-slate-300 focus:ring-2 focus:ring-aster-blue outline-none font-bold text-slate-800"
+                        onChange={(e) => handleTextChange('consultationFee', e.target.value.replace(/[^0-9]/g, ''))}
+                        placeholder="e.g. 500"
+                        className="w-full text-sm p-3 pl-9 rounded-xl border border-slate-300 focus:ring-2 focus:ring-aster-blue outline-none"
                       />
                     </div>
                   </div>

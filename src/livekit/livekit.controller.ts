@@ -16,10 +16,13 @@ export class LivekitController {
       throw new BadRequestException('appointmentId query parameter is required');
     }
 
+    const userId = req.user?.userId || req.user?.id || req.user?.sub || 'user';
+    const role = req.user?.role || 'PATIENT';
+
     const token = await this.livekitService.createTokenForAppointment(
       appointmentId,
-      req.user.userId,
-      req.user.role,
+      userId,
+      role,
     );
     const serverUrl = process.env.LIVEKIT_URL;
     if (!serverUrl) {

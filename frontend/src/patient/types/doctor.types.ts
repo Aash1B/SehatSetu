@@ -6,10 +6,11 @@ export interface Doctor {
   specialty: string;
   qualification: string;
   experience: number; // years
-  rating: number;
   profileImage?: string;
   availableSlots?: TimeSlot[];
   consultationFee: number;
+  rating?: number;
+  reviewsCount?: number;
 }
 
 export interface TimeSlot {

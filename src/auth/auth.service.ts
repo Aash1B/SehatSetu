@@ -66,7 +66,27 @@ export class AuthService {
       if (role === 'PATIENT') {
         await tx.patient.create({ data: { userId: newUser.id } });
       } else if (role === 'DOCTOR') {
-        await tx.doctor.create({ data: { userId: newUser.id, specialty: 'General Physician' } });
+        await tx.doctor.create({
+          data: {
+            userId: newUser.id,
+            specialty: 'General Physician',
+            name: fullName.startsWith('Dr.') ? fullName : `Dr. ${fullName}`,
+            availableToday: true,
+            priorityLevel: 'P1',
+            priorityScore: 150,
+            rating: 5.0,
+            reviewsCount: 0,
+            fee: '₹500',
+            consultationFee: 500,
+            hospital: null,
+            experience: null,
+            degrees: null,
+            profileCompleted: false,
+            location: 'India',
+            imageUrl: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=400',
+            tags: ['English', 'Hindi'],
+          },
+        });
       }
 
       return newUser;
@@ -351,28 +371,8 @@ export class AuthService {
   }
 
   private async findUserByGoogleId(googleId: string) {
-    const rows = await this.prisma.$queryRaw<Array<{
-      id: string;
-      email: string;
-      fullName: string;
-      role: 'PATIENT' | 'DOCTOR';
-      tokenVersion: number;
-      accountStatus: string;
-      avatarUrl: string | null;
-    }>>`
-      SELECT "id", "email", "fullName", "role", "tokenVersion", "accountStatus", "avatarUrl"
-      FROM "User"
-      WHERE "googleId" = ${googleId}
-      LIMIT 1
-    `;
-
-    if (!rows.length) {
-      return null;
-    }
-
-    const row = rows[0];
     return this.prisma.user.findUnique({
-      where: { id: row.id },
+      where: { googleId },
       include: { doctor: true, patient: true },
     }) as Promise<{
       id: string;
@@ -415,9 +415,13 @@ export class AuthService {
 
   private isOnboardingCompleted(user: {
     role: 'PATIENT' | 'DOCTOR';
-    doctor?: { degrees: string | null; experience: string | null; hospital: string | null; availability: unknown | null } | null;
+    doctor?: { degrees: string | null; experience: string | null; hospital: string | null; availability: unknown | null; profileCompleted?: boolean } | null;
   }) {
     if (user.role === 'PATIENT') {
+      return true;
+    }
+
+    if (user.doctor?.profileCompleted === true) {
       return true;
     }
 
@@ -426,6 +430,7 @@ export class AuthService {
     return Boolean(
       user.doctor?.degrees &&
       user.doctor?.experience &&
+      user.doctor?.experience !== 'New Doctor' &&
       user.doctor?.hospital &&
       (doctorAvailability?.medicalLicenseNumber || user.doctor?.availability),
     );

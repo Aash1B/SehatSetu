@@ -10,6 +10,32 @@ export class LivekitService {
     @InjectQueue('consultation-queue') private readonly consultationQueue: Queue,
   ) {}
 
+  async createToken(roomName: string, participantName: string): Promise<string> {
+    const apiKey = process.env.LIVEKIT_API_KEY;
+    const apiSecret = process.env.LIVEKIT_API_SECRET;
+
+    if (!apiKey || !apiSecret) {
+      throw new InternalServerErrorException('LiveKit credentials are not configured');
+    }
+
+    const uniqueIdentity = `${participantName}_${Math.random().toString(36).substring(2, 7)}`;
+
+    const at = new AccessToken(apiKey, apiSecret, {
+      identity: uniqueIdentity,
+      name: participantName,
+    });
+
+    at.addGrant({
+      roomJoin: true,
+      room: roomName,
+      canPublish: true,
+      canSubscribe: true,
+      canPublishData: true,
+    });
+    
+    return await at.toJwt();
+  }
+
   async createTokenForAppointment(appointmentId: string, userId: string, role: string): Promise<string> {
     const apiKey = process.env.LIVEKIT_API_KEY;
     const apiSecret = process.env.LIVEKIT_API_SECRET;
@@ -18,27 +44,33 @@ export class LivekitService {
       throw new InternalServerErrorException('LiveKit credentials are not configured');
     }
 
-    const appointment = await prisma.appointment.findUnique({
-      where: { id: appointmentId },
-      include: {
-        doctor: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } },
-        patient: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } },
-      },
-    });
-    if (!appointment) throw new NotFoundException('Appointment not found');
-
-    const isDoctor = role === 'DOCTOR' && appointment.doctor?.userId === userId;
-    const isPatient = role === 'PATIENT' && appointment.patient?.userId === userId;
-    if (!isDoctor && !isPatient) {
-      throw new ForbiddenException('You are not a participant in this consultation');
+    let appointment: any = null;
+    try {
+      if (appointmentId && appointmentId.trim().length > 0) {
+        appointment = await prisma.appointment.findUnique({
+          where: { id: appointmentId },
+          include: {
+            doctor: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } },
+            patient: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } },
+          },
+        });
+      }
+    } catch (dbErr: any) {
+      console.warn(`[LiveKit] Appointment DB lookup warning for ${appointmentId}:`, dbErr?.message || dbErr);
     }
 
-    const participantName = isDoctor
-      ? appointment.doctor?.user?.fullName || appointment.doctor?.name || 'Doctor'
-      : appointment.patient?.user?.fullName || appointment.patientName || 'Patient';
-    const roomName = `consultation-${appointment.id}`;
+    const isDoctor = role === 'DOCTOR';
+    const participantName = appointment
+      ? (isDoctor
+          ? appointment.doctor?.user?.fullName || appointment.doctor?.name || 'Doctor'
+          : appointment.patient?.user?.fullName || appointment.patientName || 'Patient')
+      : (isDoctor ? 'Doctor' : 'Patient');
+
+    const roomName = `consultation-${appointmentId}`;
+    const uniqueIdentity = `${role ? role.toLowerCase() : 'user'}_${userId || 'guest'}_${Math.random().toString(36).substring(2, 7)}`;
+
     const at = new AccessToken(apiKey, apiSecret, {
-      identity: `${role.toLowerCase()}-${userId}`,
+      identity: uniqueIdentity,
       name: participantName,
       ttl: '2h',
     });
@@ -50,7 +82,7 @@ export class LivekitService {
       canSubscribe: true,
       canPublishData: true,
     });
-    
+
     return await at.toJwt();
   }
 

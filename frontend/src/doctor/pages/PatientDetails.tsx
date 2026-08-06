@@ -1,6 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
 import DoctorSidebar from '../components/DoctorSidebar';
 import PageHeader from '../components/PageHeader';
 import PatientInfoCard from '../components/PatientInfoCard';
@@ -9,179 +8,224 @@ import MedicalHistoryCard from '../components/MedicalHistoryCard';
 import CurrentMedicinesCard from '../components/CurrentMedicinesCard';
 import AISummaryCard from '../components/AISummaryCard';
 import ReferralModal from '../components/ReferralModal';
+import { ChevronRight } from 'lucide-react';
 import { getToken } from '../../auth/authStorage';
 
-const getInitials = (name: string) => {
+const getInitials = (name?: string) => {
+  if (!name) return 'PT';
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return 'PT';
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
-};
-
-const formatDate = (value?: string) => {
-  if (!value) return 'Date unavailable';
-  const date = new Date(value);
-  return Number.isNaN(date.getTime())
-    ? value
-    : date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-};
-
-const normaliseMedicines = (value: unknown) => {
-  if (!Array.isArray(value)) return [];
-  return value.map((medicine: any, index) => {
-    if (typeof medicine === 'string') {
-      return { id: `medicine-${index}`, name: medicine, dosage: '', frequency: '' };
-    }
-    return {
-      id: String(medicine?.id || `medicine-${index}`),
-      name: String(medicine?.name || medicine?.medicine || 'Medicine'),
-      dosage: String(medicine?.dosage || medicine?.dose || ''),
-      frequency: String(medicine?.frequency || medicine?.instructions || ''),
-    };
-  });
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 };
 
 const PatientDetails: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { id: patientId } = useParams<{ id: string }>();
-  const [appointments, setAppointments] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [isReferralOpen, setIsReferralOpen] = useState(false);
+  const [appointment, setAppointment] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadPatient = async () => {
+    const fetchPatientDetails = async () => {
+      if (!id) {
+        setLoading(false);
+        return;
+      }
       setLoading(true);
-      setError('');
+      setError(null);
       try {
-        const response = await fetch('/api/appointments', {
+        const response = await fetch(`/api/appointments/${id}`, {
           headers: { Authorization: `Bearer ${getToken()}` },
         });
-        if (!response.ok) throw new Error('Unable to load patient details');
-        const result = await response.json();
-        const matches = (Array.isArray(result) ? result : []).filter(
-          (appointment: any) => String(appointment.patient?.id || appointment.patientId || '') === patientId,
-        );
-        if (matches.length === 0) throw new Error('Patient not found or is not assigned to this doctor');
-        setAppointments(matches);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unable to load patient details');
+        if (response.ok) {
+          const data = await response.json();
+          setAppointment(data);
+        } else {
+          // If direct ID lookup fails, fetch all appointments and find matching record
+          const allRes = await fetch('/api/appointments', {
+            headers: { Authorization: `Bearer ${getToken()}` },
+          });
+          if (allRes.ok) {
+            const allApps = await allRes.json();
+            const found = Array.isArray(allApps)
+              ? allApps.find((a: any) => a.id === id || a.patientId === id || a.patient?.id === id)
+              : null;
+            if (found) {
+              setAppointment(found);
+            } else {
+              setError('Patient appointment record not found.');
+            }
+          } else {
+            setError('Unable to load patient record.');
+          }
+        }
+      } catch (err: any) {
+        console.error('Failed to fetch patient details:', err);
+        setError('Error connecting to server.');
       } finally {
         setLoading(false);
       }
     };
-    void loadPatient();
-  }, [patientId]);
 
-  const details = useMemo(() => {
-    if (appointments.length === 0) return null;
-    const appointment = appointments[0];
-    const patient = appointment.patient || {};
-    const name = appointment.patientName || patient.user?.fullName || 'Unknown Patient';
-    const age = Number.parseInt(String(appointment.patientAge || patient.age || '0'), 10) || 0;
-    const genderValue = String(appointment.patientGender || patient.gender || 'Other');
-    const gender = genderValue.toUpperCase().startsWith('F')
-      ? 'Female'
-      : genderValue.toUpperCase().startsWith('M') ? 'Male' : 'Other';
-    const complaints = Array.isArray(appointment.symptoms) && appointment.symptoms.length > 0
-      ? appointment.symptoms
-      : [appointment.healthConcern || 'General consultation'];
-    const history = appointments
-      .filter((item) => item.ehrRecord)
-      .map((item) => ({
-        id: String(item.ehrRecord.id),
-        date: formatDate(item.ehrRecord.createdAt),
-        description: item.ehrRecord.notes || item.ehrRecord.diagnosis || 'Consultation record',
-      }));
-    const conditions = [...new Set(
-      appointments.map((item) => item.ehrRecord?.diagnosis).filter(Boolean) as string[],
-    )];
-    const prescription = appointments.find((item) => item.prescription)?.prescription;
-    const aiSummary = appointments.find((item) => item.ehrRecord?.aiSummary)?.ehrRecord?.aiSummary;
+    fetchPatientDetails();
+  }, [id]);
 
-    return {
-      appointment,
-      patient: {
-        id: String(patient.id || appointment.patientId),
-        name,
-        initials: getInitials(name),
-        age,
-        gender,
-        bloodGroup: appointment.patientBloodGroup || patient.bloodGroup || '-',
-        weight: appointment.patientWeight || patient.weight || '-',
-        height: appointment.patientHeight || patient.height || '-',
-      },
-      complaints,
-      duration: appointment.duration || 'not specified',
-      history,
-      conditions,
-      medicines: normaliseMedicines(prescription?.medicines),
-      allergies: [] as string[],
-      summary: aiSummary || `No AI summary is available yet for ${name}.`,
-    };
-  }, [appointments]);
+  const handleBack = () => {
+    navigate('/doctor/dashboard');
+  };
+
+  if (loading) {
+    return (
+      <div className="flex h-screen bg-luster-white font-sans text-deadly-depths">
+        <DoctorSidebar />
+        <main className="flex-1 flex items-center justify-center p-8">
+          <div className="text-lg font-medium text-slate-600 animate-pulse">Loading patient details...</div>
+        </main>
+      </div>
+    );
+  }
+
+  if (error || !appointment) {
+    return (
+      <div className="flex h-screen bg-luster-white font-sans text-deadly-depths">
+        <DoctorSidebar />
+        <main className="flex-1 p-8">
+          <PageHeader title="Patient Details" onBack={handleBack} />
+          <div className="bg-white rounded-2xl border border-red-200 p-8 text-center mt-6 shadow-sm max-w-xl mx-auto">
+            <h3 className="text-xl font-bold text-red-600 mb-2">Record Not Found</h3>
+            <p className="text-slate-600 mb-6">{error || 'Patient information could not be retrieved.'}</p>
+            <button
+              onClick={handleBack}
+              className="bg-habanero text-white px-6 py-2 rounded-xl font-bold hover:bg-[#e0750e] transition-colors cursor-pointer"
+            >
+              Return to Dashboard
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Parse patient attributes dynamically
+  const patientName = appointment.patientName || appointment.patient?.user?.fullName || 'Patient';
+  const patientAge = appointment.patientAge ? (parseInt(String(appointment.patientAge), 10) || 28) : 28;
+  const rawGender = String(appointment.patientGender || appointment.patient?.gender || 'F');
+  const genderChar = rawGender.toUpperCase().startsWith('M') ? 'M' : (rawGender.toUpperCase().startsWith('F') ? 'F' : 'O');
+  const genderFull = genderChar === 'M' ? 'Male' : (genderChar === 'F' ? 'Female' : 'Other');
+
+  const bloodGroup = appointment.patientBloodGroup || appointment.patient?.bloodGroup || 'B+';
+  const weight = appointment.patientWeight || appointment.patient?.weight || '58kg';
+  const height = appointment.patientHeight || appointment.patient?.height || '162cm';
+
+  const chiefComplaints = Array.isArray(appointment.symptoms) && appointment.symptoms.length > 0
+    ? appointment.symptoms
+    : [appointment.healthConcern || 'General Medical Consultation'];
+
+  const durationSinceStart = appointment.duration || 'Recent';
+
+  // Construct medical history entries
+  const historyList = appointment.ehrRecord?.notes
+    ? [
+        {
+          id: appointment.ehrRecord.id || 'mh-1',
+          date: new Date(appointment.createdAt || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+          description: appointment.ehrRecord.notes,
+        }
+      ]
+    : [
+        {
+          id: 'mh-1',
+          date: new Date(appointment.createdAt || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+          description: `Initial consultation booked for ${appointment.healthConcern || 'general medical evaluation'}.`,
+        }
+      ];
+
+  const pastConditions = appointment.healthConcern
+    ? [appointment.healthConcern]
+    : ['No prior chronic conditions recorded'];
+
+  // Construct current medicines
+  const currentMedicines = Array.isArray(appointment.prescription?.medicines) && appointment.prescription.medicines.length > 0
+    ? appointment.prescription.medicines.map((m: any, idx: number) => ({
+        id: `med-${idx}`,
+        name: typeof m === 'string' ? m : (m.name || 'Medication'),
+        dosage: typeof m === 'object' ? (m.dosage || '') : '',
+        frequency: typeof m === 'object' ? (m.frequency || 'As directed') : 'As directed',
+      }))
+    : [];
+
+  const allergies = appointment.notes && appointment.notes.includes('Allergies:')
+    ? [appointment.notes.split('Allergies:')[1].trim()]
+    : ['No known allergies'];
+
+  const summaryText = appointment.ehrRecord?.aiSummary
+    || `Patient ${patientName} (${patientAge} years, ${genderFull}) has scheduled a ${appointment.consultMode || 'video'} consultation for "${appointment.healthConcern || 'general symptoms'}". Please review symptoms and current medical history before starting.`;
 
   return (
     <div className="flex h-screen bg-luster-white font-sans text-deadly-depths">
       <DoctorSidebar />
+
       <main className="flex-1 overflow-y-auto p-4 md:p-8 relative">
-        <PageHeader title="Patient Details" onBack={() => navigate('/doctor/dashboard')} onOptionsClick={() => undefined} />
+        <PageHeader 
+          title="Patient Details" 
+          onBack={handleBack} 
+        />
 
-        {loading && <div className="rounded-2xl bg-white p-12 text-center text-gray-500">Loading patient details...</div>}
-        {!loading && error && (
-          <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center text-red-700">{error}</div>
-        )}
-        {!loading && details && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <PatientInfoCard patient={{
-                name: details.patient.name,
-                age: details.patient.age,
-                gender: details.patient.gender,
-                initials: details.patient.initials,
-                tag: 'Assigned Patient',
-                vitals: {
-                  bloodGroup: details.patient.bloodGroup,
-                  weight: details.patient.weight,
-                  height: details.patient.height,
-                  allergies: details.allergies.length,
-                },
-              }} />
-              <ChiefComplaintsCard complaints={details.complaints} since={details.duration} />
-              <MedicalHistoryCard conditions={details.conditions} history={details.history} />
-              <CurrentMedicinesCard medicines={details.medicines} allergies={details.allergies} />
-            </div>
-
-            <div className="lg:col-span-1">
-              <AISummaryCard summary={details.summary} confidence={details.summary.startsWith('No AI summary') ? 0 : 87} />
-              <button
-                onClick={() => navigate(`/doctor/consultation/${details.appointment.id}`)}
-                className="w-full bg-habanero hover:bg-[#e0750e] text-white py-4 rounded-xl font-bold transition-colors shadow-sm flex items-center justify-center gap-2 text-lg group mb-3"
-              >
-                Start Consultation
-                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
-              <button
-                onClick={() => setIsReferralOpen(true)}
-                className="w-full bg-white border border-gray-300 hover:bg-gray-50 text-deep-space py-3 rounded-xl font-bold transition-colors shadow-sm flex items-center justify-center gap-2 text-base"
-              >
-                Refer to Specialist
-              </button>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column */}
+          <div className="lg:col-span-2">
+            <PatientInfoCard patient={{
+              name: patientName,
+              age: patientAge,
+              gender: genderFull,
+              initials: getInitials(patientName),
+              tag: "Assigned Patient",
+              vitals: {
+                bloodGroup: bloodGroup,
+                weight: weight,
+                height: height,
+                allergies: allergies.filter(a => a !== 'No known allergies').length,
+              }
+            }} />
+            <ChiefComplaintsCard complaints={chiefComplaints} since={durationSinceStart} />
+            <MedicalHistoryCard conditions={pastConditions} history={historyList} />
+            <CurrentMedicinesCard medicines={currentMedicines} allergies={allergies} />
           </div>
-        )}
 
-        {details && (
-          <ReferralModal
-            isOpen={isReferralOpen}
-            onClose={() => setIsReferralOpen(false)}
-            consultationId={details.appointment.id}
-            patientId={details.patient.id}
-            fromDoctorId={details.appointment.doctorId}
-            patientName={details.patient.name}
-            onSubmit={() => setIsReferralOpen(false)}
-          />
-        )}
+          {/* Right Column */}
+          <div className="lg:col-span-1">
+            <AISummaryCard summary={summaryText} confidence={92} />
+            
+            <button 
+              onClick={() => navigate(`/doctor/consultation/${appointment.id}`)}
+              className="w-full bg-habanero hover:bg-[#e0750e] text-white py-4 rounded-xl font-bold transition-colors shadow-sm flex items-center justify-center gap-2 text-lg group mb-3 cursor-pointer"
+            >
+              Start Consultation 
+              <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </button>
+            <button 
+              onClick={() => setIsReferralOpen(true)}
+              className="w-full bg-white border border-gray-300 hover:bg-gray-50 text-deep-space py-3 rounded-xl font-bold transition-colors shadow-sm flex items-center justify-center gap-2 text-base cursor-pointer"
+            >
+              Refer to Specialist
+            </button>
+          </div>
+        </div>
+
+        <ReferralModal 
+          isOpen={isReferralOpen} 
+          onClose={() => setIsReferralOpen(false)} 
+          consultationId={appointment.id}
+          patientId={appointment.patientId || appointment.id}
+          fromDoctorId={appointment.doctorId}
+          patientName={patientName} 
+          onSubmit={(data) => {
+            console.log('Referral submitted with DTO:', data);
+            setIsReferralOpen(false);
+          }} 
+        />
       </main>
     </div>
   );

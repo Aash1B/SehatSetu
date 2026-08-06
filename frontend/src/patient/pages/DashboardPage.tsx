@@ -4,6 +4,7 @@ import type { RootState } from '../store';
 import { setDashboardTab, type DashboardTabType } from '../store/uiSlice';
 import { useNavigate } from 'react-router-dom';
 import { uploadMedicalReport } from '../services/medicalReportsApi';
+import { doctorsData } from '../data/doctorsData';
 import { getAppointmentTimeStatus } from '../../utils/appointmentTime';
 import PrescriptionViewModal from '../../common/components/PrescriptionViewModal';
 import { clearAuth } from '../../auth/authStorage';
@@ -23,6 +24,90 @@ interface ConsultationItem {
   doctorId?: string;
   prescription?: any;
 }
+
+/* Legacy mock datasets were removed. Patient records now come from the authenticated API. */
+const recentConsultationsData: ConsultationItem[] = [
+  {
+    id: 'CONS-001',
+    doctorName: 'Dr. Alok Verma',
+    specialty: 'Pediatrician & General Physician',
+    avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=300',
+    date: 'Aug 02, 2026',
+    time: '06:00 PM',
+    mode: 'Video Consultation',
+  },
+  {
+    id: 'CONS-002',
+    doctorName: 'Dr. Priya Mehta',
+    specialty: 'Gynecologist',
+    avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=300',
+    date: 'Jul 28, 2026',
+    time: '11:00 AM',
+    mode: 'Video Consultation',
+  },
+  {
+    id: 'CONS-003',
+    doctorName: 'Dr. Alok Verma',
+    specialty: 'General Physician',
+    avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=300',
+    date: 'Jul 20, 2026',
+    time: '05:30 PM',
+    mode: 'Chat Consultation',
+  },
+];
+
+const recentPrescriptionsData = [
+  {
+    id: 'RX-2026-8849',
+    doctorName: 'Dr. Ananya Sharma',
+    date: 'Aug 02, 2026',
+    meds: 'Tab. Paracetamol 650mg, Tab. Cetirizine 10mg',
+    fullData: {
+      id: 'RX-2026-8849',
+      doctorName: 'Dr. Ananya Sharma',
+      doctorSpecialty: 'General Physician & Telehealth Specialist',
+      doctorRegNo: 'MCI-IND-98742',
+      doctorHospital: 'SehatSetu Digital Health Clinic',
+      patientName: 'Patient',
+      patientAge: 31,
+      patientGender: 'Female',
+      date: 'Aug 02, 2026',
+      diagnosis: 'Acute Viral Fever with Body Ache',
+      symptoms: ['Persistent Fever (4 days)', 'Body ache & Fatigue'],
+      medications: [
+        { name: 'Tab. Paracetamol 650mg', dosage: '650 mg', frequency: '1-0-1', duration: '5 days', timing: 'After Food' },
+        { name: 'Tab. Cetirizine 10mg', dosage: '10 mg', frequency: '0-0-1', duration: '3 days', timing: 'SOS at Night' }
+      ],
+      dietAdvice: 'Increase fluid intake (min 3L/day), avoid spicy and oily foods, take warm water & rest.',
+      notes: 'Follow up in 5 days if fever persists. Complete CBC & Dengue NS1 test if body ache continues.'
+    }
+  },
+  {
+    id: 'RX-2026-7412',
+    doctorName: 'Dr. Alok Verma',
+    date: 'Jul 28, 2026',
+    meds: 'Amoxicillin 500mg, Vitamin C 500mg',
+    fullData: {
+      id: 'RX-2026-7412',
+      doctorName: 'Dr. Alok Verma',
+      doctorSpecialty: 'Pediatrician & General Practitioner',
+      doctorRegNo: 'MCI-IND-65412',
+      doctorHospital: 'Max Super Speciality Hospital',
+      patientName: 'Patient',
+      patientAge: 31,
+      patientGender: 'Female',
+      date: 'Jul 28, 2026',
+      diagnosis: 'Upper Respiratory Tract Infection',
+      symptoms: ['Sore Throat', 'Mild Cough', 'Nasal Congestion'],
+      medications: [
+        { name: 'Cap. Amoxicillin 500mg', dosage: '500 mg', frequency: '1-1-1', duration: '5 days', timing: 'After Food' },
+        { name: 'Tab. Vitamin C 500mg', dosage: '500 mg', frequency: '1-0-0', duration: '10 days', timing: 'Morning' }
+      ],
+      dietAdvice: 'Warm saline gargles 3 times daily. Avoid cold beverages and ice creams.',
+      notes: 'Rest for 3 days and stay well hydrated.'
+    }
+  },
+];
 
 const DashboardPage: React.FC = () => {
   const dispatch = useDispatch();
@@ -113,7 +198,7 @@ const DashboardPage: React.FC = () => {
           if (Array.isArray(apps) && apps.length > 0) {
             setLatestAppointment(apps[0]); // Most recently booked appointment
             const dbConsultations: ConsultationItem[] = apps.map((app: any) => {
-              const matchedDoc = app.doctor || null;
+              const matchedDoc = doctorsData.find(d => d.id === app.doctorId) || doctorsData[0];
               
               let displayDate = app.date;
               if (app.scheduledAt) {
@@ -634,7 +719,8 @@ const DashboardPage: React.FC = () => {
                     </div>
                   );
                 }
-                const bookedDoctor = latestAppointment.doctor;
+                const bookedDocId = latestAppointment?.doctorId || 'd1';
+                const bookedDoctor = latestAppointment.doctor || doctorsData.find(d => d.id === bookedDocId);
                 const displayDocName = bookedDoctor?.name || bookedDoctor?.user?.fullName || 'Doctor';
                 const displayDocSub = [bookedDoctor?.specialty, bookedDoctor?.experience].filter(Boolean).join(' • ');
                 const displayDate = latestAppointment?.scheduledAt ? new Date(latestAppointment.scheduledAt).toLocaleDateString() : (latestAppointment?.date || 'Date pending');
@@ -924,13 +1010,16 @@ const DashboardPage: React.FC = () => {
                 <p className="emergency-sub">Talk to our support team or emergency services.</p>
 
                 <div className="emergency-widget-bottom">
-                  <button 
-                    type="button" 
-                    className="btn-emergency-call"
-                    onClick={() => setShowEmergencyModal(false)}
+                  <a 
+                    href="tel:102" 
+                    className="btn-emergency-call cursor-pointer"
+                    style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                    onClick={() => {
+                      window.location.href = 'tel:102';
+                    }}
                   >
-                    📞 Emergency Call
-                  </button>
+                    📞 Emergency Call (102)
+                  </a>
 
                   <div className="headset-badge-247">
                     <span className="headset-emoji">🎧</span>

@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { login, googleLogin } from '../api';
+import { login } from '../api';
 import { saveAuth } from '../authStorage';
-import GoogleSignInButton from '../components/GoogleSignInButton';
 
 export default function DoctorLogin() {
   const navigate = useNavigate();
@@ -12,7 +11,6 @@ export default function DoctorLogin() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -26,15 +24,11 @@ export default function DoctorLogin() {
       }
       saveAuth(res.accessToken, { id: res.id, email: res.email, fullName: res.fullName, role: res.role });
       const requestedPath = (location.state as { from?: string } | null)?.from;
-      const requestedDoctorPath = requestedPath?.startsWith('/doctor/')
-        && requestedPath !== '/doctor/onboarding'
-        && requestedPath !== '/doctor/setup-profile'
-        ? requestedPath
-        : null;
-      navigate(
-        requestedDoctorPath || (res.onboardingCompleted ? '/doctor/dashboard' : '/doctor/onboarding'),
-        { replace: true },
-      );
+      if (requestedPath && requestedPath.startsWith('/doctor/') && requestedPath !== '/doctor/onboarding' && requestedPath !== '/doctor/login') {
+        navigate(requestedPath, { replace: true });
+      } else {
+        navigate(res.onboardingCompleted ? '/doctor/dashboard' : '/doctor/onboarding', { replace: true });
+      }
     } catch (err: any) {
       if (err.message.toLowerCase().includes('verify your email')) {
         navigate('/verify-otp', { state: { email, role: 'DOCTOR' } });
@@ -43,33 +37,6 @@ export default function DoctorLogin() {
       }
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleGoogleCredential = async (credential: string) => {
-    setError('');
-    setGoogleLoading(true);
-    try {
-      const res = await googleLogin({ credential, role: 'DOCTOR' });
-      if (res.role !== 'DOCTOR') {
-        setError('This account is registered as a Patient. Please use the Patient login.');
-        return;
-      }
-      saveAuth(res.accessToken, { id: res.id, email: res.email, fullName: res.fullName, role: res.role });
-      const requestedPath = (location.state as { from?: string } | null)?.from;
-      const requestedDoctorPath = requestedPath?.startsWith('/doctor/')
-        && requestedPath !== '/doctor/onboarding'
-        && requestedPath !== '/doctor/setup-profile'
-        ? requestedPath
-        : null;
-      navigate(
-        requestedDoctorPath || (res.onboardingCompleted ? '/doctor/dashboard' : '/doctor/onboarding'),
-        { replace: true },
-      );
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setGoogleLoading(false);
     }
   };
 
@@ -105,9 +72,9 @@ export default function DoctorLogin() {
             </div>
             <div>
               <div className="flex items-center justify-between mb-1">
-  <label className="block text-sm font-medium text-slate-700">Password</label>
-  <Link to="/forgot-password" className="text-xs text-indigo-700 hover:underline">Forgot password?</Link>
-</div>
+                <label className="block text-sm font-medium text-slate-700">Password</label>
+                <Link to="/forgot-password" className="text-xs text-indigo-700 hover:underline">Forgot password?</Link>
+              </div>
               <input
                 type="password"
                 required
@@ -119,40 +86,28 @@ export default function DoctorLogin() {
             </div>
             <button
               type="submit"
-              disabled={loading || googleLoading}
+              disabled={loading}
               className="w-full bg-indigo-900 hover:bg-indigo-800 disabled:opacity-50 text-white font-medium py-2.5 rounded-lg transition"
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 
-          <div className="my-6 flex items-center gap-3">
-            <div className="h-px flex-1 bg-slate-200" />
-            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">or</span>
-            <div className="h-px flex-1 bg-slate-200" />
-          </div>
-
-          <GoogleSignInButton
-            role="DOCTOR"
-            mode="login"
-            onCredential={handleGoogleCredential}
-            onError={setError}
-          />
-
-          {googleLoading && (
-            <p className="mt-3 text-center text-xs text-slate-500">Completing Google sign-in...</p>
-          )}
-
           <p className="text-center text-sm text-slate-500 mt-6">
-            Don't have an account?{' '}
-            <Link to="/doctor/signup" className="text-indigo-700 font-medium hover:underline">Sign up</Link>
+            Don't have a doctor account?{' '}
+            <Link to="/doctor/signup" className="text-[#223382] font-bold hover:underline">Sign up as Doctor</Link>
           </p>
         </div>
 
-        <p className="text-center text-sm text-slate-400 mt-6">
-          Are you a patient?{' '}
-          <Link to="/patient/login" className="text-slate-600 hover:underline">Patient login</Link>
-        </p>
+        <div className="mt-6 text-center bg-white/90 backdrop-blur-xs p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <p className="text-sm font-medium text-slate-700 mb-2">Looking for medical consultations or doctor booking?</p>
+          <Link
+            to="/patient/login"
+            className="inline-flex items-center justify-center gap-2 w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-4 rounded-xl transition-all shadow-xs cursor-pointer"
+          >
+            Patient Sign In
+          </Link>
+        </div>
       </div>
     </div>
   );

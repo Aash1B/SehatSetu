@@ -1,9 +1,5 @@
-import { Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
-const prisma = new PrismaClient({ adapter });
+import { Injectable, NotFoundException, BadRequestException, ServiceUnavailableException } from '@nestjs/common';
+import { prisma } from '../prisma';
 
 export interface DocumentUploadResult {
   id: string;
@@ -20,6 +16,69 @@ export interface DocumentUploadResult {
 @Injectable()
 export class DoctorService {
   
+  /**
+   * Uploads doctor profile image to Supabase Storage Bucket 'doctor-profile-images'
+   */
+  async uploadProfileImageToSupabase(
+    file: { buffer: Buffer; originalname?: string; mimetype?: string; size?: number } | any,
+    userId: string,
+  ): Promise<{ imageUrl: string; imageStoragePath: string }> {
+    if (!file || !file.buffer) {
+      throw new BadRequestException('Profile image file is required');
+    }
+    if (file.size && file.size > 5 * 1024 * 1024) {
+      throw new BadRequestException('Profile image size must not exceed 5MB');
+    }
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (file.mimetype && !allowedMimeTypes.includes(file.mimetype)) {
+      throw new BadRequestException('Only JPEG, PNG, and WebP image formats are allowed');
+    }
+
+    const doctor = await prisma.doctor.findFirst({ where: { userId } });
+    if (!doctor) throw new NotFoundException('Doctor profile not found for user');
+
+    const projectUrl = process.env.SUPABASE_URL?.replace(/\/+$/, '') || 'https://jxsfimnztuoorcpttikz.supabase.co';
+    const secretKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+    const bucket = 'doctor-profile-images';
+    const storagePath = `doctors/${doctor.id}/profile.webp`;
+    const publicUrl = `${projectUrl}/storage/v1/object/public/${bucket}/${storagePath}`;
+
+    if (secretKey && !secretKey.includes('placeholder')) {
+      try {
+        const uploadUrl = `${projectUrl}/storage/v1/object/${bucket}/${storagePath}`;
+        const response = await fetch(uploadUrl, {
+          method: 'POST',
+          headers: {
+            apikey: secretKey,
+            Authorization: `Bearer ${secretKey}`,
+            'Content-Type': 'image/webp',
+            'x-upsert': 'true',
+          },
+          body: file.buffer as unknown as BodyInit,
+        });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          console.warn(`Supabase profile image upload non-200 (${response.status}):`, errText);
+        } else {
+          console.log(`Successfully stored profile image in [${bucket}]: ${storagePath}`);
+        }
+      } catch (error) {
+        console.error('Error uploading profile image to Supabase:', error);
+      }
+    }
+
+    await prisma.doctor.update({
+      where: { id: doctor.id },
+      data: {
+        imageUrl: publicUrl,
+        imageStoragePath: storagePath,
+      },
+    });
+
+    return { imageUrl: publicUrl, imageStoragePath: storagePath };
+  }
+
   /**
    * Uploads doctor verification document to Supabase Storage Bucket
    */
@@ -114,20 +173,47 @@ export class DoctorService {
         { day: 'Sunday', isWorking: false, workingHours: 'Closed', breakTime: '-' }
       ]
     };
+    const allDoctorsInDb = await prisma.doctor.findMany({ select: { id: true } });
+    const queryDoctorIds = Array.from(new Set([...resolvedDoctorIds, ...allDoctorsInDb.map((d) => d.id)]));
+
     const appointments = await prisma.appointment.findMany({
       where: {
-        doctorId: { in: resolvedDoctorIds },
-        status: { in: ['SCHEDULED', 'WAITING'] },
-        scheduledAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
+        doctorId: { in: queryDoctorIds },
+        status: { in: ['SCHEDULED', 'WAITING', 'PENDING', 'ACCEPTED', 'CONFIRMED', 'IN_PROGRESS'] },
       },
-      select: { scheduledAt: true, timeSlot: true },
+      select: { scheduledAt: true, timeSlot: true, date: true },
     });
     const bookedSlots: Record<string, string[]> = {};
     appointments.forEach((appointment) => {
-      if (!appointment.scheduledAt) return;
-      const dateKey = appointment.scheduledAt.toLocaleDateString('en-CA');
-      const slot = appointment.timeSlot || appointment.scheduledAt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-      bookedSlots[dateKey] = [...new Set([...(bookedSlots[dateKey] || []), slot])];
+      let dateKey = '';
+      if (appointment.scheduledAt) {
+        const d = new Date(appointment.scheduledAt);
+        if (!isNaN(d.getTime())) {
+          dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+      }
+      if (!dateKey && appointment.date) {
+        dateKey = appointment.date;
+      }
+      if (!dateKey) return;
+
+      const rawSlot = appointment.timeSlot || '';
+      let formattedSlot = rawSlot.trim();
+      if (appointment.scheduledAt && !formattedSlot) {
+        const d = new Date(appointment.scheduledAt);
+        if (!isNaN(d.getTime())) {
+          let hours = d.getHours();
+          const mins = String(d.getMinutes()).padStart(2, '0');
+          const ampm = hours >= 12 ? 'PM' : 'AM';
+          hours = hours % 12;
+          hours = hours ? hours : 12;
+          formattedSlot = `${String(hours).padStart(2, '0')}:${mins} ${ampm}`;
+        }
+      }
+      if (formattedSlot) {
+        const existing = bookedSlots[dateKey] || [];
+        bookedSlots[dateKey] = Array.from(new Set([...existing, formattedSlot]));
+      }
     });
     return { ...(baseAvailability as object), bookedSlots };
   }
@@ -207,6 +293,7 @@ export class DoctorService {
     }
     if (doctorData.languagesSpoken) cleanedDoctorData.tags = doctorData.languagesSpoken;
     if (doctorData.availability) cleanedDoctorData.availability = doctorData.availability;
+    if (doctorData.profileCompleted !== undefined) cleanedDoctorData.profileCompleted = Boolean(doctorData.profileCompleted);
     cleanedDoctorData.availableToday = true;
 
     if (doctor) {
@@ -265,9 +352,17 @@ export class DoctorService {
       documents: onboardingPayload.documents || []
     };
 
+    const doctor = await prisma.doctor.findFirst({ where: { id: doctorId } });
+    if (!doctor?.imageUrl && !onboardingPayload.photoUrl && !onboardingPayload.imageUrl) {
+      throw new BadRequestException('Doctor profile image is required before finishing onboarding');
+    }
+
     return this.updateProfile(doctorId, {
       ...onboardingPayload,
-      availability: availabilityData
+      availability: availabilityData,
+      profileCompleted: true,
+      isVerified: true,
+      isActive: true,
     });
   }
 }

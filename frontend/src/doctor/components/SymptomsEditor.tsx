@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Stethoscope, X, Sparkles, Plus, Edit2, Check } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { searchCatalog } from '../data/prescriptionCatalog';
 
 interface Symptom {
   id: string;
@@ -13,37 +14,22 @@ interface SymptomsEditorProps {
   className?: string;
   aiExtractedSymptoms?: string[];
   isListening?: boolean;
-  onChange?: (symptoms: string[]) => void;
+  onChange?: (items: string[]) => void;
 }
 
-const POPULAR_SYMPTOMS = [
-  'Persistent Fever (4 days)',
-  'High Grade Fever (102°F)',
-  'Body ache & Muscle Fatigue',
-  'Dry Cough & Sore Throat',
-  'Severe Headache & Migraine',
-  'Nausea & Vomiting',
-  'Shortness of Breath',
-  'Abdominal Pain & Cramps',
-  'Loss of Taste and Smell',
-  'Runny Nose & Nasal Congestion',
-  'Dizziness & Lightheadedness',
-  'Chest Tightness & Discomfort',
-];
-
-const SymptomsEditor: React.FC<SymptomsEditorProps> = ({ className, aiExtractedSymptoms, isListening = false, onChange }) => {
-  const [symptoms, setSymptoms] = useState<Symptom[]>([]);
+const SymptomsEditor: React.FC<SymptomsEditorProps> = ({ className, aiExtractedSymptoms }) => {
+  const [symptoms, setSymptoms] = useState<Symptom[]>([
+    { id: '1', text: 'Persistent Fever (4 days)', isAi: true },
+    { id: '2', text: 'Body ache & Fatigue', isAi: true }
+  ]);
   const [newSymptom, setNewSymptom] = useState('');
+  const [isListening, setIsListening] = useState(true);
   const [editText, setEditText] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const filteredSuggestions = newSymptom.trim().length > 0
-    ? POPULAR_SYMPTOMS.filter(s =>
-        s.toLowerCase().includes(newSymptom.trim().toLowerCase())
-      ).slice(0, 5)
-    : [];
+  const filteredSuggestions = searchCatalog('SYMPTOM', newSymptom);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -67,10 +53,6 @@ const SymptomsEditor: React.FC<SymptomsEditorProps> = ({ className, aiExtractedS
       });
     }
   }, [aiExtractedSymptoms]);
-
-  useEffect(() => {
-    onChange?.(symptoms.map((symptom) => symptom.text));
-  }, [symptoms, onChange]);
 
   const addManual = (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,28 +109,38 @@ const SymptomsEditor: React.FC<SymptomsEditorProps> = ({ className, aiExtractedS
   return (
     <div className={cn("bg-deep-space rounded-2xl shadow-sm overflow-hidden flex flex-col", className)}>
       <div className="p-3 border-b border-white/10 flex items-center justify-between text-white">
-        <div className="flex items-center gap-2">
-          <Stethoscope className="w-4 h-4 text-white" />
-          <h3 className="font-bold text-sm">Symptoms</h3>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Stethoscope className="w-4 h-4 text-white" />
+            <h3 className="font-bold text-sm">Symptoms</h3>
+          </div>
+          {isListening && (
+            <div className="flex items-center gap-1.5 text-xs text-purple-200 bg-white/10 px-2.5 py-0.5 rounded-full font-medium">
+              <span className="flex h-1.5 w-1.5 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-300 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-purple-300"></span>
+              </span>
+              <span className="animate-pulse text-[11px] font-normal">Typing from live speech...</span>
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <button
             type="button"
-            disabled
             onClick={() => {
               const aiItem = { id: Date.now().toString(), text: 'High grade fever (102°F) with fatigue', isAi: true };
               setSymptoms(prev => [...prev, aiItem]);
             }}
             className="flex items-center gap-1.5 text-[10px] font-bold text-purple-300 uppercase tracking-wider hover:text-white transition-colors cursor-pointer bg-white/10 px-2 py-0.5 rounded-full"
-            title={isListening ? 'Voice extraction is active' : 'Use the manual field below'}
+            title="Click to trigger AI auto-extraction"
           >
             <Sparkles className="w-3 h-3" />
-            {isListening ? 'AI Listening' : 'Manual Entry'}
+            AI Listening
           </button>
         </div>
       </div>
       
-      <div className="p-3 space-y-3 flex-1 overflow-y-auto bg-white">
+      <div className="p-3 flex-1 min-h-0 overflow-y-auto bg-white">
         <ul className="space-y-2">
           {symptoms.map((sym) => (
             <li key={sym.id} className="flex items-center gap-2 text-sm text-deep-space bg-gray-50 px-3 py-2 rounded-lg group animate-in fade-in slide-in-from-right-2">
@@ -187,66 +179,56 @@ const SymptomsEditor: React.FC<SymptomsEditorProps> = ({ className, aiExtractedS
               )}
             </li>
           ))}
-          {isListening && (
-            <li className="flex items-center gap-2 text-sm text-gray-400 px-3 py-2">
-              <span className="flex h-1.5 w-1.5 relative ml-1 mr-1">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-purple-500"></span>
-              </span>
-              <span className="animate-pulse">Typing from live speech...</span>
-            </li>
-          )}
         </ul>
+      </div>
 
-        {/* Manual Input with Autocomplete Recommendations */}
-        <div ref={containerRef} className="relative pt-2 border-t border-gray-100 mt-2">
-          <p className="mb-2 text-xs font-semibold text-gray-600">Type a symptom manually</p>
-          {showSuggestions && filteredSuggestions.length > 0 && (
-            <div className="absolute bottom-full mb-1 left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden divide-y divide-gray-100 max-h-48 overflow-y-auto">
-              <div className="bg-purple-50 px-3 py-1.5 text-[11px] font-semibold text-purple-700 uppercase tracking-wider flex justify-between items-center">
-                <span>Suggested Symptoms</span>
-                <span className="text-[10px] text-purple-500 font-normal">Click or press Tab/Enter to select</span>
-              </div>
-              {filteredSuggestions.map((suggestion, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => selectSuggestion(suggestion)}
-                  className={cn(
-                    "w-full text-left px-3 py-2 text-xs text-gray-700 hover:bg-purple-50 hover:text-purple-900 transition-colors flex items-center gap-2 cursor-pointer",
-                    selectedIndex === idx && "bg-purple-100 text-purple-900 font-medium"
-                  )}
-                >
-                  <Stethoscope className="w-3 h-3 text-purple-500 shrink-0" />
-                  <span>{suggestion}</span>
-                </button>
-              ))}
+      {/* Fixed Bottom Input with Autocomplete Recommendations */}
+      <div ref={containerRef} className="p-3 bg-white border-t border-gray-100 shrink-0 relative mt-auto">
+        {showSuggestions && filteredSuggestions.length > 0 && (
+          <div className="absolute bottom-full mb-1 left-3 right-3 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden divide-y divide-gray-100 max-h-48 overflow-y-auto">
+            <div className="bg-purple-50 px-3 py-1.5 text-[11px] font-semibold text-purple-700 uppercase tracking-wider flex justify-between items-center">
+              <span>Suggested Symptoms</span>
+              <span className="text-[10px] text-purple-500 font-normal">Click or press Tab/Enter to select</span>
             </div>
-          )}
+            {filteredSuggestions.map((suggestion, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => selectSuggestion(suggestion)}
+                className={cn(
+                  "w-full text-left px-3 py-2 text-xs text-gray-700 hover:bg-purple-50 hover:text-purple-900 transition-colors flex items-center gap-2 cursor-pointer",
+                  selectedIndex === idx && "bg-purple-100 text-purple-900 font-medium"
+                )}
+              >
+                <Stethoscope className="w-3 h-3 text-purple-500 shrink-0" />
+                <span>{suggestion}</span>
+              </button>
+            ))}
+          </div>
+        )}
 
-          <form onSubmit={addManual} className="flex gap-2">
-            <input
-              type="text"
-              value={newSymptom}
-              onChange={(e) => {
-                setNewSymptom(e.target.value);
-                setShowSuggestions(true);
-                setSelectedIndex(-1);
-              }}
-              onFocus={() => setShowSuggestions(true)}
-              onKeyDown={handleKeyDown}
-              placeholder="Type symptom (e.g. Fever, Cough)..."
-              className="flex-1 text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-habanero"
-            />
-            <button 
-              type="submit"
-              disabled={!newSymptom.trim()}
-              className="w-9 h-9 shrink-0 bg-gray-100 text-deep-space hover:bg-gray-200 disabled:opacity-50 rounded-lg flex items-center justify-center transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
-          </form>
-        </div>
+        <form onSubmit={addManual} className="flex gap-2">
+          <input
+            type="text"
+            value={newSymptom}
+            onChange={(e) => {
+              setNewSymptom(e.target.value);
+              setShowSuggestions(true);
+              setSelectedIndex(-1);
+            }}
+            onFocus={() => setShowSuggestions(true)}
+            onKeyDown={handleKeyDown}
+            placeholder="Add manually (e.g. Fever, Cough)..."
+            className="flex-1 text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-habanero"
+          />
+          <button 
+            type="submit"
+            disabled={!newSymptom.trim()}
+            className="w-9 h-9 shrink-0 bg-gray-100 text-deep-space hover:bg-gray-200 disabled:opacity-50 rounded-lg flex items-center justify-center transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+        </form>
       </div>
     </div>
   );

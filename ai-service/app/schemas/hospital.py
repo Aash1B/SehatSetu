@@ -31,8 +31,6 @@ class RawHospital(BaseModel):
     latitude: float | None = None
     longitude: float | None = None
     distance: float | None = Field(default=None, ge=0, description="Distance in metres")
-    rating: float | None = Field(default=None, ge=0, le=5)
-    user_rating_count: int | None = Field(default=None, alias="userRatingCount", ge=0)
     google_types: list[str] = Field(default_factory=list, alias="googleTypes")
     primary_type: str | None = Field(default=None, alias="primaryType")
     business_status: str | None = Field(default=None, alias="businessStatus")
