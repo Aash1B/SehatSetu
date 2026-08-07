@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 const testimonials = [
   {
@@ -7,7 +8,6 @@ const testimonials = [
     name: 'Anika R.',
     subText: 'Patient since 2022',
     avatar: 'AR',
-    rating: 5,
   },
   {
     id: 2,
@@ -15,7 +15,6 @@ const testimonials = [
     name: 'Vikram S.',
     subText: 'Patient since 2023',
     avatar: 'VS',
-    rating: 5,
   },
   {
     id: 3,
@@ -23,17 +22,18 @@ const testimonials = [
     name: 'Sana K.',
     subText: 'Patient since 2021',
     avatar: 'SK',
-    rating: 5,
   },
 ];
 
 const TestimonialsSection: React.FC = () => {
+  const { t } = useTranslation('home');
+
   return (
     <section id="testimonials" className="testimonials-section">
       <div className="testimonials-container">
         <div className="section-header-left">
-          <span className="section-subtag">STORIES FROM OUR COMMUNITY</span>
-          <h2 className="testimonials-title">What Our Patients Say</h2>
+          <span className="section-subtag"> </span>
+          <h2 className="testimonials-title">{t('testimonialsTitle')}</h2>
         </div>
 
         <div className="testimonials-grid">
@@ -47,9 +47,6 @@ const TestimonialsSection: React.FC = () => {
                 <div className="author-info">
                   <h4 className="author-name">{t.name}</h4>
                   <p className="author-subtext">{t.subText}</p>
-                </div>
-                <div className="star-rating">
-                  {'★'.repeat(t.rating)}
                 </div>
               </div>
             </div>

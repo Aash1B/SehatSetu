@@ -17,6 +17,10 @@ from app.schemas.ocr import (
 )
 from app.services.gemini_service import GeminiService
 from app.services.language_service import language_service
+from app.services.ocr.manager import OCRManager
+from app.services.ocr.normalization import extract_entities, normalize_medical_text
+from app.services.ocr.preprocessing import ImagePreprocessor
+from app.services.ocr.providers import GeminiVisionProvider, TesseractProvider
 
 logger = get_logger(__name__)
 MIME_EXTENSIONS = {
@@ -101,8 +105,14 @@ class OCRService:
         gemini: GeminiService | None = None,
     ) -> None:
         self.settings = settings
+        injected_gemini = gemini is not None
         self.gemini = gemini or GeminiService(settings)
         self.provider = GeminiVisionOCRService(self.gemini)
+        self.local_provider = TesseractProvider(settings.tesseract_path,settings.tesseract_language,settings.ocr_request_timeout_seconds)
+        gemini_configured=bool(settings.gemini_api_key and settings.gemini_api_key.get_secret_value().strip())
+        self.fallback_provider = GeminiVisionProvider(self.gemini,OCR_PROMPT,injected_gemini or gemini_configured)
+        self.manager = OCRManager(self.local_provider,self.fallback_provider,settings.ocr_fallback_threshold,0.85,settings.ocr_max_concurrent_requests,settings.ocr_cache_ttl_seconds)
+        self.preprocessor = ImagePreprocessor(settings.ocr_preprocess_enabled,settings.ocr_preprocess_adaptive_threshold,settings.ocr_preprocess_deskew)
 
     def analyze(
         self,
@@ -111,6 +121,7 @@ class OCRService:
         language: str,
         output_language: str | None,
         include_summary: bool,
+        include_medical_analysis: bool = True,
         request_id: str = "",
     ) -> OCRAnalysisData:
         """OCR all pages in order and generate structured medical analysis."""
@@ -121,20 +132,24 @@ class OCRService:
             if mime_type == "application/pdf"
             else [self._extract_image(path, mime_type, 1)]
         )
-        text = "\n\n".join(
+        raw_text = "\n\n".join(
             f"--- Page {page.page_number} ---\n{page.extracted_text}"
             for page in pages
         ).strip()
-        if not text or not any(page.extracted_text.strip() for page in pages):
+        if not raw_text or not any(page.extracted_text.strip() for page in pages):
+            page_warnings=[warning for page in pages for warning in page.warnings]
+            no_engine = "TESSERACT_UNAVAILABLE" in page_warnings and not self.fallback_provider.available
             raise AppException(
-                "No readable text was extracted",
-                status_code=status.HTTP_502_BAD_GATEWAY,
-                code="GEMINI_OCR_FAILED",
+                "No OCR engine is available" if no_engine else "No readable text was extracted",
+                status_code=(status.HTTP_503_SERVICE_UNAVAILABLE if no_engine else (status.HTTP_504_GATEWAY_TIMEOUT if "GEMINI_TIMEOUT" in page_warnings else status.HTTP_502_BAD_GATEWAY)),
+                code="OCR_ENGINE_UNAVAILABLE" if no_engine else "GEMINI_OCR_FAILED",
             )
-        language_meta = language_service.resolve(
-            text, language, output_language
+        text, corrections = normalize_medical_text(raw_text)
+        language_meta = language_service.resolve(text, language, output_language)
+        analysis = (
+            self._analyze_medical_text(text, language_meta.output)
+            if include_medical_analysis else OCRMedicalAnalysis()
         )
-        analysis = self._analyze_medical_text(text, language_meta.output)
         logger.info(
             "OCR request completed request_id=%s filename=%s pages=%d "
             "duration_ms=%.2f character_count=%d",
@@ -145,7 +160,19 @@ class OCRService:
             len(text),
         )
         return OCRAnalysisData(
+            engine=("local+gemini-fallback" if any(page.fallback_used for page in pages) and any(page.provider=="tesseract" for page in pages) else (pages[0].provider or "unknown")),
+            local_ocr_text="\n\n".join(page.raw_text for page in pages if page.provider == "tesseract"),
+            fallback_ocr_text="\n\n".join(page.raw_text for page in pages if page.fallback_used),
+            fallback_used=any(page.fallback_used for page in pages),
+            cache_hit=any("CACHE_HIT" in page.warnings for page in pages),
+            confidence=(sum(page.confidence or 0 for page in pages)/len(pages)),
+            processing_time_seconds=perf_counter()-started,
+            corrections=corrections,
+            structured_entities=[entity for page in pages for entity in extract_entities(page.extracted_text,page.page_number,page.confidence or 0)],
             extracted_text=text,
+            raw_ocr_text=raw_text,
+            cleaned_ocr_text=text,
+            warnings=list(dict.fromkeys(warning for page in pages for warning in page.warnings)),
             pages=pages,
             document_type=analysis.document_type,
             summary=analysis.summary if include_summary else "",
@@ -220,20 +247,15 @@ class OCRService:
                     )
                 results = []
                 for index, page in enumerate(document):
-                    pixmap = page.get_pixmap(
-                        matrix=fitz.Matrix(2, 2),
-                        alpha=False,
-                    )
-                    text = self.provider.extract_text(
-                        pixmap.tobytes("png"),
-                        "image/png",
-                    )
-                    results.append(
-                        OCRPageResult(
-                            page_number=index + 1,
-                            extracted_text=text,
-                        )
-                    )
+                    try:
+                        pixmap=page.get_pixmap(matrix=fitz.Matrix(2,2),alpha=False)
+                        from io import BytesIO
+                        from PIL import Image
+                        with Image.open(BytesIO(pixmap.tobytes("png"))) as rendered:
+                            results.append(self._ocr_variants(rendered,index+1))
+                    except Exception:
+                        logger.warning("OCR page failed page_number=%d",index+1,exc_info=True)
+                        results.append(OCRPageResult(page_number=index+1,warnings=["PAGE_OCR_FAILED"],provider="none",status="failed"))
                 return results
         except AppException:
             raise
@@ -265,7 +287,8 @@ class OCRService:
                         status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
                         code="OCR_FILE_TOO_LARGE",
                     )
-                image.verify()
+                image.load()
+                return self._ocr_variants(image,page_number)
         except AppException:
             raise
         except Exception as exc:
@@ -274,13 +297,12 @@ class OCRService:
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 code="OCR_CORRUPTED_FILE",
             ) from exc
-        return OCRPageResult(
-            page_number=page_number,
-            extracted_text=self.provider.extract_text(
-                path.read_bytes(),
-                mime_type,
-            ),
-        )
+    def _ocr_variants(self,image, page_number:int) -> OCRPageResult:
+        variants=self.preprocessor.variants(image)
+        return self.manager.extract_variants([(item.name,item.payload) for item in variants],page_number).page
+
+    def _ocr_payload(self, payload: bytes, page_number: int) -> OCRPageResult:
+        return self.manager.extract_page(payload,page_number).page
 
     def _analyze_medical_text(
         self,

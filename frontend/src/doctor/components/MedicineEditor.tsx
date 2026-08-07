@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Pill, X, Sparkles, Plus, Edit2, Check } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { searchCatalog } from '../data/prescriptionCatalog';
 
 interface Medicine {
   id: string;
@@ -11,27 +12,80 @@ interface Medicine {
 
 interface MedicineEditorProps {
   className?: string;
+  aiExtractedMedicines?: string[];
+  isListening?: boolean;
+  onChange?: (items: string[]) => void;
 }
 
-const MedicineEditor: React.FC<MedicineEditorProps> = ({ className }) => {
-  const [medicines, setMedicines] = useState<Medicine[]>([]);
+const MedicineEditor: React.FC<MedicineEditorProps> = ({ className, aiExtractedMedicines }) => {
+  const [medicines, setMedicines] = useState<Medicine[]>([
+    { id: '1', text: 'Tab. Paracetamol 650mg - 1-0-1 (5 days)', isAi: true },
+    { id: '2', text: 'Tab. Cetirizine 10mg - SOS', isAi: true }
+  ]);
   const [newMedicine, setNewMedicine] = useState('');
   const [isListening, setIsListening] = useState(true);
   const [editText, setEditText] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Simulate live transcription
+  const filteredSuggestions = searchCatalog('MEDICINE', newMedicine);
+
   useEffect(() => {
-    const t1 = setTimeout(() => setMedicines(prev => [...prev, { id: '1', text: 'Paracetamol 500mg - SOS', isAi: true }]), 4000);
-    const t2 = setTimeout(() => setMedicines(prev => [...prev, { id: '2', text: 'Ibuprofen 400mg - Twice daily', isAi: true }]), 8500);
-    const t3 = setTimeout(() => setIsListening(false), 9500);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Automatically add live AI extracted medicines from speech/audio
+  useEffect(() => {
+    if (aiExtractedMedicines && aiExtractedMedicines.length > 0) {
+      setMedicines(prev => {
+        const existingText = new Set(prev.map(m => m.text.toLowerCase()));
+        const newItems = aiExtractedMedicines
+          .filter(m => !existingText.has(m.toLowerCase()))
+          .map(m => ({ id: Math.random().toString(), text: m, isAi: true }));
+        return [...prev, ...newItems];
+      });
+    }
+  }, [aiExtractedMedicines]);
 
   const addManual = (e: React.FormEvent) => {
     e.preventDefault();
     if (newMedicine.trim()) {
       setMedicines([...medicines, { id: Date.now().toString(), text: newMedicine.trim(), isAi: false }]);
       setNewMedicine('');
+      setShowSuggestions(false);
+      setSelectedIndex(-1);
+    }
+  };
+
+  const selectSuggestion = (suggestion: string) => {
+    setNewMedicine(suggestion);
+    setShowSuggestions(false);
+    setSelectedIndex(-1);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showSuggestions || filteredSuggestions.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedIndex(prev => (prev < filteredSuggestions.length - 1 ? prev + 1 : 0));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedIndex(prev => (prev > 0 ? prev - 1 : filteredSuggestions.length - 1));
+    } else if (e.key === 'Tab' || (e.key === 'Enter' && selectedIndex >= 0)) {
+      e.preventDefault();
+      if (selectedIndex >= 0 && selectedIndex < filteredSuggestions.length) {
+        selectSuggestion(filteredSuggestions[selectedIndex]);
+      } else if (filteredSuggestions.length > 0) {
+        selectSuggestion(filteredSuggestions[0]);
+      }
     }
   };
 
@@ -55,19 +109,38 @@ const MedicineEditor: React.FC<MedicineEditorProps> = ({ className }) => {
   return (
     <div className={cn("bg-deep-space rounded-2xl shadow-sm overflow-hidden flex flex-col", className)}>
       <div className="p-3 border-b border-white/10 flex items-center justify-between text-white">
-        <div className="flex items-center gap-2">
-          <Pill className="w-4 h-4 text-white" />
-          <h3 className="font-bold text-sm">Medicines</h3>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Pill className="w-4 h-4 text-white" />
+            <h3 className="font-bold text-sm">Medicines</h3>
+          </div>
+          {isListening && (
+            <div className="flex items-center gap-1.5 text-xs text-blue-200 bg-white/10 px-2.5 py-0.5 rounded-full font-medium">
+              <span className="flex h-1.5 w-1.5 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-300 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-300"></span>
+              </span>
+              <span className="animate-pulse text-[11px] font-normal">Waiting for prescription...</span>
+            </div>
+          )}
         </div>
-        {isListening && (
-          <div className="flex items-center gap-1.5 text-[10px] font-bold text-blue-300 uppercase tracking-wider animate-pulse">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              const aiItem = { id: Date.now().toString(), text: 'Tab. Paracetamol 650mg - 1-0-1 (5 days)', isAi: true };
+              setMedicines(prev => [...prev, aiItem]);
+            }}
+            className="flex items-center gap-1.5 text-[10px] font-bold text-blue-300 uppercase tracking-wider hover:text-white transition-colors cursor-pointer bg-white/10 px-2 py-0.5 rounded-full"
+            title="Click to trigger AI auto-extraction"
+          >
             <Sparkles className="w-3 h-3" />
             AI Listening
-          </div>
-        )}
+          </button>
+        </div>
       </div>
       
-      <div className="p-3 space-y-3 flex-1 overflow-y-auto bg-white">
+      <div className="p-3 flex-1 min-h-0 overflow-y-auto bg-white">
         <ul className="space-y-2">
           {medicines.map((med) => (
             <li key={med.id} className="flex items-center gap-2 text-sm text-deep-space bg-gray-50 px-3 py-2 rounded-lg group animate-in fade-in slide-in-from-right-2">
@@ -106,24 +179,46 @@ const MedicineEditor: React.FC<MedicineEditorProps> = ({ className }) => {
               )}
             </li>
           ))}
-          {isListening && (
-            <li className="flex items-center gap-2 text-sm text-gray-400 px-3 py-2">
-              <span className="flex h-1.5 w-1.5 relative ml-1 mr-1">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-500"></span>
-              </span>
-              <span className="animate-pulse">Waiting for prescription...</span>
-            </li>
-          )}
         </ul>
+      </div>
 
-        {/* Manual Input */}
-        <form onSubmit={addManual} className="flex gap-2 pt-2 border-t border-gray-100 mt-2">
+      {/* Fixed Bottom Input with Autocomplete Recommendations */}
+      <div ref={containerRef} className="p-3 bg-white border-t border-gray-100 shrink-0 relative mt-auto">
+        {showSuggestions && filteredSuggestions.length > 0 && (
+          <div className="absolute bottom-full mb-1 left-3 right-3 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden divide-y divide-gray-100 max-h-48 overflow-y-auto">
+            <div className="bg-blue-50 px-3 py-1.5 text-[11px] font-semibold text-blue-700 uppercase tracking-wider flex justify-between items-center">
+              <span>Suggested Medicines</span>
+              <span className="text-[10px] text-blue-500 font-normal">Click or press Tab/Enter to select</span>
+            </div>
+            {filteredSuggestions.map((suggestion, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => selectSuggestion(suggestion)}
+                className={cn(
+                  "w-full text-left px-3 py-2 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-900 transition-colors flex items-center gap-2 cursor-pointer",
+                  selectedIndex === idx && "bg-blue-100 text-blue-900 font-medium"
+                )}
+              >
+                <Pill className="w-3 h-3 text-blue-500 shrink-0" />
+                <span>{suggestion}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        <form onSubmit={addManual} className="flex gap-2">
           <input
             type="text"
             value={newMedicine}
-            onChange={(e) => setNewMedicine(e.target.value)}
-            placeholder="Add manually..."
+            onChange={(e) => {
+              setNewMedicine(e.target.value);
+              setShowSuggestions(true);
+              setSelectedIndex(-1);
+            }}
+            onFocus={() => setShowSuggestions(true)}
+            onKeyDown={handleKeyDown}
+            placeholder="Add manually (e.g. Paracetamol, Cetirizine)..."
             className="flex-1 text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-habanero"
           />
           <button 

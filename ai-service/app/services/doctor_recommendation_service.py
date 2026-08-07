@@ -17,10 +17,15 @@ from app.schemas.doctor_recommendation import (
     DoctorRecommendationRequest,
     GeminiDoctorRecommendation,
     RecommendationSource,
+    SpecialtyRecommendation,
     Urgency,
 )
 from app.services.gemini_service import GeminiService
 from app.services.language_service import language_service
+from app.services.hospital_enrichment_service import (
+    CLASSIFICATION_NOTICE,
+    HospitalEnrichmentService,
+)
 
 logger = get_logger(__name__)
 EMERGENCY_WARNING = (
@@ -44,9 +49,11 @@ class DoctorRecommendationService:
         self,
         settings: Settings,
         gemini_classifier: GeminiClassifier | None = None,
+        hospital_service: HospitalEnrichmentService | None = None,
     ) -> None:
         self._settings = settings
         self._gemini_classifier = gemini_classifier
+        self._hospital_service = hospital_service or HospitalEnrichmentService()
 
     async def recommend(
         self, request: DoctorRecommendationRequest
@@ -55,26 +62,42 @@ class DoctorRecommendationService:
         language_service.resolve(
             request.issue, request.language, request.output_language
         )
-        text = _normalize_text(" ".join([request.issue, *request.symptoms]))
+        text = _normalize_text(" ".join([request.issue, *request.symptoms, *request.known_conditions, request.additional_notes, request.severity or ""]))
+        if not text:
+            result = self._general_fallback(confidence=0.0)
+            return self._enrich(result, [], request=request, insufficient=True, advanced=request.advanced_input)
         emergency = self._detect_emergency(text)
         if emergency:
-            return emergency
+            return self._enrich(emergency, emergency.matched_symptoms, request=request, advanced=request.advanced_input)
 
         rule_result = self._match_rules(text, request.age)
         if rule_result.confidence >= self._settings.doctor_rule_confidence_threshold:
-            return rule_result
+            return self._enrich(rule_result, [], request=request, advanced=request.advanced_input)
 
         gemini_result = await self._try_gemini(request)
         if gemini_result is not None:
-            return gemini_result
+            return self._enrich(gemini_result, [], request=request, advanced=request.advanced_input)
         if rule_result.matched_symptoms:
-            return rule_result
-        return self._general_fallback()
+            return self._enrich(rule_result, [], request=request, advanced=request.advanced_input)
+        return self._enrich(self._general_fallback(), [], request=request, advanced=request.advanced_input)
 
     @staticmethod
     def _detect_emergency(text: str) -> DoctorRecommendationData | None:
         """Detect emergency language before any appointment routing."""
         matches = [phrase for phrase in EMERGENCY_PHRASES if phrase in text]
+        deterministic_flags = {
+            "stroke signs": ("face droop" in text or "slurred speech" in text or "weakness on one side" in text),
+            "chest pain with breathlessness": ("chest pain" in text and any(term in text for term in ("shortness of breath", "breathlessness", "difficulty breathing"))),
+            "severe allergic reaction": (any(term in text for term in ("anaphylaxis", "throat swelling", "tongue swelling")) or ("allergic" in text and "difficulty breathing" in text)),
+            "self-harm risk": any(term in text for term in ("suicide", "kill myself", "self harm")),
+            "pregnancy emergency": ("pregnan" in text and any(term in text for term in ("severe bleeding", "heavy bleeding", "severe pain"))),
+            "poisoning or overdose": any(term in text for term in ("poisoning", "overdose")),
+            "major trauma": any(term in text for term in ("major trauma", "serious accident")),
+            "altered consciousness": any(term in text for term in ("unconscious", "not responding", "altered consciousness", "blue lips", "collapse")),
+            "seizure": "seizure" in text,
+            "severe bleeding": "severe bleeding" in text or "bleeding heavily" in text,
+        }
+        matches.extend(label for label, detected in deterministic_flags.items() if detected)
         if not matches:
             return None
         if "difficulty breathing" in text and "difficulty breathing" not in matches:
@@ -90,6 +113,37 @@ class DoctorRecommendationService:
             emergency_warning=EMERGENCY_WARNING,
             disclaimer="This is not a medical diagnosis.",
         )
+
+    def _enrich(self, result: DoctorRecommendationData, red_flags: list[str], request: DoctorRecommendationRequest, insufficient: bool = False, advanced: bool = False) -> DoctorRecommendationData:
+        emergency = result.urgency == Urgency.EMERGENCY
+        specialty = "Emergency Medicine" if emergency else result.recommended_doctor_category.value
+        timeframe = "immediate" if emergency else ("within 24 hours" if result.urgency in {Urgency.PRIORITY, Urgency.URGENT} else "routine appointment")
+        recommendation = SpecialtyRecommendation(specialty=specialty, priority=1, reason=result.reason, recommended_timeframe=timeframe)
+        alternatives = [
+            SpecialtyRecommendation(specialty=category.value, priority=index + 2, reason="Alternative clinical assessment pathway", recommended_timeframe=timeframe)
+            for index, category in enumerate(result.alternative_categories[:2])
+        ]
+        urgency = Urgency.INSUFFICIENT_INFORMATION if insufficient else (Urgency.EMERGENCY if emergency else (Urgency.ROUTINE if advanced and result.urgency == Urgency.NORMAL else result.urgency))
+        condition = " ".join([request.issue, *request.symptoms, *red_flags])
+        hospitals = self._hospital_service.enrich_and_rank(request.nearby_hospitals, condition, emergency)
+        emergency_instruction = (
+            f"Call {self._settings.emergency_number} immediately and visit the nearest suitable emergency facility."
+            if emergency else ""
+        )
+        return result.model_copy(update={
+            "urgency": urgency,
+            "emergency_detected": emergency,
+            "emergency_message": "This may be a medical emergency. Contact local emergency services or go to the nearest emergency department immediately." if emergency else "",
+            "recommended_specialties": [recommendation, *alternatives][:3] if not insufficient else [],
+            "primary_recommendation": recommendation.model_dump() if not insufficient else {},
+            "reasoning": [result.reason],
+            "red_flags": list(dict.fromkeys(red_flags)),
+            "next_steps": ["Do not wait for an online appointment", "Call local emergency services", "Seek immediate in-person medical care"] if emergency else (["Provide more symptom details or seek an initial General Medicine assessment"] if insufficient else ["Arrange an appropriate clinical consultation"]),
+            "requires_human_review": True,
+            "emergency_instruction": emergency_instruction,
+            "nearby_hospitals": hospitals,
+            "hospital_classification_notice": CLASSIFICATION_NOTICE if hospitals else "",
+        })
 
     def _match_rules(
         self, text: str, age: int | None

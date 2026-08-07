@@ -22,8 +22,9 @@ logger = get_logger(__name__)
     status_code=status.HTTP_200_OK,
     summary="Generate a doctor-reviewed diet recommendation",
     description=(
-        "Uses Gemini for practical dietary guidance grounded in supplied "
-        "consultation context. Doctor approval is always required."
+        "Generates food-first dietary, vitamin, mineral, protein, glycaemic, and meal-plan guidance. "
+        "Advanced structured inputs use deterministic medical safety rules; legacy summaries retain the provider-backed flow. "
+        "No supplement dose is prescribed and doctor or dietitian approval is always required."
     ),
     responses={
         200: {

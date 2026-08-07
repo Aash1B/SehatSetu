@@ -52,6 +52,7 @@ def test_unsupported_language_is_rejected() -> None:
         ("हिंदी", "hi"),
         ("hi-Latn", "hi-Latn"),
         ("HI-LATN", "hi-Latn"),
+        ("HI_latn", "hi-Latn"),
         ("Hinglish", "hi-Latn"),
         ("Bengali", "bn"),
         ("Bangla", "bn"),
@@ -93,6 +94,7 @@ def test_output_language_normalization(
         ("Malayalam", "ml"),
         ("Urdu", "ur"),
         ("Hi", "hi"),
+        ("HI_IN", "hi"),
     ],
 )
 def test_input_language_names_are_normalized(

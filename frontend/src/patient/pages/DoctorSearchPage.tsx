@@ -1,14 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import Footer from '../components/Footer';
 import FloatingEmergencyButton from '../components/FloatingEmergencyButton';
 import CustomSelect, { type OptionItem } from '../components/CustomSelect';
-import { doctorsData, PRIORITY_CONFIG, type Doctor } from '../data/doctorsData';
+import { PRIORITY_CONFIG, doctorsData, type Doctor } from '../data/doctorsData';
 import { fetchDoctors } from '../services/doctorApi';
-import { setCurrentPage } from '../store/uiSlice';
 
 const SPECIALTY_OPTIONS: OptionItem[] = [
   { value: 'All', label: 'All Specializations' },
@@ -34,21 +32,37 @@ const LOCATION_OPTIONS: OptionItem[] = [
 ];
 
 const DoctorSearchPage: React.FC = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [doctorsList, setDoctorsList] = useState<Doctor[]>(doctorsData);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [specialtyFilter, setSpecialtyFilter] = useState('All');
-  const [locationFilter, setLocationFilter] = useState('All');
+  const [searchTerm, setSearchTerm] = useState(() => searchParams.get('q') || '');
+  const [specialtyFilter, setSpecialtyFilter] = useState(() => searchParams.get('specialty') || 'All');
+  const [locationFilter, setLocationFilter] = useState(() => searchParams.get('location') || 'All');
   const [favorites, setFavorites] = useState<string[]>([]);
   const [onlyAvailableToday, setOnlyAvailableToday] = useState(false);
 
+  const handleImageError = (event: React.SyntheticEvent<HTMLImageElement>) => {
+    const image = event.currentTarget;
+    const defaultDoctor = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23cccccc"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
+    if (image.src === defaultDoctor) return;
+    image.onerror = null;
+    image.src = defaultDoctor;
+  };
+
   useEffect(() => {
-    fetchDoctors().then((data) => {
-      if (data && data.length > 0) {
-        setDoctorsList(data);
+    (async () => {
+      try {
+        const fetched = await fetchDoctors();
+        if (fetched && fetched.length > 0) {
+          setDoctorsList(fetched);
+        } else {
+          setDoctorsList(doctorsData);
+        }
+      } catch (err) {
+        console.warn('Backend doctors fetch fallback:', err);
+        setDoctorsList(doctorsData);
       }
-    });
+    })();
   }, []);
 
   const toggleFavorite = (id: string) => {
@@ -58,33 +72,52 @@ const DoctorSearchPage: React.FC = () => {
   };
 
   const filteredAndSortedDoctors = useMemo(() => {
+    const locFilter = locationFilter.trim().toLowerCase();
+    const targetLoc = locFilter !== 'all' ? locFilter : (localStorage.getItem('patientCity') || 'mumbai').toLowerCase();
+
     return doctorsList
       .filter((doc: Doctor) => {
+        const query = searchTerm.trim().toLowerCase();
         const matchesSearch = 
-          doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          doc.specialty.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          doc.hospital.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          doc.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (doc.tags && doc.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())));
+          !query ||
+          (doc.name && doc.name.toLowerCase().includes(query)) ||
+          (doc.specialty && doc.specialty.toLowerCase().includes(query)) ||
+          (doc.hospital && doc.hospital.toLowerCase().includes(query)) ||
+          (doc.location && doc.location.toLowerCase().includes(query)) ||
+          (doc.tags && doc.tags.some(tag => tag.toLowerCase().includes(query)));
 
+        const specFilterLower = specialtyFilter.trim().toLowerCase();
+        const docSpecLower = (doc.specialty || '').toLowerCase();
         const matchesSpecialty = 
           specialtyFilter === 'All' || 
-          doc.specialty.toLowerCase().includes(specialtyFilter.toLowerCase());
+          docSpecLower.includes(specFilterLower.split(' ')[0]) ||
+          specFilterLower.includes(docSpecLower.split(' ')[0]) ||
+          docSpecLower.split(' ')[0] === specFilterLower.split(' ')[0];
 
         const matchesLocation = 
-          locationFilter === 'All' || doc.location === locationFilter;
+          locationFilter === 'All' || 
+          (doc.location && doc.location.toLowerCase().includes(locFilter)) ||
+          (doc.hospital && doc.hospital.toLowerCase().includes(locFilter));
 
         const matchesAvailability = !onlyAvailableToday || doc.availableToday;
 
         return matchesSearch && matchesSpecialty && matchesLocation && matchesAvailability;
       })
       .sort((a: Doctor, b: Doctor) => {
-        const isGenA = a.specialty.toLowerCase().includes('general physician');
-        const isGenB = b.specialty.toLowerCase().includes('general physician');
+        const locA = `${a.location || ''} ${a.hospital || ''}`.toLowerCase();
+        const locB = `${b.location || ''} ${b.hospital || ''}`.toLowerCase();
 
-        if (isGenA && !isGenB) return -1;
-        if (!isGenA && isGenB) return 1;
-        return b.priorityScore - a.priorityScore;
+        const matchA = locA.includes(targetLoc);
+        const matchB = locB.includes(targetLoc);
+
+        if (matchA && !matchB) return -1;
+        if (!matchA && matchB) return 1;
+
+        const rateA = typeof a.rating === 'number' ? a.rating : parseFloat(String(a.rating || 0));
+        const rateB = typeof b.rating === 'number' ? b.rating : parseFloat(String(b.rating || 0));
+        if (rateB !== rateA) return rateB - rateA;
+
+        return (b.priorityScore ?? 0) - (a.priorityScore ?? 0);
       });
   }, [doctorsList, searchTerm, specialtyFilter, locationFilter, onlyAvailableToday]);
 
@@ -101,7 +134,7 @@ const DoctorSearchPage: React.FC = () => {
             <button 
               type="button" 
               className="breadcrumb-back-btn"
-              onClick={() => { dispatch(setCurrentPage('landing')); navigate('/'); }}
+              onClick={() => navigate('/')}
             >
               ← Back to Home
             </button>
@@ -215,14 +248,18 @@ const DoctorSearchPage: React.FC = () => {
                       {priorityMeta.badgeText}
                     </div>
 
-                    <div className="doctor-card-top">
-                      <div className="doctor-avatar-container">
-                        <img src={doctor.imageUrl} alt={doctor.name} className="doctor-full-avatar" />
-                        {doctor.availableToday && (
-                          <span className="status-online-dot" title="Available Today for Booking"></span>
-                        )}
-                      </div>
-
+                    <div className="relative h-[220px] w-full overflow-hidden rounded-t-2xl bg-slate-100 sm:h-[240px] lg:h-[270px]">
+                      <img
+                        src={doctor.imageUrl}
+                        alt={`Dr. ${doctor.name}`}
+                        className="h-full w-full object-cover"
+                        style={{ objectPosition: doctor.imagePosition || '50% 20%' }}
+                        loading="lazy"
+                        onError={handleImageError}
+                      />
+                      {doctor.availableToday && (
+                        <span className="status-online-dot" title="Available Today for Booking"></span>
+                      )}
                       <button
                         type="button"
                         className={`doctor-card-fav-btn ${isFav ? 'active' : ''}`}
@@ -240,9 +277,6 @@ const DoctorSearchPage: React.FC = () => {
                       <div className="doctor-meta-tags-row">
                         <span className="meta-tag exp-tag">
                           ⌛ {doctor.experience}
-                        </span>
-                        <span className="meta-tag rating-tag">
-                          ⭐ {doctor.rating} ({doctor.reviewsCount} reviews)
                         </span>
                       </div>
 
@@ -281,7 +315,7 @@ const DoctorSearchPage: React.FC = () => {
                         <button
                           type="button"
                           className="btn-full-book-now"
-                          onClick={() => { dispatch(setCurrentPage('book-appointment')); navigate(`/patient/book/${doctor.id}`); }}
+                          onClick={() => navigate(`/patient/book/${doctor.id}`)}
                         >
                           Book Appointment
                         </button>

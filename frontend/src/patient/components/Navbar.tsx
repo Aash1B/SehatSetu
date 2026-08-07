@@ -1,17 +1,27 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { toggleSidebar, setCurrentPage } from '../store/uiSlice';
+import { toggleSidebar } from '../store/uiSlice';
 import type { RootState } from '../store';
+import { useNavigate } from 'react-router-dom';
+import { getToken, getUser } from '../../auth/authStorage';
+import { useTranslation } from 'react-i18next';
+import { supportedLanguages, changeLanguage, getCurrentLanguage } from '../../i18n';
 
 const Navbar: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation('navbar');
+  const tCommon = (key: string) => i18n.t(key, { ns: 'common' });
   const currentPage = useSelector((state: RootState) => state.ui.currentPage);
+  const token = getToken();
+  const user = getUser();
+  const isAuthenticated = Boolean(token && user);
+  const isDoctor = user?.role === 'DOCTOR';
+  const currentLang = getCurrentLanguage();
 
-  const handleNav = (page: string, path: string) => {
-    dispatch(setCurrentPage(page as any));
-    navigate(path);
+  const handleLanguageChange = async (lng: string) => {
+    await changeLanguage(lng);
+    window.location.reload();
   };
 
   return (
@@ -19,12 +29,12 @@ const Navbar: React.FC = () => {
       <div className="navbar-container">
         <div className="brand-group">
           {/* Sidebar Toggle Button */}
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="sidebar-toggle-btn"
             onClick={() => dispatch(toggleSidebar())}
-            aria-label="Open sidebar menu"
-            title="Open Sidebar"
+            aria-label={t('openSidebarTitle')}
+            title={t('openSidebarTitle')}
           >
             <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round">
               <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -34,16 +44,13 @@ const Navbar: React.FC = () => {
           </button>
 
           {/* Brand Logo */}
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="brand-logo btn-logo-reset"
-            onClick={() => handleNav('landing', '/')}
+            onClick={() => navigate('/')}
           >
             <div className="logo-badge">
-              <svg viewBox="0 0 24 24" fill="none" className="logo-icon" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="var(--color-habanero)"/>
-                <path d="M12 7v6m-3-3h6" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
+              <img src="/logo.svg" alt={t('logoAlt')} className="logo-icon" />
             </div>
             <span className="brand-title">
               Sehat<span className="brand-title-accent">Setu</span>
@@ -53,46 +60,74 @@ const Navbar: React.FC = () => {
 
         {/* Navigation Links */}
         <nav className="nav-links">
-          <button 
-            type="button" 
+          <button
+            type="button"
             className={`nav-link ${currentPage === 'landing' ? 'active' : ''}`}
-            onClick={() => handleNav('landing', '/')}
+            onClick={() => navigate('/')}
           >
-            Home
+            {t('home')}
           </button>
-          <a href="#services" className="nav-link">Services</a>
-          <button 
-            type="button" 
-            className={`nav-link ${currentPage === 'doctors' ? 'active' : ''}`}
-            onClick={() => handleNav('doctors', '/patient/search')}
-          >
-            Doctors
-          </button>
-          <a href="#how-it-works" className="nav-link">How It Works</a>
-          <a href="#testimonials" className="nav-link">Testimonials</a>
+          <a href="#services" className="nav-link">{t('services')}</a>
+           <button
+             type="button"
+             className={`nav-link ${currentPage === 'doctors' ? 'active' : ''}`}
+             onClick={() => navigate('/patient/search')}
+           >
+             {t('doctors')}
+           </button>
+           <button
+             type="button"
+             className={`nav-link ${currentPage === 'about' ? 'active' : ''}`}
+             onClick={() => navigate('/about')}
+           >
+             {tCommon('about')}
+           </button>
         </nav>
 
+        {/* Language Toggle */}
+        <div className="language-toggle flex items-center gap-1.5" role="radiogroup" aria-label="Select language">
+          {supportedLanguages.map((lang) => (
+            <button
+              key={lang.code}
+              type="button"
+              onClick={() => handleLanguageChange(lang.code)}
+              className={`lang-btn px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
+                currentLang === lang.code
+                  ? 'bg-orange-100 text-orange-700 ring-1 ring-orange-400'
+                  : 'text-slate-600 hover:bg-slate-100'
+              }`}
+              aria-pressed={currentLang === lang.code}
+            >
+              {lang.nativeName}
+            </button>
+          ))}
+        </div>
+
         {/* Actions */}
-        <div className="nav-actions">
-          <button 
-            type="button" 
-            className="btn-sign-in"
-            onClick={() => handleNav('login', '/patient/login')}
-          >
-            Sign In
-          </button>
-          <button 
-            type="button" 
-            className="btn-get-started" 
-            onClick={() => handleNav('dashboard', '/patient/dashboard')}
-          >
-            Dashboard
-          </button>
-          <button 
-            type="button" 
-            className="mobile-toggle" 
+        <div className="nav-actions flex items-center gap-3">
+          {!isAuthenticated && (
+            <button
+              type="button"
+              className="btn-sign-in border-2 border-orange-500 text-orange-600 hover:bg-orange-50 font-bold px-4 py-2 rounded-full transition-all text-sm cursor-pointer"
+              onClick={() => navigate('/patient/login')}
+            >
+              {t('signIn')}
+            </button>
+          )}
+          {!isDoctor && (
+            <button
+              type="button"
+              className="btn-get-started cursor-pointer"
+              onClick={() => navigate('/patient/dashboard')}
+            >
+              {t('dashboard')}
+            </button>
+          )}
+          <button
+            type="button"
+            className="mobile-toggle"
             onClick={() => dispatch(toggleSidebar())}
-            aria-label="Toggle Navigation Sidebar"
+            aria-label={t('toggleNav')}
           >
             <span className="hamburger-line"></span>
             <span className="hamburger-line"></span>

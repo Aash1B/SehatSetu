@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id               String   @id @default(uuid())
+  email            String   @unique
+  passwordHash     String
+  fullName         String
+  role             Role
+  createdAt        DateTime @default(now())
+  dataConsentGiven Boolean  @default(false)
+  dataConsentAt    DateTime?
+}
+
+enum Role {
+  PATIENT
+  DOCTOR
+}
+
+model Appointment {
+  id                String   @id @default(uuid())
+  doctorId          String
+  patientName       String
+  patientAge        String
+  patientGender     String
+  patientHeight     String?
+  patientWeight     String?
+  patientBloodGroup String?
+  patientPhone      String?
+  patientEmail      String?
+  
+  healthConcern     String?
+  symptoms          String[] // PostgreSQL supports scalar arrays
+  duration          String?
+  severity          String?
+  consultMode       String?
+  urgency           String?
+  notes             String?
+  
+  date              String
+  timeSlot          String
+  status            String   @default("WAITING") // e.g., WAITING, COMPLETED, CANCELLED
+  priority          String   @default("ROUTINE") // e.g., ROUTINE, URGENT
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}

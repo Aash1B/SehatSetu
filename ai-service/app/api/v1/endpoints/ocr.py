@@ -43,6 +43,7 @@ async def analyze_document(
         ),
     ] = None,
     include_summary: Annotated[bool, Form()] = True,
+    include_medical_analysis: Annotated[bool, Form()] = True,
     service: OCRService = Depends(get_ocr_service),
 ) -> OCRAnalysisResponse:
     """Store under a generated name, analyze, and always clean up."""
@@ -71,6 +72,7 @@ async def analyze_document(
             language,
             output_language,
             include_summary,
+            include_medical_analysis,
             request_id,
         )
         return OCRAnalysisResponse(

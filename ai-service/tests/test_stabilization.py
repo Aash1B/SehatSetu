@@ -77,9 +77,10 @@ def test_supported_audio_formats_and_metadata(
     assert len(data["segments"]) == 1
 
 
-def test_unsupported_browser_audio_mime_type_has_consistent_error(
+def test_generic_browser_audio_mime_is_accepted_when_decodable(
     client: TestClient,
 ) -> None:
+    app.dependency_overrides[get_transcription_service] = BrowserAudioService
     response = client.post(
         "/api/v1/transcribe",
         files={
@@ -91,12 +92,8 @@ def test_unsupported_browser_audio_mime_type_has_consistent_error(
         },
     )
 
-    assert response.status_code == 415
-    body = response.json()
-    assert body["success"] is False
-    assert body["message"] == "Unsupported audio MIME type"
-    assert body["error"]["code"] == "UNSUPPORTED_MIME_TYPE"
-    assert body["error"]["details"] == "application/octet-stream"
+    assert response.status_code == 200
+    assert response.json()["data"]["transcript"] == "Patient reports fever."
 
 
 def test_segments_can_be_omitted(client: TestClient) -> None:

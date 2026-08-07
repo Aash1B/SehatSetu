@@ -64,10 +64,26 @@ POST {{baseUrl}}/api/v1/recommend-doctor
 Content-Type: application/json
 
 {
-  "issue": "The patient reports a persistent skin rash and itching.",
-  "symptoms": ["skin rash", "itching"],
+  "issue": "The patient reports severe chest pain and difficulty breathing.",
+  "symptoms": ["chest pain", "shortness of breath"],
   "language": "auto",
-  "output_language": "en"
+  "output_language": "en",
+  "nearby_hospitals": [
+    {
+      "googlePlaceId": "place-123",
+      "name": "City Heart and Emergency Hospital",
+      "formattedAddress": "MG Road, Pune",
+      "latitude": 18.5204,
+      "longitude": 73.8567,
+      "distance": 1800,
+      "rating": 4.2,
+      "userRatingCount": 420,
+      "googleTypes": ["hospital", "health"],
+      "primaryType": "hospital",
+      "businessStatus": "OPERATIONAL",
+      "openNow": true
+    }
+  ]
 }
 
 ### Transcribe an audio upload (VS Code REST Client file syntax)

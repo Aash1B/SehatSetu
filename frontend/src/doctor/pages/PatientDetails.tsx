@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import DoctorSidebar from '../components/DoctorSidebar';
 import PageHeader from '../components/PageHeader';
 import PatientInfoCard from '../components/PatientInfoCard';
@@ -9,75 +9,159 @@ import CurrentMedicinesCard from '../components/CurrentMedicinesCard';
 import AISummaryCard from '../components/AISummaryCard';
 import ReferralModal from '../components/ReferralModal';
 import { ChevronRight } from 'lucide-react';
+import { getToken } from '../../auth/authStorage';
 
-import { ConsultationStatus } from '../../types';
-import type { ConsultationDetails } from '../../types';
-
-// Unified Mock Data DTO
-const mockConsultation: ConsultationDetails = {
-  consultationId: "c1",
-  patient: {
-    id: "p2",
-    name: "Sunita Devi",
-    initials: "SD",
-    age: 31,
-    gender: "F",
-    bloodGroup: "B+",
-    weight: "58kg",
-    height: "162cm"
-  },
-  appointmentTime: "11:30 AM",
-  chiefComplaints: ["Persistent Fever", "Headache", "Body Ache"],
-  durationSinceStart: "4 days",
-  medicalHistory: [
-    {
-      id: "mh1",
-      date: "12 Feb 2024",
-      description: "Fever and fatigue; possible viral infection."
-    },
-    {
-      id: "mh2",
-      date: "18 Nov 2023",
-      description: "Blood pressure review; medication continued."
-    },
-    {
-      id: "mh3",
-      date: "06 Aug 2023",
-      description: "Routine diabetes check-up and lab review."
-    }
-  ],
-  pastConditions: ["Type 2 Diabetes (2019)", "Hypertension (2021)"],
-  currentMedicines: [
-    {
-      id: "med1",
-      name: "Metformin 500mg",
-      dosage: "",
-      frequency: "Twice daily"
-    },
-    {
-      id: "med2",
-      name: "Amlodipine 5mg",
-      dosage: "",
-      frequency: "Once daily"
-    }
-  ],
-  allergies: ["Penicillin", "Peanuts"],
-  aiSummary: {
-    summaryText: "Patient has recurring fever episodes. Previous consultation showed possible viral infection. Consider CBC and dengue test before prescribing.",
-    confidenceScore: 87
-  },
-  status: ConsultationStatus.WAITING
+const getInitials = (name?: string) => {
+  if (!name) return 'PT';
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return 'PT';
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 };
 
 const PatientDetails: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [isReferralOpen, setIsReferralOpen] = useState(false);
-  
+  const [appointment, setAppointment] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchPatientDetails = async () => {
+      if (!id) {
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(`/api/appointments/${id}`, {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setAppointment(data);
+        } else {
+          // If direct ID lookup fails, fetch all appointments and find matching record
+          const allRes = await fetch('/api/appointments', {
+            headers: { Authorization: `Bearer ${getToken()}` },
+          });
+          if (allRes.ok) {
+            const allApps = await allRes.json();
+            const found = Array.isArray(allApps)
+              ? allApps.find((a: any) => a.id === id || a.patientId === id || a.patient?.id === id)
+              : null;
+            if (found) {
+              setAppointment(found);
+            } else {
+              setError('Patient appointment record not found.');
+            }
+          } else {
+            setError('Unable to load patient record.');
+          }
+        }
+      } catch (err: any) {
+        console.error('Failed to fetch patient details:', err);
+        setError('Error connecting to server.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPatientDetails();
+  }, [id]);
+
   const handleBack = () => {
     navigate('/doctor/dashboard');
   };
-  
-  const handleOptions = () => console.log('Options clicked');
+
+  if (loading) {
+    return (
+      <div className="flex h-screen bg-luster-white font-sans text-deadly-depths">
+        <DoctorSidebar />
+        <main className="flex-1 flex items-center justify-center p-8">
+          <div className="text-lg font-medium text-slate-600 animate-pulse">Loading patient details...</div>
+        </main>
+      </div>
+    );
+  }
+
+  if (error || !appointment) {
+    return (
+      <div className="flex h-screen bg-luster-white font-sans text-deadly-depths">
+        <DoctorSidebar />
+        <main className="flex-1 p-8">
+          <PageHeader title="Patient Details" onBack={handleBack} />
+          <div className="bg-white rounded-2xl border border-red-200 p-8 text-center mt-6 shadow-sm max-w-xl mx-auto">
+            <h3 className="text-xl font-bold text-red-600 mb-2">Record Not Found</h3>
+            <p className="text-slate-600 mb-6">{error || 'Patient information could not be retrieved.'}</p>
+            <button
+              onClick={handleBack}
+              className="bg-habanero text-white px-6 py-2 rounded-xl font-bold hover:bg-[#e0750e] transition-colors cursor-pointer"
+            >
+              Return to Dashboard
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Parse patient attributes dynamically
+  const patientName = appointment.patientName || appointment.patient?.user?.fullName || 'Patient';
+  const patientAge = appointment.patientAge ? (parseInt(String(appointment.patientAge), 10) || 28) : 28;
+  const rawGender = String(appointment.patientGender || appointment.patient?.gender || 'F');
+  const genderChar = rawGender.toUpperCase().startsWith('M') ? 'M' : (rawGender.toUpperCase().startsWith('F') ? 'F' : 'O');
+  const genderFull = genderChar === 'M' ? 'Male' : (genderChar === 'F' ? 'Female' : 'Other');
+
+  const bloodGroup = appointment.patientBloodGroup || appointment.patient?.bloodGroup || 'B+';
+  const weight = appointment.patientWeight || appointment.patient?.weight || '58kg';
+  const height = appointment.patientHeight || appointment.patient?.height || '162cm';
+
+  const chiefComplaints = Array.isArray(appointment.symptoms) && appointment.symptoms.length > 0
+    ? appointment.symptoms
+    : [appointment.healthConcern || 'General Medical Consultation'];
+
+  const durationSinceStart = appointment.duration || 'Recent';
+
+  // Construct medical history entries
+  const historyList = appointment.ehrRecord?.notes
+    ? [
+        {
+          id: appointment.ehrRecord.id || 'mh-1',
+          date: new Date(appointment.createdAt || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+          description: appointment.ehrRecord.notes,
+        }
+      ]
+    : [
+        {
+          id: 'mh-1',
+          date: new Date(appointment.createdAt || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+          description: `Initial consultation booked for ${appointment.healthConcern || 'general medical evaluation'}.`,
+        }
+      ];
+
+  const pastConditions = appointment.healthConcern
+    ? [appointment.healthConcern]
+    : ['No prior chronic conditions recorded'];
+
+  // Construct current medicines
+  const currentMedicines = Array.isArray(appointment.prescription?.medicines) && appointment.prescription.medicines.length > 0
+    ? appointment.prescription.medicines.map((m: any, idx: number) => ({
+        id: `med-${idx}`,
+        name: typeof m === 'string' ? m : (m.name || 'Medication'),
+        dosage: typeof m === 'object' ? (m.dosage || '') : '',
+        frequency: typeof m === 'object' ? (m.frequency || 'As directed') : 'As directed',
+      }))
+    : [];
+
+  const allergies = appointment.notes && appointment.notes.includes('Allergies:')
+    ? [appointment.notes.split('Allergies:')[1].trim()]
+    : ['No known allergies'];
+
+  const summaryText = appointment.ehrRecord?.aiSummary
+    || `Patient ${patientName} (${patientAge} years, ${genderFull}) has scheduled a ${appointment.consultMode || 'video'} consultation for "${appointment.healthConcern || 'general symptoms'}". Please review symptoms and current medical history before starting.`;
 
   return (
     <div className="flex h-screen bg-luster-white font-sans text-deadly-depths">
@@ -87,45 +171,43 @@ const PatientDetails: React.FC = () => {
         <PageHeader 
           title="Patient Details" 
           onBack={handleBack} 
-          onOptionsClick={handleOptions} 
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column */}
           <div className="lg:col-span-2">
-            {/* Note: PatientInfoCard could be updated to accept PatientProfile DTO directly in the future */}
             <PatientInfoCard patient={{
-              name: mockConsultation.patient.name,
-              age: mockConsultation.patient.age,
-              gender: mockConsultation.patient.gender === 'F' ? 'Female' : mockConsultation.patient.gender === 'M' ? 'Male' : 'Other',
-              initials: mockConsultation.patient.initials,
+              name: patientName,
+              age: patientAge,
+              gender: genderFull,
+              initials: getInitials(patientName),
               tag: "Assigned Patient",
               vitals: {
-                bloodGroup: mockConsultation.patient.bloodGroup || "-",
-                weight: mockConsultation.patient.weight || "-",
-                height: mockConsultation.patient.height || "-",
-                allergies: mockConsultation.allergies.length
+                bloodGroup: bloodGroup,
+                weight: weight,
+                height: height,
+                allergies: allergies.filter(a => a !== 'No known allergies').length,
               }
             }} />
-            <ChiefComplaintsCard complaints={mockConsultation.chiefComplaints} since={mockConsultation.durationSinceStart} />
-            <MedicalHistoryCard conditions={mockConsultation.pastConditions} history={mockConsultation.medicalHistory} />
-            <CurrentMedicinesCard medicines={mockConsultation.currentMedicines} allergies={mockConsultation.allergies} />
+            <ChiefComplaintsCard complaints={chiefComplaints} since={durationSinceStart} />
+            <MedicalHistoryCard conditions={pastConditions} history={historyList} />
+            <CurrentMedicinesCard medicines={currentMedicines} allergies={allergies} />
           </div>
 
           {/* Right Column */}
           <div className="lg:col-span-1">
-            <AISummaryCard summary={mockConsultation.aiSummary.summaryText} confidence={mockConsultation.aiSummary.confidenceScore} />
+            <AISummaryCard summary={summaryText} confidence={92} />
             
             <button 
-              onClick={() => navigate(`/doctor/consultation/${mockConsultation.consultationId}`)}
-              className="w-full bg-habanero hover:bg-[#e0750e] text-white py-4 rounded-xl font-bold transition-colors shadow-sm flex items-center justify-center gap-2 text-lg group mb-3"
+              onClick={() => navigate(`/doctor/consultation/${appointment.id}`)}
+              className="w-full bg-habanero hover:bg-[#e0750e] text-white py-4 rounded-xl font-bold transition-colors shadow-sm flex items-center justify-center gap-2 text-lg group mb-3 cursor-pointer"
             >
               Start Consultation 
               <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
             <button 
               onClick={() => setIsReferralOpen(true)}
-              className="w-full bg-white border border-gray-300 hover:bg-gray-50 text-deep-space py-3 rounded-xl font-bold transition-colors shadow-sm flex items-center justify-center gap-2 text-base"
+              className="w-full bg-white border border-gray-300 hover:bg-gray-50 text-deep-space py-3 rounded-xl font-bold transition-colors shadow-sm flex items-center justify-center gap-2 text-base cursor-pointer"
             >
               Refer to Specialist
             </button>
@@ -135,10 +217,10 @@ const PatientDetails: React.FC = () => {
         <ReferralModal 
           isOpen={isReferralOpen} 
           onClose={() => setIsReferralOpen(false)} 
-          consultationId={mockConsultation.consultationId}
-          patientId={mockConsultation.patient.id}
-          fromDoctorId="d1" // Mock Doctor ID
-          patientName={mockConsultation.patient.name} 
+          consultationId={appointment.id}
+          patientId={appointment.patientId || appointment.id}
+          fromDoctorId={appointment.doctorId}
+          patientName={patientName} 
           onSubmit={(data) => {
             console.log('Referral submitted with DTO:', data);
             setIsReferralOpen(false);

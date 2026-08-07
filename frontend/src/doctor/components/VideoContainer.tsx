@@ -5,9 +5,10 @@ import { cn } from '../../lib/utils';
 interface VideoContainerProps {
   className?: string;
   isVideoEnabled?: boolean;
+  patientName?: string;
 }
 
-const VideoContainer: React.FC<VideoContainerProps> = ({ className, isVideoEnabled = true }) => {
+const VideoContainer: React.FC<VideoContainerProps> = ({ className, isVideoEnabled = true, patientName = 'Patient' }) => {
   return (
     <div className={cn("relative w-full h-full bg-deep-space rounded-2xl overflow-hidden shadow-sm border border-gray-200", className)}>
       {/* Remote Video (Patient) */}
@@ -32,7 +33,7 @@ const VideoContainer: React.FC<VideoContainerProps> = ({ className, isVideoEnabl
 
       {/* Name Tags */}
       <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 text-white text-sm font-medium">
-        Sunita Devi
+        {patientName}
       </div>
       <div className="absolute bottom-[4.5rem] right-4 bg-black/50 backdrop-blur-md px-3 py-1 text-xs rounded-lg border border-white/10 text-white font-medium z-10">
         You

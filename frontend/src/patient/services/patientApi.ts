@@ -1,48 +1,65 @@
-export interface PatientProfile {
-  userId: string;
-  email: string;
-  fullName: string;
-  role?: string;
-  phone?: string;
-  gender?: string;
-  age?: string;
-  height?: string;
-  weight?: string;
-  bloodGroup?: string;
-  emergencyContact?: string;
-  allergies?: string[];
-  chronicConditions?: string[];
-}
+import { getToken } from '../../auth/authStorage';
+import { API_BASE_URL } from '../utils/constants';
 
-const API_BASE = 'http://localhost:8000/api/patient';
+async function patientRequest<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = getToken();
+  if (!token) throw new Error('Please sign in to view your patient portal.');
 
-export async function fetchPatientProfile(userId?: string): Promise<PatientProfile> {
-  const url = userId ? `${API_BASE}/profile?userId=${encodeURIComponent(userId)}` : `${API_BASE}/profile`;
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error('Failed to fetch patient profile');
-  }
-  return res.json();
-}
-
-export async function updatePatientProfile(profileData: Partial<PatientProfile>, userId?: string): Promise<PatientProfile> {
-  const url = userId ? `${API_BASE}/profile?userId=${encodeURIComponent(userId)}` : `${API_BASE}/profile`;
-  const res = await fetch(url, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(profileData),
+  const response = await fetch(`${API_BASE_URL}/patient${path}`, {
+    ...init,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
+      ...init?.headers,
+    },
   });
-  if (!res.ok) {
-    throw new Error('Failed to update patient profile');
+  const body = await response.json().catch(() => null);
+  if (!response.ok) {
+    throw new Error(typeof body?.message === 'string' ? body.message : 'Unable to load patient data.');
   }
-  return res.json();
+  return body as T;
 }
 
-export async function fetchPatientDashboardData(userId?: string) {
-  const url = userId ? `${API_BASE}/dashboard?userId=${encodeURIComponent(userId)}` : `${API_BASE}/dashboard`;
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error('Failed to fetch dashboard data');
-  }
-  return res.json();
+export interface PatientDashboardData {
+  profile: Record<string, any>;
+  appointments: any[];
+  ehrRecords: any[];
+  prescriptions: any[];
+  medicalReports: any[];
+  payments: any[];
+}
+
+export const getPatientDashboard = () => patientRequest<PatientDashboardData>('/dashboard');
+
+export const updatePatientProfile = (profile: Record<string, unknown>) =>
+  patientRequest<Record<string, any>>('/profile', {
+    method: 'PATCH',
+    body: JSON.stringify(profile),
+  });
+
+export async function uploadPatientAvatar(file: File) {
+  const intent = await patientRequest<{
+    uploadId: string;
+    path: string;
+    signedUploadUrl: string;
+  }>('/profile/avatar/upload-intent', {
+    method: 'POST',
+    body: JSON.stringify({
+      fileName: file.name,
+      mimeType: file.type,
+      fileSizeBytes: file.size,
+    }),
+  });
+
+  const upload = await fetch(intent.signedUploadUrl, {
+    method: 'PUT',
+    headers: { 'Content-Type': file.type, 'x-upsert': 'false' },
+    body: file,
+  });
+  if (!upload.ok) throw new Error('The profile picture could not be uploaded to storage.');
+
+  return patientRequest<{ profileImagePath: string; profileImageUrl: string }>(
+    `/profile/avatar/${intent.uploadId}/complete`,
+    { method: 'POST', body: JSON.stringify({ path: intent.path }) },
+  );
 }

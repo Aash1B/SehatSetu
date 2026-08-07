@@ -19,6 +19,7 @@ from app.api.v1.endpoints.prescription import router as prescription_router
 from app.api.v1.endpoints.transcription import router as transcription_router
 from app.api.v1.endpoints.text_cleanup import router as text_cleanup_router
 from app.api.v1.endpoints.summarize import router as summarize_router
+from app.api.v1.endpoints.consultation import router as consultation_router
 
 router = APIRouter()
 router.include_router(health_router)
@@ -32,3 +33,4 @@ router.include_router(diet_router)
 router.include_router(doctor_recommendation_router)
 router.include_router(ocr_router)
 router.include_router(live_transcription_router)
+router.include_router(consultation_router)

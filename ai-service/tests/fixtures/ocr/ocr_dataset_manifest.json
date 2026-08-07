@@ -1,0 +1,606 @@
+{
+  "schema_version": 2,
+  "generator": "offline Pillow and PyMuPDF",
+  "comparison_ignored_phrases": [
+    "SEHAT-SETU SYNTHETIC TEACHING DOCUMENT",
+    "Typed Prescription",
+    "Fictional record — no patient identity",
+    "For OCR evaluation only. Not medical advice."
+  ],
+  "documents": [
+    {
+      "id": "rx-paracetamol",
+      "file": "prescriptions/rx-paracetamol.png",
+      "document_type": "prescription",
+      "consented": true,
+      "anonymized": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "expected_text": "PRESCRIPTION Medicine: Paracetamol 500 mg Directions: One tablet twice daily after food Duration: 5 days Doctor review required",
+      "important_fields": [
+        "Paracetamol 500 mg",
+        "One tablet twice daily after food",
+        "5 days"
+      ],
+      "expected_medicines": [
+        "Paracetamol"
+      ],
+      "expected_dosages": [
+        "500 mg",
+        "One tablet twice daily after food"
+      ],
+      "expected_lab_tests": [],
+      "expected_lab_values": [],
+      "expected_units": [],
+      "optional": false,
+      "enabled": true,
+      "visual_condition": "clear"
+    },
+    {
+      "id": "rx-azithromycin",
+      "file": "prescriptions/rx-azithromycin.png",
+      "document_type": "prescription",
+      "consented": true,
+      "anonymized": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "expected_text": "PRESCRIPTION Medicine: Azithromycin 500 mg Directions: One tablet once daily after food Duration: 3 days Doctor review required",
+      "important_fields": [
+        "Azithromycin 500 mg",
+        "One tablet once daily after food",
+        "3 days"
+      ],
+      "expected_medicines": [
+        "Azithromycin"
+      ],
+      "expected_dosages": [
+        "500 mg",
+        "One tablet once daily after food"
+      ],
+      "expected_lab_tests": [],
+      "expected_lab_values": [],
+      "expected_units": [],
+      "optional": false,
+      "enabled": true,
+      "visual_condition": "rotated"
+    },
+    {
+      "id": "rx-metformin",
+      "file": "prescriptions/rx-metformin.png",
+      "document_type": "prescription",
+      "consented": true,
+      "anonymized": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "expected_text": "PRESCRIPTION Medicine: Metformin 500 mg Directions: One tablet twice daily with meals Duration: 30 days Doctor review required",
+      "important_fields": [
+        "Metformin 500 mg",
+        "One tablet twice daily with meals",
+        "30 days"
+      ],
+      "expected_medicines": [
+        "Metformin"
+      ],
+      "expected_dosages": [
+        "500 mg",
+        "One tablet twice daily with meals"
+      ],
+      "expected_lab_tests": [],
+      "expected_lab_values": [],
+      "expected_units": [],
+      "optional": false,
+      "enabled": true,
+      "visual_condition": "low-contrast"
+    },
+    {
+      "id": "rx-pantoprazole",
+      "file": "prescriptions/rx-pantoprazole.png",
+      "document_type": "prescription",
+      "consented": true,
+      "anonymized": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "expected_text": "PRESCRIPTION Medicine: Pantoprazole 40 mg Directions: One tablet once daily before breakfast Duration: 14 days Doctor review required",
+      "important_fields": [
+        "Pantoprazole 40 mg",
+        "One tablet once daily before breakfast",
+        "14 days"
+      ],
+      "expected_medicines": [
+        "Pantoprazole"
+      ],
+      "expected_dosages": [
+        "40 mg",
+        "One tablet once daily before breakfast"
+      ],
+      "expected_lab_tests": [],
+      "expected_lab_values": [],
+      "expected_units": [],
+      "optional": false,
+      "enabled": true,
+      "visual_condition": "blurred"
+    },
+    {
+      "id": "rx-cetirizine",
+      "file": "prescriptions/rx-cetirizine.png",
+      "document_type": "prescription",
+      "consented": true,
+      "anonymized": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "expected_text": "PRESCRIPTION Medicine: Cetirizine 10 mg Directions: One tablet at bedtime Duration: 5 days Doctor review required",
+      "important_fields": [
+        "Cetirizine 10 mg",
+        "One tablet at bedtime",
+        "5 days"
+      ],
+      "expected_medicines": [
+        "Cetirizine"
+      ],
+      "expected_dosages": [
+        "10 mg",
+        "One tablet at bedtime"
+      ],
+      "expected_lab_tests": [],
+      "expected_lab_values": [],
+      "expected_units": [],
+      "optional": false,
+      "enabled": true,
+      "visual_condition": "shadow"
+    },
+    {
+      "id": "rx-atorvastatin",
+      "file": "prescriptions/rx-atorvastatin.png",
+      "document_type": "prescription",
+      "consented": true,
+      "anonymized": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "expected_text": "PRESCRIPTION Medicine: Atorvastatin 10 mg Directions: One tablet once daily at bedtime Duration: 30 days Doctor review required",
+      "important_fields": [
+        "Atorvastatin 10 mg",
+        "One tablet once daily at bedtime",
+        "30 days"
+      ],
+      "expected_medicines": [
+        "Atorvastatin"
+      ],
+      "expected_dosages": [
+        "10 mg",
+        "One tablet once daily at bedtime"
+      ],
+      "expected_lab_tests": [],
+      "expected_lab_values": [],
+      "expected_units": [],
+      "optional": false,
+      "enabled": true,
+      "visual_condition": "clear"
+    },
+    {
+      "id": "rx-levothyroxine",
+      "file": "prescriptions/rx-levothyroxine.png",
+      "document_type": "prescription",
+      "consented": true,
+      "anonymized": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "expected_text": "PRESCRIPTION Medicine: Levothyroxine 50 mcg Directions: One tablet once daily before breakfast Duration: 30 days Doctor review required",
+      "important_fields": [
+        "Levothyroxine 50 mcg",
+        "One tablet once daily before breakfast",
+        "30 days"
+      ],
+      "expected_medicines": [
+        "Levothyroxine"
+      ],
+      "expected_dosages": [
+        "50 mcg",
+        "One tablet once daily before breakfast"
+      ],
+      "expected_lab_tests": [],
+      "expected_lab_values": [],
+      "expected_units": [],
+      "optional": false,
+      "enabled": true,
+      "visual_condition": "rotated"
+    },
+    {
+      "id": "rx-amoxicillin",
+      "file": "prescriptions/rx-amoxicillin.png",
+      "document_type": "prescription",
+      "consented": true,
+      "anonymized": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "expected_text": "PRESCRIPTION Medicine: Amoxicillin 500 mg Directions: One capsule three times daily after food Duration: 5 days Doctor review required",
+      "important_fields": [
+        "Amoxicillin 500 mg",
+        "One capsule three times daily after food",
+        "5 days"
+      ],
+      "expected_medicines": [
+        "Amoxicillin"
+      ],
+      "expected_dosages": [
+        "500 mg",
+        "One capsule three times daily after food"
+      ],
+      "expected_lab_tests": [],
+      "expected_lab_values": [],
+      "expected_units": [],
+      "optional": false,
+      "enabled": true,
+      "visual_condition": "low-contrast"
+    },
+    {
+      "id": "rx-asthma",
+      "file": "prescriptions/rx-asthma.png",
+      "document_type": "prescription",
+      "consented": true,
+      "anonymized": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "expected_text": "PRESCRIPTION Medicine: Salbutamol inhaler 100 mcg Directions: Two puffs as needed by inhalation Duration: 7 days Doctor review required",
+      "important_fields": [
+        "Salbutamol inhaler 100 mcg",
+        "Two puffs as needed by inhalation",
+        "7 days"
+      ],
+      "expected_medicines": [
+        "Salbutamol"
+      ],
+      "expected_dosages": [
+        "inhaler 100 mcg",
+        "Two puffs as needed by inhalation"
+      ],
+      "expected_lab_tests": [],
+      "expected_lab_values": [],
+      "expected_units": [],
+      "optional": false,
+      "enabled": true,
+      "visual_condition": "blurred"
+    },
+    {
+      "id": "rx-migraine",
+      "file": "prescriptions/rx-migraine.png",
+      "document_type": "prescription",
+      "consented": true,
+      "anonymized": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "expected_text": "PRESCRIPTION Medicine: Paracetamol 650 mg Directions: One tablet as needed after food Duration: 3 days Doctor review required",
+      "important_fields": [
+        "Paracetamol 650 mg",
+        "One tablet as needed after food",
+        "3 days"
+      ],
+      "expected_medicines": [
+        "Paracetamol"
+      ],
+      "expected_dosages": [
+        "650 mg",
+        "One tablet as needed after food"
+      ],
+      "expected_lab_tests": [],
+      "expected_lab_values": [],
+      "expected_units": [],
+      "optional": false,
+      "enabled": true,
+      "visual_condition": "shadow"
+    },
+    {
+      "id": "lab-cbc",
+      "file": "lab-reports/lab-cbc.png",
+      "document_type": "lab-report",
+      "consented": true,
+      "anonymized": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "expected_text": "LABORATORY REPORT Test | Result | Unit | Reference Range Haemoglobin | 13.5 | g/dL | 12.0 - 16.0 WBC | 7800 | cells/uL | 4000 - 11000",
+      "important_fields": [
+        "Haemoglobin",
+        "WBC"
+      ],
+      "expected_medicines": [],
+      "expected_dosages": [],
+      "expected_lab_tests": [
+        "Haemoglobin",
+        "WBC"
+      ],
+      "expected_lab_values": [
+        "13.5",
+        "7800"
+      ],
+      "expected_units": [
+        "g/dL",
+        "cells/uL"
+      ],
+      "optional": false,
+      "enabled": true,
+      "visual_condition": "clear"
+    },
+    {
+      "id": "lab-kft",
+      "file": "lab-reports/lab-kft.png",
+      "document_type": "lab-report",
+      "consented": true,
+      "anonymized": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "expected_text": "LABORATORY REPORT Test | Result | Unit | Reference Range Creatinine | 1.1 | mg/dL | 0.6 - 1.2 Urea | 28 | mg/dL | 15 - 40",
+      "important_fields": [
+        "Creatinine",
+        "Urea"
+      ],
+      "expected_medicines": [],
+      "expected_dosages": [],
+      "expected_lab_tests": [
+        "Creatinine",
+        "Urea"
+      ],
+      "expected_lab_values": [
+        "1.1",
+        "28"
+      ],
+      "expected_units": [
+        "mg/dL",
+        "mg/dL"
+      ],
+      "optional": false,
+      "enabled": true,
+      "visual_condition": "rotated"
+    },
+    {
+      "id": "lab-lft",
+      "file": "lab-reports/lab-lft.png",
+      "document_type": "lab-report",
+      "consented": true,
+      "anonymized": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "expected_text": "LABORATORY REPORT Test | Result | Unit | Reference Range ALT | 35 | U/L | 7 - 56 AST | 30 | U/L | 10 - 40",
+      "important_fields": [
+        "ALT",
+        "AST"
+      ],
+      "expected_medicines": [],
+      "expected_dosages": [],
+      "expected_lab_tests": [
+        "ALT",
+        "AST"
+      ],
+      "expected_lab_values": [
+        "35",
+        "30"
+      ],
+      "expected_units": [
+        "U/L",
+        "U/L"
+      ],
+      "optional": false,
+      "enabled": true,
+      "visual_condition": "low-contrast"
+    },
+    {
+      "id": "lab-diabetes",
+      "file": "lab-reports/lab-diabetes.png",
+      "document_type": "lab-report",
+      "consented": true,
+      "anonymized": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "expected_text": "LABORATORY REPORT Test | Result | Unit | Reference Range Fasting Glucose | 126 | mg/dL | 70 - 99 HbA1c | 6.8 | % | 4.0 - 5.6",
+      "important_fields": [
+        "Fasting Glucose",
+        "HbA1c"
+      ],
+      "expected_medicines": [],
+      "expected_dosages": [],
+      "expected_lab_tests": [
+        "Fasting Glucose",
+        "HbA1c"
+      ],
+      "expected_lab_values": [
+        "126",
+        "6.8"
+      ],
+      "expected_units": [
+        "mg/dL",
+        "%"
+      ],
+      "optional": false,
+      "enabled": true,
+      "visual_condition": "blurred"
+    },
+    {
+      "id": "lab-thyroid",
+      "file": "lab-reports/lab-thyroid.png",
+      "document_type": "lab-report",
+      "consented": true,
+      "anonymized": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "expected_text": "LABORATORY REPORT Test | Result | Unit | Reference Range TSH | 5.2 | mIU/L | 0.4 - 4.0 Free T4 | 1.0 | ng/dL | 0.8 - 1.8",
+      "important_fields": [
+        "TSH",
+        "Free T4"
+      ],
+      "expected_medicines": [],
+      "expected_dosages": [],
+      "expected_lab_tests": [
+        "TSH",
+        "Free T4"
+      ],
+      "expected_lab_values": [
+        "5.2",
+        "1.0"
+      ],
+      "expected_units": [
+        "mIU/L",
+        "ng/dL"
+      ],
+      "optional": false,
+      "enabled": true,
+      "visual_condition": "shadow"
+    },
+    {
+      "id": "lab-lipids",
+      "file": "lab-reports/lab-lipids.png",
+      "document_type": "lab-report",
+      "consented": true,
+      "anonymized": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "expected_text": "LABORATORY REPORT Test | Result | Unit | Reference Range Total Cholesterol | 220 | mg/dL | Below 200 LDL | 145 | mg/dL | Below 100",
+      "important_fields": [
+        "Total Cholesterol",
+        "LDL"
+      ],
+      "expected_medicines": [],
+      "expected_dosages": [],
+      "expected_lab_tests": [
+        "Total Cholesterol",
+        "LDL"
+      ],
+      "expected_lab_values": [
+        "220",
+        "145"
+      ],
+      "expected_units": [
+        "mg/dL",
+        "mg/dL"
+      ],
+      "optional": false,
+      "enabled": true,
+      "visual_condition": "clear"
+    },
+    {
+      "id": "lab-electrolytes",
+      "file": "lab-reports/lab-electrolytes.png",
+      "document_type": "lab-report",
+      "consented": true,
+      "anonymized": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "expected_text": "LABORATORY REPORT Test | Result | Unit | Reference Range Sodium | 139 | mmol/L | 135 - 145 Potassium | 4.2 | mmol/L | 3.5 - 5.0",
+      "important_fields": [
+        "Sodium",
+        "Potassium"
+      ],
+      "expected_medicines": [],
+      "expected_dosages": [],
+      "expected_lab_tests": [
+        "Sodium",
+        "Potassium"
+      ],
+      "expected_lab_values": [
+        "139",
+        "4.2"
+      ],
+      "expected_units": [
+        "mmol/L",
+        "mmol/L"
+      ],
+      "optional": false,
+      "enabled": true,
+      "visual_condition": "rotated"
+    },
+    {
+      "id": "lab-iron",
+      "file": "lab-reports/lab-iron.png",
+      "document_type": "lab-report",
+      "consented": true,
+      "anonymized": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "expected_text": "LABORATORY REPORT Test | Result | Unit | Reference Range Serum Iron | 55 | mcg/dL | 60 - 170 Ferritin | 18 | ng/mL | 20 - 250",
+      "important_fields": [
+        "Serum Iron",
+        "Ferritin"
+      ],
+      "expected_medicines": [],
+      "expected_dosages": [],
+      "expected_lab_tests": [
+        "Serum Iron",
+        "Ferritin"
+      ],
+      "expected_lab_values": [
+        "55",
+        "18"
+      ],
+      "expected_units": [
+        "mcg/dL",
+        "ng/mL"
+      ],
+      "optional": false,
+      "enabled": true,
+      "visual_condition": "low-contrast"
+    },
+    {
+      "id": "lab-vitamin",
+      "file": "lab-reports/lab-vitamin.png",
+      "document_type": "lab-report",
+      "consented": true,
+      "anonymized": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "expected_text": "LABORATORY REPORT Test | Result | Unit | Reference Range Vitamin B12 | 310 | pg/mL | 200 - 900 Vitamin D | 24 | ng/mL | 30 - 100",
+      "important_fields": [
+        "Vitamin B12",
+        "Vitamin D"
+      ],
+      "expected_medicines": [],
+      "expected_dosages": [],
+      "expected_lab_tests": [
+        "Vitamin B12",
+        "Vitamin D"
+      ],
+      "expected_lab_values": [
+        "310",
+        "24"
+      ],
+      "expected_units": [
+        "pg/mL",
+        "ng/mL"
+      ],
+      "optional": false,
+      "enabled": true,
+      "visual_condition": "blurred"
+    },
+    {
+      "id": "lab-multipage",
+      "file": "lab-reports/lab-multipage.pdf",
+      "document_type": "lab-report",
+      "consented": true,
+      "anonymized": true,
+      "synthetic_content": true,
+      "contains_patient_data": false,
+      "expected_text": "LABORATORY REPORT Test | Result | Unit | Reference Range Haemoglobin | 11.2 | g/dL | 12.0 - 16.0 Creatinine | 1.4 | mg/dL | 0.6 - 1.2 ALT | 62 | U/L | 7 - 56",
+      "important_fields": [
+        "Haemoglobin",
+        "Creatinine",
+        "ALT"
+      ],
+      "expected_medicines": [],
+      "expected_dosages": [],
+      "expected_lab_tests": [
+        "Haemoglobin",
+        "Creatinine",
+        "ALT"
+      ],
+      "expected_lab_values": [
+        "11.2",
+        "1.4",
+        "62"
+      ],
+      "expected_units": [
+        "g/dL",
+        "mg/dL",
+        "U/L"
+      ],
+      "optional": false,
+      "enabled": true,
+      "visual_condition": "shadow"
+    }
+  ]
+}

@@ -31,6 +31,24 @@ class FakeWhisperModel:
         return [segment], info
 
 
+def test_low_language_confidence_uses_safe_second_pass() -> None:
+    class TwoPassModel:
+        def __init__(self): self.calls = 0
+        def transcribe(self, path: str, **kwargs):
+            self.calls += 1
+            text = "No fever and paracetamol 5 mg" if self.calls == 1 else "Fever and paracetamol 50 mg"
+            segment = SimpleNamespace(start=0,end=2,text=text,avg_logprob=-0.2,no_speech_prob=0.01)
+            return [segment], SimpleNamespace(language="en",language_probability=0.4,duration=2)
+    model=TwoPassModel(); service=TranscriptionService(Settings(_env_file=None)); service._model=model
+    result=service.transcribe(Path("unused.wav"),"auto")
+    assert result.second_pass_used is True
+    assert result.raw_transcript == "No fever and paracetamol 5 mg"
+    assert "SECOND_PASS_USED" in result.quality_warnings
+    assert "NEGATION_REQUIRES_REVIEW" in result.quality_warnings
+    assert "DOSAGE_TRANSCRIPTION_DISAGREEMENT" in result.quality_warnings
+    assert result.candidate_comparison["safety_content_agreed"] is False
+
+
 @pytest.mark.parametrize(
     ("application_language", "whisper_language"),
     [("en", "en"), ("hi", "hi"), ("hi-Latn", "hi")],

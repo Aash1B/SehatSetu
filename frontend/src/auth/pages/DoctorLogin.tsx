@@ -1,0 +1,114 @@
+import { useState } from 'react';
+import type { FormEvent } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { login } from '../api';
+import { saveAuth } from '../authStorage';
+
+export default function DoctorLogin() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const res = await login({ email, password });
+      if (res.role !== 'DOCTOR') {
+        setError('This account is registered as a Patient. Please use the Patient login.');
+        return;
+      }
+      saveAuth(res.accessToken, { id: res.id, email: res.email, fullName: res.fullName, role: res.role });
+      const requestedPath = (location.state as { from?: string } | null)?.from;
+      if (requestedPath && requestedPath.startsWith('/doctor/') && requestedPath !== '/doctor/onboarding' && requestedPath !== '/doctor/login') {
+        navigate(requestedPath, { replace: true });
+      } else {
+        navigate(res.onboardingCompleted ? '/doctor/dashboard' : '/doctor/onboarding', { replace: true });
+      }
+    } catch (err: any) {
+      if (err.message.toLowerCase().includes('verify your email')) {
+        navigate('/verify-otp', { state: { email, role: 'DOCTOR' } });
+      } else {
+        setError(err.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-slate-50 px-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <Link to="/" className="inline-flex items-center gap-1 text-2xl font-bold">
+            <span className="text-orange-500">Sehat</span>
+            <span className="text-slate-900">Setu</span>
+          </Link>
+          <p className="text-slate-500 mt-2">Doctor Portal Login</p>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
+          <h1 className="text-xl font-semibold text-slate-900 mb-6">Welcome back, Doctor</h1>
+
+          {error && (
+            <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-600 text-sm">{error}</div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                placeholder="doctor@example.com"
+              />
+            </div>
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-slate-700">Password</label>
+                <Link to="/forgot-password" className="text-xs text-indigo-700 hover:underline">Forgot password?</Link>
+              </div>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                placeholder="••••••••"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-indigo-900 hover:bg-indigo-800 disabled:opacity-50 text-white font-medium py-2.5 rounded-lg transition"
+            >
+              {loading ? 'Signing in...' : 'Sign In'}
+            </button>
+          </form>
+
+          <p className="text-center text-sm text-slate-500 mt-6">
+            Don't have a doctor account?{' '}
+            <Link to="/doctor/signup" className="text-[#223382] font-bold hover:underline">Sign up as Doctor</Link>
+          </p>
+        </div>
+
+        <div className="mt-6 text-center bg-white/90 backdrop-blur-xs p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <p className="text-sm font-medium text-slate-700 mb-2">Looking for medical consultations or doctor booking?</p>
+          <Link
+            to="/patient/login"
+            className="inline-flex items-center justify-center gap-2 w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-4 rounded-xl transition-all shadow-xs cursor-pointer"
+          >
+            Patient Sign In
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}

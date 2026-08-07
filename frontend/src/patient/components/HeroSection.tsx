@@ -1,118 +1,114 @@
 import React from 'react';
-import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { setCurrentPage } from '../store/uiSlice';
+import { getToken, getUser } from '../../auth/authStorage';
+import { useTranslation } from 'react-i18next';
 
 const HeroSection: React.FC = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation(['home', 'common']);
+  const tCommon = (key: string) => i18n.t(key, { ns: 'common' });
+  const token = getToken();
+  const user = getUser();
+  const isAuthenticated = Boolean(token && user);
 
-  const handleBookAppointment = () => {
-    dispatch(setCurrentPage('book-appointment'));
-    navigate('/patient/book/DOC-001');
-  };
-
-  const handleFindDoctor = () => {
-    dispatch(setCurrentPage('doctors'));
-    navigate('/patient/search');
+  const handlePrimaryAction = () => {
+    if (isAuthenticated) {
+      if (user?.role === 'DOCTOR') {
+        navigate('/doctor/dashboard');
+      } else {
+        navigate('/patient/search');
+      }
+    } else {
+      navigate('/patient/search');
+    }
   };
 
   return (
-    <section id="home" className="hero-section">
-      <div className="hero-container">
-        {/* Left Column Text & CTAs */}
-        <div className="hero-content">
-          <div className="hero-tag">
-            <span className="sparkle-icon">✨</span>
-            <span className="hero-tag-text">BETTER CARE STARTS HERE</span>
-          </div>
-
-          <h1 className="hero-title">
-            Your <span className="text-highlight">Health</span>,<br />
-            Our Priority
+    <section
+      id="home"
+      className="w-full bg-gradient-to-b from-brand-50/60 via-white to-slate-50/30"
+    >
+      <div className="grid w-full grid-cols-1 items-center gap-10 px-5 py-10 sm:px-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14 lg:px-16 lg:py-14 xl:gap-14 xl:px-20">
+        {/* Left Column: Badge, Heading, Description, CTA Buttons, Trust Badges */}
+        <div className="relative z-10 min-w-0">
+{/* Heading */}
+          <h1 className="mb-4 text-base font-semibold text-brand-600 sm:text-lg lg:text-xl">
+            <span className="bg-gradient-to-r from-brand-600 to-indigo-600 bg-clip-text text-transparent">
+              {tCommon('brand.tagline')}
+            </span>
           </h1>
 
-          <p className="hero-subtitle">
-            Connect with top-rated doctors, book appointments instantly, and manage your health — all in one place.
+          {/* Tagline */}
+          <p className="mb-5 text-2xl font-extrabold leading-[1.15] tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
+            {t('headline')}
+            <span className="bg-gradient-to-b from-[#FF9933] via-[#FFFFFF] to-[#138808] bg-clip-text text-transparent font-extrabold" style={{ textShadow: '0 0 8px rgba(255,255,255,0.6)' }}>
+              {' '}{t('country')}
+            </span>
           </p>
 
-          <div className="hero-cta-group">
-            <button 
+          {/* Description */}
+          <p className="mb-7 max-w-xl text-base leading-relaxed text-slate-600 sm:text-lg">
+            {t('description')}
+          </p>
+
+          {/* CTA Button */}
+          <div className="mb-6 mt-7 flex justify-start">
+            <button
               type="button"
-              className="btn-primary-orange"
-              onClick={handleBookAppointment}
+              onClick={handlePrimaryAction}
+              className="inline-flex min-h-12 cursor-pointer select-none items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-md no-underline transition hover:bg-primary-hover hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-[0.98]"
             >
-              Book Appointment
-              <svg className="btn-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M5 12h14M12 5l7 7-7 7"/>
-              </svg>
-            </button>
-            <button 
-              type="button"
-              className="btn-secondary-outline"
-              onClick={handleFindDoctor}
-            >
-              Find a Doctor
-              <svg className="btn-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <circle cx="11" cy="11" r="8"/>
-                <path d="M21 21l-4.35-4.35"/>
+              {t('cta')}
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
               </svg>
             </button>
           </div>
 
-          {/* Social Proof Stack */}
-          <div className="social-proof">
-            <div className="avatar-stack">
-              <span className="avatar avatar-1">A</span>
-              <span className="avatar avatar-2">V</span>
-              <span className="avatar avatar-3">S</span>
-            </div>
-            <span className="social-proof-text">
-              <strong>50,000+</strong> people cared for
-            </span>
-          </div>
+          {/* Trust Indicators */}
+          <ul className="mt-5 grid grid-cols-1 gap-x-12 gap-y-5 sm:grid-cols-2 lg:gap-x-16 lg:gap-y-6 text-lg font-semibold text-slate-700">
+            <li className="inline-flex items-start gap-3 transition-colors hover:text-brand-600">
+              <svg className="mt-0.5 h-6 w-6 shrink-0 text-emerald-500 transition-transform hover:scale-110" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <span>{t('verifiedDoctors')}</span>
+            </li>
+            <li className="inline-flex items-start gap-3 transition-colors hover:text-brand-600">
+              <svg className="mt-0.5 h-6 w-6 shrink-0 text-emerald-500 transition-transform hover:scale-110" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <span>{t('aiAssistedCare')}</span>
+            </li>
+            <li className="inline-flex items-start gap-3 transition-colors hover:text-brand-600">
+              <svg className="mt-0.5 h-6 w-6 shrink-0 text-emerald-500 transition-transform hover:scale-110" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <span>{t('secureRecords')}</span>
+            </li>
+            <li className="inline-flex items-start gap-3 transition-colors hover:text-brand-600">
+              <svg className="mt-0.5 h-6 w-6 shrink-0 text-emerald-500 transition-transform hover:scale-110" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <span>
+                {t('ruralUrban')}
+                <span className="block text-sm font-normal text-slate-400 mt-1">      </span>
+              </span>
+            </li>
+          </ul>
         </div>
 
-        {/* Right Column Visual Graphic */}
-        <div className="hero-visual">
-          <div className="visual-circle-bg">
-            <div className="trusted-care-badge">
-              <span className="plus-sparkle">+</span> Trusted care
-            </div>
-            <div className="stethoscope-illustration">
-              <svg viewBox="0 0 64 64" fill="none" className="stethoscope-svg">
-                <path d="M20 12v12c0 6.627 5.373 12 12 12s12-5.373 12-12V12" stroke="#1E293B" strokeWidth="4" strokeLinecap="round"/>
-                <path d="M32 36v12c0 4.418-3.582 8-8 8H20" stroke="#1E293B" strokeWidth="4" strokeLinecap="round"/>
-                <circle cx="20" cy="56" r="4" fill="var(--color-aster-blue)"/>
-                <circle cx="20" cy="12" r="3" fill="var(--color-habanero)"/>
-                <circle cx="44" cy="12" r="3" fill="var(--color-habanero)"/>
-              </svg>
-              <div className="care-connected-label">Care, connected</div>
-            </div>
-          </div>
-
-          {/* Floating Next Appointment Card */}
-          <div className="floating-card appointment-preview-card">
-            <div className="card-header-icon">📅</div>
-            <div className="card-details">
-              <div className="card-tag">Next appointment</div>
-              <div className="card-main-title">Today, 10:30 AM</div>
-              <div className="card-sub-title">Dr. Priya Sharma</div>
-            </div>
-          </div>
-
-          {/* Floating Active Patients Badge */}
-          <div className="floating-card active-patients-card">
-            <div className="users-icon-badge">
-              <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
-              </svg>
-            </div>
-            <div>
-              <div className="stat-number">12.4k</div>
-              <div className="stat-label">Active patients</div>
-            </div>
-          </div>
+        {/* Right Column: Hero Image Frame (landscape, not full-page) */}
+        <div className="relative w-full min-w-0 overflow-hidden rounded-3xl border border-slate-200/80 bg-slate-900/5 shadow-xl">
+          <img
+            src="/hero.jpeg"
+            alt={t('heroAlt')}
+            width={1920}
+            height={840}
+            decoding="async"
+            loading="eager"
+            fetchPriority="high"
+            className="block h-full w-full object-cover object-center"
+          />
         </div>
       </div>
     </section>

@@ -10,6 +10,7 @@ const ENDPOINTS: Record<string, string> = {
   specialist: 'recommend-doctor',
   medicalInfo: 'extract-medical-info',
   cleanup: 'clean-transcript',
+  liveChunk: 'live-transcription/chunk',
 };
 
 @Controller('api/ai')

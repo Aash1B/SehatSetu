@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DoctorSidebar from '../components/DoctorSidebar';
 import PageHeader from '../components/PageHeader';
 import ConsultationCard from '../components/ConsultationCard';
 import type { ConsultationSummary } from '../../types';
 import { ConsultationStatus, Priority } from '../../types';
+import { getToken, getUser } from '../../auth/authStorage';
 
 // Mock Data
 const mockConsultations: ConsultationSummary[] = [
@@ -67,8 +68,81 @@ const mockConsultations: ConsultationSummary[] = [
   }
 ];
 
+import { getActiveDoctor, type DoctorProfile as ActiveDoc } from '../utils/doctorProfile';
+
+const getInitials = (name?: string) => {
+  if (!name) return 'PT';
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return 'PT';
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+};
+
 const ConsultationsList: React.FC = () => {
   const navigate = useNavigate();
+  const signedInUser = getUser();
+  const [activeDoctor, setActiveDoctor] = useState<ActiveDoc>({ ...getActiveDoctor(), name: signedInUser?.fullName || getActiveDoctor().name, initials: getInitials(signedInUser?.fullName || getActiveDoctor().name) });
+  const [consultations, setConsultations] = useState<ConsultationSummary[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      setLoading(true);
+      try {
+        const headers = { Authorization: `Bearer ${getToken()}` };
+        const profileResponse = await fetch('/api/doctors/me', { headers });
+        if (!profileResponse.ok) throw new Error('Unable to load signed-in doctor profile');
+        const profile = await profileResponse.json();
+        const doctorName = profile.name || profile.user?.fullName || signedInUser?.fullName || 'Doctor';
+        setActiveDoctor({ id: profile.id, name: doctorName, initials: getInitials(doctorName), specialization: profile.specialty || 'General Physician' });
+        const res = await fetch('/api/appointments', { headers });
+        if (res.ok) {
+          const dbAppointments = await res.json();
+          if (Array.isArray(dbAppointments) && dbAppointments.length > 0) {
+            const formatted = dbAppointments.map((app: any) => {
+              const patientName = app.patientName || app.patient?.user?.fullName || 'Unknown Patient';
+              const patientAge = app.patientAge ? (parseInt(String(app.patientAge), 10) || 28) : 28;
+              const patientGenderStr = app.patientGender || app.patient?.gender || 'Female';
+              const genderChar: ConsultationSummary['patient']['gender'] = patientGenderStr.toUpperCase().startsWith('M')
+                ? 'M'
+                : (patientGenderStr.toUpperCase().startsWith('F') ? 'F' : 'Other');
+
+              return {
+                id: String(app.id || Math.random()),
+                patient: {
+                  id: String(app.patientId || app.id || 'p1'),
+                  name: patientName,
+                  initials: getInitials(patientName),
+                  age: patientAge,
+                  gender: genderChar,
+                  avatarColorClass: "bg-indigo-50 text-indigo-600"
+                },
+                tags: [
+                  { label: 'Consultation', variant: "default" as const },
+                  { label: app.status === 'SCHEDULED' ? 'Scheduled' : (app.status || 'Scheduled'), variant: "primary" as const }
+                ],
+                time: app.timeSlot || '10:00 AM',
+                chiefComplaint: app.healthConcern || (app.notes ? String(app.notes).split('\n')[0].replace(/^Concern:\s*/i, '') : 'General Medical Consultation'),
+                status: (app.status === 'COMPLETED' ? ConsultationStatus.COMPLETED : (app.status === 'CANCELLED' ? ConsultationStatus.NO_SHOW : ConsultationStatus.WAITING)),
+                priority: Priority.ROUTINE
+              };
+            });
+
+            setConsultations(formatted);
+          } else {
+            setConsultations([]);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch appointments", err);
+        setConsultations([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchAppointments();
+  }, []);
 
   return (
     <div className="flex h-screen bg-luster-white font-sans text-deep-space">
@@ -83,15 +157,17 @@ const ConsultationsList: React.FC = () => {
           <div className="max-w-4xl mx-auto space-y-4 pb-12">
             <h2 className="text-lg font-bold mb-4 text-deep-space/80">Upcoming Appointments</h2>
             
-            {mockConsultations.map((consultation) => (
-              <ConsultationCard 
-                key={consultation.id} 
-                consultation={consultation} 
-                onViewPatient={() => navigate(`/doctor/consultations/${consultation.id}`)}
-              />
-            ))}
-
-            {mockConsultations.length === 0 && (
+            {loading ? (
+              <div className="text-center py-12 text-gray-500">Loading appointments...</div>
+            ) : consultations.length > 0 ? (
+              consultations.map((consultation) => (
+                <ConsultationCard 
+                  key={consultation.id} 
+                  consultation={consultation} 
+                  onViewPatient={() => navigate(`/doctor/consultations/${consultation.id}`)}
+                />
+              ))
+            ) : (
               <div className="text-center py-12 bg-white rounded-2xl border border-jodhpur-tan/30">
                 <p className="text-gray-500">No upcoming appointments scheduled.</p>
               </div>

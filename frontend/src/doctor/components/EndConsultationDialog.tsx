@@ -1,17 +1,63 @@
-import React from 'react';
-import { X, CheckCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, CheckCircle, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import type { PrescriptionData } from '../../common/components/PrescriptionViewModal';
+import { getToken } from '../../auth/authStorage';
 
 interface EndConsultationDialogProps {
   isOpen: boolean;
   onClose: () => void;
   consultationId: string;
+  onConfirmRx?: (prescription: PrescriptionData) => void;
+  prescriptionData: PrescriptionData;
 }
 
-const EndConsultationDialog: React.FC<EndConsultationDialogProps> = ({ isOpen, onClose, consultationId }) => {
+const EndConsultationDialog: React.FC<EndConsultationDialogProps> = ({
+  isOpen,
+  onClose,
+  consultationId,
+  onConfirmRx,
+  prescriptionData,
+}) => {
   const navigate = useNavigate();
+  const [isSending, setIsSending] = useState(false);
+  const [sendError, setSendError] = useState('');
 
   if (!isOpen) return null;
+
+  const handleEndAndConfirmPrescription = async () => {
+    setIsSending(true);
+    setSendError('');
+    const confirmedPrescription = {
+      id: `RX-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+      ...prescriptionData,
+      date: new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+    };
+
+    try {
+      const response = await fetch('/api/livekit/end-consultation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+        body: JSON.stringify({
+          appointmentId: consultationId,
+          notes: 'Consultation ended and prescription confirmed by doctor.',
+          prescription: confirmedPrescription,
+        }),
+      });
+      const result = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(result?.message || 'The prescription could not be saved.');
+      const saved = { ...confirmedPrescription, id: result?.prescription?.id || confirmedPrescription.id };
+      localStorage.setItem(`prescription_${consultationId}`, JSON.stringify(saved));
+      localStorage.setItem('sehatsetu_active_prescription', JSON.stringify(saved));
+      onClose();
+      if (onConfirmRx) onConfirmRx(saved);
+      else navigate('/doctor/dashboard');
+    } catch (err) {
+      setSendError(err instanceof Error ? err.message : 'The prescription could not be saved.');
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
@@ -19,7 +65,7 @@ const EndConsultationDialog: React.FC<EndConsultationDialogProps> = ({ isOpen, o
         <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50">
           <h2 className="text-xl font-bold text-deep-space flex items-center gap-2">
             <CheckCircle className="w-6 h-6 text-green-500" />
-            End Consultation
+            End Consultation & Send Rx
           </h2>
           <button 
             onClick={onClose}
@@ -30,9 +76,18 @@ const EndConsultationDialog: React.FC<EndConsultationDialogProps> = ({ isOpen, o
         </div>
 
         <div className="p-6">
-          <p className="text-gray-600 mb-6">
-            Are you sure you want to end this video consultation? You will be redirected to the prescription builder.
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-4 text-xs text-blue-900 flex items-start gap-2">
+            <FileText className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold block text-blue-950">Prescription Sync</span>
+              Ending the call will publish the official prescription directly to both doctor and patient screens.
+            </div>
+          </div>
+
+          <p className="text-gray-600 mb-6 text-sm">
+            Are you sure you want to end this video call and generate the final prescription for <strong>{prescriptionData.patientName || 'this patient'}</strong>?
           </p>
+          {sendError && <p className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700">{sendError}</p>}
 
           <div className="flex gap-4">
             <button 
@@ -42,10 +97,11 @@ const EndConsultationDialog: React.FC<EndConsultationDialogProps> = ({ isOpen, o
               Cancel
             </button>
             <button 
-              onClick={() => navigate(`/doctor/prescription/${consultationId}`)}
-              className="flex-1 py-3 rounded-xl bg-habanero text-white font-bold hover:bg-[#e0750e] transition-colors"
+              onClick={handleEndAndConfirmPrescription}
+              disabled={isSending}
+              className="flex-1 py-3 rounded-xl bg-habanero text-white font-bold hover:bg-[#e0750e] transition-colors shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
             >
-              Proceed to Prescription
+              <span>{isSending ? 'Saving Prescription…' : 'Confirm & Send Rx'}</span>
             </button>
           </div>
         </div>

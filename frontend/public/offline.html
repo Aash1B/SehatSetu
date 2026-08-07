@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>You are Offline | SehatSetu</title>
+    <style>
+      :root {
+        --primary: #863bff;
+        --primary-hover: #7326e6;
+        --bg-color: #f8fafc;
+        --card-bg: #ffffff;
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 1.25rem;
+      }
+      .offline-card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 1rem;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        max-width: 480px;
+        width: 100%;
+        padding: 2.5rem 2rem;
+        text-align: center;
+      }
+      .logo-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 1.5rem auto;
+        background: linear-gradient(135deg, rgba(134, 59, 255, 0.1) 0%, rgba(115, 38, 230, 0.15) 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .logo-icon svg {
+        width: 36px;
+        height: 36px;
+        color: var(--primary);
+      }
+      h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        color: var(--text-main);
+      }
+      p {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: var(--text-muted);
+        margin-bottom: 1.5rem;
+      }
+      .features-notice {
+        background-color: #f1f5f9;
+        border-left: 4px solid var(--primary);
+        border-radius: 0.5rem;
+        padding: 1rem;
+        text-align: left;
+        font-size: 0.875rem;
+        color: #334155;
+        margin-bottom: 2rem;
+      }
+      .features-notice ul {
+        margin-left: 1.25rem;
+        margin-top: 0.5rem;
+      }
+      .features-notice li {
+        margin-bottom: 0.25rem;
+      }
+      .actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-direction: column;
+      }
+      @media (min-width: 480px) {
+        .actions {
+          flex-direction: row;
+        }
+      }
+      .btn {
+        flex: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.75rem 1.25rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+        border: none;
+        text-decoration: none;
+      }
+      .btn-primary {
+        background-color: var(--primary);
+        color: #ffffff;
+      }
+      .btn-primary:hover, .btn-primary:focus {
+        background-color: var(--primary-hover);
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+      }
+      .btn-secondary {
+        background-color: #e2e8f0;
+        color: #1e293b;
+      }
+      .btn-secondary:hover, .btn-secondary:focus {
+        background-color: #cbd5e1;
+        outline: 2px solid #94a3b8;
+        outline-offset: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="offline-card" role="main" aria-live="polite">
+      <div class="logo-icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636a9 9 0 010 12.728m-12.728 0a9 9 0 010-12.728m10.607 2.121a6 6 0 010 8.485m-8.485 0a6 6 0 010-8.485m4.242 2.121a2 2 0 010 4.242" />
+        </svg>
+      </div>
+
+      <h1>You Are Currently Offline</h1>
+      <p>
+        SehatSetu is unable to connect to the network. Please check your internet connection and try again.
+      </p>
+
+      <div class="features-notice">
+        <strong>Server connection required for:</strong>
+        <ul>
+          <li>Live doctor availability & slot booking</li>
+          <li>Video consultations & telemedicine</li>
+          <li>Prescription creation & medical report downloads</li>
+          <li>Account login & OTP verification</li>
+        </ul>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" onclick="window.location.reload();" aria-label="Retry connecting to SehatSetu">
+          Retry Connection
+        </button>
+        <button class="btn btn-secondary" onclick="window.location.href='/';" aria-label="Go to Home Page">
+          Back to Home
+        </button>
+      </div>
+    </div>
+  </body>
+</html>

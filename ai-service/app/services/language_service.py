@@ -35,6 +35,9 @@ LANGUAGE_ALIASES.update(
         "en-us": "en",
         "en-gb": "en",
         "hi-in": "hi",
+        "hi_in": "hi",
+        "hi_latn": "hi-Latn",
+        "hi-latn": "hi-Latn",
         "हिंदी": "hi",
         "bangla": "bn",
     }

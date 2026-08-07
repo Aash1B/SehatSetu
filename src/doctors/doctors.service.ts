@@ -1,5 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { prisma } from '../prisma';
 import { AiService } from '../ai/ai.service';
 
 const SYMPTOM_TO_SPECIALTY_MAP: Record<string, string> = {
@@ -54,25 +54,107 @@ const SYMPTOM_TO_SPECIALTY_MAP: Record<string, string> = {
 @Injectable()
 export class DoctorsService {
   constructor(
-    private readonly prisma: PrismaService,
     private readonly aiService: AiService,
   ) {}
 
   async findAll() {
-    const doctors = await this.prisma.doctor.findMany({
-      orderBy: { priorityScore: 'desc' },
+    const doctors = await prisma.doctor.findMany({
+      where: {
+        userId: { not: null },
+      },
+      include: { user: { select: { id: true, fullName: true, email: true, role: true } } },
     });
-    return doctors;
+    return doctors.map((doctor) => {
+      const rawName = doctor.user?.fullName || doctor.name || 'Doctor';
+      const displayName = rawName.startsWith('Dr.') ? rawName : `Dr. ${rawName}`;
+      return {
+        ...doctor,
+        name: displayName,
+        imageUrl:
+          doctor.imageUrl ||
+          'https://images.unsplash.com/photo-1594824813566-88855376a911?auto=format&fit=crop&q=80&w=400',
+        fee: doctor.fee || `₹${doctor.consultationFee || 500}`,
+        experience: doctor.experience || '5+ Years Experience',
+        degrees: doctor.degrees || 'MBBS',
+        priorityScore: doctor.priorityScore ?? 150,
+        priorityLevel: doctor.priorityLevel || 'P1',
+        availableToday: doctor.availableToday ?? true,
+        imagePosition: doctor.imagePosition || '50% 20%',
+      };
+    });
   }
 
   async findOne(id: string) {
-    const doctor = await this.prisma.doctor.findUnique({
+    const doctor = await prisma.doctor.findUnique({
       where: { id },
     });
     if (!doctor) {
       throw new NotFoundException(`Doctor with ID ${id} not found`);
     }
     return doctor;
+  }
+
+  async findForUser(userId: string, role: string) {
+    if (role !== 'DOCTOR') throw new ForbiddenException('Doctor account required');
+    const user = await prisma.user.findUnique({ where: { id: userId }, include: { doctor: true } });
+    if (!user?.doctor) throw new NotFoundException('Doctor profile not found');
+
+    // Older bookings used catalog doctor IDs. Reattach the matching catalog
+    // profile to the authenticated doctor so ownership and prescriptions agree.
+    const normalizedUserName = user.fullName.replace(/^dr\.?\s*/i, '').trim().toLowerCase();
+    const catalogDoctors = await prisma.doctor.findMany({ where: { userId: null } });
+    const catalogMatch = catalogDoctors.find((doctor) =>
+      doctor.name?.replace(/^dr\.?\s*/i, '').trim().toLowerCase() === normalizedUserName,
+    );
+    let doctor = user.doctor;
+    if (catalogMatch && catalogMatch.id !== doctor.id) {
+      doctor = await prisma.$transaction(async (tx) => {
+        await tx.appointment.updateMany({ where: { doctorId: catalogMatch.id }, data: { doctorId: doctor.id } });
+        await tx.prescription.updateMany({ where: { doctorId: catalogMatch.id }, data: { doctorId: doctor.id } });
+        return tx.doctor.update({
+          where: { id: doctor.id },
+          data: {
+            name: catalogMatch.name || user.fullName,
+            specialty: catalogMatch.specialty || doctor.specialty,
+            experience: catalogMatch.experience || doctor.experience,
+            degrees: catalogMatch.degrees || doctor.degrees,
+            hospital: catalogMatch.hospital || doctor.hospital,
+            location: catalogMatch.location || doctor.location,
+            imageUrl: catalogMatch.imageUrl || doctor.imageUrl,
+            consultationFee: catalogMatch.consultationFee || doctor.consultationFee,
+          },
+        });
+      });
+    }
+
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const startOfTomorrow = new Date(startOfToday);
+    startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
+
+    const appointments = await prisma.appointment.findMany({
+      where: { doctorId: doctor.id },
+      select: { patientId: true, status: true, scheduledAt: true },
+    });
+    const consultations = appointments.filter((appointment) => appointment.status !== 'CANCELLED');
+    const completed = consultations.filter((appointment) => appointment.status === 'COMPLETED');
+    const todaysAppointments = consultations.filter((appointment) =>
+      appointment.scheduledAt &&
+      appointment.scheduledAt >= startOfToday &&
+      appointment.scheduledAt < startOfTomorrow,
+    ).length;
+
+    return {
+      ...doctor,
+      name: user.fullName || doctor.name || 'Doctor',
+      user: { id: user.id, fullName: user.fullName, email: user.email },
+      stats: {
+        totalConsultations: consultations.length,
+        completedConsultations: completed.length,
+        patientsTreated: new Set(completed.map((appointment) => appointment.patientId).filter(Boolean)).size,
+        todaysAppointments,
+      },
+    };
   }
 
   async recommendDoctors(issue: string, symptoms: string[] = []) {
@@ -112,22 +194,29 @@ export class DoctorsService {
 
     // Extract core keyword for matching database specialty (e.g., 'Dermatologist')
     const searchKeyword = recommendedCategory.split(' ')[0];
+    const specialtyFilter = { startsWith: searchKeyword, mode: 'insensitive' as const };
 
-    let doctors = await this.prisma.doctor.findMany({
+    let doctors = await prisma.doctor.findMany({
       where: {
-        specialty: {
-          contains: searchKeyword,
-          mode: 'insensitive',
-        },
+        specialty: specialtyFilter,
+        isActive: true,
       },
-      orderBy: { priorityScore: 'desc' },
+      include: { user: { select: { id: true, fullName: true, email: true, role: true } } },
     });
 
-    // Fallback if no specific doctors match
+    // If the requested specialist is unavailable, route to primary care rather
+    // than returning an unrelated doctor.
     if (doctors.length === 0) {
-      doctors = await this.prisma.doctor.findMany({
-        orderBy: { priorityScore: 'desc' },
+      doctors = await prisma.doctor.findMany({
+        where: {
+          specialty: {
+            contains: 'General Physician',
+            mode: 'insensitive',
+          },
+          isActive: true,
+        },
         take: 5,
+        include: { user: { select: { id: true, fullName: true, email: true, role: true } } },
       });
     }
 
@@ -136,7 +225,10 @@ export class DoctorsService {
       matchedSymptoms,
       reason,
       urgency,
-      recommendedDoctors: doctors,
+      recommendedDoctors: doctors.map((doctor) => ({
+        ...doctor,
+        name: doctor.name || doctor.user?.fullName || 'Doctor',
+      })),
     };
   }
 }

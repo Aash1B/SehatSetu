@@ -7,55 +7,102 @@ datasource db {
 }
 
 model User {
-  id               String   @id @default(uuid())
-  email            String   @unique
-  passwordHash     String
-  fullName         String
-  role             Role
-  createdAt        DateTime @default(now())
-  dataConsentGiven Boolean  @default(false)
-  dataConsentAt    DateTime?
-  patient Patient?
-  doctor  Doctor?
+  id                     String               @id @default(uuid())
+  email                  String               @unique
+  passwordHash           String
+  fullName               String
+  role                   Role
+  authProvider           AuthProvider         @default(LOCAL)
+  googleId               String?              @unique
+  avatarUrl              String?
+  createdAt              DateTime             @default(now())
+  dataConsentAt          DateTime?
+  dataConsentGiven       Boolean              @default(false)
+  emailVerified          Boolean              @default(false)
+  emailOtpHash           String?
+  emailOtpExpiresAt      DateTime?
+  resetTokenHash         String?
+  resetTokenExpiresAt    DateTime?
+  accountStatus          String               @default("ACTIVE")
+  tokenVersion           Int                  @default(0)
+  deletedAt              DateTime?
+  accountDeletionOtps    AccountDeletionOtp[]
+  doctor                 Doctor?
+  uploadedMedicalReports MedicalReport[]      @relation("MedicalReportUploader")
+  patient                Patient?
 }
 
-enum Role {
-  PATIENT
-  DOCTOR
+model AccountDeletionOtp {
+  id         String    @id @default(uuid())
+  userId     String
+  otpHash    String
+  purpose    String    @default("ACCOUNT_DELETION")
+  expiresAt  DateTime
+  attempts   Int       @default(0)
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose, createdAt])
+  @@index([expiresAt])
 }
 
-enum AppointmentStatus {
-  SCHEDULED
-  WAITING
-  COMPLETED
-  CANCELLED
+model AccountDeletionAudit {
+  id             String   @id @default(uuid())
+  userIdentifier String
+  role           Role
+  outcome        String
+  createdAt      DateTime @default(now())
+
+  @@index([userIdentifier, createdAt])
+}
+
+model StorageCleanupJob {
+  id          String    @id @default(uuid())
+  bucket      String
+  path        String
+  status      String    @default("PENDING")
+  attempts    Int       @default(0)
+  lastError   String?
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  @@unique([bucket, path])
+  @@index([status, createdAt])
 }
 
 model Patient {
-  id                String   @id @default(uuid())
-  userId            String   @unique
-  user              User     @relation(fields: [userId], references: [id])
-  phone             String?
-  phoneNumber       String?
+  id                String          @id @default(uuid())
+  userId            String          @unique
   gender            String?
-  age               String?
   dateOfBirth       DateTime?
-  height            String?
-  weight            String?
-  bloodGroup        String?
-  emergencyContact  String?
-  address           String?
-  profilePhoto      String?
   allergies         String[]
   chronicConditions String[]
+  age               String?
+  bloodGroup        String?
+  emergencyContact  String?
+  height            String?
+  phone             String?
+  weight            String?
+  profileImagePath  String?
+  abhaId            String?         @unique
+  appointments      Appointment[]
+  ehrRecords        EhrRecord[]
+  medicalReports    MedicalReport[]
+  user              User            @relation(fields: [userId], references: [id])
+  payments          Payment[]
+  prescriptions     Prescription[]
+}
 
-  appointments  Appointment[]
-  ehrRecords    EhrRecord[]
-  prescriptions Prescription[]
-  payments      Payment[]
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
 }
 
 model Doctor {
+
   id              String   @id @default(uuid())
   userId          String   @unique
   user            User     @relation(fields: [userId], references: [id])
@@ -117,20 +164,70 @@ model Slot {
 
   @@unique([doctorId, date, startTime])
   @@index([doctorId, date, status])
+
+  id               String         @id @default(uuid())
+  userId           String?        @unique
+  name             String?
+  gender           Gender?
+  specialty        String
+  consultationFee  Int?
+  availableToday   Boolean?       @default(true)
+  degrees          String?
+  experience       String?
+  fee              String?
+  hospital         String?
+  imageUrl         String?
+  imageStoragePath String?
+  imagePosition    String?        @default("50% 20%")
+  location         String?
+  priorityLevel    String?
+  priorityScore    Int?
+  rating           Float?         @default(4.8)
+  reviewsCount     Int?           @default(12)
+  tags             String[]
+  availability     Json?
+  profileCompleted Boolean        @default(false)
+  isVerified       Boolean        @default(false)
+  isActive         Boolean        @default(true)
+  appointments     Appointment[]
+  user             User?          @relation(fields: [userId], references: [id])
+  prescriptions    Prescription[]
 }
 
 model Appointment {
-  id                String   @id @default(uuid())
-  
-  // Relational fields (Incoming branch)
-  patientId         String?
-  patient           Patient? @relation(fields: [patientId], references: [id])
-  doctorId          String
-  doctor            Doctor?  @relation(fields: [doctorId], references: [id])
-  scheduledAt       DateTime?
-  status            String   @default("WAITING") 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt @default(now())
+  id                    String          @id @default(uuid())
+  patientId             String?
+  doctorId              String
+  scheduledAt           DateTime?
+  status                String          @default("WAITING")
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @default(now()) @updatedAt
+  patientName           String?
+  patientAge            String?
+  patientGender         String?
+  patientHeight         String?
+  patientWeight         String?
+  patientBloodGroup     String?
+  patientPhone          String?
+  patientEmail          String?
+  healthConcern         String?
+  symptoms              String[]
+  duration              String?
+  severity              String?
+  consultMode           String?
+  urgency               String?
+  notes                 String?
+  date                  String?
+  timeSlot              String?
+  priority              String          @default("ROUTINE")
+  isFollowUp            Boolean         @default(false)
+  emailRemindersEnabled Boolean         @default(true)
+  doctor                Doctor          @relation(fields: [doctorId], references: [id])
+  patient               Patient?        @relation(fields: [patientId], references: [id])
+  ehrRecord             EhrRecord?
+  medicalReports        MedicalReport[]
+  payment               Payment?
+  prescription          Prescription?
 
   // Flat fields from booking flow (HEAD)
   patientName       String?
@@ -158,43 +255,77 @@ model Appointment {
   ehrRecord    EhrRecord?
   prescription Prescription?
   payment      Payment?
+  @@index([doctorId, date, timeSlot])
+}
+
+model MedicalReport {
+  id                     String                 @id @default(uuid())
+  patientId              String
+  uploadedByUserId       String
+  appointmentId          String?
+  originalFileName       String
+  storageBucket          String
+  storagePath            String                 @unique
+  mimeType               String
+  fileSizeBytes          BigInt
+  reportType             MedicalReportType
+  status                 MedicalReportStatus    @default(PENDING_UPLOAD)
+  ocrStatus              MedicalReportOcrStatus @default(NOT_STARTED)
+  extractedText          String?
+  extractedData          Json?
+  processingErrorCode    String?
+  processingErrorMessage String?
+  createdAt              DateTime               @default(now())
+  uploadedAt             DateTime?
+  processingStartedAt    DateTime?
+  processedAt            DateTime?
+  updatedAt              DateTime               @updatedAt
+  appointment            Appointment?           @relation(fields: [appointmentId], references: [id])
+  patient                Patient                @relation(fields: [patientId], references: [id])
+  uploadedBy             User                   @relation("MedicalReportUploader", fields: [uploadedByUserId], references: [id])
+
+  @@index([patientId, createdAt])
+  @@index([appointmentId])
+  @@index([uploadedByUserId])
+  @@index([status])
+
 }
 
 model EhrRecord {
   id            String       @id @default(uuid())
   patientId     String
-  patient       Patient      @relation(fields: [patientId], references: [id])
   appointmentId String?      @unique
-  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
   diagnosis     String?
   notes         String?
   aiSummary     String?
   createdAt     DateTime     @default(now())
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+  patient       Patient      @relation(fields: [patientId], references: [id])
 }
 
 model Prescription {
   id            String      @id @default(uuid())
   patientId     String
-  patient       Patient     @relation(fields: [patientId], references: [id])
   doctorId      String
-  doctor        Doctor      @relation(fields: [doctorId], references: [id])
   appointmentId String      @unique
-  appointment   Appointment @relation(fields: [appointmentId], references: [id])
   medicines     Json
   dietAdvice    String?
   createdAt     DateTime    @default(now())
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+  doctor        Doctor      @relation(fields: [doctorId], references: [id])
+  patient       Patient     @relation(fields: [patientId], references: [id])
 }
 
 model Payment {
-  id              String   @id @default(uuid())
+  id              String      @id @default(uuid())
   patientId       String
-  patient         Patient  @relation(fields: [patientId], references: [id])
-  appointmentId   String   @unique
-  appointment     Appointment @relation(fields: [appointmentId], references: [id])
+  appointmentId   String      @unique
   razorpayOrderId String?
   amount          Int
-  status          String   @default("PENDING")
-  createdAt       DateTime @default(now())
+  status          String      @default("PENDING")
+  createdAt       DateTime    @default(now())
+  appointment     Appointment @relation(fields: [appointmentId], references: [id])
+  patient         Patient     @relation(fields: [patientId], references: [id])
 }
 
 model Hospital {
@@ -203,4 +334,45 @@ model Hospital {
   type      String
   latitude  Float
   longitude Float
+}
+
+enum Role {
+  PATIENT
+  DOCTOR
+}
+
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  WAITING
+}
+
+enum MedicalReportStatus {
+  PENDING_UPLOAD
+  UPLOADED
+  PROCESSING
+  PROCESSED
+  OCR_FAILED
+  DELETED
+}
+
+enum MedicalReportOcrStatus {
+  NOT_STARTED
+  PROCESSING
+  SUCCEEDED
+  FAILED
+}
+
+enum MedicalReportType {
+  LAB_REPORT
+  PRESCRIPTION
+  DISCHARGE_SUMMARY
+  SCAN
+  OTHER
 }

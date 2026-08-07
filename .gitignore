@@ -25,6 +25,7 @@ lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
 /generated/prisma
 
 # Python / AI service

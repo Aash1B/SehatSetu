@@ -20,8 +20,26 @@ class FFmpegHealth(BaseModel):
 class OCRHealth(BaseModel):
     """Configured OCR provider availability."""
 
-    provider: Literal["gemini-vision"] = "gemini-vision"
+    provider: str = "gemini-vision"
     available: bool
+    mode: str = "gemini-only"
+    local_available: bool = False
+    fallback_available: bool = False
+    installed: bool = False
+    path: str | None = None
+    version: str | None = None
+    availability: str = "missing"
+    languages: list[str] = Field(default_factory=list)
+
+
+class WhisperHealth(BaseModel):
+    """Non-sensitive model configuration and lazy-load state."""
+
+    model: str
+    device: str
+    compute_type: str
+    loaded: bool
+    ready: bool
 
 
 class HealthData(BaseModel):
@@ -33,6 +51,9 @@ class HealthData(BaseModel):
     environment: str
     ffmpeg: FFmpegHealth
     ocr: OCRHealth
+    whisper: WhisperHealth
+    transcription_ready: bool
+    summary_provider_ready: bool
 
 
 class HealthResponse(ApiResponse[HealthData]):

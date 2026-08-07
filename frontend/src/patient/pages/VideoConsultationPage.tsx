@@ -1,29 +1,99 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { setCurrentPage } from '../store/uiSlice';
-import VideoPlayer from '../components/VideoPlayer';
-import VideoCallControls from '../components/VideoCallControls';
-import VideoCallSidebar, { type SidebarTabType } from '../components/VideoCallSidebar';
-import EndCallModal from '../components/EndCallModal';
+import { useParams, useNavigate } from 'react-router-dom';
+import { LiveKitRoom, VideoConference } from '@livekit/components-react';
+import '@livekit/components-styles';
+import { Shield, User, MessageSquare, BadgeCheck, Clock3, Send } from 'lucide-react';
+import ConsultationTimer from '../../doctor/components/ConsultationTimer';
+
+import PrescriptionViewModal from '../../common/components/PrescriptionViewModal';
+import { getToken } from '../../auth/authStorage';
+import LowBandwidthMode from '../../common/components/LowBandwidthMode';
+
+interface ConsultationPrescription {
+  id: string;
+  createdAt: string;
+  medicines?: unknown[];
+  dietAdvice?: string;
+}
+
+interface ConsultationAppointment {
+  prescription?: ConsultationPrescription | null;
+  doctor?: { name?: string; specialty?: string; hospital?: string; experience?: string; user?: { fullName?: string } };
+  patient?: { age?: string | number; gender?: string; user?: { fullName?: string } };
+  ehrRecord?: { diagnosis?: string; notes?: string };
+  patientName?: string;
+  patientAge?: string | number;
+  patientGender?: string;
+  healthConcern?: string;
+  symptoms?: string[];
+}
 
 const VideoConsultationPage: React.FC = () => {
-  const dispatch = useDispatch();
+  const { id = '1' } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [showPrescriptionModal, setShowPrescriptionModal] = useState<boolean>(false);
+  const [patientPrescription, setPatientPrescription] = useState<Record<string, unknown> | null>(null);
+  const [appointment, setAppointment] = useState<ConsultationAppointment | null>(null);
 
   // Call duration timer
-  const [secondsElapsed, setSecondsElapsed] = useState<number>(872); // Starts around 14m 32s for realistic feel
+  const [secondsElapsed, setSecondsElapsed] = useState<number>(872);
   const [isTimerRunning, setIsTimerRunning] = useState<boolean>(true);
 
   // Call states
-  const [isMicMuted, setIsMicMuted] = useState<boolean>(false);
-  const [isVideoOff, setIsVideoOff] = useState<boolean>(false);
-  const [isScreenSharing, setIsScreenSharing] = useState<boolean>(false);
-  const [isAudioOnly, setIsAudioOnly] = useState<boolean>(false);
-  const [isHandRaised, setIsHandRaised] = useState<boolean>(false);
-  const [activeSidebarTab, setActiveSidebarTab] = useState<SidebarTabType | 'none'>('chat');
-  const [isEndCallModalOpen, setIsEndCallModalOpen] = useState<boolean>(false);
-  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [token, setToken] = useState("");
+  const [serverUrl, setServerUrl] = useState("");
+  const [connectionError, setConnectionError] = useState("");
+  const consultationId = id;
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const rawToken = getToken();
+        const authHeaders: Record<string, string> = rawToken ? { Authorization: `Bearer ${rawToken}` } : {};
+        
+        try {
+          const appointmentResponse = await fetch(`/api/appointments/${encodeURIComponent(consultationId)}`, { headers: authHeaders });
+          if (appointmentResponse.ok) {
+            const appointmentData = await appointmentResponse.json() as ConsultationAppointment;
+            setAppointment(appointmentData);
+            const prescription = appointmentData.prescription;
+            if (prescription) {
+              setPatientPrescription({
+                id: prescription.id,
+                doctorName: appointmentData.doctor?.name || appointmentData.doctor?.user?.fullName || 'Doctor',
+                doctorSpecialty: appointmentData.doctor?.specialty || '',
+                doctorHospital: appointmentData.doctor?.hospital || 'SehatSetu Digital Health Clinic',
+                patientName: appointmentData.patient?.user?.fullName || appointmentData.patientName || 'Patient',
+                patientAge: appointmentData.patientAge || appointmentData.patient?.age || '',
+                patientGender: appointmentData.patientGender || appointmentData.patient?.gender || '',
+                date: new Date(prescription.createdAt).toLocaleDateString(),
+                diagnosis: appointmentData.ehrRecord?.diagnosis || appointmentData.healthConcern || '',
+                symptoms: appointmentData.symptoms || [],
+                medications: Array.isArray(prescription.medicines) ? prescription.medicines : [],
+                dietAdvice: prescription.dietAdvice || '',
+                notes: appointmentData.ehrRecord?.notes || '',
+              });
+            }
+          }
+        } catch (appErr) {
+          console.warn('[Consultation] Could not load appointment details:', appErr);
+        }
+
+        const resp = await fetch(`/api/livekit/token?appointmentId=${encodeURIComponent(consultationId)}`, {
+          headers: authHeaders,
+        });
+        if (!resp.ok) throw new Error(`Unable to create video-room token (${resp.status})`);
+        const data = await resp.json();
+        if (!data.token || !data.serverUrl) throw new Error('Video-room configuration is incomplete');
+        setToken(data.token);
+        setServerUrl(data.serverUrl);
+        setConnectionError('');
+      } catch (e) {
+        console.error(e);
+        setConnectionError(e instanceof Error ? e.message : 'Unable to connect to the video room');
+      }
+    })();
+  }, [consultationId]);
 
   // Timer interval effect
   useEffect(() => {
@@ -36,168 +106,182 @@ const VideoConsultationPage: React.FC = () => {
     return () => clearInterval(timer);
   }, [isTimerRunning]);
 
-  const formatTimer = (totalSeconds: number) => {
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-
-    const pad = (num: number) => (num < 10 ? `0${num}` : `${num}`);
-
-    if (hours > 0) {
-      return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-    }
-    return `${pad(minutes)}:${pad(seconds)}`;
-  };
-
-  const handleToggleSidebarTab = (tab: SidebarTabType) => {
-    if (activeSidebarTab === tab) {
-      setActiveSidebarTab('none');
-    } else {
-      setActiveSidebarTab(tab);
-    }
-  };
-
-  const handleEndCallTrigger = () => {
+  const handleEndCall = async () => {
     setIsTimerRunning(false);
-    setIsEndCallModalOpen(true);
+    try {
+      await fetch('/api/livekit/end-consultation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+        body: JSON.stringify({
+          appointmentId: id || '1',
+          durationSeconds: secondsElapsed,
+          notes: 'Consultation ended by patient.',
+        }),
+      });
+    } catch (err) {
+      console.warn('Could not post end-consultation queue job:', err);
+    }
+    try {
+      const response = await fetch(`/api/appointments/${encodeURIComponent(consultationId)}`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      const latest = response.ok ? await response.json() as ConsultationAppointment : null;
+      if (latest?.prescription) {
+        const rx = latest.prescription;
+        setPatientPrescription({
+          id: rx.id,
+          doctorName: latest.doctor?.name || latest.doctor?.user?.fullName || 'Doctor',
+          doctorSpecialty: latest.doctor?.specialty || '',
+          doctorHospital: latest.doctor?.hospital || 'SehatSetu Digital Health Clinic',
+          patientName: latest.patient?.user?.fullName || latest.patientName || 'Patient',
+          patientAge: latest.patientAge || latest.patient?.age || '',
+          patientGender: latest.patientGender || latest.patient?.gender || '',
+          date: new Date(rx.createdAt).toLocaleDateString(),
+          diagnosis: latest.ehrRecord?.diagnosis || latest.healthConcern || '',
+          symptoms: latest.symptoms || [],
+          medications: Array.isArray(rx.medicines) ? rx.medicines : [],
+          dietAdvice: rx.dietAdvice || '',
+          notes: latest.ehrRecord?.notes || '',
+        });
+        setShowPrescriptionModal(true);
+        return;
+      }
+    } catch (error) {
+      console.warn('Could not refresh the issued prescription:', error);
+    }
+    navigate('/patient/dashboard');
   };
 
-  const toggleFullscreenMode = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {});
-      setIsFullscreen(true);
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen().catch(() => {});
-      }
-      setIsFullscreen(false);
-    }
+  const handleEndCallTrigger = async () => {
+    await handleEndCall();
   };
 
   return (
-    <div className={`sehat-video-consultation-root ${activeSidebarTab !== 'none' ? 'sidebar-open' : ''}`}>
-      {/* 1. TOP NAVIGATION HEADER */}
-      <header className="vcall-top-header">
-        <div className="vcall-header-left">
-          <button
-            type="button"
-            className="btn-vcall-back"
-            onClick={() => {
-              dispatch(setCurrentPage('dashboard'));
-              navigate('/patient/dashboard');
-            }}
-            title="Return to Patient Dashboard"
-          >
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2">
-              <line x1="19" y1="12" x2="5" y2="12" />
-              <polyline points="12 19 5 12 12 5" />
-            </svg>
-            <span>Dashboard</span>
-          </button>
-
-          <div className="vcall-brand-pill">
-            <div className="brand-logo-small">
-              <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#F97316" />
-              </svg>
+    <div className="consultation-page flex h-dvh bg-luster-white font-sans text-deep-space">
+      <main className="consultation-page-main flex-1 flex flex-col h-full min-h-0">
+        {/* Header Area */}
+        <div className="consultation-page-header shrink-0 px-6 py-4 flex items-center justify-between border-b border-gray-100 bg-white shadow-sm z-10">
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => navigate('/patient/dashboard')}
+              className="text-gray-500 hover:text-deep-space font-medium text-sm transition-colors"
+            >
+              ← Back to Dashboard
+            </button>
+            <div className="h-6 w-px bg-gray-200"></div>
+            <div className="flex items-center gap-2 text-green-600 bg-green-50 px-3 py-1 rounded-full text-xs font-bold border border-green-200">
+              <Shield className="w-4 h-4" />
+              End-to-End Encrypted
             </div>
-            <span className="brand-name">SehatSetu</span>
-            <span className="live-call-badge">
-              <span className="pulsing-red-dot"></span> LIVE
-            </span>
           </div>
+          <ConsultationTimer />
         </div>
 
-        {/* Doctor Details & Consultation Counter */}
-        <div className="vcall-header-center">
-          <div className="vcall-doctor-summary">
-            <img
-              src="https://images.unsplash.com/photo-1594824813566-88855ce78906?auto=format&fit=crop&q=80&w=150"
-              alt="Dr. Ananya Sharma"
-              className="vcall-doc-avatar"
-            />
-            <div>
-              <div className="doc-name-verified">
-                <h3 className="vcall-doc-name">Dr. Ananya Sharma</h3>
-                <span className="blue-tick-sm">✓</span>
+        {/* Main Consultation Area */}
+        <div className="consultation-content flex-1 min-h-0 p-6">
+          <div className="consultation-layout">
+            
+            {/* Left Column: Video & Controls */}
+            <div className="consultation-video-column flex flex-col h-full gap-4">
+              <div className="flex-1 min-h-0 relative rounded-2xl overflow-hidden bg-deep-space shadow-sm border border-gray-200">
+                {token && serverUrl ? (
+                  <LiveKitRoom
+                    connect={Boolean(token && serverUrl)}
+                    video={true}
+                    audio={true}
+                    token={token}
+                    serverUrl={serverUrl}
+                    data-lk-theme="default"
+                    style={{ height: '100%', minHeight: 0, overflow: 'hidden', flex: 1, display: 'flex', flexDirection: 'column' }}
+                    onDisconnected={handleEndCallTrigger}
+                    onError={(error) => setConnectionError(error.message)}
+                  >
+                    <LowBandwidthMode />
+                    <VideoConference />
+                  </LiveKitRoom>
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
+                    <div className="text-white/40 flex flex-col items-center gap-3">
+                      <User className="w-20 h-20" />
+                      <p className="font-medium text-lg">{connectionError || `${appointment?.doctor?.name || appointment?.doctor?.user?.fullName || 'Doctor'} (Connecting...)`}</p>
+                    </div>
+                  </div>
+                )}
+
               </div>
-              <span className="vcall-doc-spec">Senior Dermatologist • OPD Room 4</span>
             </div>
-          </div>
 
-          <div className="vcall-timer-box">
-            <span className="timer-icon">⏱️</span>
-            <span className="timer-display">{formatTimer(secondsElapsed)}</span>
+            {/* Right Column: Doctor Details & Chat */}
+            <aside className="consultation-side-panel">
+              <section className="consultation-doctor-card">
+                <div className="consultation-doctor-topline">
+                  <span className="consultation-live-dot"><i /> Doctor online</span>
+                  <span className="consultation-secure-chip"><Shield /> Secure</span>
+                </div>
+                <div className="consultation-doctor-identity">
+                  <div className="consultation-doctor-avatar">
+                    {(appointment?.doctor?.name || appointment?.doctor?.user?.fullName || 'Doctor').split(/\s+/).filter(Boolean).slice(-2).map((part: string) => part[0]).join('').toUpperCase()}
+                  </div>
+                  <div>
+                    <span className="consultation-verified-label"><BadgeCheck /> Verified doctor</span>
+                    <h3>{appointment?.doctor?.name || appointment?.doctor?.user?.fullName || 'Doctor'}</h3>
+                    <p>{appointment?.doctor?.specialty || ''}</p>
+                    <span className="consultation-clinic-label">SehatSetu Digital Health Clinic</span>
+                  </div>
+                </div>
+                <div className="consultation-doctor-facts">
+                  <div>
+                    <span>Experience</span>
+                    <strong>{appointment?.doctor?.experience || 'Not provided'}</strong>
+                  </div>
+                  <div>
+                    <span>Languages</span>
+                    <strong>English, Hindi</strong>
+                  </div>
+                </div>
+                <div className="consultation-session-strip">
+                  <span><Clock3 /> Consultation in progress</span>
+                  <strong>Available now</strong>
+                </div>
+              </section>
+
+              <section className="consultation-chat-card">
+                <header className="consultation-chat-header">
+                  <span className="consultation-chat-icon"><MessageSquare /></span>
+                  <div><h4>Consultation chat</h4><p>Messages are private and encrypted</p></div>
+                </header>
+                <div className="consultation-chat-body">
+                  <div className="consultation-chat-empty">
+                    <span><MessageSquare /></span>
+                    <strong>Your consultation chat</strong>
+                    <p>Share symptoms, questions, or anything important with your doctor during the call.</p>
+                    <div className="consultation-quick-notes" aria-hidden="true">
+                      <small>Ask a question</small>
+                      <small>Share a symptom</small>
+                    </div>
+                  </div>
+                </div>
+                <div className="consultation-chat-composer">
+                  <input type="text" placeholder="Type a message…" aria-label="Consultation message" />
+                  <button type="button" aria-label="Send message"><Send /><span>Send</span></button>
+                </div>
+              </section>
+            </aside>
+
           </div>
         </div>
 
-        {/* Header Action Buttons */}
-        <div className="vcall-header-right">
-          <button
-            type="button"
-            className="vcall-icon-btn"
-            onClick={toggleFullscreenMode}
-            title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
-          >
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
-            </svg>
-          </button>
-        </div>
-      </header>
+      </main>
 
-      {/* 2. MAIN CONTENT BODY GRID (VIDEO PLAYER + SIDEBAR) */}
-      <div className="vcall-body-grid">
-        {/* Main Video View Stage */}
-        <main className="vcall-stage-area">
-          <VideoPlayer
-            doctorName="Dr. Ananya Sharma"
-            doctorSpecialty="Senior Dermatologist"
-            isMicMuted={isMicMuted}
-            isVideoOff={isVideoOff}
-            isScreenSharing={isScreenSharing}
-            isAudioOnly={isAudioOnly}
-            isHandRaised={isHandRaised}
-          />
-        </main>
-
-        {/* Right Collapsible Side Panel */}
-        {activeSidebarTab !== 'none' && (
-          <aside className="vcall-sidebar-area">
-            <VideoCallSidebar
-              activeTab={activeSidebarTab}
-              onTabChange={(tab) => setActiveSidebarTab(tab)}
-              onClose={() => setActiveSidebarTab('none')}
-              doctorName="Dr. Ananya Sharma"
-            />
-          </aside>
-        )}
-      </div>
-
-      {/* 3. BOTTOM FLOATING GLASS CONTROL DOCK */}
-      <VideoCallControls
-        isMicMuted={isMicMuted}
-        onToggleMic={() => setIsMicMuted(!isMicMuted)}
-        isVideoOff={isVideoOff}
-        onToggleVideo={() => setIsVideoOff(!isVideoOff)}
-        isScreenSharing={isScreenSharing}
-        onToggleScreenShare={() => setIsScreenSharing(!isScreenSharing)}
-        isAudioOnly={isAudioOnly}
-        onToggleAudioOnly={() => setIsAudioOnly(!isAudioOnly)}
-        isHandRaised={isHandRaised}
-        onToggleRaiseHand={() => setIsHandRaised(!isHandRaised)}
-        activeSidebarTab={activeSidebarTab}
-        onToggleSidebarTab={handleToggleSidebarTab}
-        onEndCall={handleEndCallTrigger}
-      />
-
-      {/* 4. END CALL SUMMARY & RATING MODAL */}
-      <EndCallModal
-        isOpen={isEndCallModalOpen}
-        callDuration={secondsElapsed}
-        doctorName="Dr. Ananya Sharma"
-        doctorSpecialty="Senior Dermatologist"
-        onClose={() => setIsEndCallModalOpen(false)}
+      {/* Real-time Prescription View Modal when Consultation Ends */}
+      <PrescriptionViewModal 
+        isOpen={showPrescriptionModal}
+        isModal={true}
+        onClose={() => {
+          setShowPrescriptionModal(false);
+          navigate('/patient/dashboard');
+        }}
+        data={patientPrescription || undefined}
       />
     </div>
   );

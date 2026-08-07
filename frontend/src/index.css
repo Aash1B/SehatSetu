@@ -1,7 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
-@import "./App.css";
+@source "./";
 
-html, body, #root {
+html,
+body,
+#root {
   width: 100%;
   min-height: 100vh;
   margin: 0;
@@ -15,46 +18,40 @@ html, body, #root {
   box-sizing: border-box;
 }
 
+html:lang(hi),
+body:lang(hi) {
+  font-feature-settings: "liga" 1;
+}
+
 @theme {
   --color-luster-white: #F4F1EC;
-  --color-aster-blue: #4C70E8;
+  --color-aster-blue: #223382;
   --color-habanero: #F0541E;
   --color-jodhpur-tan: #DAD1C8;
   --color-deep-space: #223382;
+  --color-blue-50: #223382;
+  --color-blue-100: #223382;
+  --color-blue-200: #223382;
+  --color-blue-300: #223382;
+  --color-blue-400: #223382;
+  --color-blue-500: #223382;
+  --color-blue-600: #223382;
+  --color-blue-700: #223382;
+  --color-blue-800: #223382;
+  --color-blue-950: #223382;
   --color-deadly-depths: #0B0F19;
-}
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
-  }
-}
+  --color-brand: #22382E;
+  --color-brand-50: #f0f7f2;
+  --color-brand-100: #d9eedf;
+  --color-brand-200: #b5ddc0;
+  --color-brand-300: #8ecba1;
+  --color-brand-400: #68b882;
+  --color-brand-500: #42a563;
+  --color-brand-600: #22382E;
+  --color-brand-700: #1a2e24;
 
-@layer base {
-  * {
-    border-color: var(--border);
-  }
-  body {
-    background-color: var(--background);
-    color: var(--foreground);
-  }
+  --color-primary: #F98513;
+  --color-primary-hover: #E6780F;
+  --color-primary-active: #CC6A0D;
 }

@@ -14,3 +14,6 @@ dist/
 build/
 *.egg-info/
 .tmp/
+
+# Local AI benchmark data and generated evaluation assets
+/test/

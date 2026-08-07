@@ -62,6 +62,34 @@ EMERGENCY_EXAMPLE = {
             "a regular appointment."
         ),
         "disclaimer": "This is not a medical diagnosis.",
+        "emergency_detected": True,
+        "emergency_instruction": (
+            "Call 112 immediately and visit the nearest suitable emergency facility."
+        ),
+        "nearby_hospitals": [
+            {
+                "raw": {
+                    "googlePlaceId": "place-123",
+                    "name": "City Heart and Emergency Hospital",
+                    "distance": 1800,
+                    "businessStatus": "OPERATIONAL",
+                    "openNow": True,
+                },
+                "hospital_type": "speciality",
+                "specialities": ["cardiology"],
+                "classification_source": "keyword_rule",
+                "classification_confidence": 0.82,
+                "emergency_suitability_score": 100.0,
+                "recommendation_reason": "Emergency suitability considers reported open now, emergency or trauma indicator, inferred speciality relevance to the reported condition, distance 1800 metres, operational listing.",
+                "warnings": [
+                    "Classification is inferred from listing information and is not verified."
+                ],
+            }
+        ],
+        "hospital_classification_notice": (
+            "Hospital ownership and specialities may be inferred from names and listing metadata; "
+            "verify them with the hospital or an authoritative source before non-emergency decisions."
+        ),
     },
 }
 
@@ -73,9 +101,10 @@ EMERGENCY_EXAMPLE = {
     status_code=status.HTTP_200_OK,
     summary="Recommend a doctor specialization",
     description=(
-        "Recommends only a controlled doctor specialization for appointment "
-        "routing. It does not diagnose, rank doctors, check availability, or "
-        "book appointments. Patients may still select another specialization."
+        "Runs deterministic emergency detection before any optional AI provider, then returns up to three ranked specialties. "
+        "Optional raw Google Places hospitals are cautiously classified and ranked for emergency suitability. "
+        "Emergencies explicitly direct the patient to immediate in-person care. It does not diagnose, name individual doctors, "
+        "check availability, confirm hospital metadata, or book appointments. Human review is required."
     ),
     responses={
         200: {

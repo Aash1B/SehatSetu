@@ -5,10 +5,12 @@ from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
+from pydantic import SecretStr
+from starlette.websockets import WebSocketDisconnect
 
 from app.main import app
 from app.api.v1.endpoints.live_transcription import session_manager
-from app.core.config import Settings
+from app.core.config import Settings, get_settings
 from app.core.exceptions import AppException
 from app.schemas.transcription import TranscriptionData
 from app.services.audio_conversion_service import AudioConversionService
@@ -384,7 +386,7 @@ def test_websocket_invalid_message_and_unsupported_mime(
         socket.send_json({"type": "unknown", "session_id": session_id})
         assert socket.receive_json()["code"] == "INVALID_CONTROL_MESSAGE"
         _, error = send_socket_chunk(
-            socket, session_id, uuid4().hex, mime_type="audio/aac"
+            socket, session_id, uuid4().hex, mime_type="text/plain"
         )
         assert error["code"] == "UNSUPPORTED_MIME_TYPE"
     finally:
@@ -541,3 +543,50 @@ def test_websocket_queue_limit(client: TestClient) -> None:
     finally:
         socket.__exit__(None, None, None)
         session_manager.cancel(session_id)
+
+
+@pytest.mark.parametrize("headers", [{}, {"X-Internal-API-Key": "wrong"}])
+def test_websocket_rejects_missing_or_invalid_internal_key(
+    client: TestClient,
+    monkeypatch,
+    headers,
+) -> None:
+    settings = get_settings()
+    monkeypatch.setattr(settings, "app_env", "production")
+    monkeypatch.setattr(settings, "internal_api_key", SecretStr("expected-key"))
+
+    with pytest.raises(WebSocketDisconnect) as error:
+        with client.websocket_connect(
+            "/api/v1/live-transcription/ws",
+            headers=headers,
+        ):
+            pass
+
+    assert error.value.code == 1008
+
+
+def test_websocket_accepts_valid_internal_key(client: TestClient, monkeypatch) -> None:
+    settings = get_settings()
+    monkeypatch.setattr(settings, "app_env", "production")
+    monkeypatch.setattr(settings, "internal_api_key", SecretStr("expected-key"))
+
+    with client.websocket_connect(
+        "/api/v1/live-transcription/ws",
+        headers={"X-Internal-API-Key": "expected-key"},
+    ) as socket:
+        socket.send_json(
+            {"type": "session_start", "session_id": uuid4().hex, "language": "auto"}
+        )
+        assert socket.receive_json()["type"] == "session_ready"
+
+
+def test_websocket_allows_disabled_auth(client: TestClient, monkeypatch) -> None:
+    settings = get_settings()
+    monkeypatch.setattr(settings, "app_env", "production")
+    monkeypatch.setattr(settings, "internal_api_key", None)
+
+    with client.websocket_connect("/api/v1/live-transcription/ws") as socket:
+        socket.send_json(
+            {"type": "session_start", "session_id": uuid4().hex, "language": "auto"}
+        )
+        assert socket.receive_json()["type"] == "session_ready"

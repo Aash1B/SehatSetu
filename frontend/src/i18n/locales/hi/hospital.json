@@ -1,0 +1,20 @@
+{
+  "nearbyHospitals": "नजदीकी अस्पताल",
+  "searchHospitals": "अस्पताल खोजें",
+  "emergency": "आपातकाल",
+  "icu": "ICU",
+  "er": "आपातकाल कक्ष",
+  "distance": "दूरी",
+  "rating": "रेटिंग",
+  "address": "पता",
+  "phone": "फ़ोन",
+  "availability": "उपलब्धता",
+  "open": "खुला",
+  "closed": "बंद",
+  "noHospitalsFound": "नजदीकी कोई अस्पताल नहीं मिला।",
+  "callNow": "अभी कॉल करें",
+  "getDirections": "दिशा निर्देश प्राप्त करें",
+  "viewOnMap": "मानचित्र पर देखें",
+  "emergencyContact": "आपातकालीन संपर्क",
+  "call": "कॉल"
+}

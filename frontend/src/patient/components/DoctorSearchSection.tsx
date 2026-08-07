@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { setCurrentPage } from '../store/uiSlice';
 import { doctorsData, type Doctor } from '../data/doctorsData';
 import { fetchDoctors } from '../services/doctorApi';
 import CustomSelect, { type OptionItem } from './CustomSelect';
+import { useNavigate } from 'react-router-dom';
+import { recommendDoctorSpecialist } from '../../common/services/aiApi';
 
 const SPECIALTY_OPTIONS: OptionItem[] = [
   { value: 'All', label: 'Specialization (All)' },
@@ -43,9 +42,9 @@ const HOSPITAL_OPTIONS: OptionItem[] = [
 
 const EXPERIENCE_OPTIONS: OptionItem[] = [
   { value: 'All', label: 'Experience' },
-  { value: '5+', label: '5+ Years' },
+  { value: '1-5', label: '1 - 5 Years' },
+  { value: '5-10', label: '5 - 10 Years' },
   { value: '10+', label: '10+ Years' },
-  { value: '15+', label: '15+ Years' },
 ];
 
 const FEES_OPTIONS: OptionItem[] = [
@@ -55,7 +54,6 @@ const FEES_OPTIONS: OptionItem[] = [
 ];
 
 const DoctorSearchSection: React.FC = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [doctorsList, setDoctorsList] = useState<Doctor[]>(doctorsData);
   const [searchTerm, setSearchTerm] = useState('');
@@ -68,40 +66,86 @@ const DoctorSearchSection: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    fetchDoctors().then((data) => {
-      if (data && data.length > 0) {
-        setDoctorsList(data);
+    fetchDoctors().then(docs => {
+      if (docs && docs.length > 0) {
+        setDoctorsList(docs);
       }
+    }).catch(err => {
+      console.warn("Could not fetch dynamic doctors, using static fallback", err);
     });
   }, []);
 
   const toggleFavorite = (id: string) => {
-    setFavorites(prev => 
+    setFavorites(prev =>
       prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
     );
   };
 
   const filteredDoctors = doctorsList.filter(doc => {
-    const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doc.specialty.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doc.hospital.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doc.location.toLowerCase().includes(searchTerm.toLowerCase());
+    const query = searchTerm.trim().toLowerCase();
+    const matchesSearch = !query ||
+      (doc.name || '').toLowerCase().includes(query) ||
+      (doc.specialty || '').toLowerCase().includes(query) ||
+      (doc.hospital || '').toLowerCase().includes(query) ||
+      (doc.location || '').toLowerCase().includes(query) ||
+      (doc.tags && doc.tags.some(tag => tag.toLowerCase().includes(query)));
 
-    const matchesSpecialty = specialtyFilter === 'All' || 
-      doc.specialty.toLowerCase().includes(specialtyFilter.toLowerCase().split(' ')[0]) ||
-      specialtyFilter.toLowerCase().includes(doc.specialty.toLowerCase().split(' ')[0]);
-    const matchesLocation = locationFilter === 'All' || doc.location === locationFilter;
+    const specFilterLower = specialtyFilter.trim().toLowerCase();
+    const docSpecLower = (doc.specialty || '').toLowerCase();
+    const matchesSpecialty = specialtyFilter === 'All' ||
+      docSpecLower.includes(specFilterLower.split(' ')[0]) ||
+      specFilterLower.includes(docSpecLower.split(' ')[0]) ||
+      docSpecLower.split(' ')[0] === specFilterLower.split(' ')[0];
+
+    const matchesLocation = locationFilter === 'All' ||
+      (doc.location || '').toLowerCase().includes(locationFilter.trim().toLowerCase()) ||
+      (doc.hospital || '').toLowerCase().includes(locationFilter.trim().toLowerCase());
 
     return matchesSearch && matchesSpecialty && matchesLocation;
   });
 
+  const sortedDoctors = [...filteredDoctors].sort((a, b) => {
+    const locFilter = locationFilter.trim().toLowerCase();
+    const targetLoc = locFilter !== 'all' ? locFilter : (localStorage.getItem('patientCity') || 'mumbai').toLowerCase();
+
+    const locA = `${a.location || ''} ${a.hospital || ''}`.toLowerCase();
+    const locB = `${b.location || ''} ${b.hospital || ''}`.toLowerCase();
+
+    const matchA = locA.includes(targetLoc);
+    const matchB = locB.includes(targetLoc);
+
+    if (matchA && !matchB) return -1;
+    if (!matchA && matchB) return 1;
+
+    const rateA = typeof a.rating === 'number' ? a.rating : parseFloat(String(a.rating || 0));
+    const rateB = typeof b.rating === 'number' ? b.rating : parseFloat(String(b.rating || 0));
+    if (rateB !== rateA) return rateB - rateA;
+
+    return (b.reviewsCount || 0) - (a.reviewsCount || 0);
+  });
+
+  const effectiveIndex = currentIndex < sortedDoctors.length ? currentIndex : 0;
+
   const handlePrev = () => {
-    setCurrentIndex(prev => (prev > 0 ? prev - 1 : Math.max(0, filteredDoctors.length - 3)));
+    setCurrentIndex(prev => (prev > 0 ? prev - 1 : Math.max(0, sortedDoctors.length - 3)));
   };
 
   const handleNext = () => {
-    setCurrentIndex(prev => (prev + 1 < filteredDoctors.length ? prev + 1 : 0));
+    setCurrentIndex(prev => (prev + 1 < sortedDoctors.length ? prev + 1 : 0));
   };
+
+  const handleSearchSubmit = () => {
+    const params = new URLSearchParams();
+    if (searchTerm.trim()) params.set('q', searchTerm.trim());
+    if (specialtyFilter !== 'All') params.set('specialty', specialtyFilter);
+    if (locationFilter !== 'All') params.set('location', locationFilter);
+    const queryString = params.toString();
+    navigate(queryString ? `/patient/search?${queryString}` : '/patient/search');
+  };
+
+  const visibleDoctors = searchTerm.trim()
+    ? sortedDoctors.slice(0, 4)
+    : sortedDoctors.slice(effectiveIndex, effectiveIndex + 4);
 
   return (
     <section id="doctors" className="doctor-search-section">
@@ -116,8 +160,8 @@ const DoctorSearchSection: React.FC = () => {
         <div className="search-box-wrapper">
           <div className="search-input-group">
             <svg className="search-magnifier-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8"/>
-              <path d="M21 21l-4.35-4.35"/>
+              <circle cx="11" cy="11" r="8" />
+              <path d="M21 21l-4.35-4.35" />
             </svg>
             <input
               type="text"
@@ -126,17 +170,28 @@ const DoctorSearchSection: React.FC = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <button type="button" className="btn-voice-search" title="Voice Search">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
-                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                <line x1="12" y1="19" x2="12" y2="22"/>
-              </svg>
+            <button
+              type="button"
+              className="btn-voice-search"
+              title="AI Recommend Specialist"
+              onClick={async () => {
+                if (!searchTerm.trim()) return;
+                try {
+                  const res = await recommendDoctorSpecialist(searchTerm);
+                  if (res && res.data && res.data.specialization) {
+                    setSpecialtyFilter(res.data.specialization);
+                  }
+                } catch (e) {
+                  console.error('AI doctor recommendation error', e);
+                }
+              }}
+            >
+              <span className="text-xs font-bold text-orange-600 flex items-center gap-1 px-1">✨ AI Match</span>
             </button>
-            <button type="button" className="btn-search-submit">
+            <button type="button" className="btn-search-submit" onClick={handleSearchSubmit}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
-                <circle cx="11" cy="11" r="8"/>
-                <path d="M21 21l-4.35-4.35"/>
+                <circle cx="11" cy="11" r="8" />
+                <path d="M21 21l-4.35-4.35" />
               </svg>
               Search
             </button>
@@ -179,9 +234,9 @@ const DoctorSearchSection: React.FC = () => {
               onChange={setFeesFilter}
             />
 
-            <button type="button" className="btn-more-filters">
+            <button type="button" className="btn-more-filters" onClick={handleSearchSubmit}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
-                <path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>
+                <path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" />
               </svg>
               More Filters
             </button>
@@ -191,14 +246,14 @@ const DoctorSearchSection: React.FC = () => {
         {/* Doctor Cards Carousel Header */}
         <div className="doctors-carousel-header">
           <h3 className="doctors-carousel-title">Top Doctors Near You</h3>
-          <button 
-            type="button" 
-            className="link-view-all" 
-            onClick={() => navigate('/patient/search')}
+          <button
+            type="button"
+            className="link-view-all"
+            onClick={handleSearchSubmit}
           >
             View All Doctors
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
+              <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
           </button>
         </div>
@@ -210,12 +265,18 @@ const DoctorSearchSection: React.FC = () => {
           </button>
 
           <div className="doctors-cards-grid">
-            {filteredDoctors.slice(currentIndex, currentIndex + 4).map((doctor: Doctor) => (
+            {visibleDoctors.map((doctor: Doctor) => (
               <div key={doctor.id} className="doctor-card-item">
-                <div className="doctor-card-image-wrap">
-                  <img src={doctor.imageUrl} alt={doctor.name} className="doctor-avatar-img" />
-                  <button 
-                    type="button" 
+                <div className="relative h-[220px] w-full overflow-hidden rounded-t-2xl bg-slate-100 sm:h-[240px] lg:h-[270px]">
+                  <img
+                    src={doctor.imageUrl}
+                    alt={`Dr. ${doctor.name}`}
+                    className="h-full w-full object-cover"
+                    style={{ objectPosition: doctor.imagePosition || '50% 20%' }}
+                    loading="lazy"
+                  />
+                  <button
+                    type="button"
                     className={`favorite-btn ${favorites.includes(doctor.id) ? 'active' : ''}`}
                     onClick={() => toggleFavorite(doctor.id)}
                     aria-label="Favorite doctor"
@@ -241,17 +302,17 @@ const DoctorSearchSection: React.FC = () => {
                   </p>
 
                   <div className="doctor-card-actions">
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="btn-view-profile"
-                      onClick={() => { dispatch(setCurrentPage('book-appointment')); navigate(`/patient/book/${doctor.id}`); }}
+                      onClick={() => navigate(`/patient/book/${doctor.id}`)}
                     >
                       View Profile
                     </button>
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="btn-book-doctor"
-                      onClick={() => { dispatch(setCurrentPage('book-appointment')); navigate(`/patient/book/${doctor.id}`); }}
+                      onClick={() => navigate(`/patient/book/${doctor.id}`)}
                     >
                       Book Appointment
                     </button>
@@ -259,6 +320,11 @@ const DoctorSearchSection: React.FC = () => {
                 </div>
               </div>
             ))}
+            {filteredDoctors.length === 0 && (
+              <div className="appointments-empty-state">
+                No doctor matches “{searchTerm}”. Try another name or clear the filters.
+              </div>
+            )}
           </div>
 
           <button type="button" className="carousel-nav-btn next-btn" onClick={handleNext} aria-label="Next">

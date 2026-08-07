@@ -9,6 +9,7 @@ from typing import Any, Protocol
 
 from app.core.config import get_settings
 from app.core.logging import get_logger
+from app.services.medical_vocabulary_service import get_medical_vocabulary_service
 from app.schemas.medical_info import (
     MedicalInfoData,
     MedicationMention,
@@ -38,7 +39,9 @@ CONDITIONS = {
 }
 MEDICATIONS = {
     "amoxicillin", "aspirin", "ibuprofen", "metformin", "paracetamol",
-    "penicillin", "telmisartan",
+    "penicillin", "telmisartan", "amlodipine", "atorvastatin",
+    "azithromycin", "cetirizine", "levothyroxine", "pantoprazole",
+    "salbutamol", "sumatriptan",
 }
 PROCEDURES = {
     "blood test", "ct scan", "mri", "surgery", "ultrasound", "x-ray",
@@ -110,7 +113,9 @@ ALLERGY_PATTERN = re.compile(
     re.IGNORECASE,
 )
 NEGATION_PATTERN = re.compile(
-    r"(?:\bno\b|\bdenies?\b|\bwithout\b|\bnot\s+experiencing\b)"
+    r"(?:\bno\b|\bnot\b|\bdenies?\b|\bdenied\b|\bwithout\b|"
+    r"\bnegative\b|\bnever\b|\bdoes\s+not\b|\bdid\s+not\b|"
+    r"\bnot\s+experiencing\b|\bnahi(?:\s+hai)?\b|\bbina\b)"
     r"(?:\s+\w+){0,3}\s*$",
     re.IGNORECASE,
 )
@@ -154,6 +159,9 @@ class MedicalNERService:
         active_symptoms = [
             mention.name for mention in symptom_details if not mention.negated
         ]
+        negated_findings = [
+            mention.name for mention in symptom_details if mention.negated
+        ]
         conditions = _unique(
             _terms_in_text(text, CONDITIONS) + model_entities["conditions"]
         )
@@ -191,6 +199,8 @@ class MedicalNERService:
             symptoms=active_symptoms,
             symptom_details=symptom_details,
             conditions=conditions,
+            negated_findings=negated_findings,
+            lab_tests=procedures,
             allergies=allergies,
             medications=medications,
             duration=durations,
@@ -294,7 +304,8 @@ class MedicalNERService:
     @staticmethod
     def _normalize_medical_terms(transcript: str) -> str:
         normalized = transcript
-        for source, target in TERM_ALIASES.items():
+        aliases = {**TERM_ALIASES, **get_medical_vocabulary_service().aliases()}
+        for source, target in aliases.items():
             normalized = re.sub(
                 rf"(?<!\w){re.escape(source)}(?!\w)",
                 target,

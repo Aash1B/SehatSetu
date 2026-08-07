@@ -3,6 +3,6 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/((?!assets/|favicon\\.svg|icons\\.svg).*)", "destination": "/index.html" }
+    { "source": "/((?!assets/|favicon\\.svg|icons\\.svg|manifest\\.webmanifest|sw\\.js|registerSW\\.js|workbox-.*\\.js|offline\\.html|pwa-.*\\.png|maskable-.*\\.png|apple-touch-icon\\.png|favicon\\.ico).*)", "destination": "/index.html" }
   ]
 }
