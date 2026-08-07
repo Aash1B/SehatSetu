@@ -2,7 +2,10 @@ import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useLocation }
 import { lazy, Suspense } from 'react';
 import { Provider } from 'react-redux';
 import { store } from './patient/store';
+import { useTranslation } from 'react-i18next';
 import './Patient.css';
+import ChatProvider from './chatbot/ChatProvider';
+import './chatbot/chatbot.css';
 // Auth Pages (new)
 const PatientLogin = lazy(() => import('./auth/pages/PatientLogin'));
 const PatientSignup = lazy(() => import('./auth/pages/PatientSignup'));
@@ -47,6 +50,9 @@ const DoctorOnboarding = lazy(() => import('./doctor/pages/DoctorOnboarding'));
 // Landing Page
 const LandingPage = lazy(() => import('./patient/pages/LandingPage'));
 
+// Public standalone pages
+const AboutPage = lazy(() => import('./pages/About'));
+
 // Patient Pages
 
 const DashboardPage = lazy(() => import('./patient/pages/DashboardPage'));
@@ -61,13 +67,15 @@ import PWAUpdatePrompt from './common/components/PWAUpdatePrompt';
 import PWAInstallPrompt from './common/components/PWAInstallPrompt';
 
 function App() {
+  const { t } = useTranslation('common');
   return (
     <Provider store={store}>
       <Router>
         <OfflineStatusIndicator />
         <PWAUpdatePrompt />
         <PWAInstallPrompt />
-        <Suspense fallback={<div className="flex min-h-screen items-center justify-center text-slate-500">Loading SehatSetu…</div>}>
+        <ChatProvider />
+        <Suspense fallback={<div className="flex min-h-screen items-center justify-center text-slate-500">{t('loading')}</div>}>
         <Routes>
 
           {/* Auth Routes (new) */}
@@ -79,9 +87,12 @@ function App() {
            <Route path="/forgot-password" element={<ForgotPassword />} />
            <Route path="/reset-password" element={<ResetPassword />} />
 
-           <Route path="/payment-test" element={<PaymentTestPage />} />
-      
-          {/* Patient Portal Layout */}
+            <Route path="/payment-test" element={<PaymentTestPage />} />
+
+           {/* About Page (public standalone) */}
+          <Route path="/about" element={<AboutPage />} />
+
+           {/* Patient Portal Layout */}
           <Route element={<PatientLayout />}>
             {/* Landing Page */}
             <Route path="/" element={<LandingPage />} />

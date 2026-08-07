@@ -422,6 +422,50 @@ export class AppointmentsService {
     });
   }
 
+  async cancelAppointment(appointmentId: string, userId: string, role: string) {
+    if (role !== Role.PATIENT) throw new BadRequestException('Only patients can cancel appointments');
+
+    const appointment = await prisma.appointment.findFirst({
+      where: { id: appointmentId, patient: { is: { userId } } },
+    });
+    if (!appointment) throw new NotFoundException('Appointment not found');
+    if (appointment.status === 'COMPLETED' || appointment.status === 'CANCELLED') {
+      throw new BadRequestException('Completed or cancelled appointments cannot be cancelled again');
+    }
+
+    try {
+      const cancelled = await prisma.appointment.update({
+        where: { id: appointmentId },
+        data: { status: 'CANCELLED' },
+        include: {
+          doctor: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } },
+          prescription: true,
+          ehrRecord: true,
+        },
+      });
+
+      const reminderPrefixes = [`appointment-${appointmentId}-`];
+      for (const prefix of reminderPrefixes) {
+        await this.appointmentQueue
+          .getJobs('delayed', 0, -1, true)
+          .then((jobs) =>
+            Promise.all(
+              jobs
+                .filter((j) => j.id && j.id.startsWith(prefix))
+                .map((j) => j.remove().catch(() => undefined)),
+            ),
+          )
+          .catch(() => undefined);
+      }
+
+      return cancelled;
+    } catch (err) {
+      if (err instanceof HttpException) throw err;
+      if (err?.code === 'P2025') throw new NotFoundException('Appointment not found');
+      throw new InternalServerErrorException('Failed to cancel appointment');
+    }
+  }
+
   async getAppointmentsForDoctor(doctorId: string) {
     const appointments = await prisma.appointment.findMany({
       where: { doctorId },

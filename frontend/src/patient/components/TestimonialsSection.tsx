@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 const testimonials = [
   {
@@ -25,12 +26,14 @@ const testimonials = [
 ];
 
 const TestimonialsSection: React.FC = () => {
+  const { t } = useTranslation('home');
+
   return (
     <section id="testimonials" className="testimonials-section">
       <div className="testimonials-container">
         <div className="section-header-left">
-          <span className="section-subtag">STORIES FROM OUR COMMUNITY</span>
-          <h2 className="testimonials-title">What Our Patients Say</h2>
+          <span className="section-subtag"> </span>
+          <h2 className="testimonials-title">{t('testimonialsTitle')}</h2>
         </div>
 
         <div className="testimonials-grid">

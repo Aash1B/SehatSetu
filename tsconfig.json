@@ -1,18 +1,1 @@
-{
-  "compilerOptions": {
-    "module": "commonjs",
-    "target": "ES2021",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "outDir": "./dist",
-    "strictNullChecks": true,
-    "skipLibCheck": true
-  },
-  "include": ["src/**/*"],
-  "exclude": [
-    "node_modules",
-    "frontend",
-    "vite.config.ts",
-    "src/**/*.spec.ts"
-  ]
-}
+{"compilerOptions":{"module":"commonjs","target":"ES2021","emitDecoratorMetadata":true,"experimentalDecorators":true,"outDir":"./dist","strictNullChecks":true,"skipLibCheck":true},"include":["src/**/*"],"exclude":["node_modules","frontend","vite.config.ts","src/**/*.spec.ts","src/**/*.test.ts"]}

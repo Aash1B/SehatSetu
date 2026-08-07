@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { forgotPassword } from '../api';
+import { useTranslation } from 'react-i18next';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -9,6 +10,8 @@ export default function ForgotPassword() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const { t } = useTranslation(['auth', 'forms']);
+  const forgotT = (key: string) => t(`auth:forgotPassword.${key}`);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -33,7 +36,7 @@ export default function ForgotPassword() {
             <span className="text-orange-500">Sehat</span>
             <span className="text-slate-900">Setu</span>
           </Link>
-          <p className="text-slate-500 mt-2">Reset your password</p>
+          <p className="text-slate-500 mt-2">{forgotT('title')}</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
@@ -41,13 +44,13 @@ export default function ForgotPassword() {
             <div className="text-center">
               <p className="text-sm text-slate-700">{message}</p>
               <Link to="/patient/login" className="inline-block mt-6 text-orange-500 font-medium hover:underline">
-                Back to login
+                {forgotT('backToLogin')}
               </Link>
             </div>
           ) : (
             <>
               <p className="text-sm text-slate-600 mb-6">
-                Enter the email associated with your account, and we'll send you a link to reset your password.
+                {forgotT('enterEmail')}
               </p>
 
               {error && (
@@ -56,14 +59,14 @@ export default function ForgotPassword() {
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">{t('forms.email')}</label>
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-400"
-                    placeholder="you@example.com"
+                    placeholder={t('forms.emailPlaceholder')}
                   />
                 </div>
                 <button
@@ -71,13 +74,13 @@ export default function ForgotPassword() {
                   disabled={loading}
                   className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-medium py-2.5 rounded-lg transition"
                 >
-                  {loading ? 'Sending...' : 'Send reset link'}
+                  {loading ? forgotT('submitting') : forgotT('submit')}
                 </button>
               </form>
 
               <p className="text-center text-sm text-slate-500 mt-6">
-                Remembered your password?{' '}
-                <Link to="/patient/login" className="text-orange-500 font-medium hover:underline">Back to login</Link>
+                {forgotT('remembered')}{' '}
+                <Link to="/patient/login" className="text-orange-500 font-medium hover:underline">{forgotT('backToLogin')}</Link>
               </p>
             </>
           )}

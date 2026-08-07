@@ -99,13 +99,25 @@ const Sidebar: React.FC = () => {
                 </svg>
                 <span>Dashboard</span>
               </button>
-              <a href="#services" className="sidebar-item" onClick={handleNavClick}>
-                <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-                </svg>
-                <span>Our Services</span>
-              </a>
+             <a href="#services" className="sidebar-item" onClick={handleNavClick}>
+               <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                 <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                 <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+               </svg>
+               <span>Our Services</span>
+             </a>
+             <button
+               type="button"
+               className="sidebar-item"
+               onClick={() => { navigate('/about'); dispatch(closeSidebar()); }}
+             >
+               <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                 <circle cx="12" cy="12" r="10"></circle>
+                 <line x1="12" y1="16" x2="12" y2="12"></line>
+                 <line x1="12" y1="8" x2="12.01" y2="8"></line>
+               </svg>
+               <span>About Us</span>
+             </button>
             </nav>
           </div>
 

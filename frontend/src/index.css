@@ -18,6 +18,11 @@ body,
   box-sizing: border-box;
 }
 
+html:lang(hi),
+body:lang(hi) {
+  font-feature-settings: "liga" 1;
+}
+
 @theme {
   --color-luster-white: #F4F1EC;
   --color-aster-blue: #223382;
@@ -35,4 +40,18 @@ body,
   --color-blue-800: #223382;
   --color-blue-950: #223382;
   --color-deadly-depths: #0B0F19;
+
+  --color-brand: #22382E;
+  --color-brand-50: #f0f7f2;
+  --color-brand-100: #d9eedf;
+  --color-brand-200: #b5ddc0;
+  --color-brand-300: #8ecba1;
+  --color-brand-400: #68b882;
+  --color-brand-500: #42a563;
+  --color-brand-600: #22382E;
+  --color-brand-700: #1a2e24;
+
+  --color-primary: #F98513;
+  --color-primary-hover: #E6780F;
+  --color-primary-active: #CC6A0D;
 }

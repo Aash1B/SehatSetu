@@ -11,7 +11,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'prompt',
       includeAssets: [
-        'favicon.svg',
+        'logo.svg',
         'favicon.ico',
         'apple-touch-icon.png',
         'maskable-icon-192x192.png',

@@ -1,6 +1,16 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const Footer: React.FC = () => {
+  const navigate = useNavigate();
+  const { t } = useTranslation('footer');
+
+  const handleAboutClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    navigate('/about');
+  };
+
   return (
     <footer id="contact" className="site-footer">
       <div className="footer-container">
@@ -8,57 +18,43 @@ const Footer: React.FC = () => {
           {/* Brand Column */}
           <div className="footer-brand-col">
             <a href="#home" className="footer-logo">
-              <div className="logo-badge">
-                <svg viewBox="0 0 24 24" fill="none" className="logo-icon" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#F97316"/>
-                  <path d="M12 7v6m-3-3h6" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
-              </div>
+              <img src="/logo.svg" alt="SehatSetu" className="footer-logo-img" />
               <span className="brand-title text-white">
                 Sehat<span className="brand-title-accent">Setu</span>
               </span>
             </a>
-            <p className="footer-about-text">
-              Making quality healthcare simpler, more human, and accessible to everyone.
-            </p>
-            <div className="footer-social-icons">
-              <a href="#email" aria-label="Email" className="social-circle">✉</a>
-              <a href="#phone" aria-label="Phone" className="social-circle">📞</a>
-              <a href="#instagram" aria-label="Instagram" className="social-circle">📷</a>
-              <a href="#linkedin" aria-label="LinkedIn" className="social-circle">in</a>
-            </div>
           </div>
 
           {/* Right Link Columns Clustered Together */}
           <div className="footer-right-links-wrapper">
             {/* Services Links */}
             <div className="footer-links-col">
-              <h4 className="footer-col-title">Services</h4>
+              <h4 className="footer-col-title">{t('services')}</h4>
               <ul className="footer-links-list">
-                <li><a href="#doctors">Find a doctor</a></li>
-                <li><a href="#doctors">Book appointment</a></li>
-                <li><a href="#records">Health records</a></li>
+                <li><a href="#doctors">{t('findDoctor')}</a></li>
+                <li><a href="#doctors">{t('bookAppointment')}</a></li>
+                <li><a href="#records">{t('healthRecords')}</a></li>
               </ul>
             </div>
 
             {/* Support Links */}
             <div className="footer-links-col">
-              <h4 className="footer-col-title">Support</h4>
+              <h4 className="footer-col-title">{t('support')}</h4>
               <ul className="footer-links-list">
-                <li><a href="#help">Help center</a></li>
-                <li><a href="#contact">Contact us</a></li>
-                <li><a href="#privacy">Privacy policy</a></li>
+                <li><a href="#help">{t('helpCenter')}</a></li>
+                <li><a href="#contact">{t('contactUs')}</a></li>
+                <li><a href="#privacy">{t('privacyPolicy')}</a></li>
               </ul>
             </div>
 
             {/* Connect Column */}
             <div className="footer-links-col">
-              <h4 className="footer-col-title">Connect</h4>
+              <h4 className="footer-col-title">{t('connect')}</h4>
               <ul className="footer-links-list mb-2">
-                <li><a href="#about">About us</a></li>
+                <li><a href="/about" onClick={handleAboutClick}>{t('aboutUs')}</a></li>
               </ul>
               <a href="#talk" className="talk-to-us-link">
-                Talk to us →
+                {t('talkToUs')}
               </a>
             </div>
           </div>
@@ -67,11 +63,11 @@ const Footer: React.FC = () => {
         {/* Bottom Bar */}
         <div className="footer-bottom-bar">
           <div className="copyright-text">
-            Copyright © 2026 SehatSetu. All rights reserved.
+            {t('copyright')}
           </div>
           <div className="bottom-links">
-            <a href="#terms">Terms</a>
-            <a href="#privacy">Privacy</a>
+            <a href="#terms">{t('terms')}</a>
+            <a href="#privacy">{t('privacy')}</a>
           </div>
         </div>
       </div>

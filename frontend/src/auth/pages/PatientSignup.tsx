@@ -6,10 +6,13 @@ import { signup, googleLogin } from '../api';
 import { validatePassword } from '../validatePassword';
 import GoogleSignInButton from '../components/GoogleSignInButton';
 import { saveAuth } from '../authStorage';
+import { useTranslation } from 'react-i18next';
 
 
 export default function PatientSignup() {
   const navigate = useNavigate();
+  const { t } = useTranslation(['auth', 'forms']);
+  const formsT = (key: string) => t(`forms.${key}`);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -42,13 +45,13 @@ export default function PatientSignup() {
     return;
   }
     if (!dataConsent) {
-      setError('You must consent to data processing to create an account.');
+      setError(t('patientSignup.consentRequired'));
       return;
     }
     setLoading(true);
     try {
-     await signup({ email, password, fullName, role: 'PATIENT', dataConsent });
-navigate('/verify-otp', { state: { email, role: 'PATIENT' } });
+      await signup({ email, password, fullName, role: 'PATIENT', dataConsent });
+      navigate('/verify-otp', { state: { email, role: 'PATIENT' } });
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -59,7 +62,7 @@ navigate('/verify-otp', { state: { email, role: 'PATIENT' } });
   const handleGoogleCredential = async (credential: string) => {
     setError('');
     if (!dataConsent) {
-      setError('You must consent to data processing to continue with Google.');
+      setError(t('patientSignup.googleConsentRequired'));
       return;
     }
     setGoogleLoading(true);
@@ -82,7 +85,7 @@ navigate('/verify-otp', { state: { email, role: 'PATIENT' } });
             <span className="text-orange-500">Sehat</span>
             <span className="text-slate-900">Setu</span>
           </Link>
-          <p className="text-slate-500 mt-2">Create your Patient account</p>
+          <p className="text-slate-500 mt-2">{t('patientSignup.portalLabel')}</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
@@ -92,49 +95,49 @@ navigate('/verify-otp', { state: { email, role: 'PATIENT' } });
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Full name</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{formsT('fullName')}</label>
               <input
                 type="text"
                 required
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-400"
-                placeholder="Ananya Sharma"
+                placeholder={t('patientSignup.fullNamePlaceholder')}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{formsT('email')}</label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-400"
-                placeholder="you@example.com"
+                placeholder={formsT('emailPlaceholder')}
               />
             </div>
           <div>
-  <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
-  <input
-    type="password"
-    required
-    value={password}
-    onChange={(e) => {
-      const val = e.target.value;
-      setPassword(val);
-      const check = validatePassword(val);
-      setPasswordHint(check.valid ? '' : check.message);
-    }}
-    className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-400"
-    placeholder="At least 8 characters"
-  />
-  {passwordHint && (
-    <p className="text-xs text-red-500 mt-1">{passwordHint}</p>
-  )}
-  <p className="text-xs text-slate-400 mt-1">
-    Min 8 chars, 1 uppercase, 1 symbol (@ or #), at least 3 letters
-  </p>
-</div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{formsT('password')}</label>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => {
+                const val = e.target.value;
+                setPassword(val);
+                const check = validatePassword(val);
+                setPasswordHint(check.valid ? '' : check.message);
+              }}
+              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-400"
+              placeholder={t('patientSignup.passwordPlaceholder')}
+            />
+            {passwordHint && (
+              <p className="text-xs text-red-500 mt-1">{passwordHint}</p>
+            )}
+            <p className="text-xs text-slate-400 mt-1">
+              {formsT('passwordHint')}
+            </p>
+          </div>
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5">
             <label className="flex items-start gap-3 text-sm text-slate-600">
               <input
@@ -144,14 +147,13 @@ navigate('/verify-otp', { state: { email, role: 'PATIENT' } });
                 className="mt-0.5 h-4 w-4 accent-orange-500"
               />
               <span className="leading-5">
-                I consent to SehatSetu processing my personal and health data as described in the privacy notice.
-                {' '}
+                {t('patientSignup.dataConsent')}{' '}
                 <button
                   type="button"
                   onClick={() => setPrivacyOpen(true)}
                   className="font-bold text-orange-600 underline decoration-orange-300 underline-offset-2 hover:text-orange-700"
                 >
-                  Read more
+                  {t('patientSignup.readMore')}
                 </button>
               </span>
             </label>
@@ -161,13 +163,13 @@ navigate('/verify-otp', { state: { email, role: 'PATIENT' } });
               disabled={loading || googleLoading}
               className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-medium py-2.5 rounded-lg transition"
             >
-              {loading ? 'Creating account...' : 'Create account'}
+              {loading ? t('patientSignup.submitting') : t('patientSignup.title')}
             </button>
           </form>
 
           <div className="my-6 flex items-center gap-3">
             <div className="h-px flex-1 bg-slate-200" />
-            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">or</span>
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{t('patientSignup.orSeparator')}</span>
             <div className="h-px flex-1 bg-slate-200" />
           </div>
 
@@ -180,17 +182,17 @@ navigate('/verify-otp', { state: { email, role: 'PATIENT' } });
           />
 
           {googleLoading && (
-            <p className="mt-3 text-center text-xs text-slate-500">Completing Google sign-in...</p>
+            <p className="mt-3 text-center text-xs text-slate-500">{t('patientSignup.googleLoading')}</p>
           )}
 
           <p className="text-center text-sm text-slate-500 mt-6">
-            Already have an account?{' '}
-            <Link to="/patient/login" className="text-orange-500 font-medium hover:underline">Sign in</Link>
+            {t('patientSignup.alreadyHaveAccount')}{' '}
+            <Link to="/patient/login" className="text-orange-500 font-medium hover:underline">{t('patientSignup.signIn')}</Link>
           </p>
         </div>
       </div>
 
-      {privacyOpen && (
+        {privacyOpen && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/65 p-4 backdrop-blur-sm"
           role="presentation"
@@ -211,78 +213,78 @@ navigate('/verify-otp', { state: { email, role: 'PATIENT' } });
                 </span>
                 <div>
                   <p className="mb-1 text-xs font-bold uppercase tracking-[0.18em] text-blue-100">SEHATSETU patient privacy</p>
-                  <h2 id="privacy-notice-title" className="text-2xl font-black tracking-tight sm:text-3xl">Privacy Notice &amp; User Consent</h2>
-                  <p className="mt-2 max-w-2xl text-sm leading-6 text-blue-50">Please understand how your personal and healthcare information is handled before creating your account.</p>
+                  <h2 id="privacy-notice-title" className="text-2xl font-black tracking-tight sm:text-3xl">{t('privacyNotice.title')}</h2>
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-blue-50">{t('privacyNotice.subtitle')}</p>
                 </div>
               </div>
-              <button type="button" onClick={() => setPrivacyOpen(false)} aria-label="Close privacy notice" className="absolute right-5 top-5 z-20 grid h-10 w-10 place-items-center rounded-full bg-white/15 text-white transition hover:bg-white/25"><X className="h-5 w-5" /></button>
+              <button type="button" onClick={() => setPrivacyOpen(false)} aria-label={t('privacyNotice.close')} className="absolute right-5 top-5 z-20 grid h-10 w-10 place-items-center rounded-full bg-white/15 text-white transition hover:bg-white/25"><X className="h-5 w-5" /></button>
             </header>
 
             <div className="overflow-y-auto px-6 py-6 text-sm leading-7 text-slate-600 sm:px-8">
               <div className="mb-6 rounded-2xl border border-blue-100 bg-blue-50 p-5">
-                <h3 className="mb-2 text-lg font-extrabold text-slate-900">Welcome to SEHATSETU</h3>
-                <p>Thank you for choosing SEHATSETU, an AI-powered healthcare platform designed to provide accessible, secure, and quality healthcare services. Your privacy is important to us, and we are committed to handling your personal information responsibly.</p>
-                <p className="mt-2">By continuing, you acknowledge that you understand how your information will be collected, used, stored, and protected while using our platform.</p>
+                <h3 className="mb-2 text-lg font-extrabold text-slate-900">{t('privacyNotice.welcomeTitle')}</h3>
+                <p>{t('privacyNotice.welcomeBody1')}</p>
+                <p className="mt-2">{t('privacyNotice.welcomeBody2')}</p>
               </div>
 
               <div className="space-y-7">
                 <article>
-                  <h3 className="mb-2 flex items-center gap-2 text-base font-extrabold text-slate-900"><FileText className="h-5 w-5 text-blue-600" />About the DPDP Act, 2023</h3>
-                  <p>The Digital Personal Data Protection Act, 2023 is India&apos;s primary law governing the collection, processing, storage, and protection of digital personal data. It was passed by Parliament in August 2023 to strengthen individual privacy rights and establish responsibilities for organizations handling personal information.</p>
-                  <p className="mt-2">Because SEHATSETU manages healthcare-related information, the platform is designed around the privacy principles established by the Act.</p>
+                  <h3 className="mb-2 flex items-center gap-2 text-base font-extrabold text-slate-900"><FileText className="h-5 w-5 text-blue-600" />{t('privacyNotice.dpdpTitle')}</h3>
+                  <p>{t('privacyNotice.dpdpBody')}</p>
+                  <p className="mt-2">{t('privacyNotice.dpdpBody2')}</p>
                 </article>
 
                 <article>
-                  <h3 className="mb-2 text-base font-extrabold text-slate-900">Information we collect</h3>
+                  <h3 className="mb-2 text-base font-extrabold text-slate-900">{t('privacyNotice.infoCollectedTitle')}</h3>
                   <ul className="list-disc space-y-1 pl-5 marker:text-blue-500">
-                    <li>Name, age, gender, phone number and email address.</li>
-                    <li>Symptoms, medical history, allergies, medications, consultation records, prescriptions and diagnostic reports.</li>
-                    <li>Appointment details and consultation history.</li>
-                    <li>Voice recordings when required for AI-assisted prescription features during consultations.</li>
-                    <li>Technical information required for account security and platform performance.</li>
+                    <li>{t('privacyNotice.infoCollectedItem1')}</li>
+                    <li>{t('privacyNotice.infoCollectedItem2')}</li>
+                    <li>{t('privacyNotice.infoCollectedItem3')}</li>
+                    <li>{t('privacyNotice.infoCollectedItem4')}</li>
+                    <li>{t('privacyNotice.infoCollectedItem5')}</li>
                   </ul>
                 </article>
 
                 <article>
-                  <h3 className="mb-2 text-base font-extrabold text-slate-900">Why we collect your information</h3>
+                  <h3 className="mb-2 text-base font-extrabold text-slate-900">{t('privacyNotice.whyCollectTitle')}</h3>
                   <ul className="list-disc space-y-1 pl-5 marker:text-blue-500">
-                    <li>Create and manage your healthcare account and enable secure doctor consultations.</li>
-                    <li>Generate and store digital prescriptions and maintain your Electronic Health Record.</li>
-                    <li>Provide medical summaries, nutrition recommendations and follow-up reminders.</li>
-                    <li>Improve healthcare quality, platform performance and user experience.</li>
-                    <li>Comply with applicable legal and regulatory requirements.</li>
+                    <li>{t('privacyNotice.whyCollectItem1')}</li>
+                    <li>{t('privacyNotice.whyCollectItem2')}</li>
+                    <li>{t('privacyNotice.whyCollectItem3')}</li>
+                    <li>{t('privacyNotice.whyCollectItem4')}</li>
+                    <li>{t('privacyNotice.whyCollectItem5')}</li>
                   </ul>
                 </article>
 
                 <article className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-5">
-                  <h3 className="mb-2 flex items-center gap-2 text-base font-extrabold text-slate-900"><LockKeyhole className="h-5 w-5 text-emerald-600" />How we protect your data</h3>
-                  <p>SEHATSETU is designed to securely store personal and medical information, restrict access to authorized users, apply industry-standard security practices, and maintain patient confidentiality throughout consultations and record management.</p>
+                  <h3 className="mb-2 flex items-center gap-2 text-base font-extrabold text-slate-900"><LockKeyhole className="h-5 w-5 text-emerald-600" />{t('privacyNotice.dataProtectionTitle')}</h3>
+                  <p>{t('privacyNotice.dataProtectionBody')}</p>
                 </article>
 
                 <article>
-                  <h3 className="mb-2 text-base font-extrabold text-slate-900">Your rights</h3>
+                  <h3 className="mb-2 text-base font-extrabold text-slate-900">{t('privacyNotice.rightsTitle')}</h3>
                   <ul className="list-disc space-y-1 pl-5 marker:text-blue-500">
-                    <li>Know what personal information is collected about you and access your healthcare records.</li>
-                    <li>Request correction of inaccurate information.</li>
-                    <li>Withdraw consent where applicable.</li>
-                    <li>Request deletion of your account and personal data, subject to legal or medical-record retention requirements.</li>
-                    <li>Contact support about privacy-related concerns.</li>
+                    <li>{t('privacyNotice.rightsItem1')}</li>
+                    <li>{t('privacyNotice.rightsItem2')}</li>
+                    <li>{t('privacyNotice.rightsItem3')}</li>
+                    <li>{t('privacyNotice.rightsItem4')}</li>
+                    <li>{t('privacyNotice.rightsItem5')}</li>
                   </ul>
                 </article>
 
                 <article>
-                  <h3 className="mb-2 text-base font-extrabold text-slate-900">Your consent and declaration</h3>
-                  <p>By selecting “I Agree” and creating an account, you confirm that you have read and understood this notice and voluntarily consent to the collection, processing and secure storage of your personal and healthcare information for providing SEHATSETU healthcare services.</p>
+                  <h3 className="mb-2 text-base font-extrabold text-slate-900">{t('privacyNotice.consentTitle')}</h3>
+                  <p>{t('privacyNotice.consentBody')}</p>
                 </article>
               </div>
 
-              <p className="mt-7 rounded-xl bg-slate-100 p-4 text-xs leading-5 text-slate-500"><strong>Note:</strong> This document is provided for informational purposes as part of the SEHATSETU platform. The final privacy policy and legal compliance requirements should be reviewed by qualified legal professionals before production deployment.</p>
+              <p className="mt-7 rounded-xl bg-slate-100 p-4 text-xs leading-5 text-slate-500"><strong>{t('privacyNotice.note')}</strong></p>
             </div>
 
             <footer className="flex flex-col gap-3 border-t border-slate-200 bg-white px-6 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8">
               <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
                 <input type="checkbox" checked={dataConsent} onChange={(event) => setDataConsent(event.target.checked)} className="h-4 w-4 accent-orange-500" />
-                I have read and agree to this notice
+                {t('privacyNotice.consentCheckbox')}
               </label>
               <button
                 type="button"
@@ -290,7 +292,7 @@ navigate('/verify-otp', { state: { email, role: 'PATIENT' } });
                 onClick={() => setPrivacyOpen(false)}
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-orange-500 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-orange-500/20 transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                <CheckCircle2 className="h-4 w-4" /> I Agree &amp; Continue
+                <CheckCircle2 className="h-4 w-4" /> {t('privacyNotice.agreeButton')}
               </button>
             </footer>
           </section>

@@ -1,0 +1,18 @@
+{
+  "nearbyLabs": "नजदीकी लैब",
+  "searchLabs": "लैब खोजें",
+  "labTest": "लैब टेस्ट",
+  "homeCollection": "होम सैंपल कलेक्शन",
+  "availableToday": "आज उपलब्ध",
+  "rating": "रेटिंग",
+  "distance": "दूरी",
+  "address": "पता",
+  "phone": "फ़ोन",
+  "price": "कीमत",
+  "bookTest": "टेस्ट बुक करें",
+  "viewTests": "टेस्ट देखें",
+  "noLabsFound": "नजदीकी कोई लैब नहीं मिला।",
+  "testName": "टेस्ट का नाम",
+  "tests": "टेस्ट",
+  "total": "कुल"
+}

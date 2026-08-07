@@ -14,6 +14,7 @@ import { EncryptionModule } from './encryption/encryption.module';
 import { AbdmModule } from './abdm/abdm.module';
 import { DoctorsModule } from './doctors/doctors.module';
 import { DoctorModule } from './doctor/doctor.module';
+import { ChatbotModule } from './chatbot/chatbot.module';
 import { QueueModule } from './queue/queue.module';
 import { PatientModule } from './patient/patient.module';
 
@@ -34,6 +35,7 @@ import { PatientModule } from './patient/patient.module';
     AbdmModule,
     DoctorsModule,
     DoctorModule,
+    ChatbotModule,
     PatientModule,
   ],
   controllers: [HealthController],

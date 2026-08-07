@@ -10,6 +10,7 @@ import PrescriptionViewModal from '../../common/components/PrescriptionViewModal
 import { clearAuth } from '../../auth/authStorage';
 import { getPatientDashboard, updatePatientProfile, uploadPatientAvatar } from '../services/patientApi';
 import AccountDeletionDangerZone from '../../auth/components/AccountDeletionDangerZone';
+import { useTranslation } from 'react-i18next';
 
 interface ConsultationItem {
   id: string;
@@ -112,6 +113,7 @@ const recentPrescriptionsData = [
 const DashboardPage: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { t } = useTranslation('patient');
   const currentPage = useSelector((state: RootState) => state.ui.currentPage);
   const activeTab = useSelector((state: RootState) => state.ui.dashboardTab);
   const [activeSubTab, setActiveSubTab] = useState<'consultations' | 'prescriptions'>('prescriptions');
@@ -432,7 +434,7 @@ const DashboardPage: React.FC = () => {
               <span className="sidebar-brand-title">
                 Sehat<span className="brand-title-accent">Setu</span>
               </span>
-              <span className="sidebar-portal-badge">Patient Portal</span>
+              <span className="sidebar-portal-badge"> {t('patientPortal')} </span>
             </div>
           </div>
         </div>
@@ -441,7 +443,7 @@ const DashboardPage: React.FC = () => {
         <div className="sidebar-content">
           {/* Section 1: Main Menu */}
           <div className="sidebar-group">
-            <span className="sidebar-group-title">Main Navigation</span>
+            <span className="sidebar-group-title"> {t('mainNavigation')} </span>
             <nav className="sidebar-menu">
               <button 
                 type="button" 
@@ -483,14 +485,14 @@ const DashboardPage: React.FC = () => {
                   <line x1="20" y1="8" x2="20" y2="14"></line>
                   <line x1="17" y1="11" x2="23" y2="11"></line>
                 </svg>
-                <span>Find Doctors</span>
+                <span> {t('findDoctors')} </span>
               </button>
             </nav>
           </div>
 
           {/* Section 2: Patient Care Hub */}
           <div className="sidebar-group">
-            <span className="sidebar-group-title">Patient Care Hub</span>
+            <span className="sidebar-group-title"> {t('patientCareHub')} </span>
             <nav className="sidebar-menu">
               <button 
                 type="button" 
@@ -503,7 +505,7 @@ const DashboardPage: React.FC = () => {
                   <line x1="8" y1="2" x2="8" y2="6"></line>
                   <line x1="3" y1="10" x2="21" y2="10"></line>
                 </svg>
-                <span>My Appointments</span>
+                <span> {t('myAppointments')} </span>
               </button>
 
               <button 
@@ -518,7 +520,7 @@ const DashboardPage: React.FC = () => {
                   <line x1="16" y1="17" x2="8" y2="17"></line>
                   <polyline points="10 9 9 9 8 9"></polyline>
                 </svg>
-                <span>Health Records & History</span>
+                <span> {t('healthRecords')} </span>
               </button>
 
               <button 
@@ -529,7 +531,7 @@ const DashboardPage: React.FC = () => {
                 <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
                 </svg>
-                <span>Prescriptions & Meds</span>
+                <span> {t('prescriptions')} </span>
               </button>
             </nav>
           </div>
@@ -537,7 +539,7 @@ const DashboardPage: React.FC = () => {
 
           {/* Section 4: Settings & Support */}
           <div className="sidebar-group">
-            <span className="sidebar-group-title">Account & Support</span>
+            <span className="sidebar-group-title"> {t('accountSupport')} </span>
             <nav className="sidebar-menu">
               <button 
                 type="button" 
@@ -548,7 +550,7 @@ const DashboardPage: React.FC = () => {
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
-                <span>Profile & Settings</span>
+                <span> {t('profileSettings')} </span>
               </button>
             </nav>
           </div>
@@ -565,7 +567,7 @@ const DashboardPage: React.FC = () => {
             </div>
             <div className="user-details">
               <span className="user-name">{profileData.fullName || 'Patient'}</span>
-              <span className="user-id">Patient portal</span>
+              <span className="user-id"> {t('patientPortal')} </span>
             </div>
           </div>
           <button 
@@ -607,7 +609,7 @@ const DashboardPage: React.FC = () => {
               )}
               <div className="user-pill-info">
                 <span className="user-pill-name">{profileData.fullName || 'Patient'}</span>
-                <span className="user-pill-role">Patient</span>
+                <span className="user-pill-role"> {t('patient')} </span>
               </div>
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#64748B" strokeWidth="2.5">
                 <path d="M6 9l6 6 6-6"/>
@@ -627,7 +629,7 @@ const DashboardPage: React.FC = () => {
             <h1 className="greeting-title">
               Good Morning, {patientFirstName} <span className="wave-emoji">👋</span>
             </h1>
-            <p className="greeting-subtitle">Here's your health summary of today.</p>
+            <p className="greeting-subtitle"> {t('healthSummary')} </p>
           </div>
 
           {/* Quick Action Cards Grid */}
@@ -645,8 +647,8 @@ const DashboardPage: React.FC = () => {
                 </svg>
               </div>
               <div className="action-card-text">
-                <h3 className="card-heading">Book Appointment</h3>
-                <p className="card-desc">Find doctors and book an appointment</p>
+                <h3 className="card-heading"> {t('bookAppointment')} </h3>
+                <p className="card-desc"> {t('findDoctors')} </p>
               </div>
               <span className="arrow-link blue-arrow">→</span>
             </div>
@@ -687,7 +689,7 @@ const DashboardPage: React.FC = () => {
                 </svg>
               </div>
               <div className="action-card-text">
-                <h3 className="card-heading">Upload Reports</h3>
+                <h3 className="card-heading"> {t('uploadReports')} </h3>
                 <p
                   className="card-desc"
                   style={
@@ -714,8 +716,8 @@ const DashboardPage: React.FC = () => {
                 if (!latestAppointment) {
                   return (
                     <div className="upcoming-appt-card">
-                      <div className="upcoming-card-header"><h2 className="section-title">Upcoming Appointment</h2></div>
-                      <p className="tab-subtitle">You have no upcoming appointments.</p>
+                      <div className="upcoming-card-header"><h2 className="section-title"> {t('upcomingAppointment')} </h2></div>
+                      <p className="tab-subtitle"> {t('noUpcomingAppointments')} </p>
                     </div>
                   );
                 }
@@ -732,10 +734,8 @@ const DashboardPage: React.FC = () => {
                 return (
                   <div className="upcoming-appt-card">
                     <div className="upcoming-card-header">
-                      <h2 className="section-title">Upcoming Appointment</h2>
-                      <button type="button" className="link-view-all" onClick={() => handleTabClick('appointments')}>
-                        View All Appointments
-                      </button>
+                      <h2 className="section-title"> {t('upcomingAppointment')} </h2>
+                      <button type="button" className="link-view-all" onClick={() => handleTabClick('appointments')}> {t('viewAllAppointments')} </button>
                     </div>
 
                     <div className="upcoming-card-content">
@@ -782,9 +782,7 @@ const DashboardPage: React.FC = () => {
                                 type="button" 
                                 className="btn-reschedule"
                                 onClick={() => navigate('/patient/book/new')}
-                              >
-                                Reschedule
-                              </button>
+                              > {t('reschedule')} </button>
                               {timeStatus.isJoinable ? (
                                 <button 
                                   type="button" 
@@ -826,16 +824,12 @@ const DashboardPage: React.FC = () => {
                       type="button" 
                       className={`tab-sub-btn ${activeSubTab === 'prescriptions' ? 'active' : ''}`}
                       onClick={() => setActiveSubTab('prescriptions')}
-                    >
-                      Recent Prescriptions
-                    </button>
+                    > {t('recentPrescriptions')} </button>
                     <button 
                       type="button" 
                       className={`tab-sub-btn ${activeSubTab === 'consultations' ? 'active' : ''}`}
                       onClick={() => setActiveSubTab('consultations')}
-                    >
-                      Recent Consultations
-                    </button>
+                    > {t('recentConsultations')} </button>
                   </div>
                 </div>
 
@@ -866,9 +860,7 @@ const DashboardPage: React.FC = () => {
                             type="button" 
                             className="btn-view-details"
                             onClick={() => setShowDetailsModal(item)}
-                          >
-                            View Details
-                          </button>
+                          > {t('viewDetails')} </button>
                         </div>
                       </div>
                     ))}
@@ -890,7 +882,7 @@ const DashboardPage: React.FC = () => {
                         </div>
 
                         <div className="row-mode">
-                          <span className="rx-tag">Prescription Issued</span>
+                          <span className="rx-tag"> {t('prescriptionIssued')} </span>
                         </div>
 
                         <div className="row-action">
@@ -908,9 +900,7 @@ const DashboardPage: React.FC = () => {
                               });
                               setShowRxModal(true);
                             }}
-                          >
-                            View / Download PDF
-                          </button>
+                          > {t('viewDownloadPdf')} </button>
                         </div>
                       </div>
                     ))}
@@ -919,9 +909,7 @@ const DashboardPage: React.FC = () => {
 
                 {/* Table Bottom Link */}
                 <div className="consultations-footer-link">
-                  <button type="button" className="btn-all-consultations" onClick={() => handleTabClick('appointments')}>
-                    View All Consultations
-                  </button>
+                  <button type="button" className="btn-all-consultations" onClick={() => handleTabClick('appointments')}> {t('viewAllConsultations')} </button>
                 </div>
               </div>
             </div>
@@ -972,14 +960,12 @@ const DashboardPage: React.FC = () => {
                   <div className="dash-widget-card">
                     <div className="widget-header">
                       <div>
-                        <h3 className="widget-title">Health Reminders</h3>
+                        <h3 className="widget-title"> {t('healthReminders')} </h3>
                         <span className="text-[11px] font-semibold text-slate-500 block mt-0.5">
                           {isDocRecommended ? '🩺 Doctor Prescribed' : '🌿 Daily Wellness Guidelines'}
                         </span>
                       </div>
-                      <button type="button" className="widget-link" onClick={() => handleTabClick('records')}>
-                        View All
-                      </button>
+                      <button type="button" className="widget-link" onClick={() => handleTabClick('records')}> {t('viewAll')} </button>
                     </div>
 
                     <div className="reminders-list">
@@ -1006,8 +992,8 @@ const DashboardPage: React.FC = () => {
 
               {/* Widget 3: Need Immediate Help? (Emergency) */}
               <div className="emergency-widget-card">
-                <h3 className="emergency-heading">Need Immediate Help?</h3>
-                <p className="emergency-sub">Talk to our support team or emergency services.</p>
+                <h3 className="emergency-heading"> {t('needImmediateHelp')} </h3>
+                <p className="emergency-sub"> {t('supportTeam')} </p>
 
                 <div className="emergency-widget-bottom">
                   <a 
@@ -1036,15 +1022,15 @@ const DashboardPage: React.FC = () => {
             <div className="appointments-tab-content" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               <div className="tab-section-header">
                 <div>
-                  <h2 className="tab-title">My Appointments</h2>
-                  <p className="tab-subtitle">Manage your upcoming and past consultations.</p>
+                  <h2 className="tab-title"> {t('myAppointments')} </h2>
+                  <p className="tab-subtitle"> {t('manageConsultations')} </p>
                 </div>
               </div>
               
               <div className="appointments-filter-bar">
-                <button type="button" className={`filter-btn ${appointmentFilter === 'upcoming' ? 'active' : ''}`} onClick={() => setAppointmentFilter('upcoming')}>Upcoming</button>
-                <button type="button" className={`filter-btn ${appointmentFilter === 'past' ? 'active' : ''}`} onClick={() => setAppointmentFilter('past')}>Past</button>
-                <button type="button" className={`filter-btn ${appointmentFilter === 'cancelled' ? 'active' : ''}`} onClick={() => setAppointmentFilter('cancelled')}>Cancelled</button>
+                <button type="button" className={`filter-btn ${appointmentFilter === 'upcoming' ? 'active' : ''}`} onClick={() => setAppointmentFilter('upcoming')}> {t('upcoming')} </button>
+                <button type="button" className={`filter-btn ${appointmentFilter === 'past' ? 'active' : ''}`} onClick={() => setAppointmentFilter('past')}> {t('past')} </button>
+                <button type="button" className={`filter-btn ${appointmentFilter === 'cancelled' ? 'active' : ''}`} onClick={() => setAppointmentFilter('cancelled')}> {t('cancelled')} </button>
               </div>
 
               <div className="appointments-cards-grid">
@@ -1100,16 +1086,14 @@ const DashboardPage: React.FC = () => {
                             </button>
                           )}
                           {appointmentFilter === 'upcoming' && (
-                            <button type="button" className="btn-card-secondary" onClick={() => navigate(`/patient/book/${item.doctorId || 'new'}?reschedule=${encodeURIComponent(item.id)}`)}>
-                              Reschedule
-                            </button>
+                            <button type="button" className="btn-card-secondary" onClick={() => navigate(`/patient/book/${item.doctorId || 'new'}?reschedule=${encodeURIComponent(item.id)}`)}> {t('reschedule')} </button>
                           )}
                           {appointmentFilter === 'past' && item.prescription && (
                             <button type="button" className="btn-card-secondary" onClick={() => {
                               const rx = prescriptionsList.find((entry) => entry.id === item.prescription?.id);
                               setSelectedRxData(rx?.fullData || item.prescription);
                               setShowRxModal(true);
-                            }}>View Prescription</button>
+                            }}> {t('viewPrescription')} </button>
                           )}
                         </div>
                       );
@@ -1130,7 +1114,7 @@ const DashboardPage: React.FC = () => {
             <div className="records-tab-content" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               <div className="tab-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <h2 className="tab-title" style={{ fontSize: '24px', fontWeight: 'bold', color: '#0f172a' }}>Electronic Health Records (EHR) & Medical History</h2>
+                  <h2 className="tab-title" style={{ fontSize: '24px', fontWeight: 'bold', color: '#0f172a' }}> {t('ehrTitle')} </h2>
                   <p className="tab-subtitle" style={{ fontSize: '14px', color: '#64748b' }}>Connected directly with database EHR records, lab reports, and OCR clinical summaries.</p>
                 </div>
                 <button
@@ -1157,9 +1141,7 @@ const DashboardPage: React.FC = () => {
               {/* EHR Overview Summary Banner */}
               <div style={{ background: 'linear-gradient(135deg, #eff6ff, #dbeafe)', border: '1px solid #bfdbfe', borderRadius: '20px', padding: '20px' }}>
                 <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#1e40af', marginBottom: '8px' }}>🏥 Verified EHR Clinical Timeline</h3>
-                <p style={{ fontSize: '13px', color: '#1e3a8a', lineHeight: '1.5' }}>
-                  Your Electronic Health Record aggregates all consultation notes, prescriptions, and lab reports processed through AI OCR. All files are securely encrypted and stored in your medical vault.
-                </p>
+                <p style={{ fontSize: '13px', color: '#1e3a8a', lineHeight: '1.5' }}> {t('ehrDesc')} </p>
               </div>
 
               {/* EHR Database Records Grid */}
@@ -1264,7 +1246,7 @@ const DashboardPage: React.FC = () => {
               {/* Sub-Tab 1: Personal Details */}
               {profileSubTab === 'personal' && (
                 <div className="profile-card-box">
-                  <h3 className="profile-card-title">Personal & Contact Information</h3>
+                  <h3 className="profile-card-title"> {t('personalContact')} </h3>
                   
                   <div className="profile-form-grid">
                     <div className="profile-field-group">
@@ -1278,7 +1260,7 @@ const DashboardPage: React.FC = () => {
                     </div>
 
                     <div className="profile-field-group">
-                      <label className="profile-label">Email Address</label>
+                      <label className="profile-label"> {t('emailAddress')} </label>
                       <input 
                         type="email" 
                         value={profileData.email}
@@ -1288,7 +1270,7 @@ const DashboardPage: React.FC = () => {
                     </div>
 
                     <div className="profile-field-group">
-                      <label className="profile-label">Phone Number</label>
+                      <label className="profile-label"> {t('phone')} </label>
                       <input 
                         type="text" 
                         value={profileData.phone}
@@ -1298,7 +1280,7 @@ const DashboardPage: React.FC = () => {
                     </div>
 
                     <div className="profile-field-group">
-                      <label className="profile-label">Date of Birth</label>
+                      <label className="profile-label"> {t('dateOfBirth')} </label>
                       <input 
                         type="date" 
                         value={profileData.dob}
@@ -1308,20 +1290,20 @@ const DashboardPage: React.FC = () => {
                     </div>
 
                     <div className="profile-field-group">
-                      <label className="profile-label">Gender</label>
+                      <label className="profile-label"> {t('genderLabel')} </label>
                       <select 
                         value={profileData.gender}
                         onChange={(e) => setProfileData({ ...profileData, gender: e.target.value })}
                         className="profile-input-control"
                       >
-                        <option value="Female">Female</option>
-                        <option value="Male">Male</option>
-                        <option value="Other">Other</option>
+                        <option value="Female"> {t('female')} </option>
+                        <option value="Male"> {t('male')} </option>
+                        <option value="Other"> {t('other')} </option>
                       </select>
                     </div>
 
                     <div className="profile-field-group">
-                      <label className="profile-label">Blood Group</label>
+                      <label className="profile-label"> {t('bloodGroupLabel')} </label>
                       <select 
                         value={profileData.bloodGroup}
                         onChange={(e) => setProfileData({ ...profileData, bloodGroup: e.target.value })}
@@ -1339,7 +1321,7 @@ const DashboardPage: React.FC = () => {
                     </div>
 
                     <div className="profile-field-group">
-                      <label className="profile-label">Height (cm)</label>
+                      <label className="profile-label"> {t('heightCmLabel')} </label>
                       <input 
                         type="number" 
                         value={profileData.height}
@@ -1349,7 +1331,7 @@ const DashboardPage: React.FC = () => {
                     </div>
 
                     <div className="profile-field-group">
-                      <label className="profile-label">Weight (kg)</label>
+                      <label className="profile-label"> {t('weightKgLabel')} </label>
                       <input 
                         type="number" 
                         value={profileData.weight}
@@ -1359,7 +1341,7 @@ const DashboardPage: React.FC = () => {
                     </div>
 
                     <div className="profile-field-group full-width">
-                      <label className="profile-label">Residential Address</label>
+                      <label className="profile-label"> {t('residentialAddress')} </label>
                       <input 
                         type="text" 
                         value={profileData.address}
@@ -1369,7 +1351,7 @@ const DashboardPage: React.FC = () => {
                     </div>
 
                     <div className="profile-field-group">
-                      <label className="profile-label">Emergency Contact Name</label>
+                      <label className="profile-label"> {t('emergencyContactName')} </label>
                       <input 
                         type="text" 
                         value={profileData.emergencyContactName}
@@ -1379,7 +1361,7 @@ const DashboardPage: React.FC = () => {
                     </div>
 
                     <div className="profile-field-group">
-                      <label className="profile-label">Emergency Contact Phone</label>
+                      <label className="profile-label"> {t('emergencyContactPhone')} </label>
                       <input 
                         type="text" 
                         value={profileData.emergencyContactPhone}
@@ -1404,42 +1386,42 @@ const DashboardPage: React.FC = () => {
               {/* Sub-Tab 2: Medical Profile & Vitals */}
               {profileSubTab === 'medical' && (
                 <div className="profile-card-box">
-                  <h3 className="profile-card-title">Medical History & Vitals Overview</h3>
+                  <h3 className="profile-card-title"> {t('medicalHistoryTitle')} </h3>
                   
                   {/* Current Vitals Cards */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '16px' }}>
                     <div style={{ backgroundColor: '#fff1f2', border: '1px solid #fecdd3', padding: '16px', borderRadius: '16px', textAlign: 'center' }}>
                       <span style={{ fontSize: '24px', display: 'block', marginBottom: '4px' }}>❤️</span>
-                      <span style={{ fontSize: '11px', color: '#e11d48', fontWeight: 'bold', display: 'block', textTransform: 'uppercase' }}>Blood Pressure</span>
+                      <span style={{ fontSize: '11px', color: '#e11d48', fontWeight: 'bold', display: 'block', textTransform: 'uppercase' }}> {t('bloodPressure')} </span>
                       <span style={{ fontSize: '20px', fontWeight: '800', color: '#881337' }}>--</span>
-                      <span style={{ fontSize: '10px', color: '#f43f5e', display: 'block', fontWeight: '600' }}>No reading recorded</span>
+                      <span style={{ fontSize: '10px', color: '#f43f5e', display: 'block', fontWeight: '600' }}> {t('noReading')} </span>
                     </div>
 
                     <div style={{ backgroundColor: '#fffbeb', border: '1px solid #fde68a', padding: '16px', borderRadius: '16px', textAlign: 'center' }}>
                       <span style={{ fontSize: '24px', display: 'block', marginBottom: '4px' }}>💓</span>
-                      <span style={{ fontSize: '11px', color: '#d97706', fontWeight: 'bold', display: 'block', textTransform: 'uppercase' }}>Heart Rate</span>
+                      <span style={{ fontSize: '11px', color: '#d97706', fontWeight: 'bold', display: 'block', textTransform: 'uppercase' }}> {t('heartRate')} </span>
                       <span style={{ fontSize: '20px', fontWeight: '800', color: '#78350f' }}>--</span>
-                      <span style={{ fontSize: '10px', color: '#f59e0b', display: 'block', fontWeight: '600' }}>No reading recorded</span>
+                      <span style={{ fontSize: '10px', color: '#f59e0b', display: 'block', fontWeight: '600' }}> {t('noReading')} </span>
                     </div>
 
                     <div style={{ backgroundColor: '#ecfdf5', border: '1px solid #a7f3d0', padding: '16px', borderRadius: '16px', textAlign: 'center' }}>
                       <span style={{ fontSize: '24px', display: 'block', marginBottom: '4px' }}>🩸</span>
-                      <span style={{ fontSize: '11px', color: '#059669', fontWeight: 'bold', display: 'block', textTransform: 'uppercase' }}>Blood Sugar</span>
+                      <span style={{ fontSize: '11px', color: '#059669', fontWeight: 'bold', display: 'block', textTransform: 'uppercase' }}> {t('bloodSugar')} </span>
                       <span style={{ fontSize: '20px', fontWeight: '800', color: '#064e3b' }}>--</span>
-                      <span style={{ fontSize: '10px', color: '#10b981', display: 'block', fontWeight: '600' }}>No reading recorded</span>
+                      <span style={{ fontSize: '10px', color: '#10b981', display: 'block', fontWeight: '600' }}> {t('noReading')} </span>
                     </div>
 
                     <div style={{ backgroundColor: '#eff6ff', border: '1px solid #bfdbfe', padding: '16px', borderRadius: '16px', textAlign: 'center' }}>
                       <span style={{ fontSize: '24px', display: 'block', marginBottom: '4px' }}>🫁</span>
                       <span style={{ fontSize: '11px', color: '#2563eb', fontWeight: 'bold', display: 'block', textTransform: 'uppercase' }}>Oxygen (SpO2)</span>
                       <span style={{ fontSize: '20px', fontWeight: '800', color: '#1e3a8a' }}>--</span>
-                      <span style={{ fontSize: '10px', color: '#3b82f6', display: 'block', fontWeight: '600' }}>No reading recorded</span>
+                      <span style={{ fontSize: '10px', color: '#3b82f6', display: 'block', fontWeight: '600' }}> {t('noReading')} </span>
                     </div>
                   </div>
 
                   {/* Known Allergies */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <h4 className="profile-label">Known Medical Allergies</h4>
+                    <h4 className="profile-label"> {t('allergies')} </h4>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                       {profileData.allergies.map((allergy, idx) => (
                         <span key={idx} style={{ backgroundColor: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca', fontSize: '12px', fontWeight: 'bold', padding: '6px 12px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -1460,7 +1442,7 @@ const DashboardPage: React.FC = () => {
 
                   {/* Chronic Conditions */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <h4 className="profile-label">Chronic Conditions</h4>
+                    <h4 className="profile-label"> {t('chronicConditions')} </h4>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                       {profileData.chronicConditions.map((condition, idx) => (
                         <span key={idx} style={{ backgroundColor: '#eef2ff', color: '#4338ca', border: '1px solid #c7d2fe', fontSize: '12px', fontWeight: 'bold', padding: '6px 12px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -1484,11 +1466,11 @@ const DashboardPage: React.FC = () => {
               {/* Sub-Tab 3: Account & Security */}
               {profileSubTab === 'security' && (
                 <div className="profile-card-box">
-                  <h3 className="profile-card-title">Password & Security Settings</h3>
+                  <h3 className="profile-card-title"> {t('passwordSecurity')} </h3>
 
                   <div style={{ maxWidth: '440px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div className="profile-field-group">
-                      <label className="profile-label">Current Password</label>
+                      <label className="profile-label"> {t('currentPassword')} </label>
                       <input 
                         type="password" 
                         placeholder="••••••••"
@@ -1498,7 +1480,7 @@ const DashboardPage: React.FC = () => {
                       />
                     </div>
                     <div className="profile-field-group">
-                      <label className="profile-label">New Password</label>
+                      <label className="profile-label"> {t('newPassword')} </label>
                       <input 
                         type="password" 
                         placeholder="••••••••"
@@ -1509,7 +1491,7 @@ const DashboardPage: React.FC = () => {
                     </div>
 
                     <div className="profile-field-group">
-                      <label className="profile-label">Confirm New Password</label>
+                      <label className="profile-label"> {t('confirmNewPassword')} </label>
                       <input 
                         type="password" 
                         placeholder="••••••••"
@@ -1524,16 +1506,14 @@ const DashboardPage: React.FC = () => {
                       onClick={() => alert('Password updated successfully!')}
                       className="profile-save-btn"
                       style={{ alignSelf: 'flex-start' }}
-                    >
-                      Update Password
-                    </button>
+                    > {t('updatePassword')} </button>
                   </div>
 
                   {/* 2FA Section */}
                   <div style={{ paddingTop: '20px', borderTop: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>
                       <h4 className="profile-label">Two-Factor Authentication (2FA)</h4>
-                      <p style={{ fontSize: '12px', color: '#64748b' }}>Secure your account with SMS & Email verification OTPs on login.</p>
+                      <p style={{ fontSize: '12px', color: '#64748b' }}> {t('secureAccount')} </p>
                     </div>
                     <button 
                       onClick={() => setSecuritySettings({ ...securitySettings, enable2FA: !securitySettings.enable2FA })}
@@ -1558,7 +1538,7 @@ const DashboardPage: React.FC = () => {
               {/* Sub-Tab 4: Notifications */}
               {profileSubTab === 'notifications' && (
                 <div className="profile-card-box">
-                  <h3 className="profile-card-title">Notification & Alert Preferences</h3>
+                  <h3 className="profile-card-title"> {t('notifications')} </h3>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     {[
@@ -1587,25 +1567,25 @@ const DashboardPage: React.FC = () => {
               {/* Sub-Tab 5: Billing & Payments */}
               {profileSubTab === 'billing' && (
                 <div className="profile-card-box">
-                  <h3 className="profile-card-title">Saved Payment Methods & History</h3>
+                  <h3 className="profile-card-title"> {t('savedPaymentMethods')} </h3>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
                     <div style={{ backgroundColor: '#0f172a', color: '#ffffff', padding: '20px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 'bold', textTransform: 'uppercase' }}>Default Payment UPI</span>
-                        <span style={{ backgroundColor: 'rgba(148, 163, 184, 0.2)', color: '#cbd5e1', fontSize: '10px', fontWeight: 'bold', padding: '2px 10px', borderRadius: '9999px' }}>Not configured</span>
+                        <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 'bold', textTransform: 'uppercase' }}> {t('defaultPaymentUPI')} </span>
+                        <span style={{ backgroundColor: 'rgba(148, 163, 184, 0.2)', color: '#cbd5e1', fontSize: '10px', fontWeight: 'bold', padding: '2px 10px', borderRadius: '9999px' }}> {t('notConfigured')} </span>
                       </div>
-                      <p style={{ fontSize: '18px', fontFamily: 'monospace', fontWeight: 'bold', color: '#ffffff' }}>No saved UPI</p>
-                      <p style={{ fontSize: '12px', color: '#94a3b8' }}>Add a payment method during checkout.</p>
+                      <p style={{ fontSize: '18px', fontFamily: 'monospace', fontWeight: 'bold', color: '#ffffff' }}> {t('noSavedUPI')} </p>
+                      <p style={{ fontSize: '12px', color: '#94a3b8' }}> {t('addPaymentMethod')} </p>
                     </div>
 
                     <div style={{ backgroundColor: '#1e293b', color: '#ffffff', padding: '20px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 'bold', textTransform: 'uppercase' }}>Visa Debit Card</span>
-                        <span style={{ fontSize: '12px', color: '#94a3b8' }}>Not configured</span>
+                        <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 'bold', textTransform: 'uppercase' }}> {t('visaDebitCard')} </span>
+                        <span style={{ fontSize: '12px', color: '#94a3b8' }}> {t('notConfigured')} </span>
                       </div>
-                      <p style={{ fontSize: '18px', fontFamily: 'monospace', fontWeight: 'bold', color: '#ffffff' }}>No saved card</p>
-                      <p style={{ fontSize: '12px', color: '#94a3b8' }}>Payment details are not stored here.</p>
+                      <p style={{ fontSize: '18px', fontFamily: 'monospace', fontWeight: 'bold', color: '#ffffff' }}> {t('noSavedCard')} </p>
+                      <p style={{ fontSize: '12px', color: '#94a3b8' }}> {t('paymentDetailsNotStored')} </p>
                     </div>
                   </div>
                 </div>
@@ -1618,8 +1598,8 @@ const DashboardPage: React.FC = () => {
             <div className="prescriptions-tab-content" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               <div className="tab-section-header">
                 <div>
-                  <h2 className="tab-title" style={{ fontSize: '24px', fontWeight: 'bold', color: '#0f172a' }}>Prescriptions & Medications</h2>
-                  <p className="tab-subtitle" style={{ fontSize: '14px', color: '#64748b' }}>View and download all official medical prescriptions issued by your doctors.</p>
+                  <h2 className="tab-title" style={{ fontSize: '24px', fontWeight: 'bold', color: '#0f172a' }}> {t('prescriptions')} </h2>
+                  <p className="tab-subtitle" style={{ fontSize: '14px', color: '#64748b' }}> {t('viewPrescriptionsDesc')} </p>
                 </div>
               </div>
 
@@ -1640,7 +1620,7 @@ const DashboardPage: React.FC = () => {
                       </div>
 
                       <div className="row-mode">
-                        <span className="rx-tag">Prescription Issued</span>
+                        <span className="rx-tag"> {t('prescriptionIssued')} </span>
                       </div>
 
                       <div className="row-action">
@@ -1658,13 +1638,11 @@ const DashboardPage: React.FC = () => {
                             });
                             setShowRxModal(true);
                           }}
-                        >
-                          View / Download PDF
-                        </button>
+                        > {t('viewDownloadPdf')} </button>
                       </div>
                     </div>
                   ))}
-                  {prescriptionsList.length === 0 && <div className="appointments-empty-state">No prescriptions have been issued yet.</div>}
+                  {prescriptionsList.length === 0 && <div className="appointments-empty-state"> {t('noPrescriptions')} </div>}
                 </div>
               </div>
             </div>
@@ -1687,33 +1665,29 @@ const DashboardPage: React.FC = () => {
                 <div>
                   <h3>{showDetailsModal.doctorName}</h3>
                   <p>{showDetailsModal.specialty}</p>
-                  <span className="status-pill completed">Completed</span>
+                  <span className="status-pill completed"> {t('completed')} </span>
                 </div>
               </div>
 
               <div className="modal-info-list">
                 <div className="info-item">
-                  <span className="info-lbl">Date:</span>
+                  <span className="info-lbl"> {t('date')} </span>
                   <span className="info-val">{showDetailsModal.date}</span>
                 </div>
                 <div className="info-item">
-                  <span className="info-lbl">Time:</span>
+                  <span className="info-lbl"> {t('time')} </span>
                   <span className="info-val">{showDetailsModal.time}</span>
                 </div>
                 <div className="info-item">
-                  <span className="info-lbl">Consultation Mode:</span>
+                  <span className="info-lbl"> {t('consultationMode')} </span>
                   <span className="info-val">{showDetailsModal.mode}</span>
                 </div>
               </div>
             </div>
 
             <div className="modal-footer-actions">
-              <button type="button" className="btn-secondary-outline" onClick={() => setShowDetailsModal(null)}>
-                Close
-              </button>
-              <button type="button" className="btn-join-consultation" onClick={() => alert('Downloading Consultation Summary PDF...')}>
-                Download Summary
-              </button>
+              <button type="button" className="btn-secondary-outline" onClick={() => setShowDetailsModal(null)}> {t('close')} </button>
+              <button type="button" className="btn-join-consultation" onClick={() => alert('Downloading Consultation Summary PDF...')}> {t('downloadSummary')} </button>
             </div>
           </div>
         </div>
@@ -1742,9 +1716,7 @@ const DashboardPage: React.FC = () => {
             </div>
 
             <div className="modal-footer-actions">
-              <button type="button" className="btn-secondary-outline" onClick={() => setShowEmergencyModal(false)}>
-                Close
-              </button>
+              <button type="button" className="btn-secondary-outline" onClick={() => setShowEmergencyModal(false)}> {t('close')} </button>
             </div>
           </div>
         </div>
@@ -1768,7 +1740,7 @@ const DashboardPage: React.FC = () => {
             </div>
 
             <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">AI Extracted Clinical Data</span>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block"> {t('aiExtractedData')} </span>
               <p className="text-xs font-mono text-slate-800 leading-relaxed bg-white p-3 rounded-xl border border-slate-200">
                 {selectedEhrModalData.extractedData}
               </p>
@@ -1784,9 +1756,7 @@ const DashboardPage: React.FC = () => {
               <button
                 onClick={() => setSelectedEhrModalData(null)}
                 className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-md transition-all cursor-pointer"
-              >
-                Close EHR Inspection
-              </button>
+              > {t('closeEhr')} </button>
             </div>
           </div>
         </div>

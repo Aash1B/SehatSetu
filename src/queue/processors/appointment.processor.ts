@@ -47,7 +47,7 @@ export class AppointmentProcessor extends WorkerHost {
   private async handlePreSessionEmailReminder(data: AppointmentReminderJobData, minutes: number) {
     const appointment = await prisma.appointment.findUnique({
       where: { id: data.appointmentId },
-      include: { patient: { include: { user: true } }, doctor: { include: { user: true } } },
+      include: { patient: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } }, doctor: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } } },
     });
 
     if (!appointment || ['CANCELLED', 'COMPLETED'].includes(appointment.status)) {
