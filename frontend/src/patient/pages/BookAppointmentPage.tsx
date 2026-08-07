@@ -795,47 +795,65 @@ const BookAppointmentPage: React.FC = () => {
                       <button type="button" className="carousel-arrow left" title="Previous Dates">‹</button>
                       
                       <div className="date-cards-row">
-                        {[
-                          { date: '20 May', label: 'Today', dayName: 'Mon' },
-                          { date: '21 May', label: '', dayName: 'Tue' },
-                          { date: '22 May', label: '', dayName: 'Wed' },
-                          { date: '23 May', label: '', dayName: 'Thu' },
-                          { date: '24 May', label: '', dayName: 'Fri' },
-                          { date: '25 May', label: '', dayName: 'Sat' },
-                          { date: '26 May', label: '', dayName: 'Sun' },
-                        ].map((d) => {
-                          const isSelected = formData.selectedDate.includes(d.date) || (d.label === 'Today' && (formData.selectedDate.includes('Today') || formData.selectedDate.includes('20 May')));
-                          return (
-                            <button
-                              key={d.date}
-                              type="button"
-                              className={`date-card-box ${isSelected ? 'selected' : ''}`}
-                              onClick={() => setFormData({ ...formData, selectedDate: `${d.label ? d.label + ' ' : ''}${d.dayName} ${d.date}` })}
-                            >
-                              <span className="date-card-tag">{d.label || d.dayName}</span>
-                              <span className="date-card-day">{d.dayName}</span>
-                              <span className="date-card-num">{d.date}</span>
-                            </button>
-                          );
-                        })}
+                        {(() => {
+                          const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                          const today = new Date();
+                          const upcomingDates = Array.from({ length: 7 }, (_, i) => {
+                            const d = new Date(today);
+                            d.setDate(today.getDate() + i);
+                            const dayName = days[d.getDay()];
+                            const dateNum = d.getDate();
+                            const monthName = months[d.getMonth()];
+                            const formattedDate = `${dateNum} ${monthName}`;
+                            return {
+                              date: formattedDate,
+                              label: i === 0 ? 'Today' : '',
+                              dayName,
+                            };
+                          });
+
+                          return upcomingDates.map((d) => {
+                            const isSelected = formData.selectedDate.includes(d.date);
+                            return (
+                              <button
+                                key={d.date}
+                                type="button"
+                                className={`date-card-box ${isSelected ? 'selected' : ''}`}
+                                onClick={() => setFormData({ ...formData, selectedDate: `${d.label ? d.label + ' ' : ''}${d.dayName} ${d.date}` })}
+                              >
+                                <span className="date-card-tag">{d.label || d.dayName}</span>
+                                <span className="date-card-day">{d.dayName}</span>
+                                <span className="date-card-num">{d.date}</span>
+                              </button>
+                            );
+                          });
+                        })()}
                       </div>
 
                       <button type="button" className="carousel-arrow right" title="Next Dates">›</button>
                     </div>
                   </div>
 
-                  {/* Section 2: Available Time Slots Grid */}
+                  {/* Section 2: Available Time Slots Grid (15-Minute Intervals) */}
                   <div className="slot-section-block" style={{ marginTop: '28px' }}>
                     <div className="slot-section-header">
                       <span className="section-icon">🕒</span>
-                      <h3 className="section-title">Available Time Slots</h3>
+                      <h3 className="section-title">Available Time Slots (15 Min Slots)</h3>
                     </div>
 
                     <div className="time-slots-6col-grid">
                       {[
-                        '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
-                        '12:00 PM', '12:30 PM', '01:00 PM', '02:00 PM', '02:30 PM', '03:00 PM',
-                        '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM', '06:00 PM', '07:30 PM',
+                        '09:00 AM', '09:15 AM', '09:30 AM', '09:45 AM',
+                        '10:00 AM', '10:15 AM', '10:30 AM', '10:45 AM',
+                        '11:00 AM', '11:15 AM', '11:30 AM', '11:45 AM',
+                        '12:00 PM', '12:15 PM', '12:30 PM', '12:45 PM',
+                        '02:00 PM', '02:15 PM', '02:30 PM', '02:45 PM',
+                        '03:00 PM', '03:15 PM', '03:30 PM', '03:45 PM',
+                        '04:00 PM', '04:15 PM', '04:30 PM', '04:45 PM',
+                        '05:00 PM', '05:15 PM', '05:30 PM', '05:45 PM',
+                        '06:00 PM', '06:15 PM', '06:30 PM', '06:45 PM',
+                        '07:00 PM', '07:15 PM', '07:30 PM',
                       ].map((slot) => {
                         const isSelected = formData.selectedTimeSlot === slot;
                         return (
