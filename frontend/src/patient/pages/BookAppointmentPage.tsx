@@ -123,7 +123,7 @@ const BookAppointmentPage: React.FC = () => {
   const hasPreselectedDoctor = Boolean(id && id !== 'new' && !rescheduleId);
 
   const [currentStep, setCurrentStep] = useState<number>(1);
-  
+
   const handleImageError = (event: React.SyntheticEvent<HTMLImageElement>) => {
     const image = event.currentTarget;
     const defaultDoctor = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23cccccc"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
@@ -156,7 +156,7 @@ const BookAppointmentPage: React.FC = () => {
   const [showAllDoctors, setShowAllDoctors] = useState<boolean>(false);
   const [allDoctorsList, setAllDoctorsList] = useState<Doctor[]>([]);
 
-    // Load registered doctors from the backend.
+  // Load registered doctors from the backend.
   useEffect(() => {
     (async () => {
       try {
@@ -251,7 +251,7 @@ const BookAppointmentPage: React.FC = () => {
     const cleanIn = inVal.replace(/[^0-9]/g, '');
     setHeightFt(cleanFt);
     setHeightIn(cleanIn);
-    
+
     const ft = parseInt(cleanFt, 10) || 0;
     const inch = parseInt(cleanIn, 10) || 0;
     if (ft > 0 || inch > 0) {
@@ -359,14 +359,14 @@ const BookAppointmentPage: React.FC = () => {
   }, [formData.selectedDoctor?.id, formData.selectedDate]);
 
   const filteredStep2Doctors = allDoctorsList.filter(doc => {
-    const matchesSearch = 
+    const matchesSearch =
       doc.name.toLowerCase().includes(step2SearchTerm.toLowerCase()) ||
       doc.specialty.toLowerCase().includes(step2SearchTerm.toLowerCase()) ||
       doc.hospital.toLowerCase().includes(step2SearchTerm.toLowerCase()) ||
       doc.location.toLowerCase().includes(step2SearchTerm.toLowerCase());
 
-    const matchesSpecialty = 
-      step2Specialty === 'All' || 
+    const matchesSpecialty =
+      step2Specialty === 'All' ||
       doc.specialty.toLowerCase().includes(step2Specialty.toLowerCase());
 
     return matchesSearch && matchesSpecialty;
@@ -512,27 +512,27 @@ const BookAppointmentPage: React.FC = () => {
       <header className="booking-navbar">
         <div className="booking-navbar-container">
           <div className="booking-navbar-left">
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="btn-nav-arrow-only"
               onClick={() => navigate('/')}
               title="Back to Home"
               aria-label="Back to Home"
             >
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M19 12H5M12 19l-7-7 7-7"/>
+                <path d="M19 12H5M12 19l-7-7 7-7" />
               </svg>
             </button>
 
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="booking-brand-logo"
               onClick={() => navigate('/')}
             >
               <div className="logo-badge">
                 <svg viewBox="0 0 24 24" fill="none" className="logo-icon" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#F97316"/>
-                  <path d="M12 7v6m-3-3h6" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#F97316" />
+                  <path d="M12 7v6m-3-3h6" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" />
                 </svg>
               </div>
               <span className="brand-title">
@@ -565,7 +565,7 @@ const BookAppointmentPage: React.FC = () => {
       <div className="booking-step-tracker-bar">
         <div className="step-tracker-container">
           <div className="step-track-line"></div>
-          
+
           <div className={`step-node ${currentStep >= 1 ? 'active' : ''}`}>
             <div className="step-number">{currentStep > 1 ? '✓' : '1'}</div>
             <span className="step-label">Health Concern</span>
@@ -599,13 +599,13 @@ const BookAppointmentPage: React.FC = () => {
         {!bookingConfirmed && (
           <div className="booking-top-back-bar">
             {currentStep > 1 && (
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="btn-top-back"
                 onClick={handlePrevStep}
               >
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M19 12H5M12 19l-7-7 7-7"/>
+                  <path d="M19 12H5M12 19l-7-7 7-7" />
                 </svg>
                 <span>Back to Step {currentStep - 1}</span>
               </button>
@@ -626,7 +626,7 @@ const BookAppointmentPage: React.FC = () => {
             <div className="confirmation-success-icon">✓</div>
             <h2>Appointment Confirmed!</h2>
             <p className="confirmation-sub">Your appointment has been successfully scheduled with SehatSetu.</p>
-            
+
             <div className="confirmation-ticket">
               <div className="ticket-header">
                 <div>
@@ -666,8 +666,8 @@ const BookAppointmentPage: React.FC = () => {
             </div>
 
             <div className="confirmation-actions">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="btn-primary-orange"
                 onClick={() => navigate('/')}
               >
@@ -686,8 +686,8 @@ const BookAppointmentPage: React.FC = () => {
                     <div className="header-left-group">
                       <div className="header-icon-badge-pink">
                         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#EF4444" strokeWidth="2">
-                          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                          <path d="M12 7v6m-3-3h6" stroke="#EF4444" strokeWidth="2" strokeLinecap="round"/>
+                          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                          <path d="M12 7v6m-3-3h6" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" />
                         </svg>
                       </div>
                       <div>
@@ -699,10 +699,10 @@ const BookAppointmentPage: React.FC = () => {
                     <div className="header-date-badge">
                       <div className="date-icon-box">
                         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#2563EB" strokeWidth="2">
-                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                          <line x1="16" y1="2" x2="16" y2="6"/>
-                          <line x1="8" y1="2" x2="8" y2="6"/>
-                          <line x1="3" y1="10" x2="21" y2="10"/>
+                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                          <line x1="16" y1="2" x2="16" y2="6" />
+                          <line x1="8" y1="2" x2="8" y2="6" />
+                          <line x1="3" y1="10" x2="21" y2="10" />
                         </svg>
                       </div>
                       <div className="date-text-wrap">
@@ -717,11 +717,11 @@ const BookAppointmentPage: React.FC = () => {
                     <label className="question-label">What symptoms are you experiencing?</label>
                     <div className="symptom-search-bar-v2">
                       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#94A3B8" strokeWidth="2">
-                        <circle cx="11" cy="11" r="8"/>
-                        <path d="M21 21l-4.35-4.35"/>
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="M21 21l-4.35-4.35" />
                       </svg>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder="Search or type a symptom (e.g., fever, cough, headache)"
                         value={symptomSearch}
                         onChange={(e) => setSymptomSearch(e.target.value)}
@@ -817,16 +817,16 @@ const BookAppointmentPage: React.FC = () => {
                           <div className="trigger-icon-box">📅</div>
                           <span className="trigger-label-val">{formData.duration}</span>
                         </div>
-                        <svg 
-                          className={`chevron-icon ${isDurationDropdownOpen ? 'rotate' : ''}`} 
-                          viewBox="0 0 24 24" 
-                          width="18" 
-                          height="18" 
-                          fill="none" 
-                          stroke="#64748B" 
+                        <svg
+                          className={`chevron-icon ${isDurationDropdownOpen ? 'rotate' : ''}`}
+                          viewBox="0 0 24 24"
+                          width="18"
+                          height="18"
+                          fill="none"
+                          stroke="#64748B"
                           strokeWidth="2.5"
                         >
-                          <path d="M6 9l6 6 6-6"/>
+                          <path d="M6 9l6 6 6-6" />
                         </svg>
                       </button>
 
@@ -905,7 +905,7 @@ const BookAppointmentPage: React.FC = () => {
                     <label className="question-label">Any additional details for the doctor? (Optional)</label>
                     <div className="notes-textarea-card">
                       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#94A3B8" strokeWidth="2" className="notes-icon">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                       </svg>
                       <textarea
                         rows={3}
@@ -924,9 +924,9 @@ const BookAppointmentPage: React.FC = () => {
               {currentStep === 2 && (
                 <div className="step-2-wrapper">
                   <div className="step2-header-with-back">
-                    <button 
-                      type="button" 
-                      className="btn-round-back-icon" 
+                    <button
+                      type="button"
+                      className="btn-round-back-icon"
                       onClick={handlePrevStep}
                       title="Back"
                     >
@@ -943,8 +943,8 @@ const BookAppointmentPage: React.FC = () => {
                     <div className="step2-search-row">
                       <div className="step2-search-input-wrap">
                         <svg className="search-icon" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2" width="18" height="18">
-                          <circle cx="11" cy="11" r="8"/>
-                          <path d="M21 21l-4.35-4.35"/>
+                          <circle cx="11" cy="11" r="8" />
+                          <path d="M21 21l-4.35-4.35" />
                         </svg>
                         <input
                           type="text"
@@ -955,9 +955,9 @@ const BookAppointmentPage: React.FC = () => {
                         />
                         <button type="button" className="step2-mic-btn" title="Voice Search">
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
-                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
-                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                            <line x1="12" y1="19" x2="12" y2="22"/>
+                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                            <line x1="12" y1="19" x2="12" y2="22" />
                           </svg>
                         </button>
                       </div>
@@ -965,7 +965,7 @@ const BookAppointmentPage: React.FC = () => {
 
                     {/* Specialty Chips */}
                     <div className={`specialty-chips-row ${showAllSpecialties ? 'expanded' : ''}`}>
-                      {(showAllSpecialties 
+                      {(showAllSpecialties
                         ? ['All', 'General Physician', 'Dermatologist', 'Pediatrician', 'Gynecologist', 'Cardiologist', 'Neurologist', 'Orthopedic', 'Dentist', 'Psychiatrist', 'ENT Specialist', 'Ophthalmologist', 'Pulmonologist', 'Gastroenterologist', 'Urologist']
                         : ['All', 'General Physician', 'Dermatologist', 'Pediatrician', 'Gynecologist', 'Cardiologist']
                       ).map(spec => (
@@ -978,8 +978,8 @@ const BookAppointmentPage: React.FC = () => {
                           {spec}
                         </button>
                       ))}
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         className={`specialty-chip more-chip ${showAllSpecialties ? 'active' : ''}`}
                         onClick={() => setShowAllSpecialties(!showAllSpecialties)}
                       >
@@ -987,7 +987,7 @@ const BookAppointmentPage: React.FC = () => {
                       </button>
                     </div>
                   </div>
-                  
+
                   {/* AI Recommendation Banner */}
                   {aiRecommendation && (
                     <div className="p-4 mb-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl flex items-center justify-between">
@@ -1016,20 +1016,20 @@ const BookAppointmentPage: React.FC = () => {
                       return docsToRender.map(doc => {
                         const isSelected = formData.selectedDoctor?.id === doc.id;
                         return (
-                          <div 
-                            key={doc.id} 
+                          <div
+                            key={doc.id}
                             className={`step2-doctor-card ${isSelected ? 'selected' : ''}`}
                             onClick={() => setFormData({ ...formData, selectedDoctor: doc })}
                           >
                             <div className="step2-doc-avatar-wrap">
-                               <img src={doc.imageUrl} alt={doc.name} className="step2-doc-avatar" loading="lazy" onError={handleImageError} />
+                              <img src={doc.imageUrl} alt={doc.name} className="step2-doc-avatar" loading="lazy" onError={handleImageError} />
                             </div>
 
                             <div className="step2-doc-middle-info">
                               <div className="doc-name-badge-row">
                                 <h3 className="doc-name">{doc.name}</h3>
                                 <svg className="verified-blue-badge" viewBox="0 0 24 24" fill="#2563EB" width="16" height="16">
-                                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                                 </svg>
                               </div>
                               <p className="doc-spec-exp">{doc.specialty} • {doc.experience}</p>
@@ -1046,8 +1046,8 @@ const BookAppointmentPage: React.FC = () => {
                               <span className="doc-consult-type">{formData.consultMode}</span>
                               <span className="doc-fee-price">₹{doc.fee.replace(/\D/g, '')} Consultation Fee</span>
 
-                              <button 
-                                type="button" 
+                              <button
+                                type="button"
                                 className={`btn-step2-select ${isSelected ? 'selected' : ''}`}
                               >
                                 {isSelected ? 'Selected ✓' : 'View Profile'}
@@ -1113,7 +1113,7 @@ const BookAppointmentPage: React.FC = () => {
 
                 const upcomingDaysWithSlots = upcomingDays.map((d) => {
                   const scheduledSlots = getSlotsForDoctorAndDay(doctorAvailability, d.dayFull);
-                  
+
                   const matchingBookedList: string[] = [];
                   if (doctorAvailability?.bookedSlots) {
                     Object.entries(doctorAvailability.bookedSlots).forEach(([key, slots]) => {
@@ -1130,46 +1130,6 @@ const BookAppointmentPage: React.FC = () => {
                     });
                   }
 
-<<<<<<< HEAD
-                    <div className="date-carousel-wrapper">
-                      <button type="button" className="carousel-arrow left" title="Previous Dates">‹</button>
-                      
-                      <div className="date-cards-row">
-                        {(() => {
-                          const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                          const today = new Date();
-                          const upcomingDates = Array.from({ length: 7 }, (_, i) => {
-                            const d = new Date(today);
-                            d.setDate(today.getDate() + i);
-                            const dayName = days[d.getDay()];
-                            const dateNum = d.getDate();
-                            const monthName = months[d.getMonth()];
-                            const formattedDate = `${dateNum} ${monthName}`;
-                            return {
-                              date: formattedDate,
-                              label: i === 0 ? 'Today' : '',
-                              dayName,
-                            };
-                          });
-
-                          return upcomingDates.map((d) => {
-                            const isSelected = formData.selectedDate.includes(d.date);
-                            return (
-                              <button
-                                key={d.date}
-                                type="button"
-                                className={`date-card-box ${isSelected ? 'selected' : ''}`}
-                                onClick={() => setFormData({ ...formData, selectedDate: `${d.label ? d.label + ' ' : ''}${d.dayName} ${d.date}` })}
-                              >
-                                <span className="date-card-tag">{d.label || d.dayName}</span>
-                                <span className="date-card-day">{d.dayName}</span>
-                                <span className="date-card-num">{d.date}</span>
-                              </button>
-                            );
-                          });
-                        })()}
-=======
                   const dayBookedSet = new Set(matchingBookedList.map((s) => s.trim().toLowerCase().replace(/^0/, '')));
 
                   const minimumBookingMinutes = clockNow.getHours() * 60 + clockNow.getMinutes() + 30
@@ -1217,7 +1177,6 @@ const BookAppointmentPage: React.FC = () => {
                       <div className="slot-section-header">
                         <span className="section-icon">📅</span>
                         <h3 className="section-title">Select Date</h3>
->>>>>>> 21eabd2597c700886c82b6a71e1ae40c7f346aa7
                       </div>
 
                       <div className="date-carousel-wrapper">
@@ -1261,7 +1220,7 @@ const BookAppointmentPage: React.FC = () => {
 
                       {activeDayObj.label === 'Today' && activeSlotsCount > 0 && (
                         <p className="text-xs text-blue-700 mb-3">
-                          Today’s slots are shown only when they are at least 30 minutes from the current time.
+                          Today's slots are shown only when they are at least 30 minutes from the current time.
                         </p>
                       )}
                       {slotError && <p role="alert" className="text-sm text-red-600 mb-3">{slotError}</p>}
@@ -1315,55 +1274,8 @@ const BookAppointmentPage: React.FC = () => {
                       </div>
                     </div>
                   </div>
-<<<<<<< HEAD
-
-                  {/* Section 2: Available Time Slots Grid (15-Minute Intervals) */}
-                  <div className="slot-section-block" style={{ marginTop: '28px' }}>
-                    <div className="slot-section-header">
-                      <span className="section-icon">🕒</span>
-                      <h3 className="section-title">Available Time Slots (15 Min Slots)</h3>
-                    </div>
-
-                    <div className="time-slots-6col-grid">
-                      {[
-                        '09:00 AM', '09:15 AM', '09:30 AM', '09:45 AM',
-                        '10:00 AM', '10:15 AM', '10:30 AM', '10:45 AM',
-                        '11:00 AM', '11:15 AM', '11:30 AM', '11:45 AM',
-                        '12:00 PM', '12:15 PM', '12:30 PM', '12:45 PM',
-                        '02:00 PM', '02:15 PM', '02:30 PM', '02:45 PM',
-                        '03:00 PM', '03:15 PM', '03:30 PM', '03:45 PM',
-                        '04:00 PM', '04:15 PM', '04:30 PM', '04:45 PM',
-                        '05:00 PM', '05:15 PM', '05:30 PM', '05:45 PM',
-                        '06:00 PM', '06:15 PM', '06:30 PM', '06:45 PM',
-                        '07:00 PM', '07:15 PM', '07:30 PM',
-                      ].map((slot) => {
-                        const isSelected = formData.selectedTimeSlot === slot;
-                        return (
-                          <button
-                            key={slot}
-                            type="button"
-                            className={`time-slot-pill ${isSelected ? 'selected' : ''}`}
-                            onClick={() => setFormData({ ...formData, selectedTimeSlot: slot })}
-                          >
-                            <span>{slot}</span>
-                            {isSelected && <span className="slot-check-icon">✓</span>}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* Timezone Info Alert Banner */}
-                    <div className="timezone-info-banner">
-                      <span className="info-circle-icon">ⓘ</span>
-                      <span>All slots are in Indian Standard Time (IST)</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-=======
                 );
               })()}
->>>>>>> 21eabd2597c700886c82b6a71e1ae40c7f346aa7
 
               {/* Step 4: Patient Info */}
               {currentStep === 4 && (
@@ -1392,11 +1304,11 @@ const BookAppointmentPage: React.FC = () => {
                   <div className="patient-form-grid">
                     <div className="input-field-group">
                       <label className="field-label">Full Name <span style={{ color: '#EF4444' }}>*</span></label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         className="form-control-input"
                         placeholder="Enter your full name"
-                        value={formData.patientName} 
+                        value={formData.patientName}
                         onChange={(e) => {
                           setStep4Error('');
                           handleNameChange(e.target.value);
@@ -1406,11 +1318,11 @@ const BookAppointmentPage: React.FC = () => {
 
                     <div className="input-field-group">
                       <label className="field-label">Age (Years) <span style={{ color: '#EF4444' }}>*</span></label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         className="form-control-input"
                         placeholder="e.g. 28"
-                        value={formData.patientAge} 
+                        value={formData.patientAge}
                         onChange={(e) => {
                           setStep4Error('');
                           handleAgeChange(e.target.value);
@@ -1422,13 +1334,13 @@ const BookAppointmentPage: React.FC = () => {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                         <label className="field-label" style={{ margin: 0 }}>Height <span style={{ color: '#64748B', fontWeight: 400, fontSize: '0.82rem' }}>(Optional)</span></label>
                         <div style={{ display: 'flex', gap: '4px', background: '#E2E8F0', padding: '2px', borderRadius: '6px' }}>
-                          <button 
-                            type="button" 
-                            onClick={() => setHeightUnit('cm')} 
-                            style={{ 
-                              padding: '2px 8px', 
-                              fontSize: '11px', 
-                              fontWeight: 'bold', 
+                          <button
+                            type="button"
+                            onClick={() => setHeightUnit('cm')}
+                            style={{
+                              padding: '2px 8px',
+                              fontSize: '11px',
+                              fontWeight: 'bold',
                               borderRadius: '4px',
                               border: 'none',
                               cursor: 'pointer',
@@ -1438,13 +1350,13 @@ const BookAppointmentPage: React.FC = () => {
                               transition: 'all 0.15s ease'
                             }}
                           >cm</button>
-                          <button 
-                            type="button" 
-                            onClick={() => setHeightUnit('ft')} 
-                            style={{ 
-                              padding: '2px 8px', 
-                              fontSize: '11px', 
-                              fontWeight: 'bold', 
+                          <button
+                            type="button"
+                            onClick={() => setHeightUnit('ft')}
+                            style={{
+                              padding: '2px 8px',
+                              fontSize: '11px',
+                              fontWeight: 'bold',
                               borderRadius: '4px',
                               border: 'none',
                               cursor: 'pointer',
@@ -1456,13 +1368,13 @@ const BookAppointmentPage: React.FC = () => {
                           >ft/in</button>
                         </div>
                       </div>
-                      
+
                       {heightUnit === 'cm' ? (
-                        <input 
-                          type="text" 
+                        <input
+                          type="text"
                           className="form-control-input"
                           placeholder="e.g. 165"
-                          value={formData.patientHeight} 
+                          value={formData.patientHeight}
                           onChange={(e) => {
                             setStep4Error('');
                             handleCmChange(e.target.value);
@@ -1470,23 +1382,23 @@ const BookAppointmentPage: React.FC = () => {
                         />
                       ) : (
                         <div style={{ display: 'flex', gap: '8px' }}>
-                          <input 
-                            type="text" 
+                          <input
+                            type="text"
                             className="form-control-input"
                             style={{ flex: 1 }}
                             placeholder="ft"
-                            value={heightFt} 
+                            value={heightFt}
                             onChange={(e) => {
                               setStep4Error('');
                               handleFtInChange(e.target.value, heightIn);
                             }}
                           />
-                          <input 
-                            type="text" 
+                          <input
+                            type="text"
                             className="form-control-input"
                             style={{ flex: 1 }}
                             placeholder="in"
-                            value={heightIn} 
+                            value={heightIn}
                             onChange={(e) => {
                               setStep4Error('');
                               handleFtInChange(heightFt, e.target.value);
@@ -1500,13 +1412,13 @@ const BookAppointmentPage: React.FC = () => {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                         <label className="field-label" style={{ margin: 0 }}>Weight <span style={{ color: '#64748B', fontWeight: 400, fontSize: '0.82rem' }}>(Optional)</span></label>
                         <div style={{ display: 'flex', gap: '4px', background: '#E2E8F0', padding: '2px', borderRadius: '6px' }}>
-                          <button 
-                            type="button" 
-                            onClick={() => setWeightUnit('kg')} 
-                            style={{ 
-                              padding: '2px 8px', 
-                              fontSize: '11px', 
-                              fontWeight: 'bold', 
+                          <button
+                            type="button"
+                            onClick={() => setWeightUnit('kg')}
+                            style={{
+                              padding: '2px 8px',
+                              fontSize: '11px',
+                              fontWeight: 'bold',
                               borderRadius: '4px',
                               border: 'none',
                               cursor: 'pointer',
@@ -1516,13 +1428,13 @@ const BookAppointmentPage: React.FC = () => {
                               transition: 'all 0.15s ease'
                             }}
                           >kg</button>
-                          <button 
-                            type="button" 
-                            onClick={() => setWeightUnit('lbs')} 
-                            style={{ 
-                              padding: '2px 8px', 
-                              fontSize: '11px', 
-                              fontWeight: 'bold', 
+                          <button
+                            type="button"
+                            onClick={() => setWeightUnit('lbs')}
+                            style={{
+                              padding: '2px 8px',
+                              fontSize: '11px',
+                              fontWeight: 'bold',
                               borderRadius: '4px',
                               border: 'none',
                               cursor: 'pointer',
@@ -1534,24 +1446,24 @@ const BookAppointmentPage: React.FC = () => {
                           >lbs</button>
                         </div>
                       </div>
-                      
+
                       {weightUnit === 'kg' ? (
-                        <input 
-                          type="text" 
+                        <input
+                          type="text"
                           className="form-control-input"
                           placeholder="e.g. 62"
-                          value={formData.patientWeight} 
+                          value={formData.patientWeight}
                           onChange={(e) => {
                             setStep4Error('');
                             handleKgChange(e.target.value);
                           }}
                         />
                       ) : (
-                        <input 
-                          type="text" 
+                        <input
+                          type="text"
                           className="form-control-input"
                           placeholder="e.g. 137"
-                          value={weightLbs} 
+                          value={weightLbs}
                           onChange={(e) => {
                             setStep4Error('');
                             handleLbsChange(e.target.value);
@@ -1562,7 +1474,7 @@ const BookAppointmentPage: React.FC = () => {
 
                     <div className="input-field-group">
                       <label className="field-label">Blood Group <span style={{ color: '#64748B', fontWeight: 400, fontSize: '0.82rem' }}>(Optional)</span></label>
-                      <select 
+                      <select
                         className="form-control-input"
                         value={formData.patientBloodGroup}
                         onChange={(e) => setFormData({ ...formData, patientBloodGroup: e.target.value })}
@@ -1582,11 +1494,11 @@ const BookAppointmentPage: React.FC = () => {
 
                     <div className="input-field-group">
                       <label className="field-label">Phone Number <span style={{ color: '#EF4444' }}>*</span></label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         className="form-control-input"
                         placeholder="10-digit number"
-                        value={formData.patientPhone} 
+                        value={formData.patientPhone}
                         onChange={(e) => {
                           setStep4Error('');
                           handlePhoneChange(e.target.value);
@@ -1621,11 +1533,11 @@ const BookAppointmentPage: React.FC = () => {
 
                     <div className="input-field-group full-width-field">
                       <label className="field-label">Email Address <span style={{ color: '#64748B', fontWeight: 400, fontSize: '0.82rem' }}>(Optional)</span></label>
-                      <input 
-                        type="email" 
+                      <input
+                        type="email"
                         className="form-control-input"
                         placeholder="ananya@example.com (Optional)"
-                        value={formData.patientEmail} 
+                        value={formData.patientEmail}
                         onChange={(e) => setFormData({ ...formData, patientEmail: e.target.value })}
                       />
                     </div>
@@ -1645,14 +1557,14 @@ const BookAppointmentPage: React.FC = () => {
                   <div className="appointment-details-card">
                     <div className="app-details-header">
                       <h2 className="app-details-title">Appointment Details</h2>
-                      <button 
-                        type="button" 
-                        className="btn-edit-appointment" 
+                      <button
+                        type="button"
+                        className="btn-edit-appointment"
                         onClick={() => setCurrentStep(1)}
                       >
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                         </svg>
                         Edit
                       </button>
@@ -1682,10 +1594,10 @@ const BookAppointmentPage: React.FC = () => {
                           </span>
                         </div>
                         {formData.selectedDoctor?.imageUrl && (
-                          <img 
-                            src={formData.selectedDoctor.imageUrl} 
-                            alt={formData.selectedDoctor.name} 
-                            className="item-doc-avatar" 
+                          <img
+                            src={formData.selectedDoctor.imageUrl}
+                            alt={formData.selectedDoctor.name}
+                            className="item-doc-avatar"
                             loading="lazy"
                             onError={handleImageError}
                           />
@@ -1733,7 +1645,7 @@ const BookAppointmentPage: React.FC = () => {
                     {/* Security Blue Banner */}
                     <div className="security-blue-banner">
                       <svg viewBox="0 0 24 24" fill="#2563EB" width="18" height="18">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                       </svg>
                       <span>Your health information is private and secure with us.</span>
                     </div>
@@ -1755,9 +1667,9 @@ const BookAppointmentPage: React.FC = () => {
                         <span className="help-title">Need Help?</span>
                         <span className="help-sub">Our support team is here to help you.</span>
                       </div>
-                      <button 
-                        type="button" 
-                        className="btn-chat-with-us" 
+                      <button
+                        type="button"
+                        className="btn-chat-with-us"
                         onClick={() => setShowHelpModal(true)}
                       >
                         Chat with us
@@ -1769,8 +1681,8 @@ const BookAppointmentPage: React.FC = () => {
 
               {/* Card Footer Actions */}
               <div className="form-card-footer">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="btn-form-back"
                   onClick={handlePrevStep}
                 >
@@ -1781,8 +1693,8 @@ const BookAppointmentPage: React.FC = () => {
                   🔒 Your health information is private and secure.
                 </div>
 
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="btn-form-next-orange"
                   onClick={handleNextStep}
                 >
@@ -1812,7 +1724,7 @@ const BookAppointmentPage: React.FC = () => {
                   {/* Section 1: Payment Summary */}
                   <div className="payment-summary-section">
                     <h3 className="payment-section-title">Payment Summary</h3>
-                    
+
                     <div className="pay-row">
                       <span>Consultation Fee</span>
                       <strong className="pay-amt">₹{formData.selectedDoctor?.fee.replace(/\D/g, '') || '600'}</strong>
@@ -1854,9 +1766,9 @@ const BookAppointmentPage: React.FC = () => {
                     <div className="pay-options-group">
                       {/* Option 1: UPI */}
                       <label className={`pay-option-card ${paymentMethod === 'upi' ? 'selected' : ''}`}>
-                        <input 
-                          type="radio" 
-                          name="paymentMethod" 
+                        <input
+                          type="radio"
+                          name="paymentMethod"
                           checked={paymentMethod === 'upi'}
                           onChange={() => setPaymentMethod('upi')}
                         />
@@ -1875,9 +1787,9 @@ const BookAppointmentPage: React.FC = () => {
 
                       {/* Option 2: Credit / Debit Card */}
                       <label className={`pay-option-card ${paymentMethod === 'card' ? 'selected' : ''}`}>
-                        <input 
-                          type="radio" 
-                          name="paymentMethod" 
+                        <input
+                          type="radio"
+                          name="paymentMethod"
                           checked={paymentMethod === 'card'}
                           onChange={() => setPaymentMethod('card')}
                         />
@@ -1889,9 +1801,9 @@ const BookAppointmentPage: React.FC = () => {
 
                       {/* Option 3: Net Banking */}
                       <label className={`pay-option-card ${paymentMethod === 'netbanking' ? 'selected' : ''}`}>
-                        <input 
-                          type="radio" 
-                          name="paymentMethod" 
+                        <input
+                          type="radio"
+                          name="paymentMethod"
                           checked={paymentMethod === 'netbanking'}
                           onChange={() => setPaymentMethod('netbanking')}
                         />
@@ -1903,9 +1815,9 @@ const BookAppointmentPage: React.FC = () => {
 
                       {/* Option 4: Wallets */}
                       <label className={`pay-option-card ${paymentMethod === 'wallets' ? 'selected' : ''}`}>
-                        <input 
-                          type="radio" 
-                          name="paymentMethod" 
+                        <input
+                          type="radio"
+                          name="paymentMethod"
                           checked={paymentMethod === 'wallets'}
                           onChange={() => setPaymentMethod('wallets')}
                         />
@@ -1917,8 +1829,8 @@ const BookAppointmentPage: React.FC = () => {
                     </div>
 
                     {/* Pay Button */}
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="btn-pay-now-primary"
                       onClick={() => setBookingConfirmed(true)}
                     >
@@ -1939,10 +1851,10 @@ const BookAppointmentPage: React.FC = () => {
                   {formData.selectedDoctor && (
                     <div className="summary-card doc-preview-sidebar-card">
                       <div className="sidebar-doc-preview-content">
-                        <img 
-                          src={formData.selectedDoctor.imageUrl} 
-                          alt={formData.selectedDoctor.name} 
-                          className="sidebar-doc-avatar" 
+                        <img
+                          src={formData.selectedDoctor.imageUrl}
+                          alt={formData.selectedDoctor.name}
+                          className="sidebar-doc-avatar"
                           loading="lazy"
                           onError={handleImageError}
                         />
@@ -1950,7 +1862,7 @@ const BookAppointmentPage: React.FC = () => {
                           <div className="doc-name-badge-row">
                             <h4 className="sidebar-doc-name">{formData.selectedDoctor.name}</h4>
                             <svg className="verified-blue-badge" viewBox="0 0 24 24" fill="#2563EB" width="14" height="14">
-                              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                             </svg>
                           </div>
                           <p className="sidebar-doc-spec">{formData.selectedDoctor.specialty}</p>
