@@ -102,30 +102,36 @@ enum Gender {
 }
 
 model Doctor {
+  id                String               @id @default(uuid())
+  userId            String               @unique
+  user              User                 @relation(fields: [userId], references: [id])
+  name              String?              @default("Dr. Doctor")
+  gender            Gender?
+  specialty         String               @default("General Physician")
+  experience        String?              @default("10+ Years Experience")
+  rating            Float?               @default(4.8)
+  reviewsCount      Int?                 @default(0)
+  hospital          String?              @default("Apollo Medical Center")
+  location          String?              @default("Delhi")
+  imageUrl          String?
+  imageStoragePath  String?
+  imagePosition     String?              @default("50% 20%")
+  fee               String?              @default("₹500")
+  consultationFee   Int?                 @default(500)
+  availableToday    Boolean              @default(true)
+  priorityLevel     String               @default("P1")
+  priorityScore     Int                  @default(90)
+  degrees           String?              @default("MBBS")
+  tags              String[]
+  availability      Json?
+  profileCompleted  Boolean              @default(false)
+  isVerified        Boolean              @default(false)
+  isActive          Boolean              @default(true)
 
-  id              String   @id @default(uuid())
-  userId          String   @unique
-  user            User     @relation(fields: [userId], references: [id])
-  name            String   @default("Dr. Doctor")
-  specialty       String   @default("General Physician")
-  experience      String?  @default("10+ Years Experience")
-  rating          Float    @default(4.8)
-  reviewsCount    Int      @default(0)
-  hospital        String?  @default("Apollo Medical Center")
-  location        String?  @default("Delhi")
-  imageUrl        String?
-  fee             String?  @default("₹500")
-  consultationFee Int?     @default(500)
-  availableToday  Boolean  @default(true)
-  priorityLevel   String   @default("P1")
-  priorityScore   Int      @default(90)
-  degrees         String?  @default("MBBS")
-  tags            String[]
-
-  appointments  Appointment[]
-  prescriptions Prescription[]
-  availabilities DoctorAvailability[]
-  slots          Slot[]
+  appointments      Appointment[]
+  prescriptions     Prescription[]
+  availabilities    DoctorAvailability[]
+  slots             Slot[]
 }
 
 enum SlotStatus {
@@ -139,10 +145,10 @@ model DoctorAvailability {
   id          String   @id @default(uuid())
   doctorId    String
   doctor      Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  dayOfWeek   Int      // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-  startTime   String   // e.g. "09:00"
-  endTime     String   // e.g. "17:00"
-  slotMinutes Int      @default(15) // Fixed 15-minute slot length
+  dayOfWeek   Int
+  startTime   String
+  endTime     String
+  slotMinutes Int      @default(15)
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt @default(now())
@@ -154,9 +160,9 @@ model Slot {
   id            String       @id @default(uuid())
   doctorId      String
   doctor        Doctor       @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  date          String       // e.g. "2026-08-01" (YYYY-MM-DD format)
-  startTime     String       // e.g. "09:15 AM"
-  endTime       String       // e.g. "09:30 AM"
+  date          String
+  startTime     String
+  endTime       String
   status        SlotStatus   @default(AVAILABLE)
   appointmentId String?      @unique
   appointment   Appointment? @relation(fields: [appointmentId], references: [id])
@@ -164,34 +170,6 @@ model Slot {
 
   @@unique([doctorId, date, startTime])
   @@index([doctorId, date, status])
-
-  id               String         @id @default(uuid())
-  userId           String?        @unique
-  name             String?
-  gender           Gender?
-  specialty        String
-  consultationFee  Int?
-  availableToday   Boolean?       @default(true)
-  degrees          String?
-  experience       String?
-  fee              String?
-  hospital         String?
-  imageUrl         String?
-  imageStoragePath String?
-  imagePosition    String?        @default("50% 20%")
-  location         String?
-  priorityLevel    String?
-  priorityScore    Int?
-  rating           Float?         @default(4.8)
-  reviewsCount     Int?           @default(12)
-  tags             String[]
-  availability     Json?
-  profileCompleted Boolean        @default(false)
-  isVerified       Boolean        @default(false)
-  isActive         Boolean        @default(true)
-  appointments     Appointment[]
-  user             User?          @relation(fields: [userId], references: [id])
-  prescriptions    Prescription[]
 }
 
 model Appointment {
@@ -202,6 +180,7 @@ model Appointment {
   status                String          @default("WAITING")
   createdAt             DateTime        @default(now())
   updatedAt             DateTime        @default(now()) @updatedAt
+
   patientName           String?
   patientAge            String?
   patientGender         String?
@@ -210,6 +189,7 @@ model Appointment {
   patientBloodGroup     String?
   patientPhone          String?
   patientEmail          String?
+
   healthConcern         String?
   symptoms              String[]
   duration              String?
@@ -217,44 +197,21 @@ model Appointment {
   consultMode           String?
   urgency               String?
   notes                 String?
+
   date                  String?
   timeSlot              String?
   priority              String          @default("ROUTINE")
   isFollowUp            Boolean         @default(false)
   emailRemindersEnabled Boolean         @default(true)
+
   doctor                Doctor          @relation(fields: [doctorId], references: [id])
   patient               Patient?        @relation(fields: [patientId], references: [id])
+  slot                  Slot?
   ehrRecord             EhrRecord?
   medicalReports        MedicalReport[]
   payment               Payment?
   prescription          Prescription?
 
-  // Flat fields from booking flow (HEAD)
-  patientName       String?
-  patientAge        String?
-  patientGender     String?
-  patientHeight     String?
-  patientWeight     String?
-  patientBloodGroup String?
-  patientPhone      String?
-  patientEmail      String?
-  
-  healthConcern     String?
-  symptoms          String[]
-  duration          String?
-  severity          String?
-  consultMode       String?
-  urgency           String?
-  notes             String?
-  
-  date              String?
-  timeSlot          String?
-  priority          String   @default("ROUTINE")
-  
-  slot         Slot?
-  ehrRecord    EhrRecord?
-  prescription Prescription?
-  payment      Payment?
   @@index([doctorId, date, timeSlot])
 }
 
@@ -288,7 +245,6 @@ model MedicalReport {
   @@index([appointmentId])
   @@index([uploadedByUserId])
   @@index([status])
-
 }
 
 model EhrRecord {
