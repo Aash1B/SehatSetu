@@ -14,6 +14,7 @@ import { LabChatService } from './services/lab-chat.service';
 import { EmergencyHandlingService } from './services/emergency-handling.service';
 import { LabTestGuidanceService } from './services/lab-test-guidance.service';
 import { AiChatService, AiChatContext } from './services/ai-chat.service';
+import { MedicalConditionService, MedicalConditionResult } from './services/medical-condition.service';
 
 interface AuthenticatedUser {
   userId: string;
@@ -36,6 +37,7 @@ export class ChatbotService {
     private readonly emergencyHandlingService: EmergencyHandlingService,
     private readonly labTestGuidanceService: LabTestGuidanceService,
     private readonly aiChatService: AiChatService,
+    private readonly medicalConditionService: MedicalConditionService,
   ) {
     this.conversationService.startCleanup();
   }
@@ -107,6 +109,70 @@ export class ChatbotService {
         cards,
         uniqueReplies,
         emergencyResult.message,
+      );
+    }
+
+    // MEDICAL CONDITION handling — runs after emergency, before AI fallback
+    const medicalCondition = this.medicalConditionService.detectMedicalCondition(dto.message);
+    if (medicalCondition.detected && medicalCondition.specialty) {
+      // Update conversation with disease entity
+      await this.conversationService.updateConversation(conversation.conversationId, {
+        lastIntent: intentResponse.intent,
+        entities: { ...entities, disease: medicalCondition.condition ?? undefined, specialty: medicalCondition.specialty },
+        role: 'user',
+        content: dto.message,
+      });
+
+      // Build response that guides user to appropriate care
+      const conditionResponse = this.medicalConditionService.buildConditionResponse(
+        medicalCondition.condition || '',
+        medicalCondition.specialty,
+      );
+
+      // Check if user also has emergency symptoms
+      const hasEmergency = this.emergencyHandlingService.detectEmergency(dto.message);
+      // Note: intentResponse.intent will not be EMERGENCY here since emergency handling
+      // runs first. The comparison is type-safe but will always be false for medical condition messages.
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      const hasEmergencyIntent = false;
+
+      if (hasEmergency || hasEmergencyIntent) {
+        // If both condition AND emergency, prioritize emergency
+        const emergencyResult = this.emergencyHandlingService.buildEmergencyResponse({
+          latitude,
+          longitude,
+        });
+        if (latitude !== undefined && longitude !== undefined) {
+          const hospitalResult: HospitalSearchResult =
+            await this.hospitalChatService.searchNearbyHospitals({
+              latitude,
+              longitude,
+            });
+          cards.push(...hospitalResult.cards);
+          suggestedReplies.push(...hospitalResult.suggestedReplies);
+        }
+        cards.push(...emergencyResult.cards);
+        suggestedReplies.push(...emergencyResult.suggestedReplies);
+        suggestedReplies.push('Call 108');
+        return await this.buildResponse(
+          conversation,
+          intentResponse,
+          cards,
+          [...new Set(suggestedReplies)],
+          emergencyResult.message,
+        );
+      }
+
+      // Add doctor search suggestion for the specialty
+      suggestedReplies.push(...medicalCondition.suggestedReplies);
+      suggestedReplies.push(`Find a ${medicalCondition.specialty}`, 'Book appointment');
+
+      return await this.buildResponse(
+        conversation,
+        intentResponse,
+        cards,
+        [...new Set(suggestedReplies)],
+        `${conditionResponse} You can find ${medicalCondition.specialty} doctors in our directory, book appointments, or search for specialists.`,
       );
     }
 

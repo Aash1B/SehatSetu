@@ -173,6 +173,7 @@ export class AiChatService {
       ChatIntent.LAB_TEST_GUIDANCE,
       ChatIntent.HEALTH_RECORDS,
       ChatIntent.PRESCRIPTIONS,
+      ChatIntent.MEDICAL_CONDITION,
     ];
     return !deterministicIntents.includes(intent);
   }

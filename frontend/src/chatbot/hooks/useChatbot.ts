@@ -10,7 +10,7 @@ function generateId(): string {
     : Math.random().toString(36).slice(2, 10);
 }
 
-const WELCOME_REPLIES = ['Find a doctor', 'Book appointment', 'Nearby hospitals', 'Lab tests', 'Emergency help'];
+
 
 interface UseChatbotResult {
   messages: ChatMessage[];
@@ -167,15 +167,6 @@ export function useChatbot(): UseChatbotResult {
         setIsTyping(false);
 
         setMessages((prev) => prev.filter((m) => !m.isTyping));
-        const fallbackMsg: ChatMessage = {
-          id: generateId(),
-          role: 'assistant',
-          content: chatError.message,
-          timestamp: new Date(),
-          isError: true,
-          suggestedReplies: WELCOME_REPLIES,
-        };
-        setMessages((prev) => [...prev, fallbackMsg]);
       }
     },
     [isLoading, conversationId, appendUserMessage, startProgressiveReply],

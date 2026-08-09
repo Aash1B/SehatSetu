@@ -8,5 +8,8 @@
   "openSidebarTitle": "Open Sidebar",
   "toggleNav": "Toggle Navigation Sidebar",
   "logoAlt": "SehatSetu logo",
-  "patientPortal": "Patient Portal"
+  "patientPortal": "Patient Portal",
+  "selectLanguage": "Select language",
+  "uploadReports": "Upload Reports",
+  "findDoctors": "Find doctors"
 }

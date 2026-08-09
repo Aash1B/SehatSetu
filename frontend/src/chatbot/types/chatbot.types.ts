@@ -68,7 +68,7 @@ export interface ChatMessage {
 }
 
 export interface ChatError {
-  type: 'offline' | 'timeout' | 'backend_unavailable' | 'ai_unavailable' | 'location_denied' | 'auth_required' | 'unknown';
+  type: 'offline' | 'timeout' | 'backend_unavailable' | 'ai_unavailable' | 'location_denied' | 'auth_required' | 'endpoint_not_found' | 'unknown';
   message: string;
   canRetry: boolean;
 }

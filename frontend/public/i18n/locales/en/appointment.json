@@ -34,5 +34,19 @@
   "cancellationSuccessful": "Appointment cancelled successfully.",
   "rescheduleSuccessful": "Appointment rescheduled successfully.",
   "selectSlot": "Select a time slot",
-  "noSlots": "No slots available on this date."
+  "noSlots": "No slots available on this date.",
+  "doctorCount": "doctor",
+  "doctorsCount": "doctors",
+  "availableToday": "Available Today",
+  "saveDoctor": "Save Doctor",
+  "noDoctorsMatch": "No doctors match your criteria",
+  "adjustSearch": "Try adjusting your filters or search terms",
+  "consultationFee": "Consultation Fee",
+  "detailTicket": {
+    "patientName": "Patient Name",
+    "ageGender": "Age/Gender",
+    "vitals": "Vitals",
+    "feePaid": "Fee Paid",
+    "yrs": "yrs"
+  }
 }

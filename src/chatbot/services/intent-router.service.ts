@@ -155,6 +155,7 @@ export class IntentRouterService {
         /right doctor/i,
       ],
       [ChatIntent.UNKNOWN]: [],
+      [ChatIntent.MEDICAL_CONDITION]: [],
     };
 
     this.templates = {
@@ -215,6 +216,10 @@ export class IntentRouterService {
           'Your message may describe a medical emergency. Please seek immediate medical assistance.',
         suggestedReplies: ['Call 108', 'Nearby hospitals', 'Emergency room'],
       },
+      [ChatIntent.MEDICAL_CONDITION]: {
+        message: 'I can help you find appropriate care for your medical condition.',
+        suggestedReplies: ['Find a doctor', 'Book appointment', 'Specialist recommendations'],
+      },
       [ChatIntent.UNKNOWN]: {
         message: "I'm not sure I understood that. Could you rephrase?",
         suggestedReplies: ['Find a doctor', 'Book appointment', 'Help'],
@@ -239,6 +244,7 @@ export class IntentRouterService {
 
     const priorityOrder: ChatIntent[] = [
       ChatIntent.EMERGENCY,
+      ChatIntent.MEDICAL_CONDITION,
       ChatIntent.GREETING,
       ChatIntent.APPOINTMENT_STATUS,
       ChatIntent.DOCTOR_RECOMMENDATION,
@@ -255,7 +261,7 @@ export class IntentRouterService {
     ];
 
     for (const intent of priorityOrder) {
-      if (intent === ChatIntent.UNKNOWN) continue;
+      if (intent === ChatIntent.UNKNOWN || intent === ChatIntent.MEDICAL_CONDITION) continue;
       const patterns = this.keywords[intent];
       for (const pattern of patterns) {
         if (pattern.test(normalized)) {

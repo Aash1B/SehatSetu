@@ -1,0 +1,19 @@
+{
+  "noEmail": "No email address provided",
+  "goToSignup": "Go to Sign Up",
+  "portalLabel": "SehatSetu Portal",
+  "instructions": "Enter the verification code sent to your email",
+  "enterCode": "Enter Verification Code",
+  "codeLabel": "Verification Code",
+  "codePlaceholder": "Enter 6-digit code",
+  "submitting": "Verifying...",
+  "submit": "Verify Code",
+  "resending": "Resending code...",
+  "resendCode": "Resend Code",
+  "didntGetCode": "Didn't receive the code?",
+  "invalidCode": "Invalid verification code",
+  "codeExpired": "Verification code has expired",
+  "verifySuccess": "Email verified successfully!",
+  "verifyFailed": "Verification failed. Please try again.",
+  "backToLogin": "Back to Login"
+}

@@ -1,0 +1,15 @@
+{
+  "home": "முகப்பு",
+  "services": "சேவைகள்",
+  "doctors": "மருத்துவர்கள்",
+  "signIn": "உள்நுழைக",
+  "dashboard": "டாஷ்போர்டு",
+  "openSidebar": "பக்கப்பட்டி மெனு திறக்கவும்",
+  "openSidebarTitle": "பக்கப்பட்டி திறக்கவும்",
+  "toggleNav": "வழிசெலுத்தல் பக்கப்பட்டி மாற்றவும்",
+  "logoAlt": "SehatSetu சின்னம்",
+  "patientPortal": "நோயாளி போர்டல்",
+  "selectLanguage": "மொழி தேர்வு செய்யவும்",
+  "uploadReports": "அறிக்கைகளை பதிவேற்றவும்",
+  "findDoctors": "மருத்துவர்களைக் கண்டறியவும்"
+}

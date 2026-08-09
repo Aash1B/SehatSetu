@@ -1,4 +1,9 @@
 {
+  "consultMode": {
+    "video": "Video Consultation",
+    "chat": "Chat Consultation",
+    "inPerson": "In-Person Visit"
+  },
   "email": "Email",
   "emailPlaceholder": "you@example.com",
   "password": "Password",

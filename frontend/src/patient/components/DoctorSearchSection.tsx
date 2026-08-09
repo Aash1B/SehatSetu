@@ -1,52 +1,71 @@
-import React, { useState, useEffect } from 'react';
-import { doctorsData, type Doctor } from '../data/doctorsData';
-import { fetchDoctors } from '../services/doctorApi';
-import CustomSelect, { type OptionItem } from './CustomSelect';
-import { useNavigate } from 'react-router-dom';
-import { recommendDoctorSpecialist } from '../../common/services/aiApi';
-
-const SPECIALTY_OPTIONS: OptionItem[] = [
-  { value: 'All', label: 'Specialization (All)' },
-  { value: 'General Physician', label: 'General Physician' },
-  { value: 'Pediatrician (Child Specialist)', label: 'Pediatrician (Child Specialist)' },
-  { value: 'Cardiologist', label: 'Cardiologist' },
-  { value: 'Orthopedic Doctor', label: 'Orthopedic Doctor' },
-  { value: 'Neurologist', label: 'Neurologist' },
-  { value: 'Gynecologist & Obstetrician', label: 'Gynecologist & Obstetrician' },
-  { value: 'Dentist', label: 'Dentist' },
-  { value: 'Ophthalmologist (Eye Specialist)', label: 'Ophthalmologist (Eye Specialist)' },
-  { value: 'ENT Specialist (Ear, Nose & Throat)', label: 'ENT Specialist (Ear, Nose & Throat)' },
-  { value: 'Dermatologist (Skin Specialist)', label: 'Dermatologist (Skin Specialist)' },
-  { value: 'Psychiatrist / Psychologist', label: 'Psychiatrist / Psychologist' },
-  { value: 'Pulmonologist (Lung Specialist)', label: 'Pulmonologist (Lung Specialist)' },
-  { value: 'Gastroenterologist', label: 'Gastroenterologist' },
-  { value: 'Endocrinologist (Diabetes & Hormones)', label: 'Endocrinologist (Diabetes & Hormones)' },
-  { value: 'Urologist', label: 'Urologist' },
-];
-
-const LOCATION_OPTIONS: OptionItem[] = [
-  { value: 'All', label: 'Location' },
-  { value: 'Delhi', label: 'Delhi' },
-  { value: 'Mumbai', label: 'Mumbai' },
-  { value: 'Pune', label: 'Pune' },
-  { value: 'Bengaluru', label: 'Bengaluru' },
-  { value: 'Hyderabad', label: 'Hyderabad' },
-];
-
-const HOSPITAL_OPTIONS: OptionItem[] = [
-  { value: 'All', label: 'Hospital' },
-  { value: 'city', label: 'City Care Hospital' },
-  { value: 'skin', label: 'Skin Plus Clinic' },
-  { value: 'neuro', label: 'Neuro Care Hospital' },
-];
+﻿import React, { useState, useEffect } from "react";
+import { doctorsData, type Doctor } from "../data/doctorsData";
+import { fetchDoctors } from "../services/doctorApi";
+import CustomSelect, { type OptionItem } from "./CustomSelect";
+import { useNavigate } from "react-router-dom";
+import { recommendDoctorSpecialist } from "../../common/services/aiApi";
+import { useTranslation } from "react-i18next";
 
 const DoctorSearchSection: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation("home");
+  const { t: tFilters } = useTranslation("buttons");
+
+  const SPECIALTY_OPTIONS: OptionItem[] = [
+    { value: "All", label: tFilters("specializationAll") },
+    { value: "General Physician", label: tFilters("specializationGeneralPhysician") },
+    { value: "Pediatrician (Child Specialist)", label: tFilters("specializationPediatrician") },
+    { value: "Cardiologist", label: tFilters("specializationCardiologist") },
+    { value: "Orthopedic Doctor", label: tFilters("specializationOrthopedic") },
+    { value: "Neurologist", label: tFilters("specializationNeurologist") },
+    { value: "Gynecologist & Obstetrician", label: tFilters("specializationGynecologist") },
+    { value: "Dentist", label: tFilters("specializationDentist") },
+    { value: "Ophthalmologist (Eye Specialist)", label: tFilters("specializationOphthalmologist") },
+    { value: "ENT Specialist (Ear, Nose & Throat)", label: tFilters("specializationENT") },
+    { value: "Dermatologist (Skin Specialist)", label: tFilters("specializationDermatologist") },
+    { value: "Psychiatrist / Psychologist", label: tFilters("specializationPsychiatrist") },
+    { value: "Pulmonologist (Lung Specialist)", label: tFilters("specializationPulmonologist") },
+    { value: "Gastroenterologist", label: tFilters("specializationGastroenterologist") },
+    { value: "Endocrinologist (Diabetes & Hormones)", label: tFilters("specializationEndocrinologist") },
+    { value: "Urologist", label: tFilters("specializationUrologist") },
+  ];
+
+  const LOCATION_OPTIONS: OptionItem[] = [
+    { value: "All", label: tFilters("locationAll") },
+    { value: "Delhi", label: tFilters("locationDelhi") },
+    { value: "Mumbai", label: tFilters("locationMumbai") },
+    { value: "Pune", label: tFilters("locationPune") },
+    { value: "Bengaluru", label: tFilters("locationBengaluru") },
+    { value: "Hyderabad", label: tFilters("locationHyderabad") },
+  ];
+
+  const HOSPITAL_OPTIONS: OptionItem[] = [
+    { value: "All", label: tFilters("hospitalAll") },
+    { value: "city", label: tFilters("hospitalCityCare") },
+    { value: "skin", label: tFilters("hospitalSkinPlus") },
+    { value: "neuro", label: tFilters("hospitalNeuroCare") },
+  ];
+
+  const EXPERIENCE_OPTIONS: OptionItem[] = [
+    { value: "All", label: tFilters("experienceAll") },
+    { value: "1-5", label: tFilters("experience1to5") },
+    { value: "5-10", label: tFilters("experience5to10") },
+    { value: "10+", label: tFilters("experience10Plus") },
+  ];
+
+  const FEES_OPTIONS: OptionItem[] = [
+    { value: "All", label: tFilters("feesAll") },
+    { value: "500-800", label: tFilters("fees500to800") },
+    { value: "800-1200", label: tFilters("fees800to1200") },
+  ];
+
   const [doctorsList, setDoctorsList] = useState<Doctor[]>(doctorsData);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [specialtyFilter, setSpecialtyFilter] = useState('All');
-  const [locationFilter, setLocationFilter] = useState('All');
-  const [hospitalFilter, setHospitalFilter] = useState('All');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [specialtyFilter, setSpecialtyFilter] = useState("All");
+  const [locationFilter, setLocationFilter] = useState("All");
+  const [hospitalFilter, setHospitalFilter] = useState("All");
+  const [experienceFilter, setExperienceFilter] = useState("All");
+  const [feesFilter, setFeesFilter] = useState("All");
   const [favorites, setFavorites] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -69,32 +88,32 @@ const DoctorSearchSection: React.FC = () => {
   const filteredDoctors = doctorsList.filter(doc => {
     const query = searchTerm.trim().toLowerCase();
     const matchesSearch = !query ||
-      (doc.name || '').toLowerCase().includes(query) ||
-      (doc.specialty || '').toLowerCase().includes(query) ||
-      (doc.hospital || '').toLowerCase().includes(query) ||
-      (doc.location || '').toLowerCase().includes(query) ||
+      (doc.name || "").toLowerCase().includes(query) ||
+      (doc.specialty || "").toLowerCase().includes(query) ||
+      (doc.hospital || "").toLowerCase().includes(query) ||
+      (doc.location || "").toLowerCase().includes(query) ||
       (doc.tags && doc.tags.some(tag => tag.toLowerCase().includes(query)));
 
     const specFilterLower = specialtyFilter.trim().toLowerCase();
-    const docSpecLower = (doc.specialty || '').toLowerCase();
-    const matchesSpecialty = specialtyFilter === 'All' ||
-      docSpecLower.includes(specFilterLower.split(' ')[0]) ||
-      specFilterLower.includes(docSpecLower.split(' ')[0]) ||
-      docSpecLower.split(' ')[0] === specFilterLower.split(' ')[0];
+    const docSpecLower = (doc.specialty || "").toLowerCase();
+    const matchesSpecialty = specialtyFilter === "All" ||
+      docSpecLower.includes(specFilterLower.split(" ")[0]) ||
+      specFilterLower.includes(docSpecLower.split(" ")[0]) ||
+      docSpecLower.split(" ")[0] === specFilterLower.split(" ")[0];
 
-    const matchesLocation = locationFilter === 'All' ||
-      (doc.location || '').toLowerCase().includes(locationFilter.trim().toLowerCase()) ||
-      (doc.hospital || '').toLowerCase().includes(locationFilter.trim().toLowerCase());
+    const matchesLocation = locationFilter === "All" ||
+      (doc.location || "").toLowerCase().includes(locationFilter.trim().toLowerCase()) ||
+      (doc.hospital || "").toLowerCase().includes(locationFilter.trim().toLowerCase());
 
     return matchesSearch && matchesSpecialty && matchesLocation;
   });
 
   const sortedDoctors = [...filteredDoctors].sort((a, b) => {
     const locFilter = locationFilter.trim().toLowerCase();
-    const targetLoc = locFilter !== 'all' ? locFilter : (localStorage.getItem('patientCity') || 'mumbai').toLowerCase();
+    const targetLoc = locFilter !== "all" ? locFilter : (localStorage.getItem("patientCity") || "mumbai").toLowerCase();
 
-    const locA = `${a.location || ''} ${a.hospital || ''}`.toLowerCase();
-    const locB = `${b.location || ''} ${b.hospital || ''}`.toLowerCase();
+    const locA = `${a.location || ""} ${a.hospital || ""}`.toLowerCase();
+    const locB = `${b.location || ""} ${b.hospital || ""}`.toLowerCase();
 
     const matchA = locA.includes(targetLoc);
     const matchB = locB.includes(targetLoc);
@@ -102,8 +121,8 @@ const DoctorSearchSection: React.FC = () => {
     if (matchA && !matchB) return -1;
     if (!matchA && matchB) return 1;
 
-    const rateA = typeof a.rating === 'number' ? a.rating : parseFloat(String(a.rating || 0));
-    const rateB = typeof b.rating === 'number' ? b.rating : parseFloat(String(b.rating || 0));
+    const rateA = typeof a.rating === "number" ? a.rating : parseFloat(String(a.rating || 0));
+    const rateB = typeof b.rating === "number" ? b.rating : parseFloat(String(b.rating || 0));
     if (rateB !== rateA) return rateB - rateA;
 
     return (b.reviewsCount || 0) - (a.reviewsCount || 0);
@@ -121,11 +140,11 @@ const DoctorSearchSection: React.FC = () => {
 
   const handleSearchSubmit = () => {
     const params = new URLSearchParams();
-    if (searchTerm.trim()) params.set('q', searchTerm.trim());
-    if (specialtyFilter !== 'All') params.set('specialty', specialtyFilter);
-    if (locationFilter !== 'All') params.set('location', locationFilter);
+    if (searchTerm.trim()) params.set("q", searchTerm.trim());
+    if (specialtyFilter !== "All") params.set("specialty", specialtyFilter);
+    if (locationFilter !== "All") params.set("location", locationFilter);
     const queryString = params.toString();
-    navigate(queryString ? `/patient/search?${queryString}` : '/patient/search');
+    navigate(queryString ? `/patient/search?${queryString}` : "/patient/search");
   };
 
   const visibleDoctors = searchTerm.trim()
@@ -137,8 +156,8 @@ const DoctorSearchSection: React.FC = () => {
       <div className="search-section-container">
         {/* Header */}
         <div className="search-section-header">
-          <h2 className="search-section-title">Find Your Doctor</h2>
-          <p className="search-section-subtitle">Search by name, specialty, hospital or symptoms</p>
+          <h2 className="search-section-title">{t("searchSection.findYourDoctor")}</h2>
+          <p className="search-section-subtitle">{t("searchSection.searchSubtitle")}</p>
         </div>
 
         {/* Search Bar Box */}
@@ -151,19 +170,14 @@ const DoctorSearchSection: React.FC = () => {
             <input
               type="text"
               className="main-search-input"
-              placeholder="Search doctor, specialty, hospital or symptoms..."
+              placeholder={t("searchPlaceholder")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleSearchSubmit();
-                }
-              }}
             />
             <button
               type="button"
               className="btn-voice-search"
-              title="AI Recommend Specialist"
+              title={t("voiceSearch")}
               onClick={async () => {
                 if (!searchTerm.trim()) return;
                 try {
@@ -172,11 +186,18 @@ const DoctorSearchSection: React.FC = () => {
                     setSpecialtyFilter(res.data.specialization);
                   }
                 } catch (e) {
-                  console.error('AI doctor recommendation error', e);
+                  console.error("AI doctor recommendation error", e);
                 }
               }}
             >
-              <span className="text-xs font-bold text-orange-600 flex items-center gap-1 px-1">✨ AI Match</span>
+              <span className="text-xs font-bold text-orange-600 flex items-center gap-1 px-1">{t("aiMatch")}</span>
+            </button>
+            <button type="button" className="btn-search-submit" onClick={handleSearchSubmit}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                <circle cx="11" cy="11" r="8" />
+                <path d="M21 21l-4.35-4.35" />
+              </svg>
+              {t("search")}
             </button>
           </div>
 
@@ -202,18 +223,39 @@ const DoctorSearchSection: React.FC = () => {
               value={hospitalFilter}
               onChange={setHospitalFilter}
             />
+
+            <CustomSelect
+              icon="📅"
+              options={EXPERIENCE_OPTIONS}
+              value={experienceFilter}
+              onChange={setExperienceFilter}
+            />
+
+            <CustomSelect
+              icon="₹"
+              options={FEES_OPTIONS}
+              value={feesFilter}
+              onChange={setFeesFilter}
+            />
+
+            <button type="button" className="btn-more-filters" onClick={handleSearchSubmit}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                <path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" />
+              </svg>
+              {tFilters("moreFilters")}
+            </button>
           </div>
         </div>
 
         {/* Doctor Cards Carousel Header */}
         <div className="doctors-carousel-header">
-          <h3 className="doctors-carousel-title">Top Doctors Near You</h3>
+          <h3 className="doctors-carousel-title">{t("searchSection.topDoctorsNearYou")}</h3>
           <button
             type="button"
             className="link-view-all"
             onClick={handleSearchSubmit}
           >
-            View All Doctors
+            {t("searchSection.viewAllDoctors")}
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
@@ -234,12 +276,12 @@ const DoctorSearchSection: React.FC = () => {
                     src={doctor.imageUrl}
                     alt={`Dr. ${doctor.name}`}
                     className="h-full w-full object-cover"
-                    style={{ objectPosition: doctor.imagePosition || '50% 20%' }}
+                    style={{ objectPosition: doctor.imagePosition || "50% 20%" }}
                     loading="lazy"
                   />
                   <button
                     type="button"
-                    className={`favorite-btn ${favorites.includes(doctor.id) ? 'active' : ''}`}
+                    className={`favorite-btn ${favorites.includes(doctor.id) ? "active" : ""}`}
                     onClick={() => toggleFavorite(doctor.id)}
                     aria-label="Favorite doctor"
                   >
@@ -269,14 +311,14 @@ const DoctorSearchSection: React.FC = () => {
                       className="btn-view-profile"
                       onClick={() => navigate(`/patient/book/${doctor.id}`)}
                     >
-                      View Profile
+                      {tFilters("viewProfile")}
                     </button>
                     <button
                       type="button"
                       className="btn-book-doctor"
                       onClick={() => navigate(`/patient/book/${doctor.id}`)}
                     >
-                      Book Appointment
+                      {tFilters("bookNow")}
                     </button>
                   </div>
                 </div>
@@ -284,7 +326,7 @@ const DoctorSearchSection: React.FC = () => {
             ))}
             {filteredDoctors.length === 0 && (
               <div className="appointments-empty-state">
-                No doctor matches “{searchTerm}”. Try another name or clear the filters.
+                {t("noDoctorMatches", { searchTerm })}
               </div>
             )}
           </div>

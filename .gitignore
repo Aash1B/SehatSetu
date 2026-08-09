@@ -44,3 +44,14 @@ uploads/
 *.sql.gz
 *.pem
 *.key
+
+# Debug and temporary artifacts
+debug-cdp.cjs
+debug-cdp.mjs
+frontend/debug-chatbot.html
+test-output.txt
+test-output2.txt
+
+# IDE configuration (Kiro)
+.kiro/
+frontend/.kiro/

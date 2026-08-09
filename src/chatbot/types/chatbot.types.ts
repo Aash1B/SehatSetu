@@ -14,6 +14,7 @@ export enum ChatIntent {
   HELP = 'HELP',
   GENERAL_CHAT = 'GENERAL_CHAT',
   UNKNOWN = 'UNKNOWN',
+  MEDICAL_CONDITION = 'MEDICAL_CONDITION',
 }
 
 export interface SlotInfo {

@@ -7,39 +7,65 @@ import FloatingEmergencyButton from '../components/FloatingEmergencyButton';
 import CustomSelect, { type OptionItem } from '../components/CustomSelect';
 import { PRIORITY_CONFIG, doctorsData, type Doctor } from '../data/doctorsData';
 import { fetchDoctors } from '../services/doctorApi';
+import { useTranslation } from 'react-i18next';
 
-const SPECIALTY_OPTIONS: OptionItem[] = [
-  { value: 'All', label: 'All Specializations' },
-  { value: 'General Physician', label: 'General Physician' },
-  { value: 'Cardiologist', label: 'Cardiologist' },
-  { value: 'Neurologist', label: 'Neurologist' },
-  { value: 'Dermatologist', label: 'Dermatologist' },
-  { value: 'Orthopedic Doctor', label: 'Orthopedic Doctor' },
-  { value: 'Gynecologist', label: 'Gynecologist & Obstetrician' },
-  { value: 'Pediatrician', label: 'Pediatrician (Child Specialist)' },
-  { value: 'Ophthalmologist', label: 'Ophthalmologist' },
-  { value: 'Dentist', label: 'Dentist' },
-  { value: 'ENT Specialist', label: 'ENT Specialist' },
+// Static value arrays — used as filter values, NOT as translation keys
+const SPECIALTY_KEYS = [
+  'All', 'General Physician', 'Cardiologist', 'Neurologist',
+  'Dermatologist', 'Orthopedic Doctor', 'Gynecologist', 'Pediatrician',
+  'Ophthalmologist', 'Dentist', 'ENT Specialist',
 ];
+const LOCATION_KEYS = ['All', 'Delhi', 'Mumbai', 'Pune', 'Bengaluru', 'Hyderabad'];
 
-const LOCATION_OPTIONS: OptionItem[] = [
-  { value: 'All', label: 'All Locations' },
-  { value: 'Delhi', label: 'Delhi' },
-  { value: 'Mumbai', label: 'Mumbai' },
-  { value: 'Pune', label: 'Pune' },
-  { value: 'Bengaluru', label: 'Bengaluru' },
-  { value: 'Hyderabad', label: 'Hyderabad' },
-];
+// Map raw filter values → buttons namespace translation keys
+const SPECIALTY_OPTION_MAP: Record<string, string> = {
+  'All': 'specializationAll',
+  'General Physician': 'specializationGeneralPhysician',
+  'Cardiologist': 'specializationCardiologist',
+  'Neurologist': 'specializationNeurologist',
+  'Dermatologist': 'specializationDermatologist',
+  'Orthopedic Doctor': 'specializationOrthopedic',
+  'Gynecologist': 'specializationGynecologist',
+  'Pediatrician': 'specializationPediatrician',
+  'Ophthalmologist': 'specializationOphthalmologist',
+  'Dentist': 'specializationDentist',
+  'ENT Specialist': 'specializationENT',
+};
+const LOCATION_OPTION_MAP: Record<string, string> = {
+  'All': 'locationAll',
+  'Delhi': 'locationDelhi',
+  'Mumbai': 'locationMumbai',
+  'Pune': 'locationPune',
+  'Bengaluru': 'locationBengaluru',
+  'Hyderabad': 'locationHyderabad',
+};
 
 const DoctorSearchPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation(['doctor', 'appointment', 'common', 'buttons', 'patient', 'forms']);
+  // Dedicated translator for buttons namespace to avoid key-path ambiguity
+  const { t: tBtn } = useTranslation('buttons');
+
   const [doctorsList, setDoctorsList] = useState<Doctor[]>(doctorsData);
   const [searchTerm, setSearchTerm] = useState(() => searchParams.get('q') || '');
   const [specialtyFilter, setSpecialtyFilter] = useState(() => searchParams.get('specialty') || 'All');
   const [locationFilter, setLocationFilter] = useState(() => searchParams.get('location') || 'All');
   const [favorites, setFavorites] = useState<string[]>([]);
   const [onlyAvailableToday, setOnlyAvailableToday] = useState(false);
+
+  // Build dropdown options using the buttons namespace directly
+  const specialtyOptions: OptionItem[] = useMemo(() =>
+    SPECIALTY_KEYS.map((v) => ({
+      value: v,
+      label: tBtn(SPECIALTY_OPTION_MAP[v] || v, { defaultValue: v }),
+    })), [tBtn]);
+
+  const locationOptions: OptionItem[] = useMemo(() =>
+    LOCATION_KEYS.map((v) => ({
+      value: v,
+      label: tBtn(LOCATION_OPTION_MAP[v] || v, { defaultValue: v }),
+    })), [tBtn]);
 
   const handleImageError = (event: React.SyntheticEvent<HTMLImageElement>) => {
     const image = event.currentTarget;
@@ -66,7 +92,7 @@ const DoctorSearchPage: React.FC = () => {
   }, []);
 
   const toggleFavorite = (id: string) => {
-    setFavorites(prev => 
+    setFavorites(prev =>
       prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
     );
   };
@@ -78,7 +104,7 @@ const DoctorSearchPage: React.FC = () => {
     return doctorsList
       .filter((doc: Doctor) => {
         const query = searchTerm.trim().toLowerCase();
-        const matchesSearch = 
+        const matchesSearch =
           !query ||
           (doc.name && doc.name.toLowerCase().includes(query)) ||
           (doc.specialty && doc.specialty.toLowerCase().includes(query)) ||
@@ -88,14 +114,14 @@ const DoctorSearchPage: React.FC = () => {
 
         const specFilterLower = specialtyFilter.trim().toLowerCase();
         const docSpecLower = (doc.specialty || '').toLowerCase();
-        const matchesSpecialty = 
-          specialtyFilter === 'All' || 
+        const matchesSpecialty =
+          specialtyFilter === 'All' ||
           docSpecLower.includes(specFilterLower.split(' ')[0]) ||
           specFilterLower.includes(docSpecLower.split(' ')[0]) ||
           docSpecLower.split(' ')[0] === specFilterLower.split(' ')[0];
 
-        const matchesLocation = 
-          locationFilter === 'All' || 
+        const matchesLocation =
+          locationFilter === 'All' ||
           (doc.location && doc.location.toLowerCase().includes(locFilter)) ||
           (doc.hospital && doc.hospital.toLowerCase().includes(locFilter));
 
@@ -121,25 +147,31 @@ const DoctorSearchPage: React.FC = () => {
       });
   }, [doctorsList, searchTerm, specialtyFilter, locationFilter, onlyAvailableToday]);
 
+  const resetFilters = () => {
+    setSpecialtyFilter('All');
+    setLocationFilter('All');
+    setSearchTerm('');
+    setOnlyAvailableToday(false);
+  };
+
   return (
     <div className="all-doctors-page">
       <Sidebar />
       <Navbar />
 
-      {/* Main Content Section - Search Bar at Top, Cards Below */}
       <main className="doctors-page-main">
         <div className="doctors-main-container">
           {/* Breadcrumb Header */}
           <div className="doctors-page-top-nav">
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="breadcrumb-back-btn"
               onClick={() => navigate('/')}
             >
-              ← Back to Home
+              ← {t('common.backToHome')}
             </button>
             <span className="breadcrumb-slash">/</span>
-            <span className="breadcrumb-title">All Doctors</span>
+            <span className="breadcrumb-title">{t('patient.findDoctors')}</span>
           </div>
 
           {/* Search Bar & Filter Toolbar Box */}
@@ -152,26 +184,22 @@ const DoctorSearchPage: React.FC = () => {
                 </svg>
                 <input
                   type="text"
-                  placeholder="Search doctor by name, specialty, hospital or symptoms..."
+                  placeholder={t('patient.searchDoctors')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="doctors-search-input"
                 />
                 {searchTerm && (
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="clear-search-btn"
+                    title={tBtn('clearText')}
                     onClick={() => setSearchTerm('')}
-                    title="Clear text"
                   >
                     ✕
                   </button>
                 )}
-                <button 
-                  type="button" 
-                  className="btn-voice-search-end" 
-                  title="Voice Search"
-                >
+                <button type="button" className="btn-voice-search-end" title={t('common.voiceSearch')}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
                     <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
                     <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
@@ -188,7 +216,7 @@ const DoctorSearchPage: React.FC = () => {
                     onChange={(e) => setOnlyAvailableToday(e.target.checked)}
                   />
                   <span className="checkbox-custom"></span>
-                  <span className="checkbox-text">Available Today Only 🟢</span>
+                  <span className="checkbox-text">{t('doctor.dashboard.availability')}</span>
                 </label>
               </div>
             </div>
@@ -196,37 +224,35 @@ const DoctorSearchPage: React.FC = () => {
             <div className="doctors-dropdowns-row">
               <CustomSelect
                 icon="⚕️"
-                options={SPECIALTY_OPTIONS}
+                options={specialtyOptions}
                 value={specialtyFilter}
                 onChange={setSpecialtyFilter}
               />
 
               <CustomSelect
                 icon="📍"
-                options={LOCATION_OPTIONS}
+                options={locationOptions}
                 value={locationFilter}
                 onChange={setLocationFilter}
               />
 
               {(specialtyFilter !== 'All' || locationFilter !== 'All' || searchTerm !== '' || onlyAvailableToday) && (
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="btn-reset-filters"
-                  onClick={() => {
-                    setSpecialtyFilter('All');
-                    setLocationFilter('All');
-                    setSearchTerm('');
-                    setOnlyAvailableToday(false);
-                  }}
+                  onClick={resetFilters}
                 >
-                  Reset Filters
+                  {tBtn('resetFilters')}
                 </button>
               )}
             </div>
 
             <div className="results-counter-bar">
               <span className="counter-text">
-                Showing <strong>{filteredAndSortedDoctors.length}</strong> {filteredAndSortedDoctors.length === 1 ? 'Doctor' : 'Doctors'}
+                {filteredAndSortedDoctors.length}{' '}
+                {filteredAndSortedDoctors.length === 1
+                  ? t('appointment.doctorCount')
+                  : t('appointment.doctorsCount')}
               </span>
             </div>
           </div>
@@ -239,13 +265,13 @@ const DoctorSearchPage: React.FC = () => {
                 const isFav = favorites.includes(doctor.id);
 
                 return (
-                  <div 
-                    key={doctor.id} 
+                  <div
+                    key={doctor.id}
                     className={`doctor-full-card ${priorityMeta.bgClass}-border`}
                   >
-                    {/* Badge */}
+                    {/* Priority badge — key doctor.priority.P1/P2/P3/P4 */}
                     <div className={`doctor-card-priority-badge ${priorityMeta.bgClass}`}>
-                      {priorityMeta.badgeText}
+                      {t(`doctor.priority.${doctor.priorityLevel || 'P4'}`)}
                     </div>
 
                     <div className="relative h-[220px] w-full overflow-hidden rounded-t-2xl bg-slate-100 sm:h-[240px] lg:h-[270px]">
@@ -258,13 +284,13 @@ const DoctorSearchPage: React.FC = () => {
                         onError={handleImageError}
                       />
                       {doctor.availableToday && (
-                        <span className="status-online-dot" title="Available Today for Booking"></span>
+                        <span className="status-online-dot" title={t('appointment.availableToday')}></span>
                       )}
                       <button
                         type="button"
                         className={`doctor-card-fav-btn ${isFav ? 'active' : ''}`}
                         onClick={() => toggleFavorite(doctor.id)}
-                        aria-label="Save Doctor"
+                        aria-label={t('appointment.saveDoctor', { defaultValue: 'Save Doctor' })}
                       >
                         ♥
                       </button>
@@ -288,7 +314,6 @@ const DoctorSearchPage: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Doctor Tags */}
                       {doctor.tags && (
                         <div className="doctor-skills-tags">
                           {doctor.tags.map((tag, idx) => (
@@ -301,12 +326,14 @@ const DoctorSearchPage: React.FC = () => {
 
                       <div className="doctor-fee-availability-row">
                         <div className="fee-box">
-                          <span className="fee-label">Consultation Fee</span>
+                          <span className="fee-label">{t('doctor.consultationFee')}</span>
                           <span className="fee-amount">{doctor.fee}</span>
                         </div>
                         <div className="availability-box">
                           <span className="slot-badge">
-                            {doctor.availableToday ? '🟢 Available Today' : '📅 Next Slot Tomorrow'}
+                            {doctor.availableToday
+                              ? t('doctor.dashboard.availableTodaySlot')
+                              : t('doctor.dashboard.nextSlotTomorrow')}
                           </span>
                         </div>
                       </div>
@@ -317,7 +344,7 @@ const DoctorSearchPage: React.FC = () => {
                           className="btn-full-book-now"
                           onClick={() => navigate(`/patient/book/${doctor.id}`)}
                         >
-                          Book Appointment
+                          {t('patient.bookAppointment')}
                         </button>
                       </div>
                     </div>
@@ -328,19 +355,14 @@ const DoctorSearchPage: React.FC = () => {
           ) : (
             <div className="doctors-no-results-box">
               <div className="no-results-icon">🔍</div>
-              <h3>No doctors match your criteria</h3>
-              <p>Try adjusting your search terms to find available specialists.</p>
+              <h3>{t('appointment.noDoctorsMatch')}</h3>
+              <p>{t('appointment.adjustSearch')}</p>
               <button
                 type="button"
                 className="btn-clear-filters-large"
-                onClick={() => {
-                  setSpecialtyFilter('All');
-                  setLocationFilter('All');
-                  setSearchTerm('');
-                  setOnlyAvailableToday(false);
-                }}
+                onClick={resetFilters}
               >
-                Clear All Filters
+                {tBtn('resetFilters')}
               </button>
             </div>
           )}

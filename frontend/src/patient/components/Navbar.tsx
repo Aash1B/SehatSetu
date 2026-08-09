@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toggleSidebar } from '../store/uiSlice';
 import type { RootState } from '../store';
@@ -53,7 +53,7 @@ const Navbar: React.FC = () => {
               <img src="/logo.svg" alt={t('logoAlt')} className="logo-icon" />
             </div>
             <span className="brand-title">
-              Sehat<span className="brand-title-accent">Setu</span>
+              {tCommon("brand.name").replace("Setu", "")}<span className="brand-title-accent">Setu</span>
             </span>
           </button>
         </div>
@@ -62,30 +62,30 @@ const Navbar: React.FC = () => {
         <nav className="nav-links">
           <button
             type="button"
-            className={`nav-link ${currentPage === 'landing' ? 'active' : ''}`}
-            onClick={() => navigate('/')}
+            className={`nav-link ${currentPage === "landing" ? "active" : ""}`}
+            onClick={() => navigate("/")}
           >
-            {t('home')}
+            {t("home")}
           </button>
-          <a href="#services" className="nav-link">{t('services')}</a>
+          <a href="#services" className="nav-link">{t("services")}</a>
            <button
              type="button"
-             className={`nav-link ${currentPage === 'doctors' ? 'active' : ''}`}
-             onClick={() => navigate('/patient/search')}
+             className={`nav-link ${currentPage === "doctors" ? "active" : ""}`}
+             onClick={() => navigate("/patient/search")}
            >
-             {t('doctors')}
+             {t("doctors")}
            </button>
            <button
              type="button"
-             className={`nav-link ${currentPage === 'about' ? 'active' : ''}`}
-             onClick={() => navigate('/about')}
+             className={`nav-link ${currentPage === "about" ? "active" : ""}`}
+             onClick={() => navigate("/about")}
            >
-             {tCommon('about')}
+             {tCommon("about")}
            </button>
         </nav>
 
         {/* Language Toggle */}
-        <div className="language-toggle flex items-center gap-1.5" role="radiogroup" aria-label="Select language">
+        <div className="language-toggle flex items-center gap-1.5" role="radiogroup" aria-label={t("selectLanguage")}>
           {supportedLanguages.map((lang) => (
             <button
               key={lang.code}
@@ -93,8 +93,8 @@ const Navbar: React.FC = () => {
               onClick={() => handleLanguageChange(lang.code)}
               className={`lang-btn px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
                 currentLang === lang.code
-                  ? 'bg-orange-100 text-orange-700 ring-1 ring-orange-400'
-                  : 'text-slate-600 hover:bg-slate-100'
+                  ? "bg-orange-100 text-orange-700 ring-1 ring-orange-400"
+                  : "text-slate-600 hover:bg-slate-100"
               }`}
               aria-pressed={currentLang === lang.code}
             >
@@ -109,25 +109,25 @@ const Navbar: React.FC = () => {
             <button
               type="button"
               className="btn-sign-in border-2 border-orange-500 text-orange-600 hover:bg-orange-50 font-bold px-4 py-2 rounded-full transition-all text-sm cursor-pointer"
-              onClick={() => navigate('/patient/login')}
+              onClick={() => navigate("/patient/login")}
             >
-              {t('signIn')}
+              {t("signIn")}
             </button>
           )}
           {!isDoctor && (
             <button
               type="button"
               className="btn-get-started cursor-pointer"
-              onClick={() => navigate('/patient/dashboard')}
+              onClick={() => navigate("/patient/dashboard")}
             >
-              {t('dashboard')}
+              {t("dashboard")}
             </button>
           )}
           <button
             type="button"
             className="mobile-toggle"
             onClick={() => dispatch(toggleSidebar())}
-            aria-label={t('toggleNav')}
+            aria-label={t("toggleNav")}
           >
             <span className="hamburger-line"></span>
             <span className="hamburger-line"></span>

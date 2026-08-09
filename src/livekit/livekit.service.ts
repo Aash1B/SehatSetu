@@ -59,7 +59,19 @@ export class LivekitService {
       console.warn(`[LiveKit] Appointment DB lookup warning for ${appointmentId}:`, dbErr?.message || dbErr);
     }
 
+    if (!appointment) {
+      throw new NotFoundException('Appointment not found');
+    }
+
     const isDoctor = role === 'DOCTOR';
+    const isPatient = role === 'PATIENT';
+
+    const expectedUserId = isDoctor ? appointment.doctor?.userId : (isPatient ? appointment.patient?.userId : null);
+
+    if (expectedUserId && expectedUserId !== userId) {
+      throw new ForbiddenException('You are not a participant in this appointment');
+    }
+
     const participantName = appointment
       ? (isDoctor
           ? appointment.doctor?.user?.fullName || appointment.doctor?.name || 'Doctor'

@@ -1,6 +1,7 @@
-import { API_BASE_URL } from '../../patient/utils/constants';
 import { ChatbotResponse, ChatError } from '../types/chatbot.types';
 import { getCurrentLanguage } from '../../i18n';
+
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
 
 const REQUEST_TIMEOUT_MS = 15000;
 
@@ -58,33 +59,59 @@ export async function sendChatMessage(
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
+  const requestUrl = `${API_BASE_URL}/chatbot/message`;
+
+  if (import.meta.env.DEV) {
+    console.log('[chatApi:dev] resolved API_BASE_URL:', API_BASE_URL);
+    console.log('[chatApi:dev] final request URL:', requestUrl);
+  }
+
   try {
     const language = (getCurrentLanguage() === 'hi' ? 'hi' : 'en') as 'en' | 'hi';
-    const response = await fetch(`${API_BASE_URL}/chatbot/message`, {
+    const response = await fetch(requestUrl, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({ ...request, language }),
       signal: signal ?? controller.signal,
     });
 
+    if (import.meta.env.DEV) {
+      console.log('[chatApi:dev] HTTP status:', response.status);
+      console.log('[chatApi:dev] response headers:', Object.fromEntries(response.headers.entries()));
+    }
+
     if (!response.ok) {
       const body = await response.json().catch(() => null);
+      if (import.meta.env.DEV) {
+        console.log('[chatApi:dev] non-ok response body:', JSON.stringify(body));
+      }
       const msg = body?.message || `Server error (${response.status})`;
       const errorType = mapStatusToErrorType(response.status, body?.error?.code);
       throw new ChatApiError(msg, errorType);
     }
 
     const data = (await response.json()) as ChatbotResponse;
+    if (import.meta.env.DEV) {
+      console.log('[chatApi:dev] response received OK; conversationId present:', Boolean(data.conversationId));
+    }
     return data;
   } catch (error) {
     if (error instanceof ChatApiError) throw error;
+    if (import.meta.env.DEV) {
+      console.log('[chatApi:dev] caught fetch error:', error instanceof Error ? error.name : typeof error, '-', error instanceof Error ? error.message : String(error));
+      console.log('[chatApi:dev] error instance check:', {
+        isTypeError: error instanceof TypeError,
+        isAbort: error instanceof DOMException && error.name === 'AbortError',
+        constructor: error?.constructor?.name,
+      });
+    }
     if (error instanceof DOMException && error.name === 'AbortError') {
       throw new ChatApiError(
         'The request took too long. Please try again.',
         'timeout',
       );
     }
-    if (error instanceof TypeError && error.message.includes('fetch')) {
+    if (error instanceof TypeError) {
       throw new ChatApiError(
         'Unable to connect to the server. The backend may be unavailable.',
         'backend_unavailable',
@@ -101,10 +128,12 @@ export async function sendChatMessage(
 
 function mapStatusToErrorType(status: number, code?: string): ChatError['type'] {
   if (status === 401 || status === 403) return 'auth_required';
+  if (status === 404) return 'endpoint_not_found';
   if (status >= 500 || status === 502 || status === 503 || status === 504) {
     return 'backend_unavailable';
   }
   if (status === 418 || code === 'ai_unavailable') return 'ai_unavailable';
+  if (status >= 400) return 'unknown';
   return 'unknown';
 }
 

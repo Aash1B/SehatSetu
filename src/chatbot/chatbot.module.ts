@@ -10,6 +10,7 @@ import { LabChatService } from './services/lab-chat.service';
 import { EmergencyHandlingService } from './services/emergency-handling.service';
 import { LabTestGuidanceService } from './services/lab-test-guidance.service';
 import { AiChatService } from './services/ai-chat.service';
+import { MedicalConditionService } from './services/medical-condition.service';
 import { AiModule } from '../ai/ai.module';
 import { DoctorsModule } from '../doctors/doctors.module';
 import { DoctorModule } from '../doctor/doctor.module';
@@ -30,6 +31,7 @@ import { HospitalsModule } from '../hospitals/hospitals.module';
     EmergencyHandlingService,
     LabTestGuidanceService,
     AiChatService,
+    MedicalConditionService,
   ],
   exports: [ChatbotService],
 })

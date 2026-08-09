@@ -1,7 +1,9 @@
-import { Module, Global } from '@nestjs/common';
+import { Module, Global, forwardRef } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { AppointmentProcessor } from './processors/appointment.processor';
 import { ConsultationProcessor } from './processors/consultation.processor';
+import { RecoveryProcessor } from './processors/recovery.processor';
+import { SagaModule } from '../saga/saga.module';
 import { MedicalReportsModule } from '../medical-reports/medical-reports.module';
 
 @Global()
@@ -20,17 +22,22 @@ import { MedicalReportsModule } from '../medical-reports/medical-reports.module'
     BullModule.registerQueue(
       { name: 'appointment-queue' },
       { name: 'consultation-queue' },
+      { name: 'recovery-queue' },
+      { name: 'mch-queue' },
     ),
+    forwardRef(() => SagaModule),
+    MedicalReportsModule,
   ],
-  imports: [MedicalReportsModule],
   providers: [
     AppointmentProcessor,
     ConsultationProcessor,
+    RecoveryProcessor,
   ],
   exports: [
     BullModule,
     AppointmentProcessor,
     ConsultationProcessor,
+    RecoveryProcessor,
   ],
 })
 export class QueueModule {}

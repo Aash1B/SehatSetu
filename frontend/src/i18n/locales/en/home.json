@@ -14,5 +14,57 @@
   "step2Desc": "Browse specialists by your condition or location",
   "step3Title": "Book & Consult",
   "step3Desc": "Schedule your visit and consult your Doctor online through SehatSetu",
-  "testimonialsTitle": "What Our Patients Say"
+  "testimonialsTitle": "What Our Patients Say",
+  "stats": {
+    "patientsServed": "Patients Served",
+    "certifiedDoctors": "Certified Doctors",
+    "patientSatisfaction": "Patient Satisfaction",
+    "supportAvailable": "Support Available"
+  },
+  "searchSection": {
+    "findYourDoctor": "Find Your Doctor",
+    "searchSubtitle": "Connect with verified medical specialists in minutes",
+    "topDoctorsNearYou": "Top Doctors Near You",
+    "viewAllDoctors": "View All Doctors"
+  },
+  "servicesSection": {
+    "careFitsYourLife": "CARE THAT FITS YOUR LIFE",
+    "services": "Our Services",
+    "labTestsNearby": {
+      "title": "Lab Tests Nearby",
+      "description": "Find trusted diagnostic labs and blood testing centers near your location.",
+      "learnMore": "Learn more →"
+    },
+    "specialistReferral": {
+      "title": "Specialist Referral",
+      "description": "Get connected to the right specialist for your condition.",
+      "learnMore": "Learn more →"
+    },
+    "emergencyCare": {
+      "title": "Emergency Care",
+      "description": "Fast, reliable support when every second matters.",
+      "learnMore": "Learn more →"
+    }
+  },
+  "testimonials": [
+    {
+      "quote": "“SehatSetu changed the way I manage my health. Booking was effortless!”",
+      "name": "Anika R.",
+      "subText": "Patient since 2022",
+      "avatar": "AR"
+    },
+    {
+      "quote": "“I found a cardiologist within minutes. The experience was seamless.”",
+      "name": "Vikram S.",
+      "subText": "Patient since 2023",
+      "avatar": "VS"
+    },
+    {
+      "quote": "“The doctors are incredibly professional and caring. Highly recommended!”",
+      "name": "Sana K.",
+      "subText": "Patient since 2021",
+      "avatar": "SK"
+    }
+  ],
+  "noDoctorMatches": "No doctor matches \"{searchTerm}\". Try another name or clear the filters."
 }

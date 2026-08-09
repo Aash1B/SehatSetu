@@ -1,0 +1,15 @@
+{
+  "home": "হোম",
+  "services": "সেবা",
+  "doctors": "ডাক্তার",
+  "signIn": "সাইন ইন",
+  "dashboard": "ড্যাশবোর্ড",
+  "openSidebar": "সাইডবার মেনু খুলুন",
+  "openSidebarTitle": "সাইডবার খুলুন",
+  "toggleNav": "নেভিগেশন সাইডবার টগল করুন",
+  "logoAlt": "SehatSetu লোগো",
+  "patientPortal": "রোগী পোর্টাল",
+  "selectLanguage": "ভাষা নির্বাচন করুন",
+  "uploadReports": "রিপোর্ট আপলোড করুন",
+  "findDoctors": "ডাক্তার খুঁজুন"
+}

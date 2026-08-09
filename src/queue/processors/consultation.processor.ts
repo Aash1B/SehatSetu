@@ -38,6 +38,7 @@ export class ConsultationProcessor extends WorkerHost {
       // 1. Fetch appointment details if available
       const appointment = await prisma.appointment.findUnique({
         where: { id: data.appointmentId },
+        include: { doctor: { select: { userId: true } } },
       });
 
       const patientId = data.patientId || appointment?.patientId || 'patient-default';

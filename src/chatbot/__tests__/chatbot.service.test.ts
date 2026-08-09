@@ -10,6 +10,7 @@ import { LabChatService } from '../services/lab-chat.service';
 import { EmergencyHandlingService } from '../services/emergency-handling.service';
 import { LabTestGuidanceService } from '../services/lab-test-guidance.service';
 import { AiChatService } from '../services/ai-chat.service';
+import { MedicalConditionService } from '../services/medical-condition.service';
 import { ChatIntent } from '../types/chatbot.types';
 
 describe('ChatbotService', () => {
@@ -47,7 +48,8 @@ describe('ChatbotService', () => {
         provider: 'fastapi-generate-summary',
       }),
     } as unknown as AiChatService;
-    chatbotService = new ChatbotService(intentRouter, conversationService, doctorChatService, appointmentChatService, hospitalChatService, labChatService, emergencyHandlingService, labTestGuidanceService, aiChatService);
+    const medicalConditionService = new MedicalConditionService();
+    chatbotService = new ChatbotService(intentRouter, conversationService, doctorChatService, appointmentChatService, hospitalChatService, labChatService, emergencyHandlingService, labTestGuidanceService, aiChatService, medicalConditionService);
   });
 
   afterEach(() => {
@@ -158,7 +160,8 @@ describe('ChatbotService', () => {
         provider: 'fastapi-generate-summary',
       }),
     } as unknown as AiChatService;
-    const service = new ChatbotService(mockIntentRouter, mockConversation, mockDoctorChat, mockAppointmentChatService, mockHospitalChatService, mockLabChatService, mockEmergency, mockLabGuidance, mockAiChatService);
+    const mockMedicalCondition = new MedicalConditionService();
+    const service = new ChatbotService(mockIntentRouter, mockConversation, mockDoctorChat, mockAppointmentChatService, mockHospitalChatService, mockLabChatService, mockEmergency, mockLabGuidance, mockAiChatService, mockMedicalCondition);
 
     try {
       const res = await service.processMessage(

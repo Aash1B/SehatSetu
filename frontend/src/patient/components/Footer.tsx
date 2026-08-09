@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 const Footer: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('footer');
+  const tCommon = (key: string) => t(key, { ns: 'common' });
 
   const handleAboutClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -18,9 +19,9 @@ const Footer: React.FC = () => {
           {/* Brand Column */}
           <div className="footer-brand-col">
             <a href="#home" className="footer-logo">
-              <img src="/logo.svg" alt="SehatSetu" className="footer-logo-img" />
+              <img src="/logo.svg" alt={tCommon('brand.name')} className="footer-logo-img" />
               <span className="brand-title text-white">
-                Sehat<span className="brand-title-accent">Setu</span>
+                {tCommon('brand.name')}<span className="brand-title-accent">{tCommon('brand.taglineShort')}</span>
               </span>
             </a>
           </div>
