@@ -123,33 +123,43 @@ const VideoConsultationPage: React.FC = () => {
     } catch (err) {
       console.warn('Could not post end-consultation queue job:', err);
     }
-    try {
-      const response = await fetch(`/api/appointments/${encodeURIComponent(consultationId)}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      const latest = response.ok ? await response.json() as ConsultationAppointment : null;
-      if (latest?.prescription) {
-        const rx = latest.prescription;
-        setPatientPrescription({
-          id: rx.id,
-          doctorName: latest.doctor?.name || latest.doctor?.user?.fullName || 'Doctor',
-          doctorSpecialty: latest.doctor?.specialty || '',
-          doctorHospital: latest.doctor?.hospital || 'SehatSetu Digital Health Clinic',
-          patientName: latest.patient?.user?.fullName || latest.patientName || 'Patient',
-          patientAge: latest.patientAge || latest.patient?.age || '',
-          patientGender: latest.patientGender || latest.patient?.gender || '',
-          date: new Date(rx.createdAt).toLocaleDateString(),
-          diagnosis: latest.ehrRecord?.diagnosis || latest.healthConcern || '',
-          symptoms: latest.symptoms || [],
-          medications: Array.isArray(rx.medicines) ? rx.medicines : [],
-          dietAdvice: rx.dietAdvice || '',
-          notes: latest.ehrRecord?.notes || '',
-        });
-        setShowPrescriptionModal(true);
-        return;
+
+    // Poll up to 3 times (1.5s apart) for the prescription — the doctor may have
+    // confirmed it just moments before the patient disconnected.
+    const MAX_ATTEMPTS = 3;
+    const POLL_INTERVAL_MS = 1500;
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+      if (attempt > 0) {
+        await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
       }
-    } catch (error) {
-      console.warn('Could not refresh the issued prescription:', error);
+      try {
+        const response = await fetch(`/api/appointments/${encodeURIComponent(consultationId)}`, {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        });
+        const latest = response.ok ? await response.json() as ConsultationAppointment : null;
+        if (latest?.prescription) {
+          const rx = latest.prescription;
+          setPatientPrescription({
+            id: rx.id,
+            doctorName: latest.doctor?.name || latest.doctor?.user?.fullName || 'Doctor',
+            doctorSpecialty: latest.doctor?.specialty || '',
+            doctorHospital: latest.doctor?.hospital || 'SehatSetu Digital Health Clinic',
+            patientName: latest.patient?.user?.fullName || latest.patientName || 'Patient',
+            patientAge: latest.patientAge || latest.patient?.age || '',
+            patientGender: latest.patientGender || latest.patient?.gender || '',
+            date: new Date(rx.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+            diagnosis: latest.ehrRecord?.diagnosis || latest.healthConcern || '',
+            symptoms: latest.symptoms || [],
+            medications: Array.isArray(rx.medicines) ? rx.medicines : [],
+            dietAdvice: rx.dietAdvice || '',
+            notes: latest.ehrRecord?.notes || '',
+          });
+          setShowPrescriptionModal(true);
+          return;
+        }
+      } catch (error) {
+        console.warn(`[Prescription] Poll attempt ${attempt + 1} failed:`, error);
+      }
     }
     navigate('/patient/dashboard');
   };

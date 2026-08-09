@@ -1,6 +1,5 @@
 import React from 'react';
 import Navbar from '../components/Navbar';
-import Sidebar from '../components/Sidebar';
 import HeroSection from '../components/HeroSection';
 import StatsBar from '../components/StatsBar';
 import DoctorSearchSection from '../components/DoctorSearchSection';
@@ -13,7 +12,6 @@ import FloatingEmergencyButton from '../components/FloatingEmergencyButton';
 const LandingPage: React.FC = () => {
   return (
     <div className="sehat-setu-landing-page">
-      <Sidebar />
       <Navbar />
       <main>
         <HeroSection />

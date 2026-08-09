@@ -31,7 +31,6 @@ const FeatureSection: React.FC = () => {
     <section className="about-features-section" aria-labelledby="about-features-title">
       <div className="about-section-container">
         <header className="about-section-header">
-          <span className="section-subtag">{t('eyebrow')}</span>
           <h2 id="about-features-title" className="about-section-title">{t('whatWeProvide')}</h2>
         </header>
 
@@ -149,7 +148,6 @@ const HowItWorksSection: React.FC = () => {
     <section className="about-how-it-works-section" aria-labelledby="how-it-works-title">
       <div className="about-section-container">
         <header className="about-section-header">
-          <span className="section-subtag">{t('eyebrow')}</span>
           <h2 id="how-it-works-title" className="about-section-title">{t('howItWorks')}</h2>
         </header>
 
@@ -188,7 +186,6 @@ const ValuesSection: React.FC = () => {
     <section className="about-values-section" aria-labelledby="values-title">
       <div className="about-section-container">
         <header className="about-section-header">
-          <span className="section-subtag">{t('eyebrow')}</span>
           <h2 id="values-title" className="about-section-title">{t('values')}</h2>
         </header>
 
@@ -261,28 +258,109 @@ const ValuesSection: React.FC = () => {
       <section className="about-story-section" aria-labelledby="our-story-title">
         <div className="about-section-container">
           <header className="about-section-header">
-            <span className="section-subtag">{t('about:eyebrow')}</span>
             <h2 id="our-story-title" className="about-section-title">{t('about:ourStory')}</h2>
+            <h3 className="text-xl sm:text-2xl font-bold text-orange-500 mt-2">{t('about:storySubtitle')}</h3>
           </header>
 
-          <div className="about-story-content">
+          <div className="about-story-content max-w-4xl mx-auto space-y-6 text-slate-600 text-base sm:text-lg leading-relaxed mt-8">
             <p className="about-story-paragraph">{t('about:storyP1')}</p>
             <p className="about-story-paragraph">{t('about:storyP2')}</p>
-            <p className="about-story-paragraph">{t('about:storyP3')}</p>
+
+            {/* How we deliver on that */}
+            <div className="mt-12 pt-8 border-t border-slate-200/80">
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-8 text-center sm:text-left">{t('about:howWeDeliverTitle')}</h3>
+              <ul className="space-y-6 text-left list-none p-0">
+                <li className="flex items-start gap-4">
+                  <span className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-orange-500 shrink-0 mt-2 shadow-xs"></span>
+                  <div>
+                    <span className="font-bold text-slate-900 text-lg mr-2">{t('about:deliverPoint1Title')}</span>
+                    <span className="text-slate-600 text-base sm:text-lg leading-relaxed">{t('about:deliverPoint1Desc')}</span>
+                  </div>
+                </li>
+                <li className="flex items-start gap-4">
+                  <span className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-orange-500 shrink-0 mt-2 shadow-xs"></span>
+                  <div>
+                    <span className="font-bold text-slate-900 text-lg mr-2">{t('about:deliverPoint2Title')}</span>
+                    <span className="text-slate-600 text-base sm:text-lg leading-relaxed">{t('about:deliverPoint2Desc')}</span>
+                  </div>
+                </li>
+                <li className="flex items-start gap-4">
+                  <span className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-orange-500 shrink-0 mt-2 shadow-xs"></span>
+                  <div>
+                    <span className="font-bold text-slate-900 text-lg mr-2">{t('about:deliverPoint3Title')}</span>
+                    <span className="text-slate-600 text-base sm:text-lg leading-relaxed">{t('about:deliverPoint3Desc')}</span>
+                  </div>
+                </li>
+                <li className="flex items-start gap-4">
+                  <span className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-orange-500 shrink-0 mt-2 shadow-xs"></span>
+                  <div>
+                    <span className="font-bold text-slate-900 text-lg mr-2">{t('about:deliverPoint4Title')}</span>
+                    <span className="text-slate-600 text-base sm:text-lg leading-relaxed">{t('about:deliverPoint4Desc')}</span>
+                  </div>
+                </li>
+                <li className="flex items-start gap-4">
+                  <span className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-orange-500 shrink-0 mt-2 shadow-xs"></span>
+                  <div>
+                    <span className="font-bold text-slate-900 text-lg mr-2">{t('about:deliverPoint5Title')}</span>
+                    <span className="text-slate-600 text-base sm:text-lg leading-relaxed">{t('about:deliverPoint5Desc')}</span>
+                  </div>
+                </li>
+                <li className="flex items-start gap-4">
+                  <span className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-orange-500 shrink-0 mt-2 shadow-xs"></span>
+                  <div>
+                    <span className="font-bold text-slate-900 text-lg mr-2">{t('about:deliverPoint6Title')}</span>
+                    <span className="text-slate-600 text-base sm:text-lg leading-relaxed">{t('about:deliverPoint6Desc')}</span>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            {/* Privacy Block */}
+            <div className="mt-12 pt-8 border-t border-slate-200/80 text-left bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 text-white p-8 sm:p-10 rounded-3xl shadow-xl">
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-white mb-4">{t('about:privacyTitle')}</h3>
+              <p className="text-slate-300 text-base sm:text-lg leading-relaxed">{t('about:privacyBody')}</p>
+            </div>
           </div>
         </div>
       </section>
 
       <section className="about-mission-vision-section" aria-labelledby="mission-vision-title">
         <div className="about-section-container">
-          <div className="about-mission-vision-grid">
-            <div className="about-mission-card">
-              <h3 className="about-mv-title">{t('about:mission')}</h3>
-              <p className="about-mv-desc">{t('about:missionText')}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+            {/* Our Mission Card */}
+            <div className="p-8 sm:p-10 bg-white rounded-3xl border border-slate-200/80 shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
+              <div>
+                <span className="inline-block px-3.5 py-1 rounded-full bg-orange-100 text-orange-600 text-xs font-bold uppercase tracking-wider mb-4">
+                  {t('about:mission')}
+                </span>
+                <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 leading-snug mb-4">
+                  {t('about:missionHeadline')}
+                </h3>
+                <p className="text-slate-600 text-base sm:text-lg leading-relaxed mb-4">
+                  {t('about:missionP1')}
+                </p>
+                <p className="text-slate-600 text-base sm:text-lg leading-relaxed">
+                  {t('about:missionP2')}
+                </p>
+              </div>
             </div>
-            <div className="about-vision-card">
-              <h3 className="about-mv-title">{t('about:vision')}</h3>
-              <p className="about-mv-desc">{t('about:visionText')}</p>
+
+            {/* Our Vision Card */}
+            <div className="p-8 sm:p-10 bg-white rounded-3xl border border-slate-200/80 shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
+              <div>
+                <span className="inline-block px-3.5 py-1 rounded-full bg-indigo-100 text-indigo-600 text-xs font-bold uppercase tracking-wider mb-4">
+                  {t('about:vision')}
+                </span>
+                <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 leading-snug mb-4">
+                  {t('about:visionHeadline')}
+                </h3>
+                <p className="text-slate-600 text-base sm:text-lg leading-relaxed mb-4">
+                  {t('about:visionP1')}
+                </p>
+                <p className="text-slate-600 text-base sm:text-lg leading-relaxed">
+                  {t('about:visionP2')}
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -293,7 +371,6 @@ const ValuesSection: React.FC = () => {
       <section className="about-ai-section" aria-labelledby="ai-section-title">
         <div className="about-section-container">
           <header className="about-section-header">
-            <span className="section-subtag">{t('about:eyebrow')}</span>
             <h2 id="ai-section-title" className="about-section-title">{t('about:aiHeadline')}</h2>
           </header>
 
@@ -313,7 +390,6 @@ const ValuesSection: React.FC = () => {
       <section className="about-accessibility-section" aria-labelledby="accessibility-title">
         <div className="about-section-container">
           <header className="about-section-header">
-            <span className="section-subtag">{t('about:eyebrow')}</span>
             <h2 id="accessibility-title" className="about-section-title">{t('about:accessibility')}</h2>
           </header>
 
@@ -326,7 +402,6 @@ const ValuesSection: React.FC = () => {
       <section className="about-privacy-section" aria-labelledby="privacy-title">
         <div className="about-section-container">
           <header className="about-section-header">
-            <span className="section-subtag">{t('about:eyebrow')}</span>
             <h2 id="privacy-title" className="about-section-title">{t('about:privacyHeadline')}</h2>
           </header>
 

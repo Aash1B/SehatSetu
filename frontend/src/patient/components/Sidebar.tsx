@@ -3,12 +3,34 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../store';
 import { closeSidebar, setDashboardTab } from '../store/uiSlice';
 import { useNavigate } from 'react-router-dom';
+import { getUser, clearAuth } from '../../auth/authStorage';
 
 const Sidebar: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const isOpen = useSelector((state: RootState) => state.ui.isSidebarOpen);
   const currentPage = useSelector((state: RootState) => state.ui.currentPage);
+
+  const user = getUser();
+  const userName = user?.fullName || 'Guest User';
+  const userInitials = user?.fullName
+    ? user.fullName
+        .trim()
+        .split(/\s+/)
+        .map((part) => part[0])
+        .join('')
+        .substring(0, 2)
+        .toUpperCase()
+    : 'GU';
+  const userIdDisplay = user?.id
+    ? `Patient ID: #${user.id.slice(-5).toUpperCase()}`
+    : 'Patient Portal';
+
+  const handleLogout = () => {
+    clearAuth();
+    dispatch(closeSidebar());
+    navigate('/patient/login');
+  };
 
   // Close sidebar on ESC key press
   useEffect(() => {
@@ -117,7 +139,6 @@ const Sidebar: React.FC = () => {
             </nav>
           </div>
 
-
           {/* Section 4: Settings & Support */}
           <div className="sidebar-group">
             <span className="sidebar-group-title">Account & Support</span>
@@ -143,28 +164,57 @@ const Sidebar: React.FC = () => {
 
         {/* Footer User Profile Card */}
         <div className="sidebar-footer">
-          <div className="sidebar-user-info">
+          <div 
+            className="sidebar-user-info cursor-pointer"
+            onClick={() => {
+              if (user) {
+                dispatch(setDashboardTab('profile'));
+                navigate('/patient/dashboard');
+              } else {
+                navigate('/patient/login');
+              }
+              dispatch(closeSidebar());
+            }}
+          >
             <div className="user-avatar">
-              <span>AS</span>
+              <span>{userInitials}</span>
               <span className="online-indicator"></span>
             </div>
             <div className="user-details">
-              <span className="user-name">Ananya Sharma</span>
-              <span className="user-id">Patient ID: #SS-89421</span>
+              <span className="user-name">{userName}</span>
+              <span className="user-id">{userIdDisplay}</span>
             </div>
           </div>
-          <button 
-            type="button" 
-            className="user-logout-btn" 
-            title="Sign Out"
-            onClick={handleNavClick}
-          >
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-              <polyline points="16 17 21 12 16 7"></polyline>
-              <line x1="21" y1="12" x2="9" y2="12"></line>
-            </svg>
-          </button>
+          {user ? (
+            <button 
+              type="button" 
+              className="user-logout-btn" 
+              title="Sign Out"
+              onClick={handleLogout}
+            >
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+            </button>
+          ) : (
+            <button 
+              type="button" 
+              className="user-logout-btn" 
+              title="Sign In"
+              onClick={() => {
+                dispatch(closeSidebar());
+                navigate('/patient/login');
+              }}
+            >
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                <polyline points="10 17 15 12 10 7"></polyline>
+                <line x1="15" y1="12" x2="3" y2="12"></line>
+              </svg>
+            </button>
+          )}
         </div>
       </aside>
     </>

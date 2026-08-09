@@ -1553,7 +1553,7 @@
    Stats Bar Styling
    ========================================================================== */
   .stats-bar-section {
-    background-color: var(--color-navy-dark);
+    background-color: #111144;
     padding: 32px 24px;
   }
 
@@ -2030,33 +2030,56 @@
 
   .doctor-card-actions {
     display: flex;
-    gap: 8px;
+    gap: 10px;
+    margin-top: 12px;
   }
 
   .btn-view-profile {
     flex: 1;
     background: #F1F5F9;
     color: #334155;
-    border: none;
+    border: 1px solid #E2E8F0;
     font-family: inherit;
-    font-size: 0.82rem;
+    font-size: 0.88rem;
     font-weight: 700;
-    padding: 0;
-    border-radius: var(--radius-sm);
+    padding: 9px 14px;
+    min-height: 40px;
+    border-radius: 9999px;
     cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-view-profile:hover {
+    background: #E2E8F0;
+    color: #0F172A;
+    transform: translateY(-1px);
   }
 
   .btn-book-doctor {
-    flex: 1.2;
+    flex: 1.25;
     background: var(--color-orange-gradient);
     color: #FFFFFF;
     border: none;
     font-family: inherit;
-    font-size: 0.82rem;
+    font-size: 0.88rem;
     font-weight: 700;
-    padding: 0;
-    border-radius: var(--radius-sm);
+    padding: 9px 15px;
+    min-height: 40px;
+    border-radius: 9999px;
     cursor: pointer;
+    box-shadow: 0 4px 14px rgba(249, 115, 22, 0.25);
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-book-doctor:hover {
+    box-shadow: 0 6px 18px rgba(249, 115, 22, 0.38);
+    transform: translateY(-1px);
   }
 
   /* ==========================================================================
@@ -2404,7 +2427,7 @@
     background-repeat: no-repeat;
     background-attachment: scroll;
     color: #94A3B8;
-    padding: 80px 24px 32px;
+    padding: 110px 24px 60px;
     border-top: 1px solid #1E293B;
   }
 
@@ -2418,7 +2441,7 @@
     justify-content: space-between;
     align-items: flex-start;
     gap: 40px;
-    margin-bottom: 50px;
+    margin-bottom: 60px;
   }
 
   .footer-right-links-wrapper {
@@ -2609,16 +2632,16 @@
    ========================================================================== */
   .floating-emergency-btn {
     position: fixed;
-    bottom: 28px;
-    right: 28px;
+    bottom: 24px;
+    right: 24px;
     z-index: 1000;
-    width: 96px;
-    height: 96px;
+    width: 150px;
+    height: 150px;
     padding: 0;
     border-radius: 50%;
     background: none;
-    border: 3.5px solid #FFFFFF;
-    box-shadow: 0 8px 25px rgba(220, 38, 38, 0.5);
+    border: 5px solid #FFFFFF;
+    box-shadow: 0 12px 35px rgba(220, 38, 38, 0.6);
     display: flex;
     flex-direction: column;
     align-items: center;

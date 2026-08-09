@@ -115,10 +115,21 @@ export class AppointmentsService {
                 parseInt(isoMatch[3], 10),
               );
             } else {
-              // Fallback: try Date.parse for other formats
-              const parsed = Date.parse(data.date);
-              if (!isNaN(parsed)) {
-                scheduledAt = new Date(parsed);
+              // Fallback: try natural language / partial date formats
+              const cleaned = data.date
+                .replace(/^[a-z]+\s*,\s*/i, '')
+                .replace(/^[a-z]+\s+/i, '')
+                .trim();
+              const currentYear = new Date().getFullYear();
+              const dateWithYear = `${cleaned} ${currentYear}`;
+              const parsedWithYear = Date.parse(dateWithYear);
+              if (!isNaN(parsedWithYear)) {
+                scheduledAt = new Date(parsedWithYear);
+              } else {
+                const directParsed = Date.parse(data.date);
+                if (!isNaN(directParsed)) {
+                  scheduledAt = new Date(directParsed);
+                }
               }
             }
           }

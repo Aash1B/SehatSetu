@@ -355,7 +355,7 @@ const BookAppointmentPage: React.FC = () => {
           return null;
         })
         .then(data => {
-          if (data && data.slots) {
+          if (data) {
             setDoctorAvailability(data);
           } else {
             setDoctorAvailability(null);

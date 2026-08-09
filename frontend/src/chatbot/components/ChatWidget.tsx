@@ -77,8 +77,18 @@ const ChatWidget: React.FC = () => {
         setTimeout(() => inputRef.current?.focus(), 100);
       }
     };
+    const handleOpenSetuAI = () => {
+      setIsOpen(true);
+      setTimeout(() => inputRef.current?.focus(), 100);
+    };
+
     document.addEventListener('keydown', handleGlobalKeyDown);
-    return () => document.removeEventListener('keydown', handleGlobalKeyDown);
+    window.addEventListener('open-setu-ai', handleOpenSetuAI);
+
+    return () => {
+      document.removeEventListener('keydown', handleGlobalKeyDown);
+      window.removeEventListener('open-setu-ai', handleOpenSetuAI);
+    };
   }, []);
 
   const lastMsg = messages[messages.length - 1];

@@ -60,7 +60,13 @@ export class DoctorsService {
   async findAll() {
     const doctors = await prisma.doctor.findMany({
       where: {
-        userId: { not: '' },
+        OR: [
+          { userId: null },
+          { userId: { not: '' } },
+          { verificationStatus: 'APPROVED' },
+          { isVerified: true },
+        ],
+        isActive: true,
       },
       include: { user: { select: { id: true, fullName: true, email: true, role: true } } },
     });
@@ -199,6 +205,11 @@ export class DoctorsService {
     let doctors = await prisma.doctor.findMany({
       where: {
         specialty: specialtyFilter,
+        OR: [
+          { userId: null },
+          { verificationStatus: 'APPROVED' },
+          { isVerified: true },
+        ],
         isActive: true,
       },
       include: { user: { select: { id: true, fullName: true, email: true, role: true } } },
@@ -213,6 +224,11 @@ export class DoctorsService {
             contains: 'General Physician',
             mode: 'insensitive',
           },
+          OR: [
+            { userId: null },
+            { verificationStatus: 'APPROVED' },
+            { isVerified: true },
+          ],
           isActive: true,
         },
         take: 5,

@@ -15,40 +15,40 @@
   "visionText": "Build a connected healthcare experience where distance, language, and digital complexity do not prevent people from receiving timely care.",
   "whatWeProvide": "What SehatSetu Provides",
   "featureVerifiedDoctors": {
-    "title": "Verified Doctors",
-    "desc": "Connect patients with verified medical professionals."
+    "title": "सत्यापित देखभाल, कहीं भी",
+    "desc": "सत्यापित स्वास्थ्य सेवा पेशेवरों से सुरक्षित वीडियो परामर्श के माध्यम से कहीं भी जुड़ें।"
   },
   "featureOnlineConsultations": {
-    "title": "Online Consultations",
-    "desc": "Enable convenient consultations without unnecessary travel."
+    "title": "एआई-संचालित क्लिनिकल सहायता",
+    "desc": "एआई और मशीन लर्निंग डॉक्टरों को परामर्श सारांश, क्लिनिकल दस्तावेज़ीकरण और बुद्धिमान प्रिस्क्रिप्शन ड्राफ्ट में सहायता करता है — प्रत्येक रोगी की स्थिति के अनुसार व्यक्तिगत आहार और पोषण मार्गदर्शन के साथ।"
   },
   "featureSmartScheduling": {
-    "title": "Smart Appointment Scheduling",
-    "desc": "Help patients discover available doctors and suitable appointment slots."
+    "title": "कभी फ़ॉलो-अप न भूलें",
+    "desc": "स्वचालित रिमाइंडर रोगियों को अपनी देखभाल योजनाओं पर ट्रैक रखते हैं।"
   },
   "featureAiAssistedCare": {
-    "title": "AI-Assisted Care",
-    "desc": "Use AI to assist with healthcare navigation, structured information, and clinical workflows without replacing doctors."
+    "title": "आपका स्वास्थ्य, स्थायी रूप से दर्ज",
+    "desc": "सुरक्षित, एन्क्रिप्ट किए गए इलेक्ट्रॉनिक स्वास्थ्य रिकॉर्ड रोगी के पूरे जीवन में निरंतर, सूचित देखभाल सुनिश्चित करते हैं।"
   },
   "featureDigitalPrescriptions": {
-    "title": "Digital Prescriptions",
-    "desc": "Support structured prescriptions and easier continuity of care."
+    "title": "डिजाइन से गोपनीयता",
+    "desc": "हर रिकॉर्ड फील्ड-स्तरीय एन्क्रिप्शन से सुरक्षित है और DPDP अधिनियम 2023 सिद्धांतों के अनुसार निर्मित है, ताकि रोगी डेटा डिफ़ॉल्ट रूप से निजी रहे, पश्चिमोत्तर विचार से नहीं।"
   },
   "featureHealthRecords": {
-    "title": "Health Records",
-    "desc": "Keep patient healthcare information accessible through secure digital records."
+    "title": "पहले रोकथाम",
+    "desc": "व्यक्तिगत पोषण, स्वास्थ्य और जीवनशैली मार्गदर्शन रोगियों को केवल बीमारी का इलाज नहीं करते समय स्वस्थ रहने में मदद करता है।"
   },
   "featureNearbyHospitals": {
-    "title": "Nearby Hospitals",
-    "desc": "Help users discover nearby healthcare facilities when in-person care is required."
+    "title": "स्मार्ट अस्पताल मार्गदर्शन",
+    "desc": "शारीरिक परीक्षण, प्रयोगशाला परीक्षण, या आपातकालीन देखभाल की आवश्यकता होने पर नजदीकी अस्पतालों के लिए बुद्धिमान, वास्तविक समय की सिफारिशें।"
   },
   "featureLabGuidance": {
-    "title": "Diagnostic & Lab Guidance",
-    "desc": "Help users navigate relevant diagnostic services and general test information."
+    "title": "बाधाओं के बिना देखभाल",
+    "desc": "बहुभाषी एआई-संचालित समर्थन, प्रत्येक रोगी के लिए सरल और सुलभ होने के लिए डिज़ाइन किया गया।"
   },
   "featureEmergencyGuidance": {
-    "title": "Emergency Guidance",
-    "desc": "Prioritize urgent in-person care when high-risk symptoms are detected."
+    "title": "बाधाओं के बिना देखभाल",
+    "desc": "बहुभाषी एआई-संचालित समर्थन, प्रत्येक रोगी के लिए सरल और सुलभ होने के लिए डिज़ाइन किया गया।"
   },
   "aiHeadline": "AI That Assists — Doctors Still Decide",
   "aiDesc": "SehatSetu uses artificial intelligence to make healthcare workflows more efficient, such as organizing information, assisting with healthcare navigation, and supporting structured medical documentation.",

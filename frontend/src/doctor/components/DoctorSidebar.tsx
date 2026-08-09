@@ -82,37 +82,37 @@ const DoctorSidebar: React.FC<DoctorSidebarProps> = ({ className }) => {
   const initials = getInitials(displayName);
 
   return (
-    <aside className={cn("shrink-0 w-64 bg-[#223382] border-r border-white/10 flex flex-col justify-between hidden md:flex h-full text-white", className)}>
+    <aside className={cn("shrink-0 w-72 bg-[#223382] border-r border-white/10 flex flex-col justify-between hidden md:flex h-full text-white", className)}>
       <div>
         {/* Logo */}
         <div className="p-6 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-md bg-habanero text-white flex items-center justify-center font-bold text-xl leading-none pt-1">
+          <div className="w-10 h-10 rounded-md bg-habanero text-white flex items-center justify-center font-bold text-2xl leading-none pt-1">
             s
           </div>
-          <span className="font-bold text-xl text-white tracking-tight">Sehat Setu</span>
+          <span className="font-bold text-2xl text-white tracking-tight">Sehat Setu</span>
         </div>
 
         {/* Navigation */}
-        <nav className="mt-4 flex flex-col gap-2 px-4">
+        <nav className="mt-4 flex flex-col gap-3 px-4">
           {navItems.map((item) => (
             <NavLink
               key={item.name}
               to={item.path}
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors relative",
+                  "flex items-center gap-4 px-5 py-4 rounded-2xl text-lg font-bold transition-colors relative",
                   isActive
-                    ? "bg-white/20 text-white font-bold shadow-xs"
+                    ? "bg-white/20 text-white font-extrabold shadow-sm"
                     : "text-white/80 hover:text-white hover:bg-white/10"
                 )
               }
             >
               {({ isActive }) => (
                 <>
-                  <item.icon className="w-5 h-5 text-white" />
-                  {item.name}
+                  <item.icon className="w-7 h-7 text-white" />
+                  <span>{item.name}</span>
                   {isActive && (
-                    <span className="absolute right-4 w-1.5 h-1.5 rounded-full bg-habanero"></span>
+                    <span className="absolute right-5 w-2.5 h-2.5 rounded-full bg-habanero"></span>
                   )}
                 </>
               )}
@@ -122,26 +122,26 @@ const DoctorSidebar: React.FC<DoctorSidebarProps> = ({ className }) => {
       </div>
 
       {/* Doctor Account Display */}
-      <div className="p-4 m-4 bg-white/15 rounded-xl flex flex-col gap-2 border border-white/10">
-        <p className="text-[10px] uppercase tracking-wider text-white/60 font-bold">Doctor Account</p>
+      <div className="p-4 m-4 bg-white/15 rounded-xl flex flex-col gap-2.5 border border-white/10">
+        <p className="text-xs uppercase tracking-wider text-white/70 font-extrabold">Doctor Account</p>
 
         <div className="flex items-center gap-3">
           {/* Avatar with initials */}
-          <div className="w-9 h-9 rounded-full bg-habanero text-white flex items-center justify-center font-bold text-sm shrink-0 select-none shadow-xs">
+          <div className="w-10 h-10 rounded-full bg-habanero text-white flex items-center justify-center font-bold text-base shrink-0 select-none shadow-xs">
             {initials}
           </div>
           <div className="overflow-hidden flex-1">
-            <p className="text-sm font-bold text-white truncate leading-tight">{displayName}</p>
-            <p className="text-[11px] text-white/70 truncate mt-0.5">{displaySpec}</p>
+            <p className="text-base font-extrabold text-white truncate leading-tight">{displayName}</p>
+            <p className="text-xs text-white/80 truncate mt-0.5 font-medium">{displaySpec}</p>
           </div>
         </div>
 
         {/* Logout button */}
         <button
           onClick={handleLogout}
-          className="mt-1 flex items-center gap-2 text-[11px] font-semibold text-white/70 hover:text-white transition-colors cursor-pointer"
+          className="mt-1 flex items-center gap-2 text-xs font-bold text-white/80 hover:text-white transition-colors cursor-pointer"
         >
-          <LogOut className="w-3.5 h-3.5" />
+          <LogOut className="w-4 h-4" />
           Sign Out
         </button>
       </div>

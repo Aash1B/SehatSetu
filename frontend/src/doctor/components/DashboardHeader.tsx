@@ -75,25 +75,25 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   };
 
   return (
-    <header className={cn("flex justify-between items-start mb-8", className)}>
+    <header className={cn("flex justify-between items-start mb-7", className)}>
       <div>
-        <p className="text-black text-sm font-medium mb-1">{date}</p>
-        <div className="mb-2">
-          <h1 className="text-3xl font-bold text-black">Namaste, {doctor.name}</h1>
+        <p className="text-sm font-normal text-slate-500 mb-1">{date}</p>
+        <div className="mb-1.5">
+          <h1 className="text-3xl font-semibold text-slate-900 tracking-tight">Namaste, {doctor.name}</h1>
         </div>
-        <p className="text-black">Here's your care overview for today.</p>
+        <p className="text-base font-normal text-slate-600">Here's your care overview for today.</p>
       </div>
       
       <div className="flex items-center gap-4 relative">
         <button 
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="relative w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-jodhpur-tan/30 text-aster-blue hover:text-deep-space transition-colors focus:outline-none focus:ring-2 focus:ring-habanero/50 cursor-pointer"
+          className="relative w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-200 text-slate-700 hover:text-slate-900 transition-colors focus:outline-none focus:ring-2 focus:ring-habanero/50 cursor-pointer"
           title="Notifications"
         >
           <Bell className="w-5 h-5" />
           {notifications.length > 0 && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-habanero border-2 border-white rounded-full flex items-center justify-center text-[9px] text-black font-bold shadow-sm">
+            <span className="absolute -top-1 -right-1 w-4.5 h-4.5 bg-habanero border-2 border-white rounded-full flex items-center justify-center text-xs text-white font-bold shadow-sm">
               {notifications.length}
             </span>
           )}

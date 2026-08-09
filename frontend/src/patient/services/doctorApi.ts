@@ -81,14 +81,15 @@ export async function fetchDoctors(): Promise<Doctor[]> {
         `);
 
       if (!error && Array.isArray(data) && data.length > 0) {
-        const mapped = data.map((d: any) => {
+        const approvedRows = data.filter((d: any) => !d.userId || d.verificationStatus === 'APPROVED' || d.isVerified === true);
+        const mapped = approvedRows.map((d: any) => {
           // Supabase joins return related row under the relation name
           const userRow = Array.isArray(d.User) ? d.User[0] : d.User;
           return mapDoctorRow({ ...d, user: userRow });
         });
         // Sort: highest priorityScore first (registered real doctors score 150)
         mapped.sort((a, b) => (b.priorityScore ?? 0) - (a.priorityScore ?? 0));
-        console.log(`[Supabase] Fetched ${mapped.length} doctors directly from Supabase ✅`);
+        console.log(`[Supabase] Fetched ${mapped.length} approved doctors directly from Supabase ✅`);
         return mapped;
       }
 

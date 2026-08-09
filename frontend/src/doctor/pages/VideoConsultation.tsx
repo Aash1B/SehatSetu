@@ -5,7 +5,7 @@ import '@livekit/components-styles';
 import PatientMiniCard from '../components/PatientMiniCard';
 import ConsultationTimer from '../components/ConsultationTimer';
 import SymptomsEditor from '../components/SymptomsEditor';
-import MedicineEditor from '../components/MedicineEditor';
+import MedicineEditor, { type StructuredMedicine } from '../components/MedicineEditor';
 import LabTestEditor from '../components/LabTestEditor';
 import DietEditor from '../components/DietEditor';
 import EndConsultationDialog from '../components/EndConsultationDialog';
@@ -28,7 +28,7 @@ const VideoConsultation: React.FC = () => {
   const [roomConnected, setRoomConnected] = useState(true);
   const [issuedPrescription, setIssuedPrescription] = useState<any>(null);
   const [consultationSymptoms, setConsultationSymptoms] = useState<string[]>([]);
-  const [consultationMedicines, setConsultationMedicines] = useState<string[]>([]);
+  const [consultationMedicines, setConsultationMedicines] = useState<StructuredMedicine[]>([]);
   const [clinicalNotes, setClinicalNotes] = useState('');
   const [consultationLabTests, setConsultationLabTests] = useState<string[]>([]);
   const [consultationDiet, setConsultationDiet] = useState<string[]>([]);
@@ -188,9 +188,15 @@ const VideoConsultation: React.FC = () => {
           patientGender: appointment?.patientGender || appointment?.patient?.gender || '',
           diagnosis: appointment?.ehrRecord?.diagnosis || appointment?.healthConcern || '',
           symptoms: consultationSymptoms.length ? consultationSymptoms : (appointment?.symptoms || []),
-          medications: consultationMedicines.map((medicine) => ({
-            name: medicine, dosage: '', frequency: '', duration: '', timing: '',
-          })),
+          medications: consultationMedicines.length
+            ? consultationMedicines.map((m) => ({
+                name: m.name,
+                dosage: m.dosage,
+                frequency: m.frequency,
+                duration: m.duration,
+                timing: m.timing,
+              }))
+            : [],
           dietAdvice: consultationDiet.join('\n'),
           notes: [
             clinicalNotes.trim() || appointment?.ehrRecord?.notes || appointment?.notes || '',

@@ -15,40 +15,40 @@
   "visionText": "Build a connected healthcare experience where distance, language, and digital complexity do not prevent people from receiving timely care.",
   "whatWeProvide": "What SehatSetu Provides",
   "featureVerifiedDoctors": {
-    "title": "Verified Doctors",
-    "desc": "Connect patients with verified medical professionals."
+    "title": "Verified Care, Anywhere",
+    "desc": "Connect with verified healthcare professionals through secure video consultations, from anywhere."
   },
   "featureOnlineConsultations": {
-    "title": "Online Consultations",
-    "desc": "Enable convenient consultations without unnecessary travel."
+    "title": "AI-Powered Clinical Support",
+    "desc": "AI and machine learning assist doctors with consultation summaries, clinical documentation, and intelligent prescription drafts — paired with personalized dietary and nutrition guidance tailored to each patient's condition."
   },
   "featureSmartScheduling": {
-    "title": "Smart Appointment Scheduling",
-    "desc": "Help patients discover available doctors and suitable appointment slots."
+    "title": "Never Miss a Follow-Up",
+    "desc": "Automated reminders keep patients on track with their care plans."
   },
   "featureAiAssistedCare": {
-    "title": "AI-Assisted Care",
-    "desc": "Use AI to assist with healthcare navigation, structured information, and clinical workflows without replacing doctors."
+    "title": "Your Health, Permanently Recorded",
+    "desc": "Secure, encrypted Electronic Health Records ensure continuous, informed care throughout a patient's life."
   },
   "featureDigitalPrescriptions": {
-    "title": "Digital Prescriptions",
-    "desc": "Support structured prescriptions and easier continuity of care."
+    "title": "Privacy by Design",
+    "desc": "Every record is protected with field-level encryption and built to DPDP Act 2023 principles, so patient data stays private by default, not by afterthought."
   },
   "featureHealthRecords": {
-    "title": "Health Records",
-    "desc": "Keep patient healthcare information accessible through secure digital records."
+    "title": "Prevention First",
+    "desc": "Personalized nutrition, wellness, and lifestyle guidance to help patients stay healthy, not just treat illness when it happens."
   },
   "featureNearbyHospitals": {
-    "title": "Nearby Hospitals",
-    "desc": "Help users discover nearby healthcare facilities when in-person care is required."
+    "title": "Smart Hospital Guidance",
+    "desc": "Intelligent, real-time recommendations for nearby hospitals when physical examination, lab testing, or emergency care is needed."
   },
   "featureLabGuidance": {
-    "title": "Diagnostic & Lab Guidance",
-    "desc": "Help users navigate relevant diagnostic services and general test information."
+    "title": "Care Without Barriers",
+    "desc": "Multilingual AI-powered support, designed to be simple and accessible for every patient."
   },
   "featureEmergencyGuidance": {
-    "title": "Emergency Guidance",
-    "desc": "Prioritize urgent in-person care when high-risk symptoms are detected."
+    "title": "Care Without Barriers",
+    "desc": "Multilingual AI-powered support, designed to be simple and accessible for every patient."
   },
   "aiHeadline": "AI That Assists — Doctors Still Decide",
   "aiDesc": "SehatSetu uses artificial intelligence to make healthcare workflows more efficient, such as organizing information, assisting with healthcare navigation, and supporting structured medical documentation.",

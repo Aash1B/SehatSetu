@@ -16,7 +16,7 @@ interface DietEditorProps {
   onChange?: (items: string[]) => void;
 }
 
-const DietEditor: React.FC<DietEditorProps> = ({ className }) => {
+const DietEditor: React.FC<DietEditorProps> = ({ className, onChange }) => {
   const [recommendations, setRecommendations] = useState<DietRec[]>([]);
   const [newRec, setNewRec] = useState('');
   const [isListening, setIsListening] = useState(true);
@@ -24,6 +24,11 @@ const DietEditor: React.FC<DietEditorProps> = ({ className }) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Report diet text list to parent whenever recommendations change
+  useEffect(() => {
+    onChange?.(recommendations.map(r => r.text));
+  }, [recommendations]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filteredSuggestions = searchCatalog('DIET_LIFESTYLE', newRec);
 

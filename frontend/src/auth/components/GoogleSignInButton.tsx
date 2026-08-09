@@ -33,29 +33,32 @@ export default function GoogleSignInButton({ role, mode, dataConsent = true, onC
   }
 
   return (
-    <div className="flex justify-center">
-      <GoogleLogin
-        onSuccess={async (response) => {
-          const credential = response.credential;
-          if (!credential) {
-            onError('Google authentication did not return a credential.');
-            return;
-          }
+    <div className="flex justify-center w-full">
+      <div className="google-btn-wrapper">
+        <div className="google-btn-inner">
+          <GoogleLogin
+            onSuccess={async (response) => {
+              const credential = response.credential;
+              if (!credential) {
+                onError('Google authentication did not return a credential.');
+                return;
+              }
 
-          try {
-            await onCredential(credential);
-          } catch (error: any) {
-            onError(error?.message || 'Google Sign-In failed.');
-          }
-        }}
-        onError={() => onError('Google Sign-In failed. Please try again.')}
-        theme="outline"
-        size="large"
-        text={mode === 'signup' ? 'signup_with' : 'signin_with'}
-        shape="pill"
-        width="100%"
-        context="signin"
-      />
+              try {
+                await onCredential(credential);
+              } catch (error: any) {
+                onError(error?.message || 'Google Sign-In failed.');
+              }
+            }}
+            onError={() => onError('Google Sign-In failed. Please try again.')}
+            theme="outline"
+            size="large"
+            text={mode === 'signup' ? 'signup_with' : 'signin_with'}
+            shape="pill"
+            context="signin"
+          />
+        </div>
+      </div>
     </div>
   );
 }

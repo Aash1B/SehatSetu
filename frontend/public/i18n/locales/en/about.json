@@ -5,50 +5,69 @@
   "heroDescSecondary": "Built to make quality healthcare easier to reach across both rural and urban India.",
   "primaryCta": "Find a Doctor",
   "secondaryCta": "Explore Our Services",
-  "ourStory": "Our Story",
-  "storyP1": "SehatSetu was created around a simple problem: access to timely healthcare should not depend on distance.",
-  "storyP2": "For many people, especially those living far from major healthcare centres, seeing the right doctor can involve long travel, waiting times, and difficulty managing medical information.",
-  "storyP3": "SehatSetu aims to reduce those barriers by connecting patients with verified healthcare professionals and essential digital health services through one platform.",
+  "ourStory": "About Sehat Setu",
+  "storySubtitle": "Bridging Healthcare. Connecting Lives.",
+  "storyP1": "Healthcare is a fundamental right — yet for millions across India, it remains out of reach. Urban hospitals buckle under overwhelming patient loads and long waits, while rural communities face a harsher reality: too few doctors, too little infrastructure, and journeys of hours just to be seen. The cost isn't just inconvenience — it's delayed diagnoses, rising medical expenses, and families who put off care they can't afford to skip.",
+  "storyP2": "SehatSetu exists to close that gap. We bring trusted medical professionals within reach of every citizen — using secure telemedicine, AI, and machine learning to connect patients with verified doctors, regardless of where they live. A consultation in a metro city and a consultation in a remote village should carry the same standard of care. That's not an aspiration for us — it's the baseline we build to.",
+  "howWeDeliverTitle": "How we deliver on that",
+  "deliverPoint1Title": "Consult without the commute.",
+  "deliverPoint1Desc": "Patients book secure video consultations from home — no travel, no waiting rooms, no lost workdays.",
+  "deliverPoint2Title": "AI that supports doctors, not replaces them.",
+  "deliverPoint2Desc": "Our speech-recognition pipeline listens to consultations and structures them into clean digital prescriptions and clinical notes in real time — cutting paperwork, improving accuracy, and giving doctors more time with patients, not screens.",
+  "deliverPoint3Title": "A medical history that never gets lost.",
+  "deliverPoint3Desc": "Every consultation becomes part of a secure Electronic Health Record — diagnoses, prescriptions, allergies, and treatment history, available the moment they're needed, by the people who need them.",
+  "deliverPoint4Title": "Care that goes beyond the consultation.",
+  "deliverPoint4Desc": "Based on a patient's condition, SehatSetu delivers AI-driven guidance on nutrition, essential vitamins, and lifestyle habits that support real recovery — not generic advice.",
+  "deliverPoint5Title": "Knowing when virtual isn't enough.",
+  "deliverPoint5Desc": "When a condition calls for physical examination, lab work, or emergency attention, the platform recognizes it — and guides patients to the right hospital, at the right time.",
+  "deliverPoint6Title": "Built for India, not adapted for it.",
+  "deliverPoint6Desc": "Full support for English and Hindi means the patient's language from the first tap — not as an afterthought, but as a design principle.",
+  "privacyTitle": "Privacy isn't a feature. It's the foundation.",
+  "privacyBody": "Every record is protected by secure authentication and encrypted storage, built around the principles of India's DPDP Act, 2023. We don't believe healthcare innovation and responsible data handling are a trade-off — they're the same commitment, seen from two sides.",
   "mission": "Our Mission",
-  "missionText": "Make trusted healthcare services easier to access, understand, and manage through technology.",
+  "missionHeadline": "To put a trusted doctor within reach of every Indian — not eventually, but now.",
+  "missionP1": "We're building a platform where secure video consultations replace long journeys, where AI turns a doctor's spoken words into accurate records instead of hours of paperwork, and where every patient's history travels with them — safe, private, and always available when it matters most.",
+  "missionP2": "Our mission isn't just to digitize healthcare. It's to make sure geography, income, and infrastructure never stand between a person and the care they deserve — through technology that serves patients first, and doctors second to none.",
   "vision": "Our Vision",
-  "visionText": "Build a connected healthcare experience where distance, language, and digital complexity do not prevent people from receiving timely care.",
-  "whatWeProvide": "What SehatSetu Provides",
+  "visionHeadline": "A future where your zip code doesn't decide your health outcomes.",
+  "visionP1": "Where a farmer in a village and a professional in a metro city have the same door to walk through — trusted doctors, real care, no distance in the way.",
+  "visionP2": "SehatSetu exists to make that future arrive sooner: healthcare that's secure, accessible, affordable, and built for every Indian — not despite where they live, but regardless of it.",
+  "whatWeProvide": "Why Sehat Setu?",
   "featureVerifiedDoctors": {
-    "title": "Verified Doctors",
-    "desc": "Connect patients with verified medical professionals."
+    "title": "WHY SEHATSETU?",
+    "desc": "Bridging India's healthcare gap — connecting rural and urban communities through accessible, digital-first care."
   },
   "featureOnlineConsultations": {
-    "title": "Online Consultations",
-    "desc": "Enable convenient consultations without unnecessary travel."
+    "title": "Verified Care, Anywhere",
+    "desc": " Connect with verified healthcare professionals through secure video consultations, from anywhere."
   },
   "featureSmartScheduling": {
-    "title": "Smart Appointment Scheduling",
-    "desc": "Help patients discover available doctors and suitable appointment slots."
+    "title": "AI-Powered Clinical Support ",
+    "desc": "AI and machine learning assist doctors with consultation summaries, clinical documentation, and intelligent prescription drafts — paired with personalized dietary and nutrition guidance tailored to each patient's condition."
   },
   "featureAiAssistedCare": {
-    "title": "AI-Assisted Care",
-    "desc": "Use AI to assist with healthcare navigation, structured information, and clinical workflows without replacing doctors."
+    "title": "Never Miss a Follow-Up",
+    "desc": "Automated reminders keep patients on track with their care plans."
   },
   "featureDigitalPrescriptions": {
-    "title": "Digital Prescriptions",
-    "desc": "Support structured prescriptions and easier continuity of care."
+    "title": "Your Health, Permanently Recorded",
+    "desc": "Secure, encrypted Electronic Health Records ensure continuous, informed care throughout a patient's life."
   },
   "featureHealthRecords": {
-    "title": "Health Records",
-    "desc": "Keep patient healthcare information accessible through secure digital records."
+    "title": "Privacy by Design",
+    "desc": "Every record is protected with field-level encryption and built to DPDP Act 2023 principles, so patient data stays private by default, not by afterthought."
   },
   "featureNearbyHospitals": {
-    "title": "Nearby Hospitals",
-    "desc": "Help users discover nearby healthcare facilities when in-person care is required."
+    "title": "Prevention First",
+    "desc": "Personalized nutrition, wellness, and lifestyle guidance to help patients stay healthy, not just treat illness when it happens."
   },
   "featureLabGuidance": {
-    "title": "Diagnostic & Lab Guidance",
-    "desc": "Help users navigate relevant diagnostic services and general test information."
+    "title": "Smart Hospital Guidance",
+    "desc": "Intelligent, real-time recommendations for nearby hospitals when physical examination, lab testing, or emergency care is needed."
   },
   "featureEmergencyGuidance": {
-    "title": "Emergency Guidance",
-    "desc": "Prioritize urgent in-person care when high-risk symptoms are detected."
+    "title": "Care Without Barriers",
+    "desc": "Multilingual AI-powered support, designed to be simple and accessible for every patient."
   },
   "aiHeadline": "AI That Assists — Doctors Still Decide",
   "aiDesc": "SehatSetu uses artificial intelligence to make healthcare workflows more efficient, such as organizing information, assisting with healthcare navigation, and supporting structured medical documentation.",

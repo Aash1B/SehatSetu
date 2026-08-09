@@ -17,7 +17,7 @@ interface SymptomsEditorProps {
   onChange?: (items: string[]) => void;
 }
 
-const SymptomsEditor: React.FC<SymptomsEditorProps> = ({ className, aiExtractedSymptoms }) => {
+const SymptomsEditor: React.FC<SymptomsEditorProps> = ({ className, aiExtractedSymptoms, onChange }) => {
   const [symptoms, setSymptoms] = useState<Symptom[]>([
     { id: '1', text: 'Persistent Fever (4 days)', isAi: true },
     { id: '2', text: 'Body ache & Fatigue', isAi: true }
@@ -28,6 +28,11 @@ const SymptomsEditor: React.FC<SymptomsEditorProps> = ({ className, aiExtractedS
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Report symptom text list to parent whenever symptoms change
+  useEffect(() => {
+    onChange?.(symptoms.map(s => s.text));
+  }, [symptoms]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filteredSuggestions = searchCatalog('SYMPTOM', newSymptom);
 

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { verifyOtp, resendOtp } from '../api';
+import { saveAuth } from '../authStorage';
 import { useTranslation } from 'react-i18next';
 
 export default function VerifyOtp() {
@@ -17,8 +18,6 @@ export default function VerifyOtp() {
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
 
-  const loginPath = role === 'DOCTOR' ? '/doctor/login' : '/patient/login';
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
@@ -26,8 +25,17 @@ export default function VerifyOtp() {
     setLoading(true);
     try {
       const res = await verifyOtp({ email, otp });
-      setSuccess(res.message);
-      setTimeout(() => navigate(loginPath), 1500);
+      setSuccess(res.message || 'Email verified successfully.');
+      if (res.accessToken && res.id && res.email && res.fullName && res.role) {
+        saveAuth(res.accessToken, { id: res.id, email: res.email, fullName: res.fullName, role: res.role });
+      }
+      setTimeout(() => {
+        if (role === 'DOCTOR') {
+          navigate('/doctor/onboarding', { replace: true });
+        } else {
+          navigate('/patient/login', { replace: true });
+        }
+      }, 1000);
     } catch (err: any) {
       setError(err.message);
     } finally {

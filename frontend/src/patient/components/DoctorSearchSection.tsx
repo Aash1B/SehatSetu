@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { doctorsData, type Doctor } from "../data/doctorsData";
 import { fetchDoctors } from "../services/doctorApi";
 import CustomSelect, { type OptionItem } from "./CustomSelect";

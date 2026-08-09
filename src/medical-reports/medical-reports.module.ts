@@ -15,6 +15,6 @@ import { FastApiOcrClient } from './ocr/fastapi-ocr.client';
     { provide: STORAGE_SERVICE, useClass: SupabaseStorageService },
     { provide: OCR_CLIENT, useClass: FastApiOcrClient },
   ],
-  exports: [STORAGE_SERVICE],
+  exports: [STORAGE_SERVICE, MedicalReportsService],
 })
 export class MedicalReportsModule {}

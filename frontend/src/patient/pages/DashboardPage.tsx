@@ -615,16 +615,7 @@ const DashboardPage: React.FC = () => {
         <header className="sehat-top-bar">
           <div className="top-bar-space"></div>
           <div className="top-bar-actions">
-            {/* Notification Bell */}
-            <button type="button" className="btn-notification-bell" aria-label="Notifications">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#334155" strokeWidth="2" strokeLinecap="round">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-              </svg>
-              <span className="bell-badge">2</span>
-            </button>
-
-            {/* User Profile Dropdown Pill */}
+            {/* User Profile Display */}
             <div className="top-user-pill">
               {profileImageUrl ? (
                 <img src={profileImageUrl} alt={profileData.fullName || 'Patient'} className="user-pill-avatar" />
@@ -635,9 +626,6 @@ const DashboardPage: React.FC = () => {
                 <span className="user-pill-name">{profileData.fullName || 'Patient'}</span>
                 <span className="user-pill-role"> {t('patient')} </span>
               </div>
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#64748B" strokeWidth="2.5">
-                <path d="M6 9l6 6 6-6"/>
-              </svg>
             </div>
           </div>
         </header>
