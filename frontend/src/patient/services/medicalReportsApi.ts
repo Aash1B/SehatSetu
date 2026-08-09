@@ -40,7 +40,7 @@ async function backendRequest<T>(path: string, init?: RequestInit): Promise<T> {
   return body as T;
 }
 
-export async function uploadMedicalReport(file: File) {
+export async function uploadMedicalReport(file: File, category?: string) {
   if (!ALLOWED_TYPES.has(file.type)) {
     throw new Error('Choose a PDF, JPEG, PNG, or WebP report.');
   }
@@ -48,15 +48,21 @@ export async function uploadMedicalReport(file: File) {
     throw new Error('The report must be between 1 byte and 20 MB.');
   }
 
+  let reportType: 'LAB_REPORT' | 'PRESCRIPTION' | 'DISCHARGE_SUMMARY' | 'SCAN' | 'OTHER' = 'OTHER';
+  if (category === 'PREVIOUS_PRESCRIPTION') reportType = 'PRESCRIPTION';
+  else if (category === 'TEST_REPORTS') reportType = 'LAB_REPORT';
+  else if (category === 'DISCHARGE_SUMMARY') reportType = 'DISCHARGE_SUMMARY';
+  else if (['X_RAY', 'MRI', 'CT_SCAN', 'ECG'].includes(category || '')) reportType = 'SCAN';
+
   const context = await backendRequest<{ patientId: string }>('/me/context');
   const intent = await backendRequest<UploadIntent>('/upload-intent', {
     method: 'POST',
     body: JSON.stringify({
       patientId: context.patientId,
-      originalFileName: file.name,
+      originalFileName: category ? `[${category}] ${file.name}` : file.name,
       mimeType: file.type,
       fileSizeBytes: file.size,
-      reportType: 'OTHER',
+      reportType: reportType,
     }),
   });
 

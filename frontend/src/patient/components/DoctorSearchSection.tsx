@@ -40,19 +40,6 @@ const HOSPITAL_OPTIONS: OptionItem[] = [
   { value: 'neuro', label: 'Neuro Care Hospital' },
 ];
 
-const EXPERIENCE_OPTIONS: OptionItem[] = [
-  { value: 'All', label: 'Experience' },
-  { value: '1-5', label: '1 - 5 Years' },
-  { value: '5-10', label: '5 - 10 Years' },
-  { value: '10+', label: '10+ Years' },
-];
-
-const FEES_OPTIONS: OptionItem[] = [
-  { value: 'All', label: 'Fees' },
-  { value: '500-800', label: '₹500 - ₹800' },
-  { value: '800-1200', label: '₹800 - ₹1200' },
-];
-
 const DoctorSearchSection: React.FC = () => {
   const navigate = useNavigate();
   const [doctorsList, setDoctorsList] = useState<Doctor[]>(doctorsData);
@@ -60,8 +47,6 @@ const DoctorSearchSection: React.FC = () => {
   const [specialtyFilter, setSpecialtyFilter] = useState('All');
   const [locationFilter, setLocationFilter] = useState('All');
   const [hospitalFilter, setHospitalFilter] = useState('All');
-  const [experienceFilter, setExperienceFilter] = useState('All');
-  const [feesFilter, setFeesFilter] = useState('All');
   const [favorites, setFavorites] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -169,6 +154,11 @@ const DoctorSearchSection: React.FC = () => {
               placeholder="Search doctor, specialty, hospital or symptoms..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleSearchSubmit();
+                }
+              }}
             />
             <button
               type="button"
@@ -187,13 +177,6 @@ const DoctorSearchSection: React.FC = () => {
               }}
             >
               <span className="text-xs font-bold text-orange-600 flex items-center gap-1 px-1">✨ AI Match</span>
-            </button>
-            <button type="button" className="btn-search-submit" onClick={handleSearchSubmit}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
-                <circle cx="11" cy="11" r="8" />
-                <path d="M21 21l-4.35-4.35" />
-              </svg>
-              Search
             </button>
           </div>
 
@@ -219,27 +202,6 @@ const DoctorSearchSection: React.FC = () => {
               value={hospitalFilter}
               onChange={setHospitalFilter}
             />
-
-            <CustomSelect
-              icon="📅"
-              options={EXPERIENCE_OPTIONS}
-              value={experienceFilter}
-              onChange={setExperienceFilter}
-            />
-
-            <CustomSelect
-              icon="₹"
-              options={FEES_OPTIONS}
-              value={feesFilter}
-              onChange={setFeesFilter}
-            />
-
-            <button type="button" className="btn-more-filters" onClick={handleSearchSubmit}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
-                <path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" />
-              </svg>
-              More Filters
-            </button>
           </div>
         </div>
 

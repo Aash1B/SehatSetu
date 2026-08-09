@@ -60,7 +60,7 @@ export class DoctorsService {
   async findAll() {
     const doctors = await prisma.doctor.findMany({
       where: {
-        userId: { not: null },
+        userId: { not: '' },
       },
       include: { user: { select: { id: true, fullName: true, email: true, role: true } } },
     });
@@ -102,7 +102,7 @@ export class DoctorsService {
     // Older bookings used catalog doctor IDs. Reattach the matching catalog
     // profile to the authenticated doctor so ownership and prescriptions agree.
     const normalizedUserName = user.fullName.replace(/^dr\.?\s*/i, '').trim().toLowerCase();
-    const catalogDoctors = await prisma.doctor.findMany({ where: { userId: null } });
+    const catalogDoctors = await prisma.doctor.findMany({ where: { userId: '' } });
     const catalogMatch = catalogDoctors.find((doctor) =>
       doctor.name?.replace(/^dr\.?\s*/i, '').trim().toLowerCase() === normalizedUserName,
     );

@@ -2,6 +2,7 @@ import { Module, Global } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { AppointmentProcessor } from './processors/appointment.processor';
 import { ConsultationProcessor } from './processors/consultation.processor';
+import { MedicalReportsModule } from '../medical-reports/medical-reports.module';
 
 @Global()
 @Module({
@@ -21,6 +22,7 @@ import { ConsultationProcessor } from './processors/consultation.processor';
       { name: 'consultation-queue' },
     ),
   ],
+  imports: [MedicalReportsModule],
   providers: [
     AppointmentProcessor,
     ConsultationProcessor,

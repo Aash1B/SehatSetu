@@ -58,7 +58,13 @@ const FloatingEmergencyButton: React.FC = () => {
                 <span className="call-now-tag">{t('connect')}</span>
               </a>
 
-              <a href="#doctors" className="emergency-action-item find-nearest" onClick={() => setModalOpen(false)}>
+              <a
+                href="https://www.google.com/maps/search/hospitals+near+me"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="emergency-action-item find-nearest"
+                onClick={() => setModalOpen(false)}
+              >
                 <span className="action-icon">🏥</span>
                 <div className="action-info">
                   <div className="action-title">{t('emergencyHospitals')}</div>

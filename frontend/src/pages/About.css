@@ -513,6 +513,10 @@
   text-align: center;
   box-shadow: var(--shadow-sm);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .about-value-card:hover {
@@ -529,6 +533,33 @@
 .about-value-desc {
   font-size: 0.95rem;
   line-height: 1.6;
+}
+
+.about-value-card-accessibility {
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  color: #047857;
+}
+
+.about-value-card-trust {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  color: #1d4ed8;
+}
+
+.about-value-card-human-centred {
+  background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+  color: #7c3aed;
+}
+
+.about-value-card-innovation {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #d97706;
+}
+
+.about-value-card-accessibility .about-value-desc,
+.about-value-card-trust .about-value-desc,
+.about-value-card-human-centred .about-value-desc,
+.about-value-card-innovation .about-value-desc {
+  color: inherit;
 }
 
 /* ==========================================================================

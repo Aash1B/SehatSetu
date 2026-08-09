@@ -36,7 +36,8 @@ interface BookingFormData {
 
 const ALL_SYMPTOMS = [
   'Fever', 'Cough', 'Headache', 'Fatigue', 'Sore Throat',
-  'Chest Pain', 'Shortness of Breath', 'Joint Pain', 'Skin Rash',
+  'Chest Pain', 'Heart beating faster', 'Heart palpitations',
+  'Shortness of Breath', 'Joint Pain', 'Skin Rash',
   'Anxiety', 'Back Pain', 'Nausea', 'Dizziness', 'Stomach Pain',
   'Vomiting', 'Chills', 'Loss of Appetite', 'Body Ache', 'Diarrhea',
   'Acid Reflux', 'Insomnia', 'Muscle Weakness', 'High Blood Pressure',
@@ -68,6 +69,32 @@ function formatMinutesToTime(totalMinutes: number) {
   return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')} ${ampm}`;
 }
 
+function formatConfirmationDateTime(dateStr: string, timeSlot: string) {
+  if (!dateStr && !timeSlot) return 'TBD';
+  try {
+    const today = new Date();
+    const selected = dateStr ? new Date(dateStr) : today;
+    // Normalize to start of day for comparison
+    const t0 = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const s0 = new Date(selected.getFullYear(), selected.getMonth(), selected.getDate());
+    const dayDiff = Math.round((s0.getTime() - t0.getTime()) / (1000 * 60 * 60 * 24));
+    const dayLabel = dayDiff === 0 ? 'Today' : dayDiff === 1 ? 'Tomorrow' : selected.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+    const timeLabel = timeSlot || '';
+    return `${dayLabel}${timeLabel ? (dayLabel ? ', ' : '') + timeLabel : ''}`;
+  } catch {
+    return timeSlot || dateStr || 'TBD';
+  }
+}
+
+function formatFeeDisplay(fee: any) {
+  if (fee === undefined || fee === null || fee === '') return '₹800';
+  const feeStr = String(fee).trim();
+  // remove any currency symbols or spacing
+  const numeric = feeStr.replace(/[^0-9.]/g, '');
+  if (!numeric) return feeStr; // fallback to original
+  return `₹${numeric}`;
+}
+
 interface DoctorAvailabilityData {
   status?: string;
   slotDurationMinutes?: number;
@@ -75,16 +102,20 @@ interface DoctorAvailabilityData {
   bookedSlots?: Record<string, string[]>;
 }
 
+const DEFAULT_SLOTS = ['09:00 AM', '09:15 AM', '09:30 AM', '09:45 AM', '10:00 AM', '10:15 AM', '10:30 AM', '10:45 AM', '11:00 AM', '11:15 AM', '11:30 AM', '11:45 AM', '12:00 PM', '12:15 PM', '12:30 PM', '12:45 PM', '02:00 PM', '02:15 PM', '02:30 PM', '02:45 PM', '03:00 PM', '03:15 PM', '03:30 PM', '03:45 PM', '04:00 PM', '04:15 PM', '04:30 PM', '04:45 PM'];
+
 function getSlotsForDoctorAndDay(availability: DoctorAvailabilityData | null, dayFullName: string) {
   if (!availability) {
-    return ['09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '02:00 PM', '02:30 PM', '03:00 PM', '04:00 PM', '04:30 PM'];
+    return DEFAULT_SLOTS;
   }
   if (availability.status === 'On Leave') {
     return [];
   }
   const daySlot = availability.slots?.find((s) => s.day?.toLowerCase() === dayFullName.toLowerCase());
+  // If the doctor has no schedule entry for this day, or it's marked as not working,
+  // show default slots so users can still book (the backend will validate availability).
   if (!daySlot || !daySlot.isWorking || !daySlot.workingHours || daySlot.workingHours.toLowerCase().includes('closed')) {
-    return [];
+    return DEFAULT_SLOTS;
   }
 
   try {
@@ -109,9 +140,9 @@ function getSlotsForDoctorAndDay(availability: DoctorAvailabilityData | null, da
       }
       slots.push(formatMinutesToTime(current));
     }
-    return slots;
+    return slots.length > 0 ? slots : DEFAULT_SLOTS;
   } catch {
-    return ['09:00 AM', '10:00 AM', '11:00 AM', '02:00 PM', '03:00 PM', '04:00 PM'];
+    return DEFAULT_SLOTS;
   }
 }
 
@@ -296,6 +327,18 @@ const BookAppointmentPage: React.FC = () => {
 
   useEffect(() => {
     if (currentStep === 2) {
+      const hasSymptomsOrConcern = formData.healthConcern.trim() !== '' || formData.symptoms.length > 0;
+      if (!hasSymptomsOrConcern) {
+        setAiRecommendation(null);
+        setShowAllDoctors(true);
+        setFormData(prev => {
+          if (prev.selectedDoctor) return prev;
+          const defaultDoc = allDoctorsList[0] || doctorsData[0] || null;
+          return { ...prev, selectedDoctor: defaultDoc };
+        });
+        return;
+      }
+
       Promise.resolve().then(() => setLoadingRecommendation(true));
       recommendDoctorsApi(formData.healthConcern, formData.symptoms)
         .then(rec => {
@@ -315,7 +358,12 @@ const BookAppointmentPage: React.FC = () => {
               ? localSpecialists
               : generalPhysicians;
           setAiRecommendation({ ...rec, recommendedDoctors: recommended });
-          setFormData(prev => ({ ...prev, selectedDoctor: recommended[0] || null }));
+          setShowAllDoctors(false);
+          setFormData(prev => {
+            const currentSelected = prev.selectedDoctor;
+            const isAlreadyRecommended = currentSelected && recommended.some(d => d.id === currentSelected.id);
+            return { ...prev, selectedDoctor: isAlreadyRecommended ? currentSelected : (recommended[0] || null) };
+          });
         })
         .catch(() => setAiRecommendation(null))
         .finally(() => setLoadingRecommendation(false));
@@ -530,10 +578,7 @@ const BookAppointmentPage: React.FC = () => {
               onClick={() => navigate('/')}
             >
               <div className="logo-badge">
-                <svg viewBox="0 0 24 24" fill="none" className="logo-icon" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#F97316" />
-                  <path d="M12 7v6m-3-3h6" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" />
-                </svg>
+                <img src="/logo.svg" alt="SehatSetu" className="logo-icon" />
               </div>
               <span className="brand-title">
                 Sehat<span className="brand-title-accent">Setu</span>
@@ -640,19 +685,19 @@ const BookAppointmentPage: React.FC = () => {
               <div className="ticket-details-grid">
                 <div>
                   <span className="detail-label">Date & Time</span>
-                  <span className="detail-val">Tomorrow, 10:30 AM</span>
+                  <span className="detail-val">{formatConfirmationDateTime(formData.selectedDate, formData.selectedTimeSlot)}</span>
                 </div>
                 <div>
                   <span className="detail-label">Patient Name</span>
-                  <span className="detail-val">{formData.patientName}</span>
+                  <span className="detail-val">{formData.patientName || '-'}</span>
                 </div>
                 <div>
                   <span className="detail-label">Age & Gender</span>
-                  <span className="detail-val">{formData.patientAge} Yrs, {formData.patientGender}</span>
+                  <span className="detail-val">{(formData.patientAge ? `${formData.patientAge} Yrs` : '- Yrs') + (formData.patientGender ? `, ${formData.patientGender}` : '')}</span>
                 </div>
                 <div>
                   <span className="detail-label">Vitals (Height / Weight)</span>
-                  <span className="detail-val">{formData.patientHeight} cm, {formData.patientWeight} kg{formData.patientBloodGroup ? ` (${formData.patientBloodGroup})` : ''}</span>
+                  <span className="detail-val">{(formData.patientHeight?.trim() ? `${formData.patientHeight} cm` : '- cm') + ', ' + (formData.patientWeight?.trim() ? `${formData.patientWeight} kg` : '- kg')}{formData.patientBloodGroup ? ` (${formData.patientBloodGroup})` : ''}</span>
                 </div>
                 <div>
                   <span className="detail-label">Consultation Mode</span>
@@ -660,7 +705,7 @@ const BookAppointmentPage: React.FC = () => {
                 </div>
                 <div>
                   <span className="detail-label">Fee Paid</span>
-                  <span className="detail-val">₹{formData.selectedDoctor?.fee || '800'}</span>
+                  <span className="detail-val">{formatFeeDisplay(formData.selectedDoctor?.fee)}</span>
                 </div>
               </div>
             </div>
@@ -715,7 +760,7 @@ const BookAppointmentPage: React.FC = () => {
                   {/* Q1: What symptoms are you experiencing? */}
                   <div className="form-question-block">
                     <label className="question-label">What symptoms are you experiencing?</label>
-                    <div className="symptom-search-bar-v2">
+                     <div className="symptom-search-bar-v2">
                       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#94A3B8" strokeWidth="2">
                         <circle cx="11" cy="11" r="8" />
                         <path d="M21 21l-4.35-4.35" />
@@ -725,6 +770,18 @@ const BookAppointmentPage: React.FC = () => {
                         placeholder="Search or type a symptom (e.g., fever, cough, headache)"
                         value={symptomSearch}
                         onChange={(e) => setSymptomSearch(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const val = symptomSearch.trim();
+                            if (val) {
+                              if (!formData.symptoms.includes(val)) {
+                                toggleSymptom(val);
+                              }
+                              setSymptomSearch('');
+                            }
+                          }
+                        }}
                       />
                     </div>
 
@@ -778,6 +835,22 @@ const BookAppointmentPage: React.FC = () => {
                             </button>
                           );
                         })}
+                        {symptomSearch.trim() && !filteredSymptoms.some(s => s.toLowerCase() === symptomSearch.trim().toLowerCase()) && (
+                          <button
+                            type="button"
+                            className="symptom-pill custom-add-pill"
+                            style={{ borderStyle: 'dashed', borderColor: '#3B82F6', color: '#2563EB', fontWeight: 'bold' }}
+                            onClick={() => {
+                              const val = symptomSearch.trim();
+                              if (!formData.symptoms.includes(val)) {
+                                toggleSymptom(val);
+                              }
+                              setSymptomSearch('');
+                            }}
+                          >
+                            + Add custom: "{symptomSearch.trim()}"
+                          </button>
+                        )}
                       </div>
                     )}
 
@@ -953,13 +1026,6 @@ const BookAppointmentPage: React.FC = () => {
                           onChange={(e) => setStep2SearchTerm(e.target.value)}
                           className="step2-search-input"
                         />
-                        <button type="button" className="step2-mic-btn" title="Voice Search">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
-                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
-                            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                            <line x1="12" y1="19" x2="12" y2="22" />
-                          </svg>
-                        </button>
                       </div>
                     </div>
 
@@ -1154,7 +1220,7 @@ const BookAppointmentPage: React.FC = () => {
                 });
 
                 // Auto-select first available date if selected date is empty or has no slots left
-                const activeDayObj = upcomingDaysWithSlots.find(d => formData.selectedDate.includes(d.dateNum) && !d.isNoSlotsLeft)
+                const activeDayObj = upcomingDaysWithSlots.find(d => formData.selectedDate === d.dateKey && !d.isNoSlotsLeft)
                   || upcomingDaysWithSlots.find(d => !d.isNoSlotsLeft)
                   || upcomingDaysWithSlots[0];
 
@@ -1182,7 +1248,7 @@ const BookAppointmentPage: React.FC = () => {
                       <div className="date-carousel-wrapper">
                         <div className="date-cards-row">
                           {upcomingDaysWithSlots.map((d) => {
-                            const isSelected = activeDayObj.fullDate === d.fullDate;
+                            const isSelected = activeDayObj.dateKey === d.dateKey;
                             const isNoSlots = d.isNoSlotsLeft;
                             return (
                               <button
@@ -1193,7 +1259,7 @@ const BookAppointmentPage: React.FC = () => {
                                 onClick={() => {
                                   if (isNoSlots) return;
                                   setSlotError('');
-                                  setFormData({ ...formData, selectedDate: d.fullDate, selectedTimeSlot: '' });
+                                  setFormData({ ...formData, selectedDate: d.dateKey, selectedTimeSlot: '' });
                                 }}
                               >
                                 <span className="date-card-tag">{isNoSlots ? 'No Slots' : d.label}</span>
@@ -1254,7 +1320,7 @@ const BookAppointmentPage: React.FC = () => {
                                 onClick={() => {
                                   if (isUnavailable) return;
                                   setSlotError('');
-                                  setFormData({ ...formData, selectedDate: activeDayObj.fullDate, selectedTimeSlot: slot });
+                                  setFormData({ ...formData, selectedDate: activeDayObj.dateKey, selectedTimeSlot: slot });
                                 }}
                               >
                                 <span>{slot}</span>
@@ -1267,11 +1333,7 @@ const BookAppointmentPage: React.FC = () => {
                         </div>
                       )}
 
-                      {/* Timezone Info Alert Banner */}
-                      <div className="timezone-info-banner">
-                        <span className="info-circle-icon">ⓘ</span>
-                        <span>All slots are generated live based on {formData.selectedDoctor?.name}'s database schedule (IST)</span>
-                      </div>
+                      {/* Timezone Info Alert Banner removed as per design request */}
                     </div>
                   </div>
                 );
@@ -1609,7 +1671,7 @@ const BookAppointmentPage: React.FC = () => {
                         <div className="item-icon-box purple-box">📅</div>
                         <div className="item-content">
                           <span className="item-label">Date & Time</span>
-                          <span className="item-value">{formData.selectedDate || 'Mon, 20 May 2024'}</span>
+                          <span className="item-value">{formData.selectedDate ? new Date(formData.selectedDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) : 'Not selected'}</span>
                           <span className="item-sub time-bold">{formData.selectedTimeSlot || '07:30 PM'}</span>
                         </div>
                         <button type="button" className="btn-add-calendar">

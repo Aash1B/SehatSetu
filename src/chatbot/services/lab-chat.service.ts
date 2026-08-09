@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional, Inject } from '@nestjs/common';
 import { ChatCard } from '../types/chatbot.types';
 import { LabProvider, PagedLabs, LabProviderInfo } from '../providers/lab-provider.interface';
 
@@ -42,7 +42,11 @@ function isValidLongitude(lng: number): boolean {
 export class LabChatService {
   private readonly logger = new Logger(LabChatService.name);
 
-  constructor(private readonly labProvider?: LabProvider) {}
+  constructor(
+    @Optional()
+    @Inject('LAB_PROVIDER')
+    private readonly labProvider?: LabProvider,
+  ) {}
 
   getProviderInfo(): LabProviderInfo {
     if (!this.labProvider) {

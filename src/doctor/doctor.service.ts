@@ -149,7 +149,7 @@ export class DoctorService {
         availability = doctor.availability;
         if (!doctor.userId && doctor.name) {
           const normalizedName = doctor.name.replace(/^dr\.?\s*/i, '').trim().toLowerCase();
-          const linkedDoctors = await prisma.doctor.findMany({ where: { userId: { not: null } }, include: { user: true } });
+          const linkedDoctors = await prisma.doctor.findMany({ where: { userId: { not: '' } }, include: { user: true } });
           const linkedMatch = linkedDoctors.find((candidate) =>
             candidate.user?.fullName.replace(/^dr\.?\s*/i, '').trim().toLowerCase() === normalizedName,
           );
@@ -315,6 +315,7 @@ export class DoctorService {
       return prisma.doctor.create({
         data: {
           id: targetId,
+          userId: targetId,
           specialty: cleanedDoctorData.specialty || 'General Physician',
           name: cleanedDoctorData.name || 'Dr. New Doctor',
           experience: cleanedDoctorData.experience || '5+ Years Exp.',

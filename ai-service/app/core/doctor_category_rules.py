@@ -38,7 +38,7 @@ DOCTOR_CATEGORY_RULES: dict[DoctorCategory, tuple[str, ...]] = {
     DoctorCategory.CARDIOLOGIST: (
         "chest pain", "heart pain", "palpitations", "irregular heartbeat",
         "rapid heartbeat", "high blood pressure", "heart problem",
-        "cardiac problem",
+        "cardiac problem", "heart beating faster", "heart beating fast",
     ),
     DoctorCategory.ORTHOPEDIC: (
         "joint pain", "knee pain", "shoulder pain", "back pain", "bone pain",

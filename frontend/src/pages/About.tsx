@@ -176,10 +176,10 @@ const HowItWorksSection: React.FC = () => {
 };
 
 const values = [
-  { key: 'valueAccessibility', color: 'bg-emerald-100', tint: 'text-emerald-700' },
-  { key: 'valueTrust', color: 'bg-blue-100', tint: 'text-blue-700' },
-  { key: 'valueHumanCentred', color: 'bg-purple-100', tint: 'text-purple-700' },
-  { key: 'valueResponsibleInnovation', color: 'bg-amber-100', tint: 'text-amber-700' },
+  { key: 'valueAccessibility', variant: 'about-value-card-accessibility' },
+  { key: 'valueTrust', variant: 'about-value-card-trust' },
+  { key: 'valueHumanCentred', variant: 'about-value-card-human-centred' },
+  { key: 'valueResponsibleInnovation', variant: 'about-value-card-innovation' },
 ] as const;
 
 const ValuesSection: React.FC = () => {
@@ -194,7 +194,7 @@ const ValuesSection: React.FC = () => {
 
         <div className="about-values-grid">
           {values.map((v) => (
-            <div key={v.key} className={`about-value-card ${v.color} ${v.tint}`}>
+            <div key={v.key} className={`about-value-card ${v.variant}`}>
               <h3 className="about-value-title">{t(`${v.key}.title`)}</h3>
               <p className="about-value-desc">{t(`${v.key}.desc`)}</p>
             </div>
@@ -223,7 +223,7 @@ const ValuesSection: React.FC = () => {
   };
 
   return (
-    <div className="about-page">
+    <div className="patient-portal about-page">
       <Navbar />
       <main>
         <section

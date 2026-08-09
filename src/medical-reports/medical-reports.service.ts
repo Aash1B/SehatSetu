@@ -245,19 +245,28 @@ export class MedicalReportsService {
           'Stored report type no longer matches',
         );
       }
-      const result = await this.ocr.analyze(
-        object.bytes,
-        existing.originalFileName,
-        existing.mimeType,
-      );
+      let result = { extractedText: '', extractedData: {} };
+      let ocrSucceeded = false;
+      try {
+        const ocrRes = await this.ocr.analyze(
+          object.bytes,
+          existing.originalFileName,
+          existing.mimeType,
+        );
+        result = { extractedText: ocrRes.extractedText, extractedData: ocrRes.extractedData };
+        ocrSucceeded = true;
+      } catch (ocrError: any) {
+        console.warn(`[OCR WARN] OCR processing failed or skipped for report ${existing.id}: ${ocrError?.message || ocrError}`);
+      }
+
       const updated = await this.reports.update(existing.id, {
         status: MedicalReportStatus.PROCESSED,
-        ocrStatus: MedicalReportOcrStatus.SUCCEEDED,
+        ocrStatus: ocrSucceeded ? MedicalReportOcrStatus.SUCCEEDED : MedicalReportOcrStatus.FAILED,
         extractedText: result.extractedText,
         extractedData: result.extractedData as object,
         processedAt: new Date(),
-        processingErrorCode: null,
-        processingErrorMessage: null,
+        processingErrorCode: ocrSucceeded ? null : 'OCR_SKIPPED',
+        processingErrorMessage: ocrSucceeded ? null : 'OCR service unavailable',
       });
       return this.present(updated);
     } catch (error) {
@@ -265,8 +274,8 @@ export class MedicalReportsService {
         .update(existing.id, {
           status: MedicalReportStatus.OCR_FAILED,
           ocrStatus: MedicalReportOcrStatus.FAILED,
-          processingErrorCode: 'OCR_PROCESSING_FAILED',
-          processingErrorMessage: 'Medical report processing failed',
+          processingErrorCode: 'STORAGE_VERIFICATION_FAILED',
+          processingErrorMessage: 'Medical report storage verification failed',
         })
         .catch(() => undefined);
       if (
@@ -275,7 +284,7 @@ export class MedicalReportsService {
       ) {
         throw error;
       }
-      throw new BadGatewayException('Medical report OCR failed');
+      throw new BadGatewayException('Medical report upload completed with storage issue');
     }
   }
 

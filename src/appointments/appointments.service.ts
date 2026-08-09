@@ -9,7 +9,7 @@ import { Queue } from 'bullmq';
 export class AppointmentsService {
   constructor(
     @InjectQueue('appointment-queue') private readonly appointmentQueue: Queue,
-  ) {}
+  ) { }
 
   async createAppointment(data: any, authenticatedUserId: string) {
     const doctorId = data.doctorId;
@@ -21,7 +21,7 @@ export class AppointmentsService {
       if (!doctor) {
         // Fallback: find any registered doctor with a linked User account in the DB
         const linkedDoctors = await tx.doctor.findMany({
-          where: { userId: { not: null } },
+          where: { userId: { not: '' } },
           include: { user: { select: { id: true, fullName: true, email: true, role: true } } },
         });
         if (linkedDoctors.length > 0) {
@@ -37,7 +37,14 @@ export class AppointmentsService {
 
       if (!doctor.userId && doctor.name) {
         const normalizedName = doctor.name.replace(/^dr\.?\s*/i, '').trim().toLowerCase();
-        const linkedDoctors = await tx.doctor.findMany({ where: { userId: { not: null } }, include: { user: { select: { id: true, fullName: true, email: true, role: true } } } });
+        const linkedDoctors = await tx.doctor.findMany({
+          where: { userId: { not: '' } },
+          include: {
+            user: {
+              select: { id: true, fullName: true, email: true, role: true },
+            },
+          },
+        });
         const linkedMatch = linkedDoctors.find((candidate) =>
           candidate.user?.fullName.replace(/^dr\.?\s*/i, '').trim().toLowerCase() === normalizedName,
         );
@@ -92,16 +99,27 @@ export class AppointmentsService {
       if (data.date) {
         if (typeof data.date === 'string') {
           const lowerDate = data.date.toLowerCase();
-          const targetDate = new Date();
           if (lowerDate.includes('tomorrow')) {
+            const targetDate = new Date();
             targetDate.setDate(targetDate.getDate() + 1);
             scheduledAt = targetDate;
           } else if (lowerDate.includes('today')) {
-            scheduledAt = targetDate;
+            scheduledAt = new Date();
           } else {
-            const parsed = Date.parse(data.date);
-            if (!isNaN(parsed)) {
-              scheduledAt = new Date(parsed);
+            // Try YYYY-MM-DD format first (sent by the frontend)
+            const isoMatch = data.date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            if (isoMatch) {
+              scheduledAt = new Date(
+                parseInt(isoMatch[1], 10),
+                parseInt(isoMatch[2], 10) - 1,
+                parseInt(isoMatch[3], 10),
+              );
+            } else {
+              // Fallback: try Date.parse for other formats
+              const parsed = Date.parse(data.date);
+              if (!isNaN(parsed)) {
+                scheduledAt = new Date(parsed);
+              }
             }
           }
         }

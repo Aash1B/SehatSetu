@@ -2,7 +2,7 @@
 
 .chat-toggle-btn {
   position: fixed;
-  bottom: 24px;
+  bottom: 88px;
   left: 24px;
   z-index: 9992;
   display: flex;
@@ -37,7 +37,7 @@
 
 .chat-window {
   position: fixed;
-  bottom: 24px;
+  bottom: 88px;
   left: 24px;
   z-index: 9992;
   display: flex;
