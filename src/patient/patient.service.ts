@@ -3,6 +3,7 @@ import { prisma } from '../prisma';
 import { randomUUID } from 'crypto';
 import { STORAGE_SERVICE, StorageService } from '../medical-reports/storage/storage.service';
 import { MEDICAL_REPORT_BUCKET } from '../medical-reports/medical-reports.types';
+import { redactEhrRecordForPatient } from '../ehr/ehr-visibility.util';
 
 export interface UpdatePatientProfileDto {
   fullName?: string;
@@ -182,7 +183,7 @@ export class PatientService {
       data: { status: 'CANCELLED' },
     });
 
-    const appointments = await prisma.appointment.findMany({
+    const appointmentsRaw = await prisma.appointment.findMany({
       where: {
         patientId: profile.id,
       },
@@ -196,10 +197,17 @@ export class PatientService {
         payment: true,
       },
     });
+    // Patients must never see DRAFT/REJECTED EHR data; only VERIFIED records
+    // are safe for direct patient consumption. Enforced here at the backend
+    // level, not left to the frontend to hide.
+    const appointments = appointmentsRaw.map((app) => ({
+      ...app,
+      ehrRecord: redactEhrRecordForPatient(app.ehrRecord),
+    }));
 
     const [ehrRecords, prescriptions, medicalReports, payments] = await Promise.all([
       prisma.ehrRecord.findMany({
-        where: { patientId: profile.id },
+        where: { patientId: profile.id, status: 'VERIFIED' },
         orderBy: { createdAt: 'desc' },
       }),
       prisma.prescription.findMany({
@@ -221,11 +229,23 @@ export class PatientService {
       }),
     ]);
 
+    // Same backend-level safety guard as the appointments list above: strip
+    // any non-VERIFIED ehrRecord nested under a prescription's appointment.
+    const safePrescriptions = prescriptions.map((prescription) => ({
+      ...prescription,
+      appointment: prescription.appointment
+        ? {
+            ...prescription.appointment,
+            ehrRecord: redactEhrRecordForPatient(prescription.appointment.ehrRecord),
+          }
+        : prescription.appointment,
+    }));
+
     return {
       profile,
       appointments,
       ehrRecords,
-      prescriptions,
+      prescriptions: safePrescriptions,
       medicalReports: medicalReports.map(({ fileSizeBytes, ...report }) => ({
         ...report,
         fileSizeBytes: fileSizeBytes.toString(),

@@ -149,6 +149,7 @@ const DashboardPage: React.FC = () => {
   const [showRxModal, setShowRxModal] = useState<boolean>(false);
   const [selectedRxData, setSelectedRxData] = useState<any>(null);
   const [selectedEhrModalData, setSelectedEhrModalData] = useState<any>(null);
+  const [previewDoc, setPreviewDoc] = useState<{ url: string; fileName: string } | null>(null);
 
   // Profile & Settings states
   const [profileSubTab, setProfileSubTab] = useState<'personal' | 'medical' | 'security' | 'notifications' | 'billing'>('personal');
@@ -198,77 +199,77 @@ const DashboardPage: React.FC = () => {
   useEffect(() => {
     // Disabled legacy mock/local-storage loader; authenticated data is loaded below.
     if (false) {
-    // Clear legacy 2024 cached mock items
-    const activeRxStr = localStorage.getItem('sehatsetu_active_prescription');
-    if (activeRxStr && (activeRxStr!.includes('2024') || activeRxStr!.includes('May 20'))) {
-      localStorage.removeItem('sehatsetu_active_prescription');
-    }
+      // Clear legacy 2024 cached mock items
+      const activeRxStr = localStorage.getItem('sehatsetu_active_prescription');
+      if (activeRxStr && (activeRxStr!.includes('2024') || activeRxStr!.includes('May 20'))) {
+        localStorage.removeItem('sehatsetu_active_prescription');
+      }
 
-    const fetchAppointments = async () => {
-      try {
-        const res = await fetch('/api/appointments');
-        if (res.ok) {
-          const apps = await res.json();
-          if (Array.isArray(apps) && apps.length > 0) {
-            setLatestAppointment(apps[0]); // Most recently booked appointment
-            const dbConsultations: ConsultationItem[] = apps.map((app: any) => {
-              const matchedDoc = doctorsData.find(d => d.id === app.doctorId) || doctorsData[0];
-              
-              let displayDate = app.date;
-              if (app.scheduledAt) {
-                const sDate = new Date(app.scheduledAt);
-                if (!isNaN(sDate.getTime())) {
-                  displayDate = sDate.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+      const fetchAppointments = async () => {
+        try {
+          const res = await fetch('/api/appointments');
+          if (res.ok) {
+            const apps = await res.json();
+            if (Array.isArray(apps) && apps.length > 0) {
+              setLatestAppointment(apps[0]); // Most recently booked appointment
+              const dbConsultations: ConsultationItem[] = apps.map((app: any) => {
+                const matchedDoc = doctorsData.find(d => d.id === app.doctorId) || doctorsData[0];
+
+                let displayDate = app.date;
+                if (app.scheduledAt) {
+                  const sDate = new Date(app.scheduledAt);
+                  if (!isNaN(sDate.getTime())) {
+                    displayDate = sDate.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+                  }
                 }
-              }
-              
-              if (!displayDate || displayDate.includes('May') || displayDate.includes('2024') || displayDate.includes('Thu 23')) {
-                const today = new Date();
-                displayDate = today.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
-              }
 
-              return {
-                id: app.id || `CONS-${Math.floor(1000 + Math.random() * 9000)}`,
-                doctorName: matchedDoc?.name || app.doctorName || 'Dr. Alok Verma',
-                specialty: matchedDoc?.specialty || 'General Physician',
-                avatar: matchedDoc?.imageUrl || 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=300',
-                date: displayDate,
-                time: app.timeSlot || '10:00 AM',
-                mode: (app.consultMode || 'Video Consultation') as any,
-              };
-            });
-            setConsultationsList(dbConsultations);
+                if (!displayDate || displayDate.includes('May') || displayDate.includes('2024') || displayDate.includes('Thu 23')) {
+                  const today = new Date();
+                  displayDate = today.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+                }
+
+                return {
+                  id: app.id || `CONS-${Math.floor(1000 + Math.random() * 9000)}`,
+                  doctorName: matchedDoc?.name || app.doctorName || 'Dr. Alok Verma',
+                  specialty: matchedDoc?.specialty || 'General Physician',
+                  avatar: matchedDoc?.imageUrl || 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=300',
+                  date: displayDate,
+                  time: app.timeSlot || '10:00 AM',
+                  mode: (app.consultMode || 'Video Consultation') as any,
+                };
+              });
+              setConsultationsList(dbConsultations);
+            }
           }
+        } catch (err) {
+          console.error("Failed to fetch appointments:", err);
         }
-      } catch (err) {
-        console.error("Failed to fetch appointments:", err);
-      }
-    };
-    fetchAppointments();
+      };
+      fetchAppointments();
 
-    // Sync recently issued prescriptions from live consultations
-    const activeRx = localStorage.getItem('sehatsetu_active_prescription');
-    if (activeRx) {
-      try {
-        const parsed = JSON.parse(activeRx!);
-        const formattedRx = {
-          id: parsed.id || 'RX-2026-8849',
-          doctorName: parsed.doctorName || 'Dr. Ananya Sharma',
-          date: parsed.date || 'Today',
-          meds: Array.isArray(parsed.medications) 
-            ? parsed.medications.map((m: any) => m.name).join(', ') 
-            : 'Tab. Paracetamol 650mg, Tab. Cetirizine 10mg',
-          fullData: parsed,
-        };
+      // Sync recently issued prescriptions from live consultations
+      const activeRx = localStorage.getItem('sehatsetu_active_prescription');
+      if (activeRx) {
+        try {
+          const parsed = JSON.parse(activeRx!);
+          const formattedRx = {
+            id: parsed.id || 'RX-2026-8849',
+            doctorName: parsed.doctorName || 'Dr. Ananya Sharma',
+            date: parsed.date || 'Today',
+            meds: Array.isArray(parsed.medications)
+              ? parsed.medications.map((m: any) => m.name).join(', ')
+              : 'Tab. Paracetamol 650mg, Tab. Cetirizine 10mg',
+            fullData: parsed,
+          };
 
-        setPrescriptionsList((prev) => {
-          const exists = prev.some((p) => p.id === formattedRx.id);
-          return exists ? prev : [formattedRx, ...prev];
-        });
-      } catch (e) {
-        console.error('Error loading prescription on patient dashboard:', e);
+          setPrescriptionsList((prev) => {
+            const exists = prev.some((p) => p.id === formattedRx.id);
+            return exists ? prev : [formattedRx, ...prev];
+          });
+        } catch (e) {
+          console.error('Error loading prescription on patient dashboard:', e);
+        }
       }
-    }
     }
   }, []);
 
@@ -438,8 +439,8 @@ const DashboardPage: React.FC = () => {
           <div className="sidebar-brand" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
             <div className="sidebar-logo-icon">
               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#F97316"/>
-                <path d="M12 7v6m-3-3h6" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#F97316" />
+                <path d="M12 7v6m-3-3h6" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" />
               </svg>
             </div>
             <div>
@@ -457,8 +458,8 @@ const DashboardPage: React.FC = () => {
           <div className="sidebar-group">
             <span className="sidebar-group-title"> {t('mainNavigation')} </span>
             <nav className="sidebar-menu">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className={`sidebar-item ${currentPage === 'landing' && activeTab !== 'overview' && activeTab !== 'appointments' && activeTab !== 'records' && activeTab !== 'prescriptions' ? 'active' : ''}`}
                 onClick={() => navigate('/')}
               >
@@ -469,8 +470,8 @@ const DashboardPage: React.FC = () => {
                 {tCommon('home')}
               </button>
 
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className={`sidebar-item ${activeTab === 'overview' ? 'active' : ''}`}
                 onClick={() => {
                   handleTabClick('overview');
@@ -486,8 +487,8 @@ const DashboardPage: React.FC = () => {
                 {tNav('dashboard')}
               </button>
 
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className={`sidebar-item ${currentPage === 'doctors' ? 'active' : ''}`}
                 onClick={() => navigate('/patient/search')}
               >
@@ -506,8 +507,8 @@ const DashboardPage: React.FC = () => {
           <div className="sidebar-group">
             <span className="sidebar-group-title"> {t('patientCareHub')} </span>
             <nav className="sidebar-menu">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className={`sidebar-item ${currentPage === 'dashboard' && activeTab === 'appointments' ? 'active' : ''}`}
                 onClick={() => handleTabClick('appointments')}
               >
@@ -520,8 +521,8 @@ const DashboardPage: React.FC = () => {
                 <span> {t('myAppointments')} </span>
               </button>
 
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className={`sidebar-item ${currentPage === 'dashboard' && activeTab === 'records' ? 'active' : ''}`}
                 onClick={() => handleTabClick('records')}
               >
@@ -535,8 +536,8 @@ const DashboardPage: React.FC = () => {
                 <span> {t('healthRecords')} </span>
               </button>
 
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className={`sidebar-item ${currentPage === 'dashboard' && activeTab === 'prescriptions' ? 'active' : ''}`}
                 onClick={() => handleTabClick('prescriptions')}
               >
@@ -565,8 +566,8 @@ const DashboardPage: React.FC = () => {
           <div className="sidebar-group">
             <span className="sidebar-group-title"> {t('accountSupport')} </span>
             <nav className="sidebar-menu">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className={`sidebar-item ${currentPage === 'dashboard' && activeTab === 'profile' ? 'active' : ''}`}
                 onClick={() => handleTabClick('profile')}
               >
@@ -594,9 +595,9 @@ const DashboardPage: React.FC = () => {
               <span className="user-id"> {t('patientPortal')} </span>
             </div>
           </div>
-          <button 
-            type="button" 
-            className="user-logout-btn" 
+          <button
+            type="button"
+            className="user-logout-btn"
             title={t('logout')}
             onClick={() => { clearAuth(); navigate('/patient/login'); }}
           >
@@ -615,6 +616,15 @@ const DashboardPage: React.FC = () => {
         <header className="sehat-top-bar">
           <div className="top-bar-space"></div>
           <div className="top-bar-actions">
+            {/* Notification Bell */}
+            <button type="button" className="btn-notification-bell" aria-label="Notifications">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#334155" strokeWidth="2" strokeLinecap="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+              </svg>
+              <span className="bell-badge">2</span>
+            </button>
+
             {/* User Profile Display */}
             <div className="top-user-pill">
               {profileImageUrl ? (
@@ -626,407 +636,413 @@ const DashboardPage: React.FC = () => {
                 <span className="user-pill-name">{profileData.fullName || 'Patient'}</span>
                 <span className="user-pill-role"> {t('patient')} </span>
               </div>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#64748B" strokeWidth="2.5">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
             </div>
           </div>
         </header>
 
         {/* Dashboard Content Container (Full Page Width) */}
         <main className="sehat-dash-content">
+          {/* Hidden report file input: mounted at the top level (not inside a tab-specific
+              conditional) so both the "Upload Reports" card (Overview tab) and the
+              "Upload New EHR" button (Records tab) can reliably trigger it via reportInputRef. */}
+          <input
+            ref={reportInputRef}
+            type="file"
+            accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp"
+            onChange={handleReportSelected}
+            style={{ display: 'none' }}
+          />
           {dashboardLoading && <p className="tab-subtitle"> {t('loadingHealthData')} </p>}
           {dashboardError && <p role="alert" style={{ color: '#b91c1c', marginBottom: '16px' }}>{dashboardError}</p>}
           {activeTab === 'overview' && (
             <>
-          {/* Greeting Header */}
-          <div className="dash-greeting-header">
-            <h1 className="greeting-title">
-              {t('goodMorning')}, {patientFirstName} <span className="wave-emoji">👋</span>
-            </h1>
-            <p className="greeting-subtitle"> {t('healthSummary')} </p>
-          </div>
+              {/* Greeting Header */}
+              <div className="dash-greeting-header">
+                <h1 className="greeting-title">
+                  {t('goodMorning')}, {patientFirstName} <span className="wave-emoji">👋</span>
+                </h1>
+                <p className="greeting-subtitle"> {t('healthSummary')} </p>
+              </div>
 
-          {/* Quick Action Cards Grid */}
-          <div className="quick-actions-2grid">
-            {/* Card 1: Book Appointment */}
-            <div className="action-card" onClick={() => navigate('/patient/book/new')}>
-              <div className="card-icon-badge blue-badge">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#2563EB" strokeWidth="2.2" strokeLinecap="round">
-                  <rect x="3" y="4" width="18" height="18" rx="2"/>
-                  <line x1="16" y1="2" x2="16" y2="6"/>
-                  <line x1="8" y1="2" x2="8" y2="6"/>
-                  <line x1="3" y1="10" x2="21" y2="10"/>
-                  <line x1="12" y1="13" x2="12" y2="17"/>
-                  <line x1="10" y1="15" x2="14" y2="15"/>
-                </svg>
-              </div>
-              <div className="action-card-text">
-                <h3 className="card-heading"> {t('bookAppointment')} </h3>
-                <p className="card-desc"> {t('findDoctors')} </p>
-              </div>
-              <span className="arrow-link blue-arrow">→</span>
-            </div>
+              {/* Quick Action Cards Grid */}
+              <div className="quick-actions-2grid">
+                {/* Card 1: Book Appointment */}
+                <div className="action-card" onClick={() => navigate('/patient/book/new')}>
+                  <div className="card-icon-badge blue-badge">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#2563EB" strokeWidth="2.2" strokeLinecap="round">
+                      <rect x="3" y="4" width="18" height="18" rx="2" />
+                      <line x1="16" y1="2" x2="16" y2="6" />
+                      <line x1="8" y1="2" x2="8" y2="6" />
+                      <line x1="3" y1="10" x2="21" y2="10" />
+                      <line x1="12" y1="13" x2="12" y2="17" />
+                      <line x1="10" y1="15" x2="14" y2="15" />
+                    </svg>
+                  </div>
+                  <div className="action-card-text">
+                    <h3 className="card-heading"> {t('bookAppointment')} </h3>
+                    <p className="card-desc"> {t('findDoctors')} </p>
+                  </div>
+                  <span className="arrow-link blue-arrow">→</span>
+                </div>
 
-            {/* Card 2: Upload Reports */}
-            <div
-              className="action-card"
-              onClick={() => {
-                if (reportUploadState !== 'uploading') {
-                  reportInputRef.current?.click();
-                }
-              }}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(event) => {
-                if (
-                  reportUploadState !== 'uploading' &&
-                  (event.key === 'Enter' || event.key === ' ')
-                ) {
-                  event.preventDefault();
-                  reportInputRef.current?.click();
-                }
-              }}
-            >
-              <input
-                ref={reportInputRef}
-                type="file"
-                accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp"
-                onChange={handleReportSelected}
-                style={{ display: 'none' }}
-              />
-              <div className="card-icon-badge purple-badge">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#9333EA" strokeWidth="2.2" strokeLinecap="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                  <polyline points="14 2 14 8 20 8"/>
-                  <polyline points="12 18 12 12 9 15"/>
-                  <polyline points="12 12 15 15"/>
-                </svg>
-              </div>
-              <div className="action-card-text">
-                <h3 className="card-heading"> {t('uploadReports')} </h3>
-                <p
-                  className="card-desc"
-                  style={
-                    reportUploadState === 'error'
-                      ? { color: '#dc2626' }
-                      : reportUploadState === 'success'
-                        ? { color: '#15803d' }
-                        : undefined
-                  }
+                {/* Card 2: Upload Reports */}
+                <div
+                  className="action-card"
+                  onClick={() => {
+                    if (reportUploadState !== 'uploading') {
+                      reportInputRef.current?.click();
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(event) => {
+                    if (
+                      reportUploadState !== 'uploading' &&
+                      (event.key === 'Enter' || event.key === ' ')
+                    ) {
+                      event.preventDefault();
+                      reportInputRef.current?.click();
+                    }
+                  }}
                 >
-                   {reportUploadMessage || t('uploadDesc')}
-                </p>
+                  <div className="card-icon-badge purple-badge">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#9333EA" strokeWidth="2.2" strokeLinecap="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                      <polyline points="12 18 12 12 9 15" />
+                      <polyline points="12 12 15 15" />
+                    </svg>
+                  </div>
+                  <div className="action-card-text">
+                    <h3 className="card-heading"> {t('uploadReports')} </h3>
+                    <p
+                      className="card-desc"
+                      style={
+                        reportUploadState === 'error'
+                          ? { color: '#dc2626' }
+                          : reportUploadState === 'success'
+                            ? { color: '#15803d' }
+                            : undefined
+                      }
+                    >
+                      {reportUploadMessage || t('uploadDesc')}
+                    </p>
+                  </div>
+                  <span className="arrow-link blue-arrow">→</span>
+                </div>
               </div>
-              <span className="arrow-link blue-arrow">→</span>
-            </div>
-          </div>
 
-          {/* Main Dashboard 2-Column Section */}
-          <div className="dash-body-grid">
-            {/* LEFT COLUMN: Upcoming Appointment & Recent Consultations */}
-            <div className="dash-left-col">
-              {/* Upcoming Appointment Box */}
-              {(() => {
-                if (!latestAppointment) {
-                  return (
-                    <div className="upcoming-appt-card">
-                      <div className="upcoming-card-header"><h2 className="section-title"> {t('upcomingAppointment')} </h2></div>
-                      <p className="tab-subtitle"> {t('noUpcomingAppointments')} </p>
-                    </div>
-                  );
-                }
-                const bookedDocId = latestAppointment?.doctorId || 'd1';
-                const bookedDoctor = latestAppointment.doctor || doctorsData.find(d => d.id === bookedDocId);
-                const displayDocName = bookedDoctor?.name || bookedDoctor?.user?.fullName || 'Doctor';
-                const displayDocSub = [bookedDoctor?.specialty, bookedDoctor?.experience].filter(Boolean).join(' • ');
-                const displayDate = latestAppointment?.scheduledAt ? new Date(latestAppointment.scheduledAt).toLocaleDateString() : (latestAppointment?.date || t('datePending'));
-                const displayTime = latestAppointment?.timeSlot || t('timePending');
-                const displayMode = latestAppointment?.consultMode || 'VIDEO';
-                const displayPhoto = bookedDoctor?.imageUrl || '';
-                const apptId = latestAppointment.id;
-
-                return (
-                  <div className="upcoming-appt-card">
-                    <div className="upcoming-card-header">
-                      <h2 className="section-title"> {t('upcomingAppointment')} </h2>
-                      <button type="button" className="link-view-all" onClick={() => handleTabClick('appointments')}> {t('viewAllAppointments')} </button>
-                    </div>
-
-                    <div className="upcoming-card-content">
-                      <img 
-                        src={displayPhoto} 
-                        alt={displayDocName} 
-                        className="doctor-avatar-large" 
-                      />
-                      <div className="doc-meta">
-                        <div className="doc-name-verified">
-                          <h3 className="doctor-name">{displayDocName}</h3>
-                          <span className="verified-blue-tick">✓</span>
+              {/* Main Dashboard 2-Column Section */}
+              <div className="dash-body-grid">
+                {/* LEFT COLUMN: Upcoming Appointment & Recent Consultations */}
+                <div className="dash-left-col">
+                  {/* Upcoming Appointment Box */}
+                  {(() => {
+                    if (!latestAppointment) {
+                      return (
+                        <div className="upcoming-appt-card">
+                          <div className="upcoming-card-header"><h2 className="section-title"> {t('upcomingAppointment')} </h2></div>
+                          <p className="tab-subtitle"> {t('noUpcomingAppointments')} </p>
                         </div>
-                        <p className="doctor-sub">{displayDocSub}</p>
+                      );
+                    }
+                    const bookedDocId = latestAppointment?.doctorId || 'd1';
+                    const bookedDoctor = latestAppointment.doctor || doctorsData.find(d => d.id === bookedDocId);
+                    const displayDocName = bookedDoctor?.name || bookedDoctor?.user?.fullName || 'Doctor';
+                    const displayDocSub = [bookedDoctor?.specialty, bookedDoctor?.experience].filter(Boolean).join(' • ');
+                    const displayDate = latestAppointment?.scheduledAt ? new Date(latestAppointment.scheduledAt).toLocaleDateString() : (latestAppointment?.date || t('datePending'));
+                    const displayTime = latestAppointment?.timeSlot || t('timePending');
+                    const displayMode = latestAppointment?.consultMode || 'VIDEO';
+                    const displayPhoto = bookedDoctor?.imageUrl || '';
+                    const apptId = latestAppointment.id;
 
-                        <div className="appt-datetime-row">
-                          <span className="icon-text">📅 {displayDate}</span>
-                          <span className="icon-text">🕒 {displayTime}</span>
+                    return (
+                      <div className="upcoming-appt-card">
+                        <div className="upcoming-card-header">
+                          <h2 className="section-title"> {t('upcomingAppointment')} </h2>
+                          <button type="button" className="link-view-all" onClick={() => handleTabClick('appointments')}> {t('viewAllAppointments')} </button>
                         </div>
 
-                        <div className="appt-mode-chip">
-                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#2563EB" strokeWidth="2">
-                            <polygon points="23 7 16 12 23 17 23 7"/>
-                            <rect x="1" y="5" width="15" height="14" rx="2"/>
-                          </svg>
-                          <span>{translateMode(displayMode)}</span>
-                        </div>
-                      </div>
-
-                      {(() => {
-                        const timeStatus = getAppointmentTimeStatus(
-                          latestAppointment?.scheduledAt,
-                          displayDate,
-                          displayTime
-                        );
-
-                        return (
-                          <div className="upcoming-card-right">
-                            <span className="badge-confirmed">
-                              {latestAppointment?.status === 'COMPLETED' ? t('completed') : timeStatus.isJoinable ? t('liveNow') : t('confirmed')}
-                            </span>
-                            <div className="action-buttons-group">
-                              <button 
-                                type="button" 
-                                className="btn-reschedule"
-                                onClick={() => navigate('/patient/book/new')}
-                              > {t('reschedule')} </button>
-                              {timeStatus.isJoinable ? (
-                                <button 
-                                  type="button" 
-                                  className="btn-join-consultation animate-pulse bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
-                                  onClick={() => navigate(`/patient/consultation/${apptId}`)}
-                                >
-                                  📹 {t('joinConsultation')}
-                                </button>
-                              ) : (
-                                <button 
-                                  type="button" 
-                                  className="btn-join-consultation opacity-60 cursor-not-allowed bg-slate-200 text-slate-600 border border-slate-300"
-                                  title={timeStatus.sublabel}
-                                  onClick={() => alert(t('youCanJoin'))}
-                                  >
-                                   🔒 {timeStatus.label}
-                                </button>
-                              )}
+                        <div className="upcoming-card-content">
+                          <img
+                            src={displayPhoto}
+                            alt={displayDocName}
+                            className="doctor-avatar-large"
+                          />
+                          <div className="doc-meta">
+                            <div className="doc-name-verified">
+                              <h3 className="doctor-name">{displayDocName}</h3>
+                              <span className="verified-blue-tick">✓</span>
                             </div>
-                            {!timeStatus.isJoinable && timeStatus.sublabel && (
-                              <span className="text-[11px] font-semibold text-amber-600 block text-right mt-1">
-                                ⏱️ {timeStatus.sublabel}
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })()}
-                    </div>
-                  </div>
-                );
-              })()}
+                            <p className="doctor-sub">{displayDocSub}</p>
 
-              {/* Recent Consultations Section */}
-              <div className="recent-consultations-card">
-                {/* Tabs Header */}
-                <div className="consultations-tabs-header">
-                  <div className="tab-buttons-row">
-                    <button 
-                      type="button" 
-                      className={`tab-sub-btn ${activeSubTab === 'prescriptions' ? 'active' : ''}`}
-                      onClick={() => setActiveSubTab('prescriptions')}
-                    > {t('recentPrescriptions')} </button>
-                    <button 
-                      type="button" 
-                      className={`tab-sub-btn ${activeSubTab === 'consultations' ? 'active' : ''}`}
-                      onClick={() => setActiveSubTab('consultations')}
-                    > {t('recentConsultations')} </button>
+                            <div className="appt-datetime-row">
+                              <span className="icon-text">📅 {displayDate}</span>
+                              <span className="icon-text">🕒 {displayTime}</span>
+                            </div>
+
+                            <div className="appt-mode-chip">
+                              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#2563EB" strokeWidth="2">
+                                <polygon points="23 7 16 12 23 17 23 7" />
+                                <rect x="1" y="5" width="15" height="14" rx="2" />
+                              </svg>
+                              <span>{translateMode(displayMode)}</span>
+                            </div>
+                          </div>
+
+                          {(() => {
+                            const timeStatus = getAppointmentTimeStatus(
+                              latestAppointment?.scheduledAt,
+                              displayDate,
+                              displayTime
+                            );
+
+                            return (
+                              <div className="upcoming-card-right">
+                                <span className="badge-confirmed">
+                                  {latestAppointment?.status === 'COMPLETED' ? t('completed') : timeStatus.isJoinable ? t('liveNow') : t('confirmed')}
+                                </span>
+                                <div className="action-buttons-group">
+                                  <button
+                                    type="button"
+                                    className="btn-reschedule"
+                                    onClick={() => navigate('/patient/book/new')}
+                                  > {t('reschedule')} </button>
+                                  {timeStatus.isJoinable ? (
+                                    <button
+                                      type="button"
+                                      className="btn-join-consultation animate-pulse bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                                      onClick={() => navigate(`/patient/consultation/${apptId}`)}
+                                    >
+                                      📹 {t('joinConsultation')}
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      className="btn-join-consultation opacity-60 cursor-not-allowed bg-slate-200 text-slate-600 border border-slate-300"
+                                      title={timeStatus.sublabel}
+                                      onClick={() => alert(t('youCanJoin'))}
+                                    >
+                                      🔒 {timeStatus.label}
+                                    </button>
+                                  )}
+                                </div>
+                                {!timeStatus.isJoinable && timeStatus.sublabel && (
+                                  <span className="text-[11px] font-semibold text-amber-600 block text-right mt-1">
+                                    ⏱️ {timeStatus.sublabel}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Recent Consultations Section */}
+                  <div className="recent-consultations-card">
+                    {/* Tabs Header */}
+                    <div className="consultations-tabs-header">
+                      <div className="tab-buttons-row">
+                        <button
+                          type="button"
+                          className={`tab-sub-btn ${activeSubTab === 'prescriptions' ? 'active' : ''}`}
+                          onClick={() => setActiveSubTab('prescriptions')}
+                        > {t('recentPrescriptions')} </button>
+                        <button
+                          type="button"
+                          className={`tab-sub-btn ${activeSubTab === 'consultations' ? 'active' : ''}`}
+                          onClick={() => setActiveSubTab('consultations')}
+                        > {t('recentConsultations')} </button>
+                      </div>
+                    </div>
+
+                    {/* Consultations Table / List */}
+                    {activeSubTab === 'consultations' ? (
+                      <div className="consultations-table">
+                        {consultationsList.map((item) => (
+                          <div key={item.id} className="consultation-row">
+                            <div className="row-doctor-info">
+                              <img src={item.avatar} alt={item.doctorName} className="row-doc-img" />
+                              <div>
+                                <h4 className="row-doc-name">{item.doctorName}</h4>
+                                <span className="row-doc-spec">{item.specialty}</span>
+                              </div>
+                            </div>
+
+                            <div className="row-datetime">
+                              <span>📅 {item.date}</span>
+                              <span>🕒 {item.time}</span>
+                            </div>
+
+                            <div className="row-mode">
+                              <span>{translateMode(item.mode)}</span>
+                            </div>
+
+                            <div className="row-action">
+                              <button
+                                type="button"
+                                className="btn-view-details"
+                                onClick={() => setShowDetailsModal(item)}
+                              > {t('viewDetails')} </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="consultations-table">
+                        {prescriptionsList.map((rx) => (
+                          <div key={rx.id} className="consultation-row">
+                            <div className="row-doctor-info">
+                              <div className="rx-icon-box">💊</div>
+                              <div>
+                                <h4 className="row-doc-name">{rx.doctorName}</h4>
+                                <span className="row-doc-spec">{rx.meds}</span>
+                              </div>
+                            </div>
+
+                            <div className="row-datetime">
+                              <span>📅 {rx.date}</span>
+                            </div>
+
+                            <div className="row-mode">
+                              <span className="rx-tag"> {t('prescriptionIssued')} </span>
+                            </div>
+
+                            <div className="row-action">
+                              <button
+                                type="button"
+                                className="btn-view-details"
+                                onClick={() => {
+                                  setSelectedRxData(rx.fullData || {
+                                    id: rx.id,
+                                    doctorName: rx.doctorName,
+                                    patientName: profileData.fullName,
+                                    date: rx.date,
+                                    medications: [],
+                                    dietAdvice: ''
+                                  });
+                                  setShowRxModal(true);
+                                }}
+                              > {t('viewDownloadPdf')} </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Table Bottom Link */}
+                    <div className="consultations-footer-link">
+                      <button type="button" className="btn-all-consultations" onClick={() => handleTabClick('appointments')}> {t('viewAllConsultations')} </button>
+                    </div>
                   </div>
                 </div>
 
-                {/* Consultations Table / List */}
-                {activeSubTab === 'consultations' ? (
-                  <div className="consultations-table">
-                    {consultationsList.map((item) => (
-                      <div key={item.id} className="consultation-row">
-                        <div className="row-doctor-info">
-                          <img src={item.avatar} alt={item.doctorName} className="row-doc-img" />
+                {/* RIGHT COLUMN: Health Overview, Reminders, Emergency Widget */}
+                <div className="dash-right-col">
+
+
+                  {/* Widget 2: Health Reminders */}
+                  {(() => {
+                    const doctorPrescribedReminders = (latestAppointment?.prescriptions && Array.isArray(latestAppointment.prescriptions) && latestAppointment.prescriptions.length > 0)
+                      ? latestAppointment.prescriptions.map((rx: any) => ({
+                        icon: '💊',
+                        title: rx.medicationName || t('prescribedMedication'),
+                        sub: `${rx.dosage || t('takeAsDirected')} (${rx.frequency || t('daily')})`,
+                        time: rx.timing || t('daily'),
+                      }))
+                      : [];
+
+                    const defaultGenericReminders = [
+                      {
+                        icon: '💧',
+                        title: t('drinkWater'),
+                        sub: t('drinkWaterDesc'),
+                        time: t('daily'),
+                      },
+                      {
+                        icon: '🚶',
+                        title: t('dailyWalk'),
+                        sub: t('dailyWalkDesc'),
+                        time: t('daily'),
+                      },
+                      {
+                        icon: '😴',
+                        title: t('restfulSleep'),
+                        sub: t('sleepDesc'),
+                        time: t('daily'),
+                      },
+                    ];
+
+                    const displayReminders: Array<{ icon: string; title: string; sub: string; time: string }> = doctorPrescribedReminders.length > 0
+                      ? doctorPrescribedReminders
+                      : defaultGenericReminders;
+
+                    const isDocRecommended = doctorPrescribedReminders.length > 0;
+
+                    return (
+                      <div className="dash-widget-card">
+                        <div className="widget-header">
                           <div>
-                            <h4 className="row-doc-name">{item.doctorName}</h4>
-                            <span className="row-doc-spec">{item.specialty}</span>
+                            <h3 className="widget-title"> {t('healthReminders')} </h3>
+                            <span className="text-[11px] font-semibold text-slate-500 block mt-0.5">
+                              {isDocRecommended ? `🩺 ${t('doctorPrescribed')}` : `🌿 ${t('dailyWellness')}`}
+                            </span>
                           </div>
+                          <button type="button" className="widget-link" onClick={() => handleTabClick('records')}> {t('viewAll')} </button>
                         </div>
 
-                        <div className="row-datetime">
-                          <span>📅 {item.date}</span>
-                          <span>🕒 {item.time}</span>
+                        <div className="reminders-list">
+                          {displayReminders.map((item, idx) => (
+                            <div key={idx} className="reminder-item">
+                              <div className={`reminder-icon-box ${idx % 2 === 0 ? 'blue' : 'green'}`}>
+                                {item.icon}
+                              </div>
+                              <div className="reminder-info">
+                                <span className="reminder-title">{item.title}</span>
+                                <span className="reminder-sub">{item.sub}</span>
+                              </div>
+                              <span className="reminder-time">{item.time}</span>
+                            </div>
+                          ))}
                         </div>
 
-                        <div className="row-mode">
-                           <span>{translateMode(item.mode)}</span>
-                        </div>
-
-                        <div className="row-action">
-                          <button 
-                            type="button" 
-                            className="btn-view-details"
-                            onClick={() => setShowDetailsModal(item)}
-                          > {t('viewDetails')} </button>
-                        </div>
+                        <button type="button" className="btn-add-reminder" onClick={() => alert('Add reminder modal opened')}>
+                          + {t('addReminder')}
+                        </button>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="consultations-table">
-                    {prescriptionsList.map((rx) => (
-                      <div key={rx.id} className="consultation-row">
-                        <div className="row-doctor-info">
-                          <div className="rx-icon-box">💊</div>
-                          <div>
-                            <h4 className="row-doc-name">{rx.doctorName}</h4>
-                            <span className="row-doc-spec">{rx.meds}</span>
-                          </div>
-                        </div>
+                    );
+                  })()}
 
-                        <div className="row-datetime">
-                          <span>📅 {rx.date}</span>
-                        </div>
+                  {/* Widget 3: Need Immediate Help? (Emergency) */}
+                  <div className="emergency-widget-card">
+                    <h3 className="emergency-heading"> {t('needImmediateHelp')} </h3>
+                    <p className="emergency-sub"> {t('supportTeam')} </p>
 
-                        <div className="row-mode">
-                          <span className="rx-tag"> {t('prescriptionIssued')} </span>
-                        </div>
+                    <div className="emergency-widget-bottom">
+                      <a
+                        href="tel:102"
+                        className="btn-emergency-call cursor-pointer"
+                        style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                        onClick={() => {
+                          window.location.href = 'tel:102';
+                        }}
+                      >
+                        📞 {t('emergencyCall')}
+                      </a>
 
-                        <div className="row-action">
-                          <button 
-                            type="button" 
-                            className="btn-view-details"
-                            onClick={() => {
-                              setSelectedRxData(rx.fullData || {
-                                id: rx.id,
-                                doctorName: rx.doctorName,
-                                patientName: profileData.fullName,
-                                date: rx.date,
-                                medications: [],
-                                dietAdvice: ''
-                              });
-                              setShowRxModal(true);
-                            }}
-                          > {t('viewDownloadPdf')} </button>
-                        </div>
+                      <div className="headset-badge-247">
+                        <span className="headset-emoji">🎧</span>
+                        <span className="tag-247">24/7</span>
                       </div>
-                    ))}
+                    </div>
                   </div>
-                )}
-
-                {/* Table Bottom Link */}
-                <div className="consultations-footer-link">
-                  <button type="button" className="btn-all-consultations" onClick={() => handleTabClick('appointments')}> {t('viewAllConsultations')} </button>
                 </div>
               </div>
-            </div>
-
-            {/* RIGHT COLUMN: Health Overview, Reminders, Emergency Widget */}
-            <div className="dash-right-col">
-
-
-              {/* Widget 2: Health Reminders */}
-              {(() => {
-                const doctorPrescribedReminders = (latestAppointment?.prescriptions && Array.isArray(latestAppointment.prescriptions) && latestAppointment.prescriptions.length > 0)
-                  ? latestAppointment.prescriptions.map((rx: any) => ({
-                      icon: '💊',
-                      title: rx.medicationName || t('prescribedMedication'),
-                      sub: `${rx.dosage || t('takeAsDirected')} (${rx.frequency || t('daily')})`,
-                      time: rx.timing || t('daily'),
-                    }))
-                  : [];
-
-                const defaultGenericReminders = [
-                  {
-                    icon: '💧',
-                    title: t('drinkWater'),
-                    sub: t('drinkWaterDesc'),
-                    time: t('daily'),
-                  },
-                  {
-                    icon: '🚶',
-                    title: t('dailyWalk'),
-                    sub: t('dailyWalkDesc'),
-                    time: t('daily'),
-                  },
-                  {
-                    icon: '😴',
-                    title: t('restfulSleep'),
-                    sub: t('sleepDesc'),
-                    time: t('daily'),
-                  },
-                ];
-
-                const displayReminders: Array<{ icon: string; title: string; sub: string; time: string }> = doctorPrescribedReminders.length > 0 
-                  ? doctorPrescribedReminders 
-                  : defaultGenericReminders;
-
-                const isDocRecommended = doctorPrescribedReminders.length > 0;
-
-                return (
-                  <div className="dash-widget-card">
-                    <div className="widget-header">
-                      <div>
-                        <h3 className="widget-title"> {t('healthReminders')} </h3>
-                        <span className="text-[11px] font-semibold text-slate-500 block mt-0.5">
-                          {isDocRecommended ? `🩺 ${t('doctorPrescribed')}` : `🌿 ${t('dailyWellness')}`}
-                        </span>
-                      </div>
-                      <button type="button" className="widget-link" onClick={() => handleTabClick('records')}> {t('viewAll')} </button>
-                    </div>
-
-                    <div className="reminders-list">
-                      {displayReminders.map((item, idx) => (
-                        <div key={idx} className="reminder-item">
-                          <div className={`reminder-icon-box ${idx % 2 === 0 ? 'blue' : 'green'}`}>
-                            {item.icon}
-                          </div>
-                          <div className="reminder-info">
-                            <span className="reminder-title">{item.title}</span>
-                            <span className="reminder-sub">{item.sub}</span>
-                          </div>
-                          <span className="reminder-time">{item.time}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    <button type="button" className="btn-add-reminder" onClick={() => alert('Add reminder modal opened')}>
-                      + {t('addReminder')}
-                    </button>
-                  </div>
-                );
-              })()}
-
-              {/* Widget 3: Need Immediate Help? (Emergency) */}
-              <div className="emergency-widget-card">
-                <h3 className="emergency-heading"> {t('needImmediateHelp')} </h3>
-                <p className="emergency-sub"> {t('supportTeam')} </p>
-
-                <div className="emergency-widget-bottom">
-                  <a 
-                    href="tel:102" 
-                    className="btn-emergency-call cursor-pointer"
-                    style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-                    onClick={() => {
-                      window.location.href = 'tel:102';
-                    }}
-                  >
-                     📞 {t('emergencyCall')}
-                  </a>
-
-                  <div className="headset-badge-247">
-                    <span className="headset-emoji">🎧</span>
-                    <span className="tag-247">24/7</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
             </>
           )}
 
@@ -1038,7 +1054,7 @@ const DashboardPage: React.FC = () => {
                   <p className="tab-subtitle"> {t('manageConsultations')} </p>
                 </div>
               </div>
-              
+
               <div className="appointments-filter-bar">
                 <button type="button" className={`filter-btn ${appointmentFilter === 'upcoming' ? 'active' : ''}`} onClick={() => setAppointmentFilter('upcoming')}> {t('upcoming')} </button>
                 <button type="button" className={`filter-btn ${appointmentFilter === 'past' ? 'active' : ''}`} onClick={() => setAppointmentFilter('past')}> {t('past')} </button>
@@ -1081,17 +1097,17 @@ const DashboardPage: React.FC = () => {
                       return (
                         <div className="appt-card-footer">
                           {cardTimeStatus.isJoinable ? (
-                            <button 
-                              type="button" 
-                              className="btn-join-video-sm animate-pulse bg-emerald-600 hover:bg-emerald-700 text-white font-bold" 
+                            <button
+                              type="button"
+                              className="btn-join-video-sm animate-pulse bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
                               onClick={() => navigate(`/patient/consultation/${item.id}`)}
                             >
-                                📹 {t('joinConsultation')}
+                              📹 {t('joinConsultation')}
                             </button>
                           ) : (
-                            <button 
-                              type="button" 
-                              className="btn-join-video-sm opacity-60 cursor-not-allowed bg-slate-200 text-slate-600 border border-slate-300" 
+                            <button
+                              type="button"
+                              className="btn-join-video-sm opacity-60 cursor-not-allowed bg-slate-200 text-slate-600 border border-slate-300"
                               onClick={() => alert(t('youCanJoin'))}
                             >
                               🔒 {cardTimeStatus.label}
@@ -1129,25 +1145,44 @@ const DashboardPage: React.FC = () => {
                   <h2 className="tab-title" style={{ fontSize: '24px', fontWeight: 'bold', color: '#0f172a' }}> {t('ehrTitle')} </h2>
                   <p className="tab-subtitle" style={{ fontSize: '14px', color: '#64748b' }}>{t('connectedToDatabase')}.</p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => reportInputRef.current?.click()}
-                  style={{
-                    backgroundColor: '#2563eb',
-                    color: 'white',
-                    fontWeight: 'bold',
-                    padding: '10px 20px',
-                    borderRadius: '12px',
-                    border: 'none',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)'
-                  }}
-                >
-                  📁 {t('uploadNewEhr')}
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+                  <button
+                    type="button"
+                    disabled={reportUploadState === 'uploading'}
+                    onClick={() => {
+                      if (reportUploadState !== 'uploading') {
+                        reportInputRef.current?.click();
+                      }
+                    }}
+                    style={{
+                      backgroundColor: reportUploadState === 'uploading' ? '#93c5fd' : '#2563eb',
+                      color: 'white',
+                      fontWeight: 'bold',
+                      padding: '10px 20px',
+                      borderRadius: '12px',
+                      border: 'none',
+                      cursor: reportUploadState === 'uploading' ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)'
+                    }}
+                  >
+                    📁 {reportUploadState === 'uploading' ? t('uploading') : t('uploadNewEhr')}
+                  </button>
+                  {reportUploadMessage && (
+                    <p
+                      role="status"
+                      style={{
+                        fontSize: '12px',
+                        margin: 0,
+                        color: reportUploadState === 'error' ? '#dc2626' : reportUploadState === 'success' ? '#15803d' : '#64748b'
+                      }}
+                    >
+                      {reportUploadMessage}
+                    </p>
+                  )}
+                </div>
               </div>
 
               {/* EHR Overview Summary Banner */}
@@ -1170,8 +1205,8 @@ const DashboardPage: React.FC = () => {
                     <p style={{ fontSize: '12px', color: '#64748b', marginTop: '4px', lineHeight: '1.4' }}>{item.summary}</p>
                     <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#2563eb' }}>{t('patientID')} {item.id}</span>
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={() => setSelectedEhrModalData(item)}
                         style={{ background: '#2563eb', color: 'white', border: 'none', padding: '6px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
                       >
@@ -1201,8 +1236,8 @@ const DashboardPage: React.FC = () => {
                       <img src={profileImageUrl} alt={profileData.fullName || 'Patient'} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
                     ) : patientInitials}
                   </div>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="profile-avatar-edit-btn"
                     title="Upload New Profile Picture"
                     disabled={avatarUploading}
@@ -1215,12 +1250,12 @@ const DashboardPage: React.FC = () => {
                 <div className="profile-hero-info">
                   <div className="profile-hero-name-row">
                     <h2 className="profile-hero-name">{profileData.fullName}</h2>
-                     <span className="profile-badge-pill profile-badge-verified">
-                       ✓ {t('verifiedPatient')}
-                     </span>
-                     <span className="profile-badge-pill profile-badge-gold">
-                       ⭐ {t('goldMember')}
-                     </span>
+                    <span className="profile-badge-pill profile-badge-verified">
+                      ✓ {t('verifiedPatient')}
+                    </span>
+                    <span className="profile-badge-pill profile-badge-gold">
+                      ⭐ {t('goldMember')}
+                    </span>
                   </div>
                   <p className="profile-hero-sub">{profileData.email} • {profileData.phone}</p>
                   <p className="profile-hero-meta">Patient ID: <span style={{ fontFamily: 'monospace', fontWeight: 'bold', color: '#ffffff' }}>#PAT-2026-9812</span> • Reg Date: Aug 2026</p>
@@ -1250,7 +1285,7 @@ const DashboardPage: React.FC = () => {
               {/* Toast Success Alert */}
               {profileSaveSuccess && (
                 <div style={{ backgroundColor: '#ecfdf5', border: '1px solid #a7f3d0', color: '#065f46', padding: '16px', borderRadius: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 'bold', fontSize: '14px' }}>
-                   <span>✓ {t('profileSaved')}</span>
+                  <span>✓ {t('profileSaved')}</span>
                   <button onClick={() => setProfileSaveSuccess(false)} style={{ background: 'none', border: 'none', color: '#047857', fontWeight: 'bold', cursor: 'pointer' }}>✕</button>
                 </div>
               )}
@@ -1259,12 +1294,12 @@ const DashboardPage: React.FC = () => {
               {profileSubTab === 'personal' && (
                 <div className="profile-card-box">
                   <h3 className="profile-card-title"> {t('personalContact')} </h3>
-                  
+
                   <div className="profile-form-grid">
                     <div className="profile-field-group">
                       <label className="profile-label">{t('fullName')}</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         value={profileData.fullName}
                         onChange={(e) => setProfileData({ ...profileData, fullName: e.target.value })}
                         className="profile-input-control"
@@ -1273,8 +1308,8 @@ const DashboardPage: React.FC = () => {
 
                     <div className="profile-field-group">
                       <label className="profile-label"> {t('emailAddress')} </label>
-                      <input 
-                        type="email" 
+                      <input
+                        type="email"
                         value={profileData.email}
                         onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
                         className="profile-input-control"
@@ -1283,8 +1318,8 @@ const DashboardPage: React.FC = () => {
 
                     <div className="profile-field-group">
                       <label className="profile-label"> {t('phone')} </label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         value={profileData.phone}
                         onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
                         className="profile-input-control"
@@ -1293,8 +1328,8 @@ const DashboardPage: React.FC = () => {
 
                     <div className="profile-field-group">
                       <label className="profile-label"> {t('dateOfBirth')} </label>
-                      <input 
-                        type="date" 
+                      <input
+                        type="date"
                         value={profileData.dob}
                         onChange={(e) => setProfileData({ ...profileData, dob: e.target.value })}
                         className="profile-input-control"
@@ -1303,7 +1338,7 @@ const DashboardPage: React.FC = () => {
 
                     <div className="profile-field-group">
                       <label className="profile-label"> {t('genderLabel')} </label>
-                      <select 
+                      <select
                         value={profileData.gender}
                         onChange={(e) => setProfileData({ ...profileData, gender: e.target.value })}
                         className="profile-input-control"
@@ -1316,7 +1351,7 @@ const DashboardPage: React.FC = () => {
 
                     <div className="profile-field-group">
                       <label className="profile-label"> {t('bloodGroupLabel')} </label>
-                      <select 
+                      <select
                         value={profileData.bloodGroup}
                         onChange={(e) => setProfileData({ ...profileData, bloodGroup: e.target.value })}
                         className="profile-input-control"
@@ -1334,8 +1369,8 @@ const DashboardPage: React.FC = () => {
 
                     <div className="profile-field-group">
                       <label className="profile-label"> {t('heightCmLabel')} </label>
-                      <input 
-                        type="number" 
+                      <input
+                        type="number"
                         value={profileData.height}
                         onChange={(e) => setProfileData({ ...profileData, height: e.target.value })}
                         className="profile-input-control"
@@ -1344,8 +1379,8 @@ const DashboardPage: React.FC = () => {
 
                     <div className="profile-field-group">
                       <label className="profile-label"> {t('weightKgLabel')} </label>
-                      <input 
-                        type="number" 
+                      <input
+                        type="number"
                         value={profileData.weight}
                         onChange={(e) => setProfileData({ ...profileData, weight: e.target.value })}
                         className="profile-input-control"
@@ -1354,8 +1389,8 @@ const DashboardPage: React.FC = () => {
 
                     <div className="profile-field-group full-width">
                       <label className="profile-label"> {t('residentialAddress')} </label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         value={profileData.address}
                         onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
                         className="profile-input-control"
@@ -1364,8 +1399,8 @@ const DashboardPage: React.FC = () => {
 
                     <div className="profile-field-group">
                       <label className="profile-label"> {t('emergencyContactName')} </label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         value={profileData.emergencyContactName}
                         onChange={(e) => setProfileData({ ...profileData, emergencyContactName: e.target.value })}
                         className="profile-input-control"
@@ -1374,8 +1409,8 @@ const DashboardPage: React.FC = () => {
 
                     <div className="profile-field-group">
                       <label className="profile-label"> {t('emergencyContactPhone')} </label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         value={profileData.emergencyContactPhone}
                         onChange={(e) => setProfileData({ ...profileData, emergencyContactPhone: e.target.value })}
                         className="profile-input-control"
@@ -1399,7 +1434,7 @@ const DashboardPage: React.FC = () => {
               {profileSubTab === 'medical' && (
                 <div className="profile-card-box">
                   <h3 className="profile-card-title"> {t('medicalHistoryTitle')} </h3>
-                  
+
                   {/* Current Vitals Cards */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '16px' }}>
                     <div style={{ backgroundColor: '#fff1f2', border: '1px solid #fecdd3', padding: '16px', borderRadius: '16px', textAlign: 'center' }}>
@@ -1425,7 +1460,7 @@ const DashboardPage: React.FC = () => {
 
                     <div style={{ backgroundColor: '#eff6ff', border: '1px solid #bfdbfe', padding: '16px', borderRadius: '16px', textAlign: 'center' }}>
                       <span style={{ fontSize: '24px', display: 'block', marginBottom: '4px' }}>🫁</span>
-                       <span style={{ fontSize: '11px', color: '#2563eb', fontWeight: 'bold', display: 'block', textTransform: 'uppercase' }}>{t('oxygenSpO2')}</span>
+                      <span style={{ fontSize: '11px', color: '#2563eb', fontWeight: 'bold', display: 'block', textTransform: 'uppercase' }}>{t('oxygenSpO2')}</span>
                       <span style={{ fontSize: '20px', fontWeight: '800', color: '#1e3a8a' }}>--</span>
                       <span style={{ fontSize: '10px', color: '#3b82f6', display: 'block', fontWeight: '600' }}> {t('noReading')} </span>
                     </div>
@@ -1440,7 +1475,7 @@ const DashboardPage: React.FC = () => {
                           ⚠️ {allergy}
                         </span>
                       ))}
-                      <button 
+                      <button
                         onClick={() => {
                           const newAllergy = prompt(t('enterAllergy'));
                           if (newAllergy) setProfileData({ ...profileData, allergies: [...profileData.allergies, newAllergy] });
@@ -1461,7 +1496,7 @@ const DashboardPage: React.FC = () => {
                           🩺 {condition}
                         </span>
                       ))}
-                      <button 
+                      <button
                         onClick={() => {
                           const newCond = prompt(t('enterCondition'));
                           if (newCond) setProfileData({ ...profileData, chronicConditions: [...profileData.chronicConditions, newCond] });
@@ -1483,8 +1518,8 @@ const DashboardPage: React.FC = () => {
                   <div style={{ maxWidth: '440px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div className="profile-field-group">
                       <label className="profile-label"> {t('currentPassword')} </label>
-                      <input 
-                        type="password" 
+                      <input
+                        type="password"
                         placeholder="••••••••"
                         value={securitySettings.currentPassword}
                         onChange={(e) => setSecuritySettings({ ...securitySettings, currentPassword: e.target.value })}
@@ -1493,8 +1528,8 @@ const DashboardPage: React.FC = () => {
                     </div>
                     <div className="profile-field-group">
                       <label className="profile-label"> {t('newPassword')} </label>
-                      <input 
-                        type="password" 
+                      <input
+                        type="password"
                         placeholder="••••••••"
                         value={securitySettings.newPassword}
                         onChange={(e) => setSecuritySettings({ ...securitySettings, newPassword: e.target.value })}
@@ -1504,8 +1539,8 @@ const DashboardPage: React.FC = () => {
 
                     <div className="profile-field-group">
                       <label className="profile-label"> {t('confirmNewPassword')} </label>
-                      <input 
-                        type="password" 
+                      <input
+                        type="password"
                         placeholder="••••••••"
                         value={securitySettings.confirmPassword}
                         onChange={(e) => setSecuritySettings({ ...securitySettings, confirmPassword: e.target.value })}
@@ -1527,7 +1562,7 @@ const DashboardPage: React.FC = () => {
                       <h4 className="profile-label">{t('twoFactorAuth')}</h4>
                       <p style={{ fontSize: '12px', color: '#64748b' }}> {t('secureAccount')} </p>
                     </div>
-                    <button 
+                    <button
                       onClick={() => setSecuritySettings({ ...securitySettings, enable2FA: !securitySettings.enable2FA })}
                       style={{
                         padding: '8px 16px',
@@ -1564,8 +1599,8 @@ const DashboardPage: React.FC = () => {
                           <h4 className="profile-label">{item.title}</h4>
                           <p style={{ fontSize: '12px', color: '#64748b' }}>{item.desc}</p>
                         </div>
-                        <input 
-                          type="checkbox" 
+                        <input
+                          type="checkbox"
                           checked={(notificationSettings as any)[item.key]}
                           onChange={(e) => setNotificationSettings({ ...notificationSettings, [item.key]: e.target.checked })}
                           style={{ width: '20px', height: '20px', accentColor: '#2563eb', cursor: 'pointer' }}
@@ -1605,7 +1640,7 @@ const DashboardPage: React.FC = () => {
 
             </div>
           )}
-          
+
           {activeTab === 'prescriptions' && (
             <div className="prescriptions-tab-content" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               <div className="tab-section-header">
@@ -1636,8 +1671,8 @@ const DashboardPage: React.FC = () => {
                       </div>
 
                       <div className="row-action">
-                        <button 
-                          type="button" 
+                        <button
+                          type="button"
                           className="btn-view-details"
                           onClick={() => {
                             setSelectedRxData(rx.fullData || {
@@ -1667,7 +1702,7 @@ const DashboardPage: React.FC = () => {
         <div className="modal-backdrop-custom" onClick={() => setShowDetailsModal(null)}>
           <div className="modal-content-card" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header-row">
-               <h2>{t('consultationDetails')} ({showDetailsModal.id})</h2>
+              <h2>{t('consultationDetails')} ({showDetailsModal.id})</h2>
               <button type="button" className="btn-close-modal" onClick={() => setShowDetailsModal(null)}>✕</button>
             </div>
 
@@ -1743,7 +1778,7 @@ const DashboardPage: React.FC = () => {
                 <span className="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-0.5 rounded-full">✓ {t('verifiedOcrResult')}</span>
                 <h3 className="text-xl font-bold text-gray-900 mt-1">{selectedEhrModalData.title}</h3>
               </div>
-              <button 
+              <button
                 onClick={() => setSelectedEhrModalData(null)}
                 className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 font-bold"
               >
@@ -1773,6 +1808,119 @@ const DashboardPage: React.FC = () => {
           </div>
         </div>
       )}
+
+
+      {/* Document Viewer Modal */}
+      {previewDoc && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.75)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 999999,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: '20px',
+          }}
+          onClick={() => setPreviewDoc(null)}
+        >
+          <div
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '20px',
+              width: '90%',
+              maxWidth: '900px',
+              height: '85vh',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.3)',
+              overflow: 'hidden',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '16px 24px',
+                borderBottom: '1px solid #e2e8f0',
+                backgroundColor: '#f8fafc',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '22px' }}>📄</span>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#0f172a' }}>
+                    {previewDoc.fileName}
+                  </h3>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>
+                    Health Document Preview
+                  </p>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <a
+                  href={previewDoc.url}
+                  download={previewDoc.fileName}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    backgroundColor: '#eff6ff',
+                    color: '#2563eb',
+                    border: '1px solid #bfdbfe',
+                    padding: '6px 14px',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  ⬇ Open / Download
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setPreviewDoc(null)}
+                  style={{
+                    backgroundColor: '#f1f5f9',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '32px',
+                    height: '32px',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    color: '#475569',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <div style={{ flex: 1, backgroundColor: '#525659', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <iframe
+                src={previewDoc.url}
+                title={previewDoc.fileName}
+                style={{ width: '100%', height: '100%', border: 'none' }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {/* Prescription View & Download Modal */}
       <PrescriptionViewModal

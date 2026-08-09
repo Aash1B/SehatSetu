@@ -43,7 +43,7 @@ export class ConsultationProcessor extends WorkerHost {
 
       const patientId = data.patientId || appointment?.patientId || 'patient-default';
       const notes = data.notes || appointment?.notes || 'Post-consultation notes recorded.';
-      
+
       // 2. Generate structured AI summary narrative
       const aiSummary = `[AI Post-Consultation Summary] ` +
         `Patient consulted regarding ${appointment?.healthConcern || 'general health symptoms'}. ` +

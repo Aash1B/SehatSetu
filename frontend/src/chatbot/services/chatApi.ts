@@ -77,7 +77,7 @@ export async function sendChatMessage(
 
     if (import.meta.env.DEV) {
       console.log('[chatApi:dev] HTTP status:', response.status);
-      console.log('[chatApi:dev] response headers:', Object.fromEntries(response.headers.entries()));
+      console.log('[chatApi:dev] response headers:', Object.fromEntries((response.headers as any).entries()));
     }
 
     if (!response.ok) {

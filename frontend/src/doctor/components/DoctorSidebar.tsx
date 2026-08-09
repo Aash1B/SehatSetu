@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Users, Calendar, User, LogOut } from 'lucide-react';
+import { Home, Users, Calendar, User, LogOut, FileCheck } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { type DoctorProfile } from '../utils/doctorProfile';
@@ -12,6 +12,7 @@ export interface DoctorSidebarProps {
 const navItems = [
   { name: 'Home', path: '/doctor/dashboard', icon: Home },
   { name: 'Patients', path: '/doctor/consultations', icon: Users },
+  { name: 'EHR Drafts', path: '/doctor/ehr-drafts', icon: FileCheck },
   { name: 'Availability', path: '/doctor/availability', icon: Calendar },
   { name: 'Profile', path: '/doctor/profile', icon: User },
 ];

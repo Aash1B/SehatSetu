@@ -46,6 +46,8 @@ const VideoConsultation = lazy(() => import('./doctor/pages/VideoConsultation'))
 const DoctorProfile = lazy(() => import('./doctor/pages/DoctorProfile'));
 const DoctorAvailability = lazy(() => import('./doctor/pages/DoctorAvailability'));
 const DoctorOnboarding = lazy(() => import('./doctor/pages/DoctorOnboarding'));
+const EhrDrafts = lazy(() => import('./doctor/pages/EhrDrafts'));
+const EhrDraftDetail = lazy(() => import('./doctor/pages/EhrDraftDetail'));
 
 // Landing Page
 const LandingPage = lazy(() => import('./patient/pages/LandingPage'));
@@ -123,6 +125,8 @@ function App() {
             <Route path="/doctor/availability" element={<DoctorAvailability />} />
             <Route path="/doctor/onboarding" element={<DoctorOnboarding />} />
             <Route path="/doctor/setup-profile" element={<DoctorOnboarding />} />
+            <Route path="/doctor/ehr-drafts" element={<EhrDrafts />} />
+            <Route path="/doctor/ehr-drafts/:id" element={<EhrDraftDetail />} />
           </Route>
         </Routes>
         </Suspense>

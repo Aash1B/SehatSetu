@@ -1,10 +1,11 @@
 """Medical document OCR request results."""
 
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
 from app.schemas.common import ApiResponse
+from app.schemas.medical_info import VitalSigns
 
 
 class OCRPageResult(BaseModel):
@@ -92,3 +93,19 @@ class OCRMedicalAnalysis(BaseModel):
     key_findings: list[str] = Field(default_factory=list)
     abnormal_findings: list[LabFinding] = Field(default_factory=list)
     recommendations: list[str] = Field(default_factory=list)
+
+
+class EhrParseRequest(BaseModel):
+    """Request for EHR text parsing using Gemini AI."""
+
+    extracted_text: str = Field(..., min_length=1)
+    extracted_data: dict[str, Any] = Field(default_factory=dict)
+
+
+class EhrParseResponse(BaseModel):
+    """Response with structured clinical information extracted from OCR text."""
+
+    diagnosis: str | None = None
+    medications: list[str] = Field(default_factory=list)
+    vitals: VitalSigns = Field(default_factory=VitalSigns)
+    notes: str | None = None

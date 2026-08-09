@@ -27,6 +27,8 @@ import {
 } from './storage/storage.service';
 import { OCR_CLIENT, OcrClient } from './ocr/ocr-client';
 import { MedicalReportsRepository } from './medical-reports.repository';
+import { EhrParserService } from '../ehr/ehr-parser.service';
+import { EhrService } from '../ehr/ehr.service';
 
 @Injectable()
 export class MedicalReportsService {
@@ -43,6 +45,8 @@ export class MedicalReportsService {
     private readonly reports: MedicalReportsRepository,
     @Inject(STORAGE_SERVICE) private readonly storage: StorageService,
     @Inject(OCR_CLIENT) private readonly ocr: OcrClient,
+    private readonly ehrParser: EhrParserService,
+    private readonly ehrService: EhrService,
   ) {}
 
   async getPatientContext(actor: AuthenticatedActor) {
@@ -268,6 +272,20 @@ export class MedicalReportsService {
         processingErrorCode: ocrSucceeded ? null : 'OCR_SKIPPED',
         processingErrorMessage: ocrSucceeded ? null : 'OCR service unavailable',
       });
+
+      // Best-effort EHR draft creation. OCR having succeeded with usable text
+      // is a prerequisite; AI parsing/draft-creation failures are swallowed so
+      // they never break the medical-report processing pipeline.
+      if (ocrSucceeded && result.extractedText?.trim()) {
+        try {
+          await this.createEhrDraft(existing.id, existing.patientId, result);
+        } catch (ehrError: any) {
+          console.warn(
+            `[EHR WARN] EHR draft creation failed for report ${existing.id}: ${ehrError?.message || ehrError}`,
+          );
+        }
+      }
+
       return this.present(updated);
     } catch (error) {
       await this.reports
@@ -327,6 +345,24 @@ export class MedicalReportsService {
       throw error;
     }
     return { reportId, status: MedicalReportStatus.DELETED };
+  }
+
+  private async createEhrDraft(
+    medicalReportId: string,
+    patientId: string,
+    ocrResult: { extractedText: string; extractedData: Record<string, unknown> },
+  ): Promise<void> {
+    const parsed = await this.ehrParser.parse(
+      ocrResult.extractedText,
+      ocrResult.extractedData,
+    );
+    await this.ehrService.createDraftFromOcr({
+      patientId,
+      medicalReportId,
+      diagnosis: parsed.diagnosis,
+      notes: parsed.notes,
+      structuredData: parsed.structuredData,
+    });
   }
 
   private async getAuthorizedReport(

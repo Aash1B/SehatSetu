@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from functools import lru_cache
 from time import perf_counter
 from typing import Protocol, TypeVar
 
@@ -12,7 +13,7 @@ from google import genai
 from google.genai import errors, types
 from pydantic import BaseModel, ValidationError
 
-from app.core.config import Settings
+from app.core.config import Settings, get_settings
 from app.core.doctor_category_rules import ALLOWED_DOCTOR_CATEGORIES
 from app.core.exceptions import AppException
 from app.core.logging import get_logger
@@ -624,3 +625,7 @@ class GeminiService:
             status_code=status.HTTP_502_BAD_GATEWAY,
             code="GEMINI_API_ERROR",
         ) from exc
+@lru_cache
+def get_gemini_service() -> GeminiService:
+    """Return a shared Gemini service using the configured settings."""
+    return GeminiService(get_settings())

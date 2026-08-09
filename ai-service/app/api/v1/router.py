@@ -15,6 +15,7 @@ from app.api.v1.endpoints.live_transcription import (
     router as live_transcription_router,
 )
 from app.api.v1.endpoints.ocr import router as ocr_router
+from app.api.v1.endpoints.ehr_parse import router as ehr_parse_router
 from app.api.v1.endpoints.prescription import router as prescription_router
 from app.api.v1.endpoints.transcription import router as transcription_router
 from app.api.v1.endpoints.text_cleanup import router as text_cleanup_router
@@ -32,5 +33,6 @@ router.include_router(summarize_router)
 router.include_router(diet_router)
 router.include_router(doctor_recommendation_router)
 router.include_router(ocr_router)
+router.include_router(ehr_parse_router)
 router.include_router(live_transcription_router)
 router.include_router(consultation_router)

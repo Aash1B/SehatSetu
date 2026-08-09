@@ -11,6 +11,7 @@ const badgeVariants = cva(
         primary: "bg-[#223382] text-white font-medium shadow-2xs",
         warning: "bg-amber-100 text-amber-900",
         success: "bg-emerald-600 text-white font-medium",
+        danger: "bg-red-100 text-red-700",
       },
     },
     defaultVariants: {

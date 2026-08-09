@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException, ConflictException, HttpException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { prisma } from '../prisma';
+import { redactEhrRecordForPatient } from '../ehr/ehr-visibility.util';
 
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
@@ -325,11 +326,15 @@ export class AppointmentsService {
         },
         data: { status: 'CANCELLED' },
       });
-      return prisma.appointment.findMany({
+      const patientAppointments = await prisma.appointment.findMany({
         where: { patient: { is: { userId } } },
         orderBy: { createdAt: 'desc' },
         include: { doctor: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } }, prescription: true, ehrRecord: true },
       });
+      return patientAppointments.map((app) => ({
+        ...app,
+        ehrRecord: redactEhrRecordForPatient(app.ehrRecord),
+      }));
     }
     if (role === Role.DOCTOR) {
       return prisma.appointment.findMany({
@@ -376,6 +381,7 @@ export class AppointmentsService {
 
     return {
       ...appointment,
+      ehrRecord: role === Role.PATIENT ? redactEhrRecordForPatient(appointment.ehrRecord) : appointment.ehrRecord,
       patientAge: appointment.patientAge || appointment.patient?.age || ageFromDateOfBirth,
       patientGender: appointment.patientGender || appointment.patient?.gender || '',
       patientHeight: appointment.patientHeight || appointment.patient?.height || '',
@@ -441,7 +447,9 @@ export class AppointmentsService {
     }, { isolationLevel: 'Serializable' }).then(async (updated) => {
       await this.scheduleStandardReminders(updated);
       if (updated.isFollowUp && updated.emailRemindersEnabled) await this.scheduleFollowUpReminders(updated);
-      return updated;
+      // This method is PATIENT-only (checked above), so the ehrRecord must
+      // never surface a DRAFT/REJECTED record here.
+      return { ...updated, ehrRecord: redactEhrRecordForPatient(updated.ehrRecord) };
     }).catch((err) => {
       if (err instanceof HttpException) throw err;
       if (err?.code === 'P2002' || err?.code === 'P2034') {
@@ -487,7 +495,9 @@ export class AppointmentsService {
           .catch(() => undefined);
       }
 
-      return cancelled;
+      // This method is PATIENT-only (checked above), so the ehrRecord must
+      // never surface a DRAFT/REJECTED record here.
+      return { ...cancelled, ehrRecord: redactEhrRecordForPatient(cancelled.ehrRecord) };
     } catch (err) {
       if (err instanceof HttpException) throw err;
       if (err?.code === 'P2025') throw new NotFoundException('Appointment not found');
