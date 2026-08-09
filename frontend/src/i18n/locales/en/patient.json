@@ -30,7 +30,7 @@
   "prescriptions": "Prescriptions & Meds",
   "profileSettings": "Profile & Settings",
   "logout": "Sign Out",
-  "goodMorning": "Good Morning",
+  "goodMorning": "Namaskar",
   "wave": "👋",
   "healthSummary": "Here's your health summary of today.",
   "bookAppointment": "Book Appointment",
@@ -309,7 +309,7 @@
   "personalDetails": "Personal Details",
   "medicalProfileVitals": "Medical Profile & Vitals",
   "notificationPrefs": "Notification Preferences",
-  "billingPayments": "Billing & Payments",
+  "billingPayments": "Payment History",
   "profileSaved": "Profile saved successfully.",
   "enterAllergy": "Enter allergy name:",
   "addAllergy": "Add Allergy",
@@ -319,8 +319,8 @@
   "twoFactorAuth": "Two-Factor Authentication",
   "twoFactorEnabled": "Enabled",
   "twoFactorDisabled": "Disabled",
-  "notifWhatsappTitle": "WhatsApp Reminders",
-  "notifWhatsappDesc": "Receive appointment reminders and health tips via WhatsApp",
+  "notifWhatsappTitle": "Email next scheduled appointment reminders",
+  "notifWhatsappDesc": "Get email notifications for your upcoming scheduled appointments",
   "notifEmailTitle": "Email Prescriptions",
   "notifEmailDesc": "Receive prescriptions and reports via email",
   "notifSmsTitle": "SMS Alerts",
@@ -345,3 +345,5 @@
   "noClinicalSummary": "No clinical summary available",
   "noAppointments": "You have no {filter} appointments."
 }
+
+

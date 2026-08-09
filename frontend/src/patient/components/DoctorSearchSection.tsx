@@ -46,26 +46,11 @@ const DoctorSearchSection: React.FC = () => {
     { value: "neuro", label: tFilters("hospitalNeuroCare") },
   ];
 
-  const EXPERIENCE_OPTIONS: OptionItem[] = [
-    { value: "All", label: tFilters("experienceAll") },
-    { value: "1-5", label: tFilters("experience1to5") },
-    { value: "5-10", label: tFilters("experience5to10") },
-    { value: "10+", label: tFilters("experience10Plus") },
-  ];
-
-  const FEES_OPTIONS: OptionItem[] = [
-    { value: "All", label: tFilters("feesAll") },
-    { value: "500-800", label: tFilters("fees500to800") },
-    { value: "800-1200", label: tFilters("fees800to1200") },
-  ];
-
   const [doctorsList, setDoctorsList] = useState<Doctor[]>(doctorsData);
   const [searchTerm, setSearchTerm] = useState("");
   const [specialtyFilter, setSpecialtyFilter] = useState("All");
   const [locationFilter, setLocationFilter] = useState("All");
   const [hospitalFilter, setHospitalFilter] = useState("All");
-  const [experienceFilter, setExperienceFilter] = useState("All");
-  const [feesFilter, setFeesFilter] = useState("All");
   const [favorites, setFavorites] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -223,27 +208,6 @@ const DoctorSearchSection: React.FC = () => {
               value={hospitalFilter}
               onChange={setHospitalFilter}
             />
-
-            <CustomSelect
-              icon="📅"
-              options={EXPERIENCE_OPTIONS}
-              value={experienceFilter}
-              onChange={setExperienceFilter}
-            />
-
-            <CustomSelect
-              icon="₹"
-              options={FEES_OPTIONS}
-              value={feesFilter}
-              onChange={setFeesFilter}
-            />
-
-            <button type="button" className="btn-more-filters" onClick={handleSearchSubmit}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
-                <path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" />
-              </svg>
-              {tFilters("moreFilters")}
-            </button>
           </div>
         </div>
 

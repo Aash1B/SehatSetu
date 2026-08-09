@@ -9,6 +9,9 @@ export interface UpdatePatientProfileDto {
   fullName?: string;
   phone?: string;
   gender?: string;
+  maritalStatus?: string;
+  occupation?: string;
+  preferredLanguages?: string[];
   dateOfBirth?: string;
   age?: string;
   height?: string;
@@ -146,6 +149,9 @@ export class PatientService {
       data: {
         ...(dto.phone !== undefined && { phone: dto.phone }),
         ...(dto.gender !== undefined && { gender: dto.gender }),
+        ...(dto.maritalStatus !== undefined && { maritalStatus: dto.maritalStatus }),
+        ...(dto.occupation !== undefined && { occupation: dto.occupation }),
+        ...(dto.preferredLanguages !== undefined && { preferredLanguages: dto.preferredLanguages }),
         ...(dto.dateOfBirth !== undefined && {
           dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : null,
         }),

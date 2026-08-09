@@ -79,6 +79,9 @@ model Patient {
   id                String          @id @default(uuid())
   userId            String          @unique
   gender            String?
+  maritalStatus     String?
+  occupation        String?
+  preferredLanguages String[]        @default([])
   dateOfBirth       DateTime?
   allergies         String[]
   chronicConditions String[]

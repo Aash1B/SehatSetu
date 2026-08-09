@@ -59,14 +59,14 @@ export default function ForgotPassword() {
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">{t('forms.email')}</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">{t('forms:email')}</label>
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-400"
-                    placeholder={t('forms.emailPlaceholder')}
+                    placeholder={t('forms:emailPlaceholder')}
                   />
                 </div>
                 <button

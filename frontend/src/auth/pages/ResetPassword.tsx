@@ -30,7 +30,7 @@ export default function ResetPassword() {
       return;
     }
     if (newPassword !== confirmPassword) {
-      setError(t('forms.passwordsDoNotMatch'));
+      setError(t('forms:passwordsDoNotMatch'));
       return;
     }
 
@@ -94,7 +94,7 @@ export default function ResetPassword() {
               />
               {passwordHint && <p className="text-xs text-red-500 mt-1">{passwordHint}</p>}
               <p className="text-xs text-slate-400 mt-1">
-                {t('forms.passwordHint')}
+                {t('forms:passwordHint')}
               </p>
             </div>
             <div>

@@ -64,6 +64,8 @@ const HealthQuestionnairePage = lazy(() => import('./patient/pages/HealthQuestio
 const AppointmentsPage = lazy(() => import('./patient/pages/AppointmentsPage'));
 const VideoConsultationPage = lazy(() => import('./patient/pages/VideoConsultationPage'));
 const MCHPage = lazy(() => import('./patient/pages/MCHPage'));
+const MedicalPage = lazy(() => import('./patient/pages/MedicalPage'));
+const VitalsPage = lazy(() => import('./patient/pages/VitalsPage'));
 
 import OfflineStatusIndicator from './common/components/OfflineStatusIndicator';
 import PWAUpdatePrompt from './common/components/PWAUpdatePrompt';
@@ -110,6 +112,8 @@ function App() {
               <Route path="/patient/appointments" element={<AppointmentsPage />} />
               <Route path="/patient/consultation/:id" element={<VideoConsultationPage />} />
               <Route path="/patient/mch" element={<MCHPage />} />
+              <Route path="/patient/medical" element={<MedicalPage />} />
+              <Route path="/patient/vitals" element={<VitalsPage />} />
             </Route>
           </Route>
 

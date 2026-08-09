@@ -52,9 +52,9 @@ function doctorMatchesCategory(doctor: Doctor, category: string) {
 }
 
 const CONSULT_MODE_LABEL: Record<string, string> = {
-  'Video Consultation': 'forms.consultMode.video',
-  'In-Person Visit': 'forms.consultMode.inPerson',
-  'Chat / Message': 'forms.consultMode.chat',
+  'Video Consultation': 'forms:consultMode.video',
+  'In-Person Visit': 'forms:consultMode.inPerson',
+  'Chat / Message': 'forms:consultMode.chat',
 };
 
 function parseTimeMinutes(timeStr: string) {
@@ -393,7 +393,7 @@ const BookAppointmentPage: React.FC = () => {
       : [...formData.symptoms, symptom];
     setFormData({ ...formData, symptoms: newSymptoms });
   };
-  const consultModeDisplay = (mode: string) => t(CONSULT_MODE_LABEL[mode] || 'forms.consultMode.chat', { defaultValue: mode });
+  const consultModeDisplay = (mode: string) => t(CONSULT_MODE_LABEL[mode] || 'forms:consultMode.chat', { defaultValue: mode });
 
   const handleNextStep = async () => {
     if (currentStep === 3 && (!formData.selectedDate || !formData.selectedTimeSlot)) {

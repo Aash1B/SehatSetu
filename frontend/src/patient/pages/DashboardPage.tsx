@@ -154,10 +154,34 @@ const DashboardPage: React.FC = () => {
   // Profile & Settings states
   const [profileSubTab, setProfileSubTab] = useState<'personal' | 'medical' | 'security' | 'notifications' | 'billing'>('personal');
   const [profileData, setProfileData] = useState({
-    fullName: '', email: '', phone: '', dob: '', gender: '', bloodGroup: '',
-    height: '', weight: '', address: '', emergencyContactName: '',
-    emergencyContactPhone: '', allergies: [] as string[], chronicConditions: [] as string[],
+    fullName: '', email: '', phone: '', dob: '', gender: '', maritalStatus: '', occupation: '',
+    preferredLanguages: [] as string[], bloodGroup: '', height: '', weight: '', address: '', pincode: '', emergencyContactName: '',
+    emergencyContactPhone: '', emergencyContactRelationship: '',
+    secondaryEmergencyName: '', secondaryEmergencyPhone: '', secondaryEmergencyRelationship: '',
+    allergies: [] as string[], chronicConditions: [] as string[],
+    severeConditions: [] as string[], familyHistory: [] as string[],
   });
+  const [showSecondaryContact, setShowSecondaryContact] = useState(false);
+
+  // Medical preset options
+  const allergyPresets = ['Peanuts', 'Dairy', 'Insect Stings', 'Dust', 'Any Medication', 'Pets'];
+  const currentConditionPresets = ['Diabetes', 'High Blood Pressure', 'Hypertension', 'Asthma', 'Sinus', 'Thyroid'];
+  const severeConditionPresets = ['Heart Disease', 'Stroke', 'COPD', 'Liver Cirrhosis', 'Pneumonia', "Parkinson's"];
+  const familyHistoryPresets = ['Diabetes', 'Thyroid', 'Heart Disease', 'Cancer', 'Other'];
+
+  // Custom input state for each medical section
+  const [customAllergyInput, setCustomAllergyInput] = useState('');
+  const [showCustomAllergyInput, setShowCustomAllergyInput] = useState(false);
+  const [customCurrentCondInput, setCustomCurrentCondInput] = useState('');
+  const [showCustomCurrentCondInput, setShowCustomCurrentCondInput] = useState(false);
+  const [customSevereCondInput, setCustomSevereCondInput] = useState('');
+  const [showCustomSevereCondInput, setShowCustomSevereCondInput] = useState(false);
+  const [customFamilyHistInput, setCustomFamilyHistInput] = useState('');
+  const [showCustomFamilyHistInput, setShowCustomFamilyHistInput] = useState(false);
+
+  const languageOptions = ['Hindi', 'Bengali', 'Marathi', 'Telugu', 'Tamil', 'Kannada'];
+  const maritalStatusOptions = ['Single', 'Married', 'Divorced', 'Widowed', 'Separated'];
+  const relationshipOptions = ['Father', 'Mother', 'Husband', 'Wife', 'Son', 'Daughter', 'Friend', 'Other'];
 
   const [securitySettings, setSecuritySettings] = useState({
     currentPassword: '',
@@ -283,10 +307,17 @@ const DashboardPage: React.FC = () => {
         setProfileData({
           fullName: p.fullName || '', email: p.email || '', phone: p.phone || '',
           dob: p.dateOfBirth ? String(p.dateOfBirth).slice(0, 10) : '', gender: p.gender || '',
+          maritalStatus: p.maritalStatus || '', occupation: p.occupation || '',
+          preferredLanguages: Array.isArray(p.preferredLanguages) ? p.preferredLanguages : [],
           bloodGroup: p.bloodGroup || '', height: p.height || '', weight: p.weight || '',
-          address: '', emergencyContactName: '', emergencyContactPhone: p.emergencyContact || '',
+          address: p.address || '', pincode: p.pincode || '', emergencyContactName: p.emergencyContactName || '', emergencyContactPhone: p.emergencyContact || p.emergencyContactPhone || '', emergencyContactRelationship: p.emergencyContactRelationship || '',
+          secondaryEmergencyName: p.secondaryEmergencyName || '',
+          secondaryEmergencyPhone: p.secondaryEmergencyPhone || '',
+          secondaryEmergencyRelationship: p.secondaryEmergencyRelationship || '',
           allergies: Array.isArray(p.allergies) ? p.allergies : [],
           chronicConditions: Array.isArray(p.chronicConditions) ? p.chronicConditions : [],
+          severeConditions: Array.isArray(p.severeConditions) ? p.severeConditions : [],
+          familyHistory: Array.isArray(p.familyHistory) ? p.familyHistory : [],
         });
 
         const appointments = Array.isArray(data.appointments) ? data.appointments : [];
@@ -369,6 +400,8 @@ const DashboardPage: React.FC = () => {
       const updated = await updatePatientProfile({
         fullName: profileData.fullName, phone: profileData.phone,
         dateOfBirth: profileData.dob, gender: profileData.gender,
+        maritalStatus: profileData.maritalStatus, occupation: profileData.occupation,
+        preferredLanguages: profileData.preferredLanguages,
         bloodGroup: profileData.bloodGroup, height: profileData.height,
         weight: profileData.weight, emergencyContact: profileData.emergencyContactPhone,
         allergies: profileData.allergies, chronicConditions: profileData.chronicConditions,
@@ -662,7 +695,7 @@ const DashboardPage: React.FC = () => {
               {/* Greeting Header */}
               <div className="dash-greeting-header">
                 <h1 className="greeting-title">
-                  {t('goodMorning')}, {patientFirstName} <span className="wave-emoji">👋</span>
+                  {t('goodMorning')}, {patientFirstName} <img src="/namaskar.png" alt="Namaskar" style={{ width: "28px", height: "28px", marginLeft: "6px", display: "inline-block", verticalAlign: "text-bottom", transform: "translateY(-2px)" }} />
                 </h1>
                 <p className="greeting-subtitle"> {t('healthSummary')} </p>
               </div>
@@ -1387,35 +1420,245 @@ const DashboardPage: React.FC = () => {
                       />
                     </div>
 
-                    <div className="profile-field-group full-width">
-                      <label className="profile-label"> {t('residentialAddress')} </label>
+                    <div className="profile-field-group">
+                      <label className="profile-label">Marital Status</label>
+                      <select
+                        value={profileData.maritalStatus}
+                        onChange={(e) => setProfileData({ ...profileData, maritalStatus: e.target.value })}
+                        className="profile-input-control"
+                      >
+                        <option value="">Select marital status</option>
+                        {maritalStatusOptions.map((option) => (
+                          <option key={option} value={option}>{option}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="profile-field-group">
+                      <label className="profile-label">Occupation</label>
                       <input
                         type="text"
-                        value={profileData.address}
-                        onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
+                        value={profileData.occupation}
+                        onChange={(e) => setProfileData({ ...profileData, occupation: e.target.value })}
                         className="profile-input-control"
+                        placeholder="Enter occupation"
                       />
                     </div>
 
                     <div className="profile-field-group">
-                      <label className="profile-label"> {t('emergencyContactName')} </label>
-                      <input
-                        type="text"
-                        value={profileData.emergencyContactName}
-                        onChange={(e) => setProfileData({ ...profileData, emergencyContactName: e.target.value })}
+                      <label className="profile-label">Preferred Languages</label>
+                      <select
+                        value={profileData.preferredLanguages[0] || ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setProfileData({ ...profileData, preferredLanguages: val ? [val] : [] });
+                        }}
                         className="profile-input-control"
-                      />
+                      >
+                        <option value="">Select preferred language</option>
+                        {languageOptions.map((option) => (
+                          <option key={option} value={option}>{option}</option>
+                        ))}
+                      </select>
                     </div>
 
-                    <div className="profile-field-group">
-                      <label className="profile-label"> {t('emergencyContactPhone')} </label>
-                      <input
-                        type="text"
-                        value={profileData.emergencyContactPhone}
-                        onChange={(e) => setProfileData({ ...profileData, emergencyContactPhone: e.target.value })}
-                        className="profile-input-control"
-                      />
+
+                    {/* Residential Address & PIN Code */}
+                    <div className="profile-field-group full-width" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <label className="profile-label"> {t('residentialAddress')} </label>
+                        <input
+                          type="text"
+                          placeholder="Street / House No / Area"
+                          value={profileData.address}
+                          onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
+                          className="profile-input-control"
+                        />
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <label className="profile-label">Postal PIN Code / ZIP</label>
+                        <input
+                          type="text"
+                          placeholder="Enter 6-digit PIN code"
+                          value={profileData.pincode}
+                          onChange={(e) => setProfileData({ ...profileData, pincode: e.target.value })}
+                          className="profile-input-control"
+                        />
+                      </div>
                     </div>
+                  </div>
+
+                  {/* Emergency Contact Card */}
+                  <div style={{
+                    marginTop: '20px',
+                    padding: '20px',
+                    borderRadius: '16px',
+                    background: 'linear-gradient(135deg, #fff5f5 0%, #fff0f0 100%)',
+                    border: '1px solid #fecdd3',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '14px'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: '#ffe4e6', display: 'grid', placeItems: 'center', color: '#e11d48', fontSize: '18px', fontWeight: 'bold' }}>
+                        🚨
+                      </div>
+                      <div>
+                        <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: '#9f1239' }}>Emergency Contact Information</h4>
+                        <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#be123c' }}>Primary contact person to notify in case of medical emergency</p>
+                      </div>
+                    </div>
+
+                    {/* Primary Emergency Contact */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+                      <div className="profile-field-group">
+                        <label className="profile-label" style={{ color: '#881337' }}>Emergency Contact Name</label>
+                        <input
+                          type="text"
+                          placeholder="Contact person's full name"
+                          value={profileData.emergencyContactName}
+                          onChange={(e) => setProfileData({ ...profileData, emergencyContactName: e.target.value })}
+                          className="profile-input-control"
+                          style={{ borderColor: '#fda4af', backgroundColor: '#ffffff' }}
+                        />
+                      </div>
+
+                      <div className="profile-field-group">
+                        <label className="profile-label" style={{ color: '#881337' }}>Emergency Contact Phone</label>
+                        <input
+                          type="text"
+                          placeholder="Emergency phone number (+91...)"
+                          value={profileData.emergencyContactPhone}
+                          onChange={(e) => setProfileData({ ...profileData, emergencyContactPhone: e.target.value })}
+                          className="profile-input-control"
+                          style={{ borderColor: '#fda4af', backgroundColor: '#ffffff' }}
+                        />
+                      </div>
+
+                      <div className="profile-field-group">
+                        <label className="profile-label" style={{ color: '#881337' }}>Relationship</label>
+                        <select
+                          value={profileData.emergencyContactRelationship}
+                          onChange={(e) => setProfileData({ ...profileData, emergencyContactRelationship: e.target.value })}
+                          className="profile-input-control"
+                          style={{ borderColor: '#fda4af', backgroundColor: '#ffffff' }}
+                        >
+                          <option value="">Select relationship</option>
+                          {relationshipOptions.map((option) => (
+                            <option key={option} value={option}>{option}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Add Secondary Contact Button */}
+                    {!showSecondaryContact && (
+                      <button
+                        type="button"
+                        onClick={() => setShowSecondaryContact(true)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          background: 'none',
+                          border: '1.5px dashed #fda4af',
+                          borderRadius: '10px',
+                          padding: '10px 16px',
+                          color: '#be123c',
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          width: 'fit-content',
+                          transition: 'all 0.2s ease',
+                        }}
+                        onMouseEnter={e => {
+                          (e.currentTarget as HTMLButtonElement).style.background = '#fff1f2';
+                          (e.currentTarget as HTMLButtonElement).style.borderStyle = 'solid';
+                        }}
+                        onMouseLeave={e => {
+                          (e.currentTarget as HTMLButtonElement).style.background = 'none';
+                          (e.currentTarget as HTMLButtonElement).style.borderStyle = 'dashed';
+                        }}
+                      >
+                        <span style={{ fontSize: '18px', lineHeight: 1 }}>+</span>
+                        Add Secondary Emergency Contact
+                      </button>
+                    )}
+
+                    {/* Secondary Emergency Contact */}
+                    {showSecondaryContact && (
+                      <div style={{
+                        padding: '16px',
+                        borderRadius: '12px',
+                        background: '#ffffff',
+                        border: '1px solid #fecdd3',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '14px',
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '13px', fontWeight: 700, color: '#9f1239' }}>🔖 Secondary Emergency Contact</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowSecondaryContact(false);
+                              setProfileData({ ...profileData, secondaryEmergencyName: '', secondaryEmergencyPhone: '', secondaryEmergencyRelationship: '' });
+                            }}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              cursor: 'pointer',
+                              color: '#be123c',
+                              fontSize: '20px',
+                              lineHeight: 1,
+                              padding: '2px 6px',
+                              borderRadius: '6px',
+                            }}
+                            title="Remove secondary contact"
+                          >
+                            ×
+                          </button>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+                          <div className="profile-field-group">
+                            <label className="profile-label" style={{ color: '#881337' }}>Secondary Contact Name</label>
+                            <input
+                              type="text"
+                              placeholder="Secondary contact's full name"
+                              value={profileData.secondaryEmergencyName}
+                              onChange={(e) => setProfileData({ ...profileData, secondaryEmergencyName: e.target.value })}
+                              className="profile-input-control"
+                              style={{ borderColor: '#fda4af', backgroundColor: '#ffffff' }}
+                            />
+                          </div>
+                          <div className="profile-field-group">
+                            <label className="profile-label" style={{ color: '#881337' }}>Secondary Contact Phone</label>
+                            <input
+                              type="text"
+                              placeholder="Secondary phone number (+91...)"
+                              value={profileData.secondaryEmergencyPhone}
+                              onChange={(e) => setProfileData({ ...profileData, secondaryEmergencyPhone: e.target.value })}
+                              className="profile-input-control"
+                              style={{ borderColor: '#fda4af', backgroundColor: '#ffffff' }}
+                            />
+                          </div>
+                          <div className="profile-field-group">
+                            <label className="profile-label" style={{ color: '#881337' }}>Relationship</label>
+                            <select
+                              value={profileData.secondaryEmergencyRelationship}
+                              onChange={(e) => setProfileData({ ...profileData, secondaryEmergencyRelationship: e.target.value })}
+                              className="profile-input-control"
+                              style={{ borderColor: '#fda4af', backgroundColor: '#ffffff' }}
+                            >
+                              <option value="">Select relationship</option>
+                              {relationshipOptions.map((option) => (
+                                <option key={option} value={option}>{option}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '16px' }}>
@@ -1435,77 +1678,273 @@ const DashboardPage: React.FC = () => {
                 <div className="profile-card-box">
                   <h3 className="profile-card-title"> {t('medicalHistoryTitle')} </h3>
 
-                  {/* Current Vitals Cards */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '16px' }}>
-                    <div style={{ backgroundColor: '#fff1f2', border: '1px solid #fecdd3', padding: '16px', borderRadius: '16px', textAlign: 'center' }}>
-                      <span style={{ fontSize: '24px', display: 'block', marginBottom: '4px' }}>❤️</span>
-                      <span style={{ fontSize: '11px', color: '#e11d48', fontWeight: 'bold', display: 'block', textTransform: 'uppercase' }}> {t('bloodPressure')} </span>
-                      <span style={{ fontSize: '20px', fontWeight: '800', color: '#881337' }}>--</span>
-                      <span style={{ fontSize: '10px', color: '#f43f5e', display: 'block', fontWeight: '600' }}> {t('noReading')} </span>
-                    </div>
 
-                    <div style={{ backgroundColor: '#fffbeb', border: '1px solid #fde68a', padding: '16px', borderRadius: '16px', textAlign: 'center' }}>
-                      <span style={{ fontSize: '24px', display: 'block', marginBottom: '4px' }}>💓</span>
-                      <span style={{ fontSize: '11px', color: '#d97706', fontWeight: 'bold', display: 'block', textTransform: 'uppercase' }}> {t('heartRate')} </span>
-                      <span style={{ fontSize: '20px', fontWeight: '800', color: '#78350f' }}>--</span>
-                      <span style={{ fontSize: '10px', color: '#f59e0b', display: 'block', fontWeight: '600' }}> {t('noReading')} </span>
-                    </div>
 
-                    <div style={{ backgroundColor: '#ecfdf5', border: '1px solid #a7f3d0', padding: '16px', borderRadius: '16px', textAlign: 'center' }}>
-                      <span style={{ fontSize: '24px', display: 'block', marginBottom: '4px' }}>🩸</span>
-                      <span style={{ fontSize: '11px', color: '#059669', fontWeight: 'bold', display: 'block', textTransform: 'uppercase' }}> {t('bloodSugar')} </span>
-                      <span style={{ fontSize: '20px', fontWeight: '800', color: '#064e3b' }}>--</span>
-                      <span style={{ fontSize: '10px', color: '#10b981', display: 'block', fontWeight: '600' }}> {t('noReading')} </span>
+                  {/* ── Known Allergies ── */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', borderRadius: '14px', background: '#fff5f5', border: '1px solid #fecdd3' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '18px' }}>⚠️</span>
+                      <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#9f1239' }}>Known Allergies</h4>
                     </div>
-
-                    <div style={{ backgroundColor: '#eff6ff', border: '1px solid #bfdbfe', padding: '16px', borderRadius: '16px', textAlign: 'center' }}>
-                      <span style={{ fontSize: '24px', display: 'block', marginBottom: '4px' }}>🫁</span>
-                      <span style={{ fontSize: '11px', color: '#2563eb', fontWeight: 'bold', display: 'block', textTransform: 'uppercase' }}>{t('oxygenSpO2')}</span>
-                      <span style={{ fontSize: '20px', fontWeight: '800', color: '#1e3a8a' }}>--</span>
-                      <span style={{ fontSize: '10px', color: '#3b82f6', display: 'block', fontWeight: '600' }}> {t('noReading')} </span>
-                    </div>
-                  </div>
-
-                  {/* Known Allergies */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <h4 className="profile-label"> {t('allergies')} </h4>
+                    {/* Preset chips */}
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                      {profileData.allergies.map((allergy, idx) => (
-                        <span key={idx} style={{ backgroundColor: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca', fontSize: '12px', fontWeight: 'bold', padding: '6px 12px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          ⚠️ {allergy}
+                      {allergyPresets.map((item) => {
+                        const selected = profileData.allergies.includes(item);
+                        return (
+                          <button
+                            key={item}
+                            type="button"
+                            onClick={() => {
+                              const updated = selected
+                                ? profileData.allergies.filter(a => a !== item)
+                                : [...profileData.allergies, item];
+                              setProfileData({ ...profileData, allergies: updated });
+                            }}
+                            style={{
+                              padding: '6px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: 600,
+                              cursor: 'pointer', border: '1.5px solid',
+                              borderColor: selected ? '#b91c1c' : '#fda4af',
+                              backgroundColor: selected ? '#b91c1c' : '#ffffff',
+                              color: selected ? '#ffffff' : '#9f1239',
+                              transition: 'all 0.18s ease',
+                            }}
+                          >
+                            {selected ? '✓ ' : ''}{item}
+                          </button>
+                        );
+                      })}
+                      {/* Custom added items */}
+                      {profileData.allergies.filter(a => !allergyPresets.includes(a)).map((item, idx) => (
+                        <span key={idx} style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: 600, backgroundColor: '#b91c1c', color: '#fff', border: '1.5px solid #b91c1c', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          {item}
+                          <button type="button" onClick={() => setProfileData({ ...profileData, allergies: profileData.allergies.filter(a => a !== item) })} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
                         </span>
                       ))}
-                      <button
-                        onClick={() => {
-                          const newAllergy = prompt(t('enterAllergy'));
-                          if (newAllergy) setProfileData({ ...profileData, allergies: [...profileData.allergies, newAllergy] });
-                        }}
-                        style={{ backgroundColor: '#f1f5f9', color: '#334155', fontSize: '12px', fontWeight: 'bold', padding: '6px 12px', borderRadius: '12px', cursor: 'pointer', border: 'none' }}
-                      >
-                        + {t('addAllergy')}
-                      </button>
                     </div>
+                    {/* Custom input row */}
+                    {showCustomAllergyInput ? (
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <input
+                          type="text"
+                          autoFocus
+                          placeholder="Type allergy and press Enter…"
+                          value={customAllergyInput}
+                          onChange={e => setCustomAllergyInput(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter' && customAllergyInput.trim()) {
+                              setProfileData({ ...profileData, allergies: [...profileData.allergies, customAllergyInput.trim()] });
+                              setCustomAllergyInput('');
+                              setShowCustomAllergyInput(false);
+                            } else if (e.key === 'Escape') {
+                              setCustomAllergyInput(''); setShowCustomAllergyInput(false);
+                            }
+                          }}
+                          style={{ flex: 1, padding: '7px 12px', borderRadius: '10px', border: '1.5px solid #fda4af', fontSize: '13px', outline: 'none', background: '#fff' }}
+                        />
+                        <button type="button" onClick={() => { if (customAllergyInput.trim()) { setProfileData({ ...profileData, allergies: [...profileData.allergies, customAllergyInput.trim()] }); setCustomAllergyInput(''); } setShowCustomAllergyInput(false); }} style={{ padding: '7px 14px', borderRadius: '10px', background: '#b91c1c', color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer', fontSize: '13px' }}>Add</button>
+                        <button type="button" onClick={() => { setCustomAllergyInput(''); setShowCustomAllergyInput(false); }} style={{ padding: '7px 10px', borderRadius: '10px', background: '#f1f5f9', color: '#64748b', border: 'none', cursor: 'pointer', fontSize: '13px' }}>✕</button>
+                      </div>
+                    ) : (
+                      <button type="button" onClick={() => setShowCustomAllergyInput(true)} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: '1.5px dashed #fda4af', borderRadius: '10px', padding: '7px 14px', color: '#be123c', fontSize: '12px', fontWeight: 600, cursor: 'pointer', width: 'fit-content' }}>+ Add Custom Allergy</button>
+                    )}
                   </div>
 
-                  {/* Chronic Conditions */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <h4 className="profile-label"> {t('chronicConditions')} </h4>
+                  {/* ── Current Medical Conditions ── */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', borderRadius: '14px', background: '#f0f9ff', border: '1px solid #bae6fd' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '18px' }}>🩺</span>
+                      <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#0369a1' }}>Current Medical Conditions</h4>
+                    </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                      {profileData.chronicConditions.map((condition, idx) => (
-                        <span key={idx} style={{ backgroundColor: '#eef2ff', color: '#4338ca', border: '1px solid #c7d2fe', fontSize: '12px', fontWeight: 'bold', padding: '6px 12px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          🩺 {condition}
+                      {currentConditionPresets.map((item) => {
+                        const selected = profileData.chronicConditions.includes(item);
+                        return (
+                          <button
+                            key={item}
+                            type="button"
+                            onClick={() => {
+                              const updated = selected
+                                ? profileData.chronicConditions.filter(c => c !== item)
+                                : [...profileData.chronicConditions, item];
+                              setProfileData({ ...profileData, chronicConditions: updated });
+                            }}
+                            style={{
+                              padding: '6px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: 600,
+                              cursor: 'pointer', border: '1.5px solid',
+                              borderColor: selected ? '#0369a1' : '#7dd3fc',
+                              backgroundColor: selected ? '#0369a1' : '#ffffff',
+                              color: selected ? '#ffffff' : '#0369a1',
+                              transition: 'all 0.18s ease',
+                            }}
+                          >
+                            {selected ? '✓ ' : ''}{item}
+                          </button>
+                        );
+                      })}
+                      {profileData.chronicConditions.filter(c => !currentConditionPresets.includes(c)).map((item, idx) => (
+                        <span key={idx} style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: 600, backgroundColor: '#0369a1', color: '#fff', border: '1.5px solid #0369a1', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          {item}
+                          <button type="button" onClick={() => setProfileData({ ...profileData, chronicConditions: profileData.chronicConditions.filter(c => c !== item) })} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
                         </span>
                       ))}
-                      <button
-                        onClick={() => {
-                          const newCond = prompt(t('enterCondition'));
-                          if (newCond) setProfileData({ ...profileData, chronicConditions: [...profileData.chronicConditions, newCond] });
-                        }}
-                        style={{ backgroundColor: '#f1f5f9', color: '#334155', fontSize: '12px', fontWeight: 'bold', padding: '6px 12px', borderRadius: '12px', cursor: 'pointer', border: 'none' }}
-                      >
-                        + {t('addCondition')}
-                      </button>
                     </div>
+                    {showCustomCurrentCondInput ? (
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <input
+                          type="text"
+                          autoFocus
+                          placeholder="Type condition and press Enter…"
+                          value={customCurrentCondInput}
+                          onChange={e => setCustomCurrentCondInput(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter' && customCurrentCondInput.trim()) {
+                              setProfileData({ ...profileData, chronicConditions: [...profileData.chronicConditions, customCurrentCondInput.trim()] });
+                              setCustomCurrentCondInput('');
+                              setShowCustomCurrentCondInput(false);
+                            } else if (e.key === 'Escape') {
+                              setCustomCurrentCondInput(''); setShowCustomCurrentCondInput(false);
+                            }
+                          }}
+                          style={{ flex: 1, padding: '7px 12px', borderRadius: '10px', border: '1.5px solid #7dd3fc', fontSize: '13px', outline: 'none', background: '#fff' }}
+                        />
+                        <button type="button" onClick={() => { if (customCurrentCondInput.trim()) { setProfileData({ ...profileData, chronicConditions: [...profileData.chronicConditions, customCurrentCondInput.trim()] }); setCustomCurrentCondInput(''); } setShowCustomCurrentCondInput(false); }} style={{ padding: '7px 14px', borderRadius: '10px', background: '#0369a1', color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer', fontSize: '13px' }}>Add</button>
+                        <button type="button" onClick={() => { setCustomCurrentCondInput(''); setShowCustomCurrentCondInput(false); }} style={{ padding: '7px 10px', borderRadius: '10px', background: '#f1f5f9', color: '#64748b', border: 'none', cursor: 'pointer', fontSize: '13px' }}>✕</button>
+                      </div>
+                    ) : (
+                      <button type="button" onClick={() => setShowCustomCurrentCondInput(true)} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: '1.5px dashed #7dd3fc', borderRadius: '10px', padding: '7px 14px', color: '#0369a1', fontSize: '12px', fontWeight: 600, cursor: 'pointer', width: 'fit-content' }}>+ Add Custom Condition</button>
+                    )}
+                  </div>
+
+                  {/* ── Severe Medical Conditions ── */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', borderRadius: '14px', background: '#fff7ed', border: '1px solid #fed7aa' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '18px' }}>🚨</span>
+                      <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#c2410c' }}>Severe Medical Conditions</h4>
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      {severeConditionPresets.map((item) => {
+                        const selected = profileData.severeConditions.includes(item);
+                        return (
+                          <button
+                            key={item}
+                            type="button"
+                            onClick={() => {
+                              const updated = selected
+                                ? profileData.severeConditions.filter(c => c !== item)
+                                : [...profileData.severeConditions, item];
+                              setProfileData({ ...profileData, severeConditions: updated });
+                            }}
+                            style={{
+                              padding: '6px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: 600,
+                              cursor: 'pointer', border: '1.5px solid',
+                              borderColor: selected ? '#c2410c' : '#fdba74',
+                              backgroundColor: selected ? '#c2410c' : '#ffffff',
+                              color: selected ? '#ffffff' : '#c2410c',
+                              transition: 'all 0.18s ease',
+                            }}
+                          >
+                            {selected ? '✓ ' : ''}{item}
+                          </button>
+                        );
+                      })}
+                      {profileData.severeConditions.filter(c => !severeConditionPresets.includes(c)).map((item, idx) => (
+                        <span key={idx} style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: 600, backgroundColor: '#c2410c', color: '#fff', border: '1.5px solid #c2410c', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          {item}
+                          <button type="button" onClick={() => setProfileData({ ...profileData, severeConditions: profileData.severeConditions.filter(c => c !== item) })} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
+                        </span>
+                      ))}
+                    </div>
+                    {showCustomSevereCondInput ? (
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <input
+                          type="text"
+                          autoFocus
+                          placeholder="Type condition and press Enter…"
+                          value={customSevereCondInput}
+                          onChange={e => setCustomSevereCondInput(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter' && customSevereCondInput.trim()) {
+                              setProfileData({ ...profileData, severeConditions: [...profileData.severeConditions, customSevereCondInput.trim()] });
+                              setCustomSevereCondInput('');
+                              setShowCustomSevereCondInput(false);
+                            } else if (e.key === 'Escape') {
+                              setCustomSevereCondInput(''); setShowCustomSevereCondInput(false);
+                            }
+                          }}
+                          style={{ flex: 1, padding: '7px 12px', borderRadius: '10px', border: '1.5px solid #fdba74', fontSize: '13px', outline: 'none', background: '#fff' }}
+                        />
+                        <button type="button" onClick={() => { if (customSevereCondInput.trim()) { setProfileData({ ...profileData, severeConditions: [...profileData.severeConditions, customSevereCondInput.trim()] }); setCustomSevereCondInput(''); } setShowCustomSevereCondInput(false); }} style={{ padding: '7px 14px', borderRadius: '10px', background: '#c2410c', color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer', fontSize: '13px' }}>Add</button>
+                        <button type="button" onClick={() => { setCustomSevereCondInput(''); setShowCustomSevereCondInput(false); }} style={{ padding: '7px 10px', borderRadius: '10px', background: '#f1f5f9', color: '#64748b', border: 'none', cursor: 'pointer', fontSize: '13px' }}>✕</button>
+                      </div>
+                    ) : (
+                      <button type="button" onClick={() => setShowCustomSevereCondInput(true)} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: '1.5px dashed #fdba74', borderRadius: '10px', padding: '7px 14px', color: '#c2410c', fontSize: '12px', fontWeight: 600, cursor: 'pointer', width: 'fit-content' }}>+ Add Custom Condition</button>
+                    )}
+                  </div>
+
+                  {/* ── Family Medical History ── */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', borderRadius: '14px', background: '#f5f3ff', border: '1px solid #ddd6fe' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '18px' }}>🧬</span>
+                      <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#6d28d9' }}>Family Medical History</h4>
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      {familyHistoryPresets.map((item) => {
+                        const selected = profileData.familyHistory.includes(item);
+                        return (
+                          <button
+                            key={item}
+                            type="button"
+                            onClick={() => {
+                              const updated = selected
+                                ? profileData.familyHistory.filter(f => f !== item)
+                                : [...profileData.familyHistory, item];
+                              setProfileData({ ...profileData, familyHistory: updated });
+                            }}
+                            style={{
+                              padding: '6px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: 600,
+                              cursor: 'pointer', border: '1.5px solid',
+                              borderColor: selected ? '#6d28d9' : '#c4b5fd',
+                              backgroundColor: selected ? '#6d28d9' : '#ffffff',
+                              color: selected ? '#ffffff' : '#6d28d9',
+                              transition: 'all 0.18s ease',
+                            }}
+                          >
+                            {selected ? '✓ ' : ''}{item}
+                          </button>
+                        );
+                      })}
+                      {profileData.familyHistory.filter(f => !familyHistoryPresets.includes(f)).map((item, idx) => (
+                        <span key={idx} style={{ padding: '6px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: 600, backgroundColor: '#6d28d9', color: '#fff', border: '1.5px solid #6d28d9', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          {item}
+                          <button type="button" onClick={() => setProfileData({ ...profileData, familyHistory: profileData.familyHistory.filter(f => f !== item) })} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
+                        </span>
+                      ))}
+                    </div>
+                    {showCustomFamilyHistInput ? (
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <input
+                          type="text"
+                          autoFocus
+                          placeholder="Type family condition and press Enter…"
+                          value={customFamilyHistInput}
+                          onChange={e => setCustomFamilyHistInput(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter' && customFamilyHistInput.trim()) {
+                              setProfileData({ ...profileData, familyHistory: [...profileData.familyHistory, customFamilyHistInput.trim()] });
+                              setCustomFamilyHistInput('');
+                              setShowCustomFamilyHistInput(false);
+                            } else if (e.key === 'Escape') {
+                              setCustomFamilyHistInput(''); setShowCustomFamilyHistInput(false);
+                            }
+                          }}
+                          style={{ flex: 1, padding: '7px 12px', borderRadius: '10px', border: '1.5px solid #c4b5fd', fontSize: '13px', outline: 'none', background: '#fff' }}
+                        />
+                        <button type="button" onClick={() => { if (customFamilyHistInput.trim()) { setProfileData({ ...profileData, familyHistory: [...profileData.familyHistory, customFamilyHistInput.trim()] }); setCustomFamilyHistInput(''); } setShowCustomFamilyHistInput(false); }} style={{ padding: '7px 14px', borderRadius: '10px', background: '#6d28d9', color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer', fontSize: '13px' }}>Add</button>
+                        <button type="button" onClick={() => { setCustomFamilyHistInput(''); setShowCustomFamilyHistInput(false); }} style={{ padding: '7px 10px', borderRadius: '10px', background: '#f1f5f9', color: '#64748b', border: 'none', cursor: 'pointer', fontSize: '13px' }}>✕</button>
+                      </div>
+                    ) : (
+                      <button type="button" onClick={() => setShowCustomFamilyHistInput(true)} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: '1.5px dashed #c4b5fd', borderRadius: '10px', padding: '7px 14px', color: '#6d28d9', fontSize: '12px', fontWeight: 600, cursor: 'pointer', width: 'fit-content' }}>+ Add Family History</button>
+                    )}
                   </div>
                 </div>
               )}
@@ -1555,29 +1994,6 @@ const DashboardPage: React.FC = () => {
                       style={{ alignSelf: 'flex-start' }}
                     > {t('updatePassword')} </button>
                   </div>
-
-                  {/* 2FA Section */}
-                  <div style={{ paddingTop: '20px', borderTop: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div>
-                      <h4 className="profile-label">{t('twoFactorAuth')}</h4>
-                      <p style={{ fontSize: '12px', color: '#64748b' }}> {t('secureAccount')} </p>
-                    </div>
-                    <button
-                      onClick={() => setSecuritySettings({ ...securitySettings, enable2FA: !securitySettings.enable2FA })}
-                      style={{
-                        padding: '8px 16px',
-                        borderRadius: '12px',
-                        fontSize: '12px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        backgroundColor: securitySettings.enable2FA ? '#059669' : '#e2e8f0',
-                        color: securitySettings.enable2FA ? '#ffffff' : '#334155',
-                        border: 'none'
-                      }}
-                    >
-                      {securitySettings.enable2FA ? t('twoFactorEnabled') : t('twoFactorDisabled')}
-                    </button>
-                  </div>
                   <AccountDeletionDangerZone role="PATIENT" />
                 </div>
               )}
@@ -1591,8 +2007,6 @@ const DashboardPage: React.FC = () => {
                     {[
                       { key: 'whatsappReminders', title: t('notifWhatsappTitle'), desc: t('notifWhatsappDesc') },
                       { key: 'emailPrescriptions', title: t('notifEmailTitle'), desc: t('notifEmailDesc') },
-                      { key: 'smsAlerts', title: t('notifSmsTitle'), desc: t('notifSmsDesc') },
-                      { key: 'healthTips', title: t('notifTipsTitle'), desc: t('notifTipsDesc') },
                     ].map((item) => (
                       <div key={item.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '16px' }}>
                         <div>
@@ -1614,28 +2028,7 @@ const DashboardPage: React.FC = () => {
               {/* Sub-Tab 5: Billing & Payments */}
               {profileSubTab === 'billing' && (
                 <div className="profile-card-box">
-                  <h3 className="profile-card-title"> {t('savedPaymentMethods')} </h3>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
-                    <div style={{ backgroundColor: '#0f172a', color: '#ffffff', padding: '20px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 'bold', textTransform: 'uppercase' }}> {t('defaultPaymentUPI')} </span>
-                        <span style={{ backgroundColor: 'rgba(148, 163, 184, 0.2)', color: '#cbd5e1', fontSize: '10px', fontWeight: 'bold', padding: '2px 10px', borderRadius: '9999px' }}> {t('notConfigured')} </span>
-                      </div>
-                      <p style={{ fontSize: '18px', fontFamily: 'monospace', fontWeight: 'bold', color: '#ffffff' }}> {t('noSavedUPI')} </p>
-                      <p style={{ fontSize: '12px', color: '#94a3b8' }}> {t('addPaymentMethod')} </p>
-                    </div>
-
-                    <div style={{ backgroundColor: '#1e293b', color: '#ffffff', padding: '20px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 'bold', textTransform: 'uppercase' }}> {t('visaDebitCard')} </span>
-                        <span style={{ fontSize: '12px', color: '#94a3b8' }}> {t('notConfigured')} </span>
-                      </div>
-                      <p style={{ fontSize: '18px', fontFamily: 'monospace', fontWeight: 'bold', color: '#ffffff' }}> {t('noSavedCard')} </p>
-                      <p style={{ fontSize: '12px', color: '#94a3b8' }}> {t('paymentDetailsNotStored')} </p>
-                    </div>
-                  </div>
-                </div>
+                  <p style={{ fontSize: '14px', color: '#64748b', padding: '20px 0' }}>Payment methods are not stored on this platform.</p></div>
               )}
 
             </div>
@@ -1934,3 +2327,8 @@ const DashboardPage: React.FC = () => {
 };
 
 export default DashboardPage;
+
+
+
+
+

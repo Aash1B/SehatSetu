@@ -13,7 +13,7 @@ type SignupMethod = 'email' | 'phone';
 export default function PatientSignup() {
   const navigate = useNavigate();
   const { t } = useTranslation(['auth', 'forms']);
-  const formsT = (key: string) => t(`forms.${key}`);
+  const formsT = (key: string) => t(`forms:${key}`);
   
   // Tab state
   const [signupMethod, setSignupMethod] = useState<SignupMethod>('email');

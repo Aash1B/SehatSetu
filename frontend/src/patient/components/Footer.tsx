@@ -1,5 +1,7 @@
-import React from 'react';
+﻿import React from 'react';
 import { useTranslation } from 'react-i18next';
+
+const footerLinkClass = 'footer-link';
 
 const Footer: React.FC = () => {
   const { t } = useTranslation('footer');
@@ -17,8 +19,7 @@ const Footer: React.FC = () => {
   return (
     <footer id="contact" className="site-footer">
       <div className="footer-container">
-        <div className="footer-top-row">
-          {/* Brand Column */}
+        <div className="footer-top-row" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div className="footer-brand-col">
             <a href="#home" className="footer-logo">
               <img src="/logo.svg" alt={tCommon('brand.name')} className="w-16 h-16 sm:w-20 sm:h-20 object-contain shrink-0 footer-logo-img" />
@@ -31,26 +32,25 @@ const Footer: React.FC = () => {
             </p>
           </div>
 
-          {/* Right Link Columns Clustered Together (Support Column) */}
-          <div className="footer-right-links-wrapper mr-24 sm:mr-36 lg:mr-44">
-            {/* Support Column */}
+          <div className="footer-right-links-wrapper" style={{ marginLeft: 'auto' }}>
             <div className="footer-links-col">
-              <h4 className="footer-col-title">Support</h4>
-              <button
-                type="button"
-                onClick={handleOpenChat}
-                className="talk-to-us-link cursor-pointer bg-transparent border-none p-0 inline-flex items-center gap-1 font-bold text-orange-400 hover:text-orange-300 transition-colors text-base"
-              >
-                SetuAI →
-              </button>
-              <p className="text-xs sm:text-sm text-slate-400 mt-1 font-normal">
-                Our AI Assistance
-              </p>
+              <h4 className="footer-col-title">{t('connect')}</h4>
+              <ul className="footer-links-list">
+                <li><a href="/about" className={footerLinkClass}>{t('aboutUs')}</a></li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={handleOpenChat}
+                    className="talk-to-us-link cursor-pointer bg-transparent border-none p-0 inline-flex items-center gap-1 font-bold text-orange-400 hover:text-orange-300 transition-colors text-base"
+                  >
+                    {t('talkToUs')}
+                  </button>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
 
-        {/* Bottom Bar */}
         <div className="footer-bottom-bar">
           <div className="copyright-text">
             {t('copyright')}
