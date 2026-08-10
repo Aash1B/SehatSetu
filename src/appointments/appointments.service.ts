@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException, ConflictException, HttpException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { prisma } from '../prisma';
+import { redactEhrRecordForPatient } from '../ehr/ehr-visibility.util';
 
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
@@ -9,7 +10,7 @@ import { Queue } from 'bullmq';
 export class AppointmentsService {
   constructor(
     @InjectQueue('appointment-queue') private readonly appointmentQueue: Queue,
-  ) {}
+  ) { }
 
   async createAppointment(data: any, authenticatedUserId: string) {
     const doctorId = data.doctorId;
@@ -21,7 +22,7 @@ export class AppointmentsService {
       if (!doctor) {
         // Fallback: find any registered doctor with a linked User account in the DB
         const linkedDoctors = await tx.doctor.findMany({
-          where: { userId: { not: null } },
+          where: { userId: { not: '' } },
           include: { user: { select: { id: true, fullName: true, email: true, role: true } } },
         });
         if (linkedDoctors.length > 0) {
@@ -37,7 +38,14 @@ export class AppointmentsService {
 
       if (!doctor.userId && doctor.name) {
         const normalizedName = doctor.name.replace(/^dr\.?\s*/i, '').trim().toLowerCase();
-        const linkedDoctors = await tx.doctor.findMany({ where: { userId: { not: null } }, include: { user: { select: { id: true, fullName: true, email: true, role: true } } } });
+        const linkedDoctors = await tx.doctor.findMany({
+          where: { userId: { not: '' } },
+          include: {
+            user: {
+              select: { id: true, fullName: true, email: true, role: true },
+            },
+          },
+        });
         const linkedMatch = linkedDoctors.find((candidate) =>
           candidate.user?.fullName.replace(/^dr\.?\s*/i, '').trim().toLowerCase() === normalizedName,
         );
@@ -92,16 +100,38 @@ export class AppointmentsService {
       if (data.date) {
         if (typeof data.date === 'string') {
           const lowerDate = data.date.toLowerCase();
-          const targetDate = new Date();
           if (lowerDate.includes('tomorrow')) {
+            const targetDate = new Date();
             targetDate.setDate(targetDate.getDate() + 1);
             scheduledAt = targetDate;
           } else if (lowerDate.includes('today')) {
-            scheduledAt = targetDate;
+            scheduledAt = new Date();
           } else {
-            const parsed = Date.parse(data.date);
-            if (!isNaN(parsed)) {
-              scheduledAt = new Date(parsed);
+            // Try YYYY-MM-DD format first (sent by the frontend)
+            const isoMatch = data.date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            if (isoMatch) {
+              scheduledAt = new Date(
+                parseInt(isoMatch[1], 10),
+                parseInt(isoMatch[2], 10) - 1,
+                parseInt(isoMatch[3], 10),
+              );
+            } else {
+              // Fallback: try natural language / partial date formats
+              const cleaned = data.date
+                .replace(/^[a-z]+\s*,\s*/i, '')
+                .replace(/^[a-z]+\s+/i, '')
+                .trim();
+              const currentYear = new Date().getFullYear();
+              const dateWithYear = `${cleaned} ${currentYear}`;
+              const parsedWithYear = Date.parse(dateWithYear);
+              if (!isNaN(parsedWithYear)) {
+                scheduledAt = new Date(parsedWithYear);
+              } else {
+                const directParsed = Date.parse(data.date);
+                if (!isNaN(directParsed)) {
+                  scheduledAt = new Date(directParsed);
+                }
+              }
             }
           }
         }
@@ -296,11 +326,15 @@ export class AppointmentsService {
         },
         data: { status: 'CANCELLED' },
       });
-      return prisma.appointment.findMany({
+      const patientAppointments = await prisma.appointment.findMany({
         where: { patient: { is: { userId } } },
         orderBy: { createdAt: 'desc' },
         include: { doctor: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } }, prescription: true, ehrRecord: true },
       });
+      return patientAppointments.map((app) => ({
+        ...app,
+        ehrRecord: redactEhrRecordForPatient(app.ehrRecord),
+      }));
     }
     if (role === Role.DOCTOR) {
       return prisma.appointment.findMany({
@@ -347,6 +381,7 @@ export class AppointmentsService {
 
     return {
       ...appointment,
+      ehrRecord: role === Role.PATIENT ? redactEhrRecordForPatient(appointment.ehrRecord) : appointment.ehrRecord,
       patientAge: appointment.patientAge || appointment.patient?.age || ageFromDateOfBirth,
       patientGender: appointment.patientGender || appointment.patient?.gender || '',
       patientHeight: appointment.patientHeight || appointment.patient?.height || '',
@@ -412,7 +447,9 @@ export class AppointmentsService {
     }, { isolationLevel: 'Serializable' }).then(async (updated) => {
       await this.scheduleStandardReminders(updated);
       if (updated.isFollowUp && updated.emailRemindersEnabled) await this.scheduleFollowUpReminders(updated);
-      return updated;
+      // This method is PATIENT-only (checked above), so the ehrRecord must
+      // never surface a DRAFT/REJECTED record here.
+      return { ...updated, ehrRecord: redactEhrRecordForPatient(updated.ehrRecord) };
     }).catch((err) => {
       if (err instanceof HttpException) throw err;
       if (err?.code === 'P2002' || err?.code === 'P2034') {
@@ -420,6 +457,52 @@ export class AppointmentsService {
       }
       throw new InternalServerErrorException('Failed to reschedule appointment');
     });
+  }
+
+  async cancelAppointment(appointmentId: string, userId: string, role: string) {
+    if (role !== Role.PATIENT) throw new BadRequestException('Only patients can cancel appointments');
+
+    const appointment = await prisma.appointment.findFirst({
+      where: { id: appointmentId, patient: { is: { userId } } },
+    });
+    if (!appointment) throw new NotFoundException('Appointment not found');
+    if (appointment.status === 'COMPLETED' || appointment.status === 'CANCELLED') {
+      throw new BadRequestException('Completed or cancelled appointments cannot be cancelled again');
+    }
+
+    try {
+      const cancelled = await prisma.appointment.update({
+        where: { id: appointmentId },
+        data: { status: 'CANCELLED' },
+        include: {
+          doctor: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } },
+          prescription: true,
+          ehrRecord: true,
+        },
+      });
+
+      const reminderPrefixes = [`appointment-${appointmentId}-`];
+      for (const prefix of reminderPrefixes) {
+        await this.appointmentQueue
+          .getJobs('delayed', 0, -1, true)
+          .then((jobs) =>
+            Promise.all(
+              jobs
+                .filter((j) => j.id && j.id.startsWith(prefix))
+                .map((j) => j.remove().catch(() => undefined)),
+            ),
+          )
+          .catch(() => undefined);
+      }
+
+      // This method is PATIENT-only (checked above), so the ehrRecord must
+      // never surface a DRAFT/REJECTED record here.
+      return { ...cancelled, ehrRecord: redactEhrRecordForPatient(cancelled.ehrRecord) };
+    } catch (err) {
+      if (err instanceof HttpException) throw err;
+      if (err?.code === 'P2025') throw new NotFoundException('Appointment not found');
+      throw new InternalServerErrorException('Failed to cancel appointment');
+    }
   }
 
   async getAppointmentsForDoctor(doctorId: string) {

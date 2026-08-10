@@ -2,7 +2,10 @@ import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useLocation }
 import { lazy, Suspense } from 'react';
 import { Provider } from 'react-redux';
 import { store } from './patient/store';
+import { useTranslation } from 'react-i18next';
 import './Patient.css';
+import ChatProvider from './chatbot/ChatProvider';
+import './chatbot/chatbot.css';
 // Auth Pages (new)
 const PatientLogin = lazy(() => import('./auth/pages/PatientLogin'));
 const PatientSignup = lazy(() => import('./auth/pages/PatientSignup'));
@@ -43,9 +46,14 @@ const VideoConsultation = lazy(() => import('./doctor/pages/VideoConsultation'))
 const DoctorProfile = lazy(() => import('./doctor/pages/DoctorProfile'));
 const DoctorAvailability = lazy(() => import('./doctor/pages/DoctorAvailability'));
 const DoctorOnboarding = lazy(() => import('./doctor/pages/DoctorOnboarding'));
+const EhrDrafts = lazy(() => import('./doctor/pages/EhrDrafts'));
+const EhrDraftDetail = lazy(() => import('./doctor/pages/EhrDraftDetail'));
 
 // Landing Page
 const LandingPage = lazy(() => import('./patient/pages/LandingPage'));
+
+// Public standalone pages
+const AboutPage = lazy(() => import('./pages/About'));
 
 // Patient Pages
 
@@ -55,19 +63,24 @@ const BookAppointmentPage = lazy(() => import('./patient/pages/BookAppointmentPa
 const HealthQuestionnairePage = lazy(() => import('./patient/pages/HealthQuestionnairePage'));
 const AppointmentsPage = lazy(() => import('./patient/pages/AppointmentsPage'));
 const VideoConsultationPage = lazy(() => import('./patient/pages/VideoConsultationPage'));
+const MCHPage = lazy(() => import('./patient/pages/MCHPage'));
+const MedicalPage = lazy(() => import('./patient/pages/MedicalPage'));
+const VitalsPage = lazy(() => import('./patient/pages/VitalsPage'));
 
 import OfflineStatusIndicator from './common/components/OfflineStatusIndicator';
 import PWAUpdatePrompt from './common/components/PWAUpdatePrompt';
 import PWAInstallPrompt from './common/components/PWAInstallPrompt';
 
 function App() {
+  const { t } = useTranslation('common');
   return (
     <Provider store={store}>
       <Router>
         <OfflineStatusIndicator />
         <PWAUpdatePrompt />
         <PWAInstallPrompt />
-        <Suspense fallback={<div className="flex min-h-screen items-center justify-center text-slate-500">Loading SehatSetu…</div>}>
+        <ChatProvider />
+        <Suspense fallback={<div className="flex min-h-screen items-center justify-center text-slate-500">{t('loading')}</div>}>
         <Routes>
 
           {/* Auth Routes (new) */}
@@ -79,9 +92,12 @@ function App() {
            <Route path="/forgot-password" element={<ForgotPassword />} />
            <Route path="/reset-password" element={<ResetPassword />} />
 
-           <Route path="/payment-test" element={<PaymentTestPage />} />
-      
-          {/* Patient Portal Layout */}
+            <Route path="/payment-test" element={<PaymentTestPage />} />
+
+           {/* About Page (public standalone) */}
+          <Route path="/about" element={<AboutPage />} />
+
+           {/* Patient Portal Layout */}
           <Route element={<PatientLayout />}>
             {/* Landing Page */}
             <Route path="/" element={<LandingPage />} />
@@ -95,6 +111,9 @@ function App() {
               <Route path="/patient/questionnaire/:id" element={<HealthQuestionnairePage />} />
               <Route path="/patient/appointments" element={<AppointmentsPage />} />
               <Route path="/patient/consultation/:id" element={<VideoConsultationPage />} />
+              <Route path="/patient/mch" element={<MCHPage />} />
+              <Route path="/patient/medical" element={<MedicalPage />} />
+              <Route path="/patient/vitals" element={<VitalsPage />} />
             </Route>
           </Route>
 
@@ -110,6 +129,8 @@ function App() {
             <Route path="/doctor/availability" element={<DoctorAvailability />} />
             <Route path="/doctor/onboarding" element={<DoctorOnboarding />} />
             <Route path="/doctor/setup-profile" element={<DoctorOnboarding />} />
+            <Route path="/doctor/ehr-drafts" element={<EhrDrafts />} />
+            <Route path="/doctor/ehr-drafts/:id" element={<EhrDraftDetail />} />
           </Route>
         </Routes>
         </Suspense>

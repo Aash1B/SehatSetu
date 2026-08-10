@@ -1,10 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import heroDoctorImg from '../../assets/hero_doctor.png';
 import { getToken, getUser } from '../../auth/authStorage';
+import { useTranslation } from 'react-i18next';
 
 const HeroSection: React.FC = () => {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation(['home', 'common']);
+  const tCommon = (key: string) => i18n.t(key, { ns: 'common' });
   const token = getToken();
   const user = getUser();
   const isAuthenticated = Boolean(token && user);
@@ -21,89 +23,104 @@ const HeroSection: React.FC = () => {
     }
   };
 
-  const handleSecondaryAction = () => {
-    if (isAuthenticated) {
-      if (user?.role === 'DOCTOR') {
-        navigate('/doctor/availability');
-      } else {
-        navigate('/patient/search');
-      }
-    } else {
-      navigate('/patient/search');
-    }
-  };
-
   return (
-    <section id="home" className="w-full overflow-hidden bg-gradient-to-b from-purple-50/60 via-white to-slate-50/30">
-      <div className="mx-auto grid min-h-[540px] max-w-7xl grid-cols-1 items-center gap-10 px-6 py-12 md:grid-cols-[0.9fr_1.1fr] lg:min-h-[620px] lg:gap-14 lg:px-8">
-        {/* Left Column: Heading, Description, CTA Buttons */}
-        <div className="flex flex-col justify-center max-w-xl">
-          {/* Top Badge */}
-          <div className="inline-flex w-fit items-center gap-2 rounded-full border border-purple-200 bg-purple-50 px-3.5 py-1.5 text-xs font-semibold text-purple-700 shadow-xs mb-4">
-            <span className="flex h-2 w-2 rounded-full bg-purple-600 animate-pulse"></span>
-            24/7 Virtual Health Clinic
-          </div>
-
+    <section
+      id="home"
+      className="w-full bg-gradient-to-b from-brand-50/60 via-white to-slate-50/30 -mt-14 sm:-mt-16 pt-22 sm:pt-26 lg:pt-28 pb-8 px-2 sm:px-4 lg:px-6 flex justify-center"
+    >
+      {/* Pop-out Hero Card container matching Navbar width & shadow */}
+      <div className="w-full max-w-[98%] sm:max-w-[96%] lg:max-w-[95%] xl:max-w-[96%] bg-white/95 backdrop-blur-md rounded-[28px] sm:rounded-[36px] shadow-[0_15px_40px_rgba(0,0,0,0.06)] border border-slate-100/90 py-10 sm:py-14 lg:py-16 px-6 sm:px-10 lg:px-12 transition-all duration-300">
+        <div className="grid w-full grid-cols-1 items-center gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-12 xl:gap-14">
+        {/* Left Column: Badge, Heading, Description, CTA Buttons, Trust Badges */}
+        <div className="relative z-10 min-w-0">
           {/* Heading */}
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl leading-[1.15] mb-5">
-            Instant Doctor <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600">Consultations</span> & Care
+          <h1 className="mb-4 text-base font-semibold text-brand-600 sm:text-lg lg:text-xl">
+            <span className="bg-gradient-to-r from-brand-600 to-indigo-600 bg-clip-text text-transparent">
+              {tCommon('brand.tagline')}
+            </span>
           </h1>
 
-          {/* Description */}
-          <p className="text-base text-slate-600 sm:text-lg leading-relaxed max-w-xl mb-7">
-            Connect with verified medical specialists in minutes. Book online video appointments, receive instant digital prescriptions, and manage health records securely.
+          {/* Tagline */}
+          <p className="mb-6 text-3xl font-extrabold leading-[1.17] tracking-tight text-slate-900 sm:text-4xl lg:text-[42px]">
+            {t('headline')}
+            <span className="bg-gradient-to-r from-[#FF9933] to-[#138808] bg-clip-text text-transparent font-extrabold">
+              {' '}{t('country')}
+            </span>
           </p>
 
-          {/* CTA Buttons */}
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center mb-6">
+          {/* Description */}
+          <p className="mb-7 max-w-xl text-base leading-relaxed text-slate-600 sm:text-lg lg:text-xl">
+            {t('description')}
+          </p>
+
+          {/* CTA Button - Popping Pill Style */}
+          <div className="mb-7 mt-7 flex justify-start">
             <button
               type="button"
               onClick={handlePrimaryAction}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-purple-600 px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-purple-700 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 cursor-pointer no-underline active:scale-[0.98] select-none"
+              className="inline-flex min-h-13 cursor-pointer select-none items-center justify-center gap-3 rounded-full bg-gradient-to-r from-orange-500 via-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 px-8 py-3.5 text-base font-bold text-white shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/40 hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 border-none group"
             >
-              Find a Doctor Now
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <span>{t('cta')}</span>
+              <svg className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
               </svg>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleSecondaryAction}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-800 transition hover:border-purple-300 hover:bg-purple-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 cursor-pointer no-underline active:scale-[0.98] select-none"
-            >
-              {isAuthenticated && user?.role === 'DOCTOR' ? 'Manage Schedule' : 'Book Appointment'}
             </button>
           </div>
 
           {/* Trust Indicators */}
-          <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-600">
-            <span className="inline-flex items-center gap-2 text-slate-700 font-medium">
-              <svg className="h-4 w-4 text-emerald-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <ul className="mt-6 grid grid-cols-1 gap-x-12 gap-y-5 sm:grid-cols-2 lg:gap-x-16 lg:gap-y-6 text-lg sm:text-xl font-semibold text-slate-700">
+            <li className="inline-flex items-start gap-3 transition-colors hover:text-brand-600">
+              <svg className="mt-0.5 h-6 w-6 shrink-0 text-emerald-500 transition-transform hover:scale-110" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-              Verified Specialists
-            </span>
-
-            <span className="inline-flex items-center gap-2 text-slate-700 font-medium">
-              <svg className="h-4 w-4 text-purple-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+              <span>{t('verifiedDoctors')}</span>
+            </li>
+            <li className="inline-flex items-start gap-3 transition-colors hover:text-brand-600">
+              <svg className="mt-0.5 h-6 w-6 shrink-0 text-emerald-500 transition-transform hover:scale-110" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-              Encrypted Consultations
-            </span>
-          </div>
+              <span>{t('aiAssistedCare')}</span>
+            </li>
+            <li className="inline-flex items-start gap-3 transition-colors hover:text-brand-600">
+              <svg className="mt-0.5 h-6 w-6 shrink-0 text-emerald-500 transition-transform hover:scale-110" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <span>{t('secureRecords')}</span>
+            </li>
+            <li className="inline-flex items-start gap-3 transition-colors hover:text-brand-600">
+              <svg className="mt-0.5 h-6 w-6 shrink-0 text-emerald-500 transition-transform hover:scale-110" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <span>
+                {t('ruralUrban')}
+                <span className="block text-sm font-normal text-slate-400 mt-1">      </span>
+              </span>
+            </li>
+          </ul>
         </div>
 
         {/* Right Column: Hero Image Frame */}
-        <div className="relative w-full overflow-hidden rounded-2xl shadow-xl border border-slate-200/80 bg-slate-900/5 group">
+        <div className="relative w-full h-[350px] sm:h-[420px] lg:h-[470px] min-w-0 overflow-hidden rounded-[28px] sm:rounded-[32px] border border-slate-100/90 bg-white/95 backdrop-blur-md shadow-[0_12px_35px_rgba(0,0,0,0.08)] ring-1 ring-slate-900/5 transition-all duration-300 hover:shadow-[0_16px_40px_rgba(0,0,0,0.12)]">
+          <div className="absolute top-4 right-4 z-10 p-2 bg-slate-900/30 backdrop-blur-md text-white rounded-full shadow-xs hover:bg-slate-900/50 transition cursor-pointer">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+            </svg>
+          </div>
+
           <img
-            src={heroDoctorImg}
-            alt="SehatSetu Doctor Consultation"
-            className="h-[320px] w-full object-cover object-center sm:h-[400px] md:h-[460px] lg:h-[520px] transition-transform duration-500 group-hover:scale-[1.01]"
+            src="/hero.jpeg"
+            alt={t('heroAlt')}
+            width={1920}
+            height={840}
+            decoding="async"
+            loading="eager"
+            fetchPriority="high"
+            className="block h-full w-full object-cover object-center transition-transform duration-500 hover:scale-[1.02]"
           />
         </div>
       </div>
-    </section>
+    </div>
+  </section>
   );
 };
 

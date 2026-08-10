@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { extractMedicalInfo } from '../services/aiApi';
+import { extractMedicalInfo, recommendDoctorSpecialist } from '../services/aiApi';
 
 export interface LiveAudioState {
   isRecording: boolean;
@@ -7,6 +7,7 @@ export interface LiveAudioState {
   symptoms: string[];
   medicines: string[];
   labTests: string[];
+  doctorSpecialty: string | null;
   error: string | null;
 }
 
@@ -17,6 +18,7 @@ export function useLiveAudioTranscription() {
     symptoms: [],
     medicines: [],
     labTests: [],
+    doctorSpecialty: null,
     error: null,
   });
 
@@ -66,10 +68,28 @@ export function useLiveAudioTranscription() {
 
                 setState(prev => ({
                   ...prev,
-                  symptoms: Array.from(new Set([...prev.symptoms, ...syms])),
-                  medicines: Array.from(new Set([...prev.medicines, ...meds])),
-                  labTests: Array.from(new Set([...prev.labTests, ...labs])),
+                  symptoms: Array.from(new Set([...(prev.symptoms || []), ...syms])),
+                  medicines: Array.from(new Set([...(prev.medicines || []), ...meds])),
+                  labTests: Array.from(new Set([...(prev.labTests || []), ...labs])),
                 }));
+
+                // Recommend doctor specialty if symptoms were extracted
+                if (syms.length > 0) {
+                  try {
+                    const symptomText = syms.join(', ');
+                    const docRes = await recommendDoctorSpecialist(symptomText);
+                    const specialty = docRes?.data?.specialization;
+                    if (typeof specialty === 'string') {
+                      setState(prev => ({
+                        ...prev,
+                        doctorSpecialty: specialty,
+                      }));
+                    }
+                  } catch (recErr) {
+                    console.error('Doctor recommendation failed:', recErr);
+                    // Continue without doctor recommendation if it fails
+                  }
+                }
               }
             } catch (e) {
               console.error('Live AI Extraction Error:', e);

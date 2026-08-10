@@ -22,6 +22,12 @@ export enum Priority {
   EMERGENCY = 'EMERGENCY'
 }
 
+export enum EhrDraftStatus {
+  DRAFT = 'DRAFT',
+  VERIFIED = 'VERIFIED',
+  REJECTED = 'REJECTED',
+}
+
 export enum Specialization {
   GENERAL_PHYSICIAN = 'General Physician',
   PEDIATRICIAN = 'Pediatrician',
@@ -146,5 +152,36 @@ export interface AIInsightDTO {
   type: 'SUGGESTION' | 'WARNING' | 'INFO';
   message: string;
   confidence: number;
+}
+
+export interface EhrDraftStructuredData {
+  medications?: string[];
+  vitals?: Record<string, string | number | null | undefined>;
+  [key: string]: unknown;
+}
+
+export interface EhrDraftRecord {
+  id: string;
+  patientId: string;
+  appointmentId: string | null;
+  diagnosis: string | null;
+  notes: string | null;
+  aiSummary: string | null;
+  createdAt: string;
+  medicalReportId: string | null;
+  status: EhrDraftStatus;
+  structuredData: EhrDraftStructuredData | null;
+  verifiedByDoctorId: string | null;
+  verifiedAt: string | null;
+  patient?: {
+    id: string;
+    user?: { fullName?: string; email?: string } | null;
+  } | null;
+  medicalReport?: {
+    id: string;
+    originalFileName: string;
+    reportType: string;
+    createdAt: string;
+  } | null;
 }
 

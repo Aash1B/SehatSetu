@@ -6,8 +6,10 @@ import { STORAGE_SERVICE } from './storage/storage.service';
 import { SupabaseStorageService } from './storage/supabase-storage.service';
 import { OCR_CLIENT } from './ocr/ocr-client';
 import { FastApiOcrClient } from './ocr/fastapi-ocr.client';
+import { EhrModule } from '../ehr/ehr.module';
 
 @Module({
+  imports: [EhrModule],
   controllers: [MedicalReportsController],
   providers: [
     MedicalReportsService,
@@ -15,6 +17,6 @@ import { FastApiOcrClient } from './ocr/fastapi-ocr.client';
     { provide: STORAGE_SERVICE, useClass: SupabaseStorageService },
     { provide: OCR_CLIENT, useClass: FastApiOcrClient },
   ],
-  exports: [STORAGE_SERVICE],
+  exports: [STORAGE_SERVICE, MedicalReportsService],
 })
 export class MedicalReportsModule {}

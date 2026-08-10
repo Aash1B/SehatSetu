@@ -49,6 +49,21 @@ resetPassword(@Body() dto: ResetPasswordDto) {
   return this.authService.resetPassword(dto.token, dto.newPassword);
 }
 
+  @Post('send-phone-otp')
+  sendPhoneOtp(@Body() dto: any) {
+    return this.authService.sendPhoneOtp(dto.phoneNumber, dto.role);
+  }
+
+  @Post('verify-phone-otp')
+  verifyPhoneOtp(@Body() dto: any) {
+    return this.authService.verifyPhoneOtp(dto.phoneNumber, dto.otp, dto.role);
+  }
+
+  @Post('phone-signup')
+  phoneSignup(@Body() dto: any) {
+    return this.authService.phoneSignup(dto.phoneNumber, dto.otp, dto.fullName, dto.role, dto.dataConsent);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Post('whoami')
   whoAmI(@Req() req: any) {

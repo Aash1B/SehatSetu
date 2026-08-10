@@ -1,5 +1,7 @@
-import { Injectable, NotFoundException, BadRequestException, ServiceUnavailableException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { prisma } from '../prisma';
+import { MailService } from '../mail/mail.service';
+import { randomBytes } from 'crypto';
 
 export interface DocumentUploadResult {
   id: string;
@@ -15,6 +17,7 @@ export interface DocumentUploadResult {
 
 @Injectable()
 export class DoctorService {
+  constructor(private readonly mailService: MailService) {}
   
   /**
    * Uploads doctor profile image to Supabase Storage Bucket 'doctor-profile-images'
@@ -149,7 +152,7 @@ export class DoctorService {
         availability = doctor.availability;
         if (!doctor.userId && doctor.name) {
           const normalizedName = doctor.name.replace(/^dr\.?\s*/i, '').trim().toLowerCase();
-          const linkedDoctors = await prisma.doctor.findMany({ where: { userId: { not: null } }, include: { user: true } });
+          const linkedDoctors = await prisma.doctor.findMany({ where: { userId: { not: '' } }, include: { user: true } });
           const linkedMatch = linkedDoctors.find((candidate) =>
             candidate.user?.fullName.replace(/^dr\.?\s*/i, '').trim().toLowerCase() === normalizedName,
           );
@@ -160,7 +163,8 @@ export class DoctorService {
       console.warn('Doctor not found in DB, using fallback availability structure:', doctorId);
     }
 
-    const baseAvailability = availability || {
+    const hasValidSlots = availability && typeof availability === 'object' && Array.isArray(availability.slots) && availability.slots.length > 0;
+    const baseAvailability = hasValidSlots ? availability : {
       slotDurationMinutes: 15,
       status: 'Available',
       slots: [
@@ -257,11 +261,18 @@ export class DoctorService {
 
   async updateProfile(doctorId: string, profileData: any) {
     let targetId = doctorId;
-    let doctor = await prisma.doctor.findUnique({
-      where: { id: targetId },
+    let doctor = await prisma.doctor.findFirst({
+      where: {
+        OR: [
+          { id: targetId },
+          { userId: targetId },
+        ],
+      },
     });
 
-    if (!doctor && doctorId === 'd1') {
+    if (doctor) {
+      targetId = doctor.id;
+    } else if (doctorId === 'd1') {
       const firstDoc = await prisma.doctor.findFirst();
       if (firstDoc) {
         doctor = firstDoc;
@@ -296,6 +307,11 @@ export class DoctorService {
     if (doctorData.profileCompleted !== undefined) cleanedDoctorData.profileCompleted = Boolean(doctorData.profileCompleted);
     cleanedDoctorData.availableToday = true;
 
+    if (doctorData.verificationStatus) cleanedDoctorData.verificationStatus = doctorData.verificationStatus;
+    if (doctorData.isVerified !== undefined) cleanedDoctorData.isVerified = Boolean(doctorData.isVerified);
+    if (doctorData.approvalToken !== undefined) cleanedDoctorData.approvalToken = doctorData.approvalToken;
+    if (doctorData.approvalTokenExpiry !== undefined) cleanedDoctorData.approvalTokenExpiry = doctorData.approvalTokenExpiry;
+
     if (doctor) {
       return prisma.$transaction(async (tx) => {
         if (userData && Object.keys(userData).length > 0 && doctor.userId) {
@@ -311,12 +327,14 @@ export class DoctorService {
         });
       });
     } else {
-      // Create new Doctor if not existing
+      // Check if targetId is a userId
+      const userObj = await prisma.user.findUnique({ where: { id: doctorId } });
       return prisma.doctor.create({
         data: {
           id: targetId,
+          userId: userObj ? userObj.id : targetId,
           specialty: cleanedDoctorData.specialty || 'General Physician',
-          name: cleanedDoctorData.name || 'Dr. New Doctor',
+          name: cleanedDoctorData.name || (userObj ? userObj.fullName : 'Dr. New Doctor'),
           experience: cleanedDoctorData.experience || '5+ Years Exp.',
           degrees: cleanedDoctorData.degrees || 'MBBS',
           hospital: cleanedDoctorData.hospital || 'Apollo Medical Center',
@@ -326,8 +344,13 @@ export class DoctorService {
           consultationFee: cleanedDoctorData.consultationFee || 500,
           availability: cleanedDoctorData.availability || {},
           availableToday: true,
-          tags: cleanedDoctorData.tags || ['English', 'Hindi']
-        }
+          tags: cleanedDoctorData.tags || ['English', 'Hindi'],
+          verificationStatus: cleanedDoctorData.verificationStatus || 'PENDING',
+          isVerified: cleanedDoctorData.isVerified || false,
+          approvalToken: cleanedDoctorData.approvalToken,
+          approvalTokenExpiry: cleanedDoctorData.approvalTokenExpiry,
+        },
+        include: { user: true },
       });
     }
   }
@@ -352,17 +375,201 @@ export class DoctorService {
       documents: onboardingPayload.documents || []
     };
 
-    const doctor = await prisma.doctor.findFirst({ where: { id: doctorId } });
+    const doctor = await prisma.doctor.findFirst({
+      where: {
+        OR: [{ id: doctorId }, { userId: doctorId }],
+      },
+    });
+
     if (!doctor?.imageUrl && !onboardingPayload.photoUrl && !onboardingPayload.imageUrl) {
       throw new BadRequestException('Doctor profile image is required before finishing onboarding');
     }
 
-    return this.updateProfile(doctorId, {
+    // Generate a cryptographically secure approval token (7 days expiry)
+    const approvalToken = randomBytes(32).toString('hex');
+    const approvalTokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+    const updated = await this.updateProfile(doctorId, {
       ...onboardingPayload,
       availability: availabilityData,
       profileCompleted: true,
-      isVerified: true,
+      isVerified: false,
+      verificationStatus: 'PENDING',
+      approvalToken,
+      approvalTokenExpiry,
       isActive: true,
     });
+
+    // Dispatch Administrator Email with Approve / Reject action links
+    const docName = updated.name || onboardingPayload.fullName || 'Doctor';
+    const email = onboardingPayload.email || (updated as any).user?.email || 'N/A';
+    const phone = onboardingPayload.phoneNumber || 'N/A';
+    const specialization = updated.specialty || onboardingPayload.specialization || 'General Physician';
+    const medicalLicenseNumber = onboardingPayload.medicalLicenseNumber || 'N/A';
+    const clinicName = onboardingPayload.clinicName || 'N/A';
+    const hospital = updated.hospital || onboardingPayload.clinicName || 'N/A';
+    const city = updated.location || onboardingPayload.address || 'India';
+    const docs = (onboardingPayload.documents || []).map((d: any) => ({
+      name: d.name || 'Document',
+      type: d.type || 'PDF',
+      url: d.publicUrl || d.url || '#'
+    }));
+
+    try {
+      await this.mailService.sendAdminVerificationEmail({
+        doctorName: docName,
+        email,
+        phone,
+        specialization,
+        medicalLicenseNumber,
+        clinicName,
+        hospital,
+        city,
+        documents: docs,
+        token: approvalToken,
+        submittedAt: new Date(),
+      });
+    } catch (mailErr) {
+      console.error('Error dispatching admin verification email:', mailErr);
+    }
+
+    return updated;
+  }
+
+  async approveDoctor(token: string): Promise<string> {
+    if (!token) {
+      return this.renderHtmlResult('Invalid Request', 'No approval token provided.', false);
+    }
+
+    const doctor = await prisma.doctor.findFirst({
+      where: { approvalToken: token },
+      include: { user: true },
+    });
+
+    if (!doctor) {
+      return this.renderHtmlResult('Token Invalid or Already Used', 'This approval link is invalid or has already been consumed.', false);
+    }
+
+    if (doctor.approvalTokenExpiry && doctor.approvalTokenExpiry < new Date()) {
+      return this.renderHtmlResult('Token Expired', 'This approval link has expired (valid for 7 days only). Please re-request verification.', false);
+    }
+
+    if (doctor.verificationStatus !== 'PENDING') {
+      return this.renderHtmlResult('Action Already Completed', `Doctor Dr. ${doctor.name || ''} is already marked as ${doctor.verificationStatus}.`, false);
+    }
+
+    // Approve doctor in database
+    await prisma.doctor.update({
+      where: { id: doctor.id },
+      data: {
+        verificationStatus: 'APPROVED',
+        isVerified: true,
+        approvalToken: null,
+        approvalTokenExpiry: null,
+      },
+    });
+
+    const recipientEmail = doctor.user?.email || (doctor.availability as any)?.email;
+    const doctorName = doctor.name || doctor.user?.fullName || 'Doctor';
+
+    if (recipientEmail) {
+      try {
+        await this.mailService.sendDoctorApprovalEmail(recipientEmail, doctorName);
+        console.log(`[MailService] Dispatched Approval Confirmation Email to doctor: ${recipientEmail} ✅`);
+      } catch (err) {
+        console.error('Failed to send approval email to doctor:', err);
+      }
+    }
+
+    return this.renderHtmlResult(
+      'Doctor Approved Successfully',
+      `Dr. ${doctorName} (${recipientEmail || 'Doctor'}) has been successfully approved! An automated confirmation email has been dispatched to ${recipientEmail || 'the doctor'}. They may now log in to the dashboard using their registered email and password.`,
+      true,
+    );
+  }
+
+  async rejectDoctor(token: string, reason?: string): Promise<string> {
+    if (!token) {
+      return this.renderHtmlResult('Invalid Request', 'No approval token provided.', false);
+    }
+
+    const doctor = await prisma.doctor.findFirst({
+      where: { approvalToken: token },
+      include: { user: true },
+    });
+
+    if (!doctor) {
+      return this.renderHtmlResult('Token Invalid or Already Used', 'This rejection link is invalid or has already been consumed.', false);
+    }
+
+    if (doctor.approvalTokenExpiry && doctor.approvalTokenExpiry < new Date()) {
+      return this.renderHtmlResult('Token Expired', 'This link has expired.', false);
+    }
+
+    if (doctor.verificationStatus !== 'PENDING') {
+      return this.renderHtmlResult('Action Already Completed', `Doctor Dr. ${doctor.name || ''} is already marked as ${doctor.verificationStatus}.`, false);
+    }
+
+    const rejectionReason = reason || 'Medical registration documents could not be authenticated by administrator';
+
+    // Reject doctor
+    await prisma.doctor.update({
+      where: { id: doctor.id },
+      data: {
+        verificationStatus: 'REJECTED',
+        isVerified: false,
+        approvalToken: null,
+        approvalTokenExpiry: null,
+        rejectionReason,
+      },
+    });
+
+    const recipientEmail = doctor.user?.email || (doctor.availability as any)?.email;
+    const doctorName = doctor.name || doctor.user?.fullName || 'Doctor';
+
+    if (recipientEmail) {
+      try {
+        await this.mailService.sendDoctorRejectionEmail(recipientEmail, doctorName, rejectionReason);
+      } catch (err) {
+        console.error('Failed to send rejection email to doctor:', err);
+      }
+    }
+
+    return this.renderHtmlResult(
+      'Doctor Registration Rejected',
+      `Registration for Dr. ${doctorName} (${recipientEmail || 'Doctor'}) has been rejected. A notification email has been dispatched.`,
+      false,
+    );
+  }
+
+  private renderHtmlResult(title: string, message: string, isSuccess: boolean): string {
+    const icon = isSuccess ? '✅' : '❌';
+    const bgColor = isSuccess ? '#16a34a' : '#dc2626';
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8" />
+        <title>${title} - SehatSetu</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 40px 16px; display: flex; justify-content: center; align-items: center; min-height: 80vh; }
+          .card { background: #ffffff; max-width: 520px; width: 100%; border-radius: 20px; padding: 36px 28px; border: 1px solid #e2e8f0; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); text-align: center; }
+          .icon-header { background: ${bgColor}; color: #ffffff; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; margin: 0 auto 20px auto; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+          h1 { color: #0f172a; font-size: 22px; margin: 0 0 12px 0; font-weight: 800; }
+          p { color: #475569; font-size: 15px; line-height: 1.6; margin: 0 0 24px 0; }
+          .footer { font-size: 12px; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 16px; font-weight: 600; }
+        </style>
+      </head>
+      <body>
+        <div class="card">
+          <div class="icon-header">${icon}</div>
+          <h1>${title}</h1>
+          <p>${message}</p>
+          <div class="footer">SehatSetu Medical Verification Portal • Administrator System</div>
+        </div>
+      </body>
+      </html>
+    `;
   }
 }

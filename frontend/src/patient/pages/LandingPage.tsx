@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import Navbar from '../components/Navbar';
-import Sidebar from '../components/Sidebar';
 import HeroSection from '../components/HeroSection';
 import StatsBar from '../components/StatsBar';
 import DoctorSearchSection from '../components/DoctorSearchSection';
@@ -9,11 +9,17 @@ import HowItWorksSection from '../components/HowItWorksSection';
 import TestimonialsSection from '../components/TestimonialsSection';
 import Footer from '../components/Footer';
 import FloatingEmergencyButton from '../components/FloatingEmergencyButton';
+import { setCurrentPage } from '../store/uiSlice';
 
 const LandingPage: React.FC = () => {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(setCurrentPage('landing'));
+  }, [dispatch]);
+
   return (
     <div className="sehat-setu-landing-page">
-      <Sidebar />
       <Navbar />
       <main>
         <HeroSection />

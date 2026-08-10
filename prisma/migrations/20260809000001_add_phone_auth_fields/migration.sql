@@ -1,0 +1,8 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "phone" TEXT,
+ADD COLUMN IF NOT EXISTS "phoneVerified" BOOLEAN DEFAULT false,
+ADD COLUMN IF NOT EXISTS "phoneOtpHash" TEXT,
+ADD COLUMN IF NOT EXISTS "phoneOtpExpiresAt" TIMESTAMP(3);
+
+-- CreateIndex
+CREATE UNIQUE INDEX IF NOT EXISTS "User_phone_key" ON "User"("phone");

@@ -1,4 +1,5 @@
-import { BadRequestException, Controller, Get, Put, Post, Param, Body, UseInterceptors, UploadedFile, UseGuards, Req } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Put, Post, Param, Body, UseInterceptors, UploadedFile, UseGuards, Req, Query, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { DoctorService } from './doctor.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -8,6 +9,24 @@ import { Roles } from '../auth/roles.decorator';
 @Controller('api/doctor')
 export class DoctorController {
   constructor(private readonly doctorService: DoctorService) {}
+
+  @Get('approve')
+  async approveDoctor(@Query('token') token: string, @Res() res: Response) {
+    const html = await this.doctorService.approveDoctor(token);
+    res.setHeader('Content-Type', 'text/html');
+    return res.status(200).send(html);
+  }
+
+  @Get('reject')
+  async rejectDoctor(
+    @Query('token') token: string,
+    @Query('reason') reason: string,
+    @Res() res: Response,
+  ) {
+    const html = await this.doctorService.rejectDoctor(token, reason);
+    res.setHeader('Content-Type', 'text/html');
+    return res.status(200).send(html);
+  }
 
   @Get(':id/availability')
   async getAvailability(@Param('id') doctorId: string) {

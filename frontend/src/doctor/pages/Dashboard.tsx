@@ -5,7 +5,6 @@ import { CalendarCheck, CheckCircle2, ChevronRight } from 'lucide-react';
 import DoctorSidebar from '../components/DoctorSidebar';
 import DashboardHeader from '../components/DashboardHeader';
 import StatCard from '../components/StatCard';
-import AIBanner from '../components/AIBanner';
 import ConsultationCard from '../components/ConsultationCard';
 import { ConsultationStatus, Priority } from '../../types';
 import { type DoctorProfile } from '../utils/doctorProfile';
@@ -143,19 +142,14 @@ const Dashboard = () => {
           />
         </div>
 
-        <AIBanner
-          message="AI Assistant is ready. It will auto-summarize patient records and suggest diagnoses during consultations."
-          className="mb-8"
-        />
-
         {/* Main Area: Consultations */}
         <div className="w-full">
           <div className="flex justify-between items-end mb-4">
             <div>
-              <p className="text-xs font-bold text-black uppercase tracking-wider mb-1">Your Schedule</p>
-              <h2 className="text-xl font-bold text-black">Today's Assigned Consultations</h2>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Your Schedule</p>
+              <h2 className="text-2xl font-semibold text-slate-900">Today's Assigned Consultations</h2>
             </div>
-            <button className="text-sm font-medium text-black hover:underline flex items-center gap-1">
+            <button className="text-sm font-normal text-slate-600 hover:text-slate-900 flex items-center gap-1 cursor-pointer">
               View schedule <ChevronRight className="w-4 h-4" />
             </button>
           </div>

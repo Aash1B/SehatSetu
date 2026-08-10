@@ -3,11 +3,14 @@ import type { FormEvent } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { resetPassword } from '../api';
 import { validatePassword } from '../validatePassword';
+import { useTranslation } from 'react-i18next';
 
 export default function ResetPassword() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token') || '';
+  const { t } = useTranslation(['auth', 'forms']);
+  const resetT = (key: string) => t(`auth:resetPassword.${key}`);
 
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -27,7 +30,7 @@ export default function ResetPassword() {
       return;
     }
     if (newPassword !== confirmPassword) {
-      setError('Passwords do not match.');
+      setError(t('forms:passwordsDoNotMatch'));
       return;
     }
 
@@ -47,8 +50,8 @@ export default function ResetPassword() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-blue-50 px-4">
         <div className="text-center">
-          <p className="text-slate-600 mb-4">Invalid or missing reset link.</p>
-          <Link to="/forgot-password" className="text-orange-500 font-medium hover:underline">Request a new link</Link>
+          <p className="text-slate-600 mb-4">{resetT('invalidLink')}</p>
+          <Link to="/forgot-password" className="text-orange-500 font-medium hover:underline">{resetT('requestNewLink')}</Link>
         </div>
       </div>
     );
@@ -62,7 +65,7 @@ export default function ResetPassword() {
             <span className="text-orange-500">Sehat</span>
             <span className="text-slate-900">Setu</span>
           </Link>
-          <p className="text-slate-500 mt-2">Choose a new password</p>
+          <p className="text-slate-500 mt-2">{resetT('title')}</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
@@ -75,7 +78,7 @@ export default function ResetPassword() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">New password</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{resetT('newPasswordLabel')}</label>
               <input
                 type="password"
                 required
@@ -87,22 +90,22 @@ export default function ResetPassword() {
                   setPasswordHint(check.valid ? '' : check.message);
                 }}
                 className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-400"
-                placeholder="At least 8 characters"
+                placeholder={resetT('passwordPlaceholder')}
               />
               {passwordHint && <p className="text-xs text-red-500 mt-1">{passwordHint}</p>}
               <p className="text-xs text-slate-400 mt-1">
-                Min 8 chars, 1 uppercase, 1 symbol (@ or #), at least 3 letters
+                {t('forms:passwordHint')}
               </p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Confirm new password</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{resetT('confirmLabel')}</label>
               <input
                 type="password"
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-400"
-                placeholder="Re-enter new password"
+                placeholder={resetT('confirmPlaceholder')}
               />
             </div>
             <button
@@ -110,7 +113,7 @@ export default function ResetPassword() {
               disabled={loading}
               className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-medium py-2.5 rounded-lg transition"
             >
-              {loading ? 'Resetting...' : 'Reset password'}
+              {loading ? resetT('submitting') : resetT('submit')}
             </button>
           </form>
         </div>

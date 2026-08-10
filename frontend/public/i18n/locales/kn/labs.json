@@ -1,0 +1,18 @@
+{
+  "nearbyLabs": "Nearby Labs",
+  "searchLabs": "Search labs",
+  "labTest": "Lab Test",
+  "homeCollection": "Home Collection",
+  "availableToday": "Available Today",
+  "rating": "Rating",
+  "distance": "Distance",
+  "address": "Address",
+  "phone": "Phone",
+  "price": "Price",
+  "bookTest": "Book Test",
+  "viewTests": "View Tests",
+  "noLabsFound": "No labs found nearby.",
+  "testName": "Test Name",
+  "tests": "Tests",
+  "total": "Total"
+}

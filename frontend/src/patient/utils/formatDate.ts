@@ -1,8 +1,12 @@
 // Date/time formatting helpers
 
+import i18n, { localeForFormatting } from '../../i18n/config';
+
+const getLocale = () => localeForFormatting(i18n.language || 'en');
+
 export const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
-  return date.toLocaleDateString('en-IN', {
+  return date.toLocaleDateString(getLocale(), {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -11,7 +15,7 @@ export const formatDate = (dateString: string): string => {
 
 export const formatTime = (timeString: string): string => {
   const date = new Date(`1970-01-01T${timeString}`);
-  return date.toLocaleTimeString('en-IN', {
+  return date.toLocaleTimeString(getLocale(), {
     hour: '2-digit',
     minute: '2-digit',
     hour12: true,
@@ -23,8 +27,8 @@ export const getRelativeDate = (dateString: string): string => {
   const now = new Date();
   const diffDays = Math.floor((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Tomorrow';
-  if (diffDays === -1) return 'Yesterday';
+  if (diffDays === 0) return i18n.t('patient.relativeDate.today', { defaultValue: 'Today' });
+  if (diffDays === 1) return i18n.t('patient.relativeDate.tomorrow', { defaultValue: 'Tomorrow' });
+  if (diffDays === -1) return i18n.t('patient.relativeDate.yesterday', { defaultValue: 'Yesterday' });
   return formatDate(dateString);
 };

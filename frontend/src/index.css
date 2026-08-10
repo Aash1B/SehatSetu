@@ -18,6 +18,11 @@ body,
   box-sizing: border-box;
 }
 
+html:lang(hi),
+body:lang(hi) {
+  font-feature-settings: "liga" 1;
+}
+
 @theme {
   --color-luster-white: #F4F1EC;
   --color-aster-blue: #223382;
@@ -35,4 +40,49 @@ body,
   --color-blue-800: #223382;
   --color-blue-950: #223382;
   --color-deadly-depths: #0B0F19;
+
+  --color-brand: #22382E;
+  --color-brand-50: #f0f7f2;
+  --color-brand-100: #d9eedf;
+  --color-brand-200: #b5ddc0;
+  --color-brand-300: #8ecba1;
+  --color-brand-400: #68b882;
+  --color-brand-500: #42a563;
+  --color-brand-600: #22382E;
+  --color-brand-700: #1a2e24;
+
+  --color-primary: #F98513;
+  --color-primary-hover: #E6780F;
+  --color-primary-active: #CC6A0D;
+}
+
+.google-btn-wrapper {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 2px;
+  background: transparent;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.google-btn-wrapper:hover {
+  background: linear-gradient(135deg, #4285f4 0%, #ea4335 35%, #fbbc05 70%, #34a853 100%);
+  box-shadow: 0 6px 20px rgba(66, 133, 244, 0.3), 0 2px 10px rgba(234, 67, 53, 0.2);
+  transform: scale(1.02);
+}
+
+.google-btn-wrapper .google-btn-inner {
+  border-radius: 9999px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease;
+  overflow: hidden;
+}
+
+.google-btn-wrapper:hover .google-btn-inner {
+  background: linear-gradient(135deg, rgba(66, 133, 244, 0.12) 0%, rgba(234, 67, 53, 0.12) 35%, rgba(251, 188, 5, 0.12) 70%, rgba(52, 168, 83, 0.12) 100%);
 }

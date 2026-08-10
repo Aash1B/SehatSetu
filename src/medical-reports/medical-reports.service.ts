@@ -27,6 +27,8 @@ import {
 } from './storage/storage.service';
 import { OCR_CLIENT, OcrClient } from './ocr/ocr-client';
 import { MedicalReportsRepository } from './medical-reports.repository';
+import { EhrParserService } from '../ehr/ehr-parser.service';
+import { EhrService } from '../ehr/ehr.service';
 
 @Injectable()
 export class MedicalReportsService {
@@ -43,6 +45,8 @@ export class MedicalReportsService {
     private readonly reports: MedicalReportsRepository,
     @Inject(STORAGE_SERVICE) private readonly storage: StorageService,
     @Inject(OCR_CLIENT) private readonly ocr: OcrClient,
+    private readonly ehrParser: EhrParserService,
+    private readonly ehrService: EhrService,
   ) {}
 
   async getPatientContext(actor: AuthenticatedActor) {
@@ -245,28 +249,51 @@ export class MedicalReportsService {
           'Stored report type no longer matches',
         );
       }
-      const result = await this.ocr.analyze(
-        object.bytes,
-        existing.originalFileName,
-        existing.mimeType,
-      );
+      let result = { extractedText: '', extractedData: {} };
+      let ocrSucceeded = false;
+      try {
+        const ocrRes = await this.ocr.analyze(
+          object.bytes,
+          existing.originalFileName,
+          existing.mimeType,
+        );
+        result = { extractedText: ocrRes.extractedText, extractedData: ocrRes.extractedData };
+        ocrSucceeded = true;
+      } catch (ocrError: any) {
+        console.warn(`[OCR WARN] OCR processing failed or skipped for report ${existing.id}: ${ocrError?.message || ocrError}`);
+      }
+
       const updated = await this.reports.update(existing.id, {
         status: MedicalReportStatus.PROCESSED,
-        ocrStatus: MedicalReportOcrStatus.SUCCEEDED,
+        ocrStatus: ocrSucceeded ? MedicalReportOcrStatus.SUCCEEDED : MedicalReportOcrStatus.FAILED,
         extractedText: result.extractedText,
         extractedData: result.extractedData as object,
         processedAt: new Date(),
-        processingErrorCode: null,
-        processingErrorMessage: null,
+        processingErrorCode: ocrSucceeded ? null : 'OCR_SKIPPED',
+        processingErrorMessage: ocrSucceeded ? null : 'OCR service unavailable',
       });
+
+      // Best-effort EHR draft creation. OCR having succeeded with usable text
+      // is a prerequisite; AI parsing/draft-creation failures are swallowed so
+      // they never break the medical-report processing pipeline.
+      if (ocrSucceeded && result.extractedText?.trim()) {
+        try {
+          await this.createEhrDraft(existing.id, existing.patientId, result);
+        } catch (ehrError: any) {
+          console.warn(
+            `[EHR WARN] EHR draft creation failed for report ${existing.id}: ${ehrError?.message || ehrError}`,
+          );
+        }
+      }
+
       return this.present(updated);
     } catch (error) {
       await this.reports
         .update(existing.id, {
           status: MedicalReportStatus.OCR_FAILED,
           ocrStatus: MedicalReportOcrStatus.FAILED,
-          processingErrorCode: 'OCR_PROCESSING_FAILED',
-          processingErrorMessage: 'Medical report processing failed',
+          processingErrorCode: 'STORAGE_VERIFICATION_FAILED',
+          processingErrorMessage: 'Medical report storage verification failed',
         })
         .catch(() => undefined);
       if (
@@ -275,7 +302,7 @@ export class MedicalReportsService {
       ) {
         throw error;
       }
-      throw new BadGatewayException('Medical report OCR failed');
+      throw new BadGatewayException('Medical report upload completed with storage issue');
     }
   }
 
@@ -318,6 +345,24 @@ export class MedicalReportsService {
       throw error;
     }
     return { reportId, status: MedicalReportStatus.DELETED };
+  }
+
+  private async createEhrDraft(
+    medicalReportId: string,
+    patientId: string,
+    ocrResult: { extractedText: string; extractedData: Record<string, unknown> },
+  ): Promise<void> {
+    const parsed = await this.ehrParser.parse(
+      ocrResult.extractedText,
+      ocrResult.extractedData,
+    );
+    await this.ehrService.createDraftFromOcr({
+      patientId,
+      medicalReportId,
+      diagnosis: parsed.diagnosis,
+      notes: parsed.notes,
+      structuredData: parsed.structuredData,
+    });
   }
 
   private async getAuthorizedReport(

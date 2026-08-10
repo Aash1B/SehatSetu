@@ -1,4 +1,4 @@
-const API_BASE_URL = '';
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
 
 export interface AuthResponse {
   id: string;
@@ -7,6 +7,9 @@ export interface AuthResponse {
   role: 'PATIENT' | 'DOCTOR';
   accessToken: string;
   onboardingCompleted: boolean;
+  status?: 'PENDING' | 'APPROVED' | 'REJECTED';
+  message?: string;
+  rejectionReason?: string | null;
 }
 
 export interface SignupResponse {
@@ -97,13 +100,13 @@ export async function googleLogin(payload: GoogleAuthPayload): Promise<AuthRespo
   return handleResponse<AuthResponse>(res);
 }
 
-export async function verifyOtp(payload: VerifyOtpPayload): Promise<MessageResponse> {
+export async function verifyOtp(payload: VerifyOtpPayload): Promise<MessageResponse & Partial<AuthResponse>> {
   const res = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
-  return handleResponse<MessageResponse>(res);
+  return handleResponse<MessageResponse & Partial<AuthResponse>>(res);
 }
 
 export async function resendOtp(payload: ResendOtpPayload): Promise<MessageResponse> {
@@ -140,4 +143,65 @@ export async function resetPassword(payload: ResetPasswordPayload): Promise<Mess
     body: JSON.stringify(payload),
   });
   return handleResponse<MessageResponse>(res);
+}
+
+// Phone Authentication
+export interface SendPhoneOtpPayload {
+  phoneNumber: string;
+  role: 'PATIENT' | 'DOCTOR';
+}
+
+export interface VerifyPhoneOtpPayload {
+  phoneNumber: string;
+  otp: string;
+  role: 'PATIENT' | 'DOCTOR';
+}
+
+export interface PhoneSignupPayload {
+  phoneNumber: string;
+  otp: string;
+  fullName: string;
+  role: 'PATIENT';
+  dataConsent: boolean;
+}
+
+export interface PhoneLoginPayload {
+  phoneNumber: string;
+  otp: string;
+}
+
+export async function sendPhoneOtp(payload: SendPhoneOtpPayload): Promise<MessageResponse> {
+  const res = await fetch(`${API_BASE_URL}/auth/send-phone-otp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  return handleResponse<MessageResponse>(res);
+}
+
+export async function verifyPhoneOtp(payload: VerifyPhoneOtpPayload): Promise<AuthResponse> {
+  const res = await fetch(`${API_BASE_URL}/auth/verify-phone-otp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  return handleResponse<AuthResponse>(res);
+}
+
+export async function phoneSignup(payload: PhoneSignupPayload): Promise<AuthResponse> {
+  const res = await fetch(`${API_BASE_URL}/auth/phone-signup`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  return handleResponse<AuthResponse>(res);
+}
+
+export async function phoneLogin(payload: PhoneLoginPayload): Promise<AuthResponse> {
+  const res = await fetch(`${API_BASE_URL}/auth/phone-login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  return handleResponse<AuthResponse>(res);
 }

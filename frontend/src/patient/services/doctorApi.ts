@@ -81,14 +81,15 @@ export async function fetchDoctors(): Promise<Doctor[]> {
         `);
 
       if (!error && Array.isArray(data) && data.length > 0) {
-        const mapped = data.map((d: any) => {
+        const approvedRows = data.filter((d: any) => !d.userId || d.verificationStatus === 'APPROVED' || d.isVerified === true);
+        const mapped = approvedRows.map((d: any) => {
           // Supabase joins return related row under the relation name
           const userRow = Array.isArray(d.User) ? d.User[0] : d.User;
           return mapDoctorRow({ ...d, user: userRow });
         });
         // Sort: highest priorityScore first (registered real doctors score 150)
         mapped.sort((a, b) => (b.priorityScore ?? 0) - (a.priorityScore ?? 0));
-        console.log(`[Supabase] Fetched ${mapped.length} doctors directly from Supabase ✅`);
+        console.log(`[Supabase] Fetched ${mapped.length} approved doctors directly from Supabase ✅`);
         return mapped;
       }
 
@@ -127,21 +128,68 @@ export async function fetchDoctors(): Promise<Doctor[]> {
 }
 
 export async function recommendDoctorsApi(issue: string, symptoms: string[]): Promise<RecommendationResult> {
+  const SYMPTOM_TO_SPECIALTY_MAP: Record<string, string> = {
+    skin: 'Dermatologist (Skin Specialist)',
+    rash: 'Dermatologist (Skin Specialist)',
+    itching: 'Dermatologist (Skin Specialist)',
+    acne: 'Dermatologist (Skin Specialist)',
+    eczema: 'Dermatologist (Skin Specialist)',
+    heart: 'Cardiologist',
+    chest: 'Cardiologist',
+    palpitations: 'Cardiologist',
+    beating: 'Cardiologist',
+    child: 'Pediatrician (Child Specialist)',
+    baby: 'Pediatrician (Child Specialist)',
+    toddler: 'Pediatrician (Child Specialist)',
+    pediatric: 'Pediatrician (Child Specialist)',
+    bone: 'Orthopedic Doctor',
+    joint: 'Orthopedic Doctor',
+    knee: 'Orthopedic Doctor',
+    fracture: 'Orthopedic Doctor',
+    spine: 'Orthopedic Doctor',
+    migraine: 'Neurologist',
+    seizure: 'Neurologist',
+    numbness: 'Neurologist',
+    period: 'Gynecologist & Obstetrician',
+    pregnancy: 'Gynecologist & Obstetrician',
+    pcos: 'Gynecologist & Obstetrician',
+    tooth: 'Dentist',
+    teeth: 'Dentist',
+    gum: 'Dentist',
+    eye: 'Ophthalmologist (Eye Specialist)',
+    vision: 'Ophthalmologist (Eye Specialist)',
+    ear: 'ENT Specialist (Ear, Nose & Throat)',
+    nose: 'ENT Specialist (Ear, Nose & Throat)',
+    throat: 'ENT Specialist (Ear, Nose & Throat)',
+    sinus: 'ENT Specialist (Ear, Nose & Throat)',
+    anxiety: 'Psychiatrist / Psychologist',
+    depression: 'Psychiatrist / Psychologist',
+    stress: 'Psychiatrist / Psychologist',
+    asthma: 'Pulmonologist (Lung Specialist)',
+    breathing: 'Pulmonologist (Lung Specialist)',
+    lung: 'Pulmonologist (Lung Specialist)',
+    stomach: 'Gastroenterologist',
+    acidity: 'Gastroenterologist',
+    digestion: 'Gastroenterologist',
+    reflux: 'Gastroenterologist',
+    diabetes: 'Endocrinologist (Diabetes & Hormones)',
+    thyroid: 'Endocrinologist (Diabetes & Hormones)',
+    urine: 'Urologist',
+    kidney: 'Urologist',
+  };
+
+  const combined = `${issue} ${symptoms.join(' ')}`.toLowerCase();
+  let targetSpec = 'General Physician';
+  for (const [kw, specialty] of Object.entries(SYMPTOM_TO_SPECIALTY_MAP)) {
+    if (combined.includes(kw)) {
+      targetSpec = specialty;
+      break;
+    }
+  }
+
   // Try Supabase-based recommendation via symptom matching
   if (supabase) {
     try {
-      const combined = `${issue} ${symptoms.join(' ')}`.toLowerCase();
-      let targetSpec = 'General Physician';
-      if (combined.includes('skin') || combined.includes('rash') || combined.includes('itch')) targetSpec = 'Dermatologist';
-      else if (combined.includes('heart') || combined.includes('chest')) targetSpec = 'Cardiologist';
-      else if (combined.includes('child') || combined.includes('baby')) targetSpec = 'Pediatrician';
-      else if (combined.includes('bone') || combined.includes('joint')) targetSpec = 'Orthopedic Doctor';
-      else if (combined.includes('migraine') || combined.includes('seizure')) targetSpec = 'Neurologist';
-      else if (combined.includes('period') || combined.includes('pregnancy')) targetSpec = 'Gynecologist';
-      else if (combined.includes('tooth') || combined.includes('teeth')) targetSpec = 'Dentist';
-      else if (combined.includes('eye') || combined.includes('vision')) targetSpec = 'Ophthalmologist';
-      else if (combined.includes('ear') || combined.includes('nose')) targetSpec = 'ENT Specialist';
-
       const { data, error } = await supabase
         .from('Doctor')
         .select(`
@@ -189,14 +237,6 @@ export async function recommendDoctorsApi(issue: string, symptoms: string[]): Pr
     };
   } catch {
     // Final fallback: client-side static match
-    const combined = `${issue} ${symptoms.join(' ')}`.toLowerCase();
-    let targetSpec = 'General Physician';
-    if (combined.includes('skin') || combined.includes('rash')) targetSpec = 'Dermatologist';
-    else if (combined.includes('heart') || combined.includes('chest')) targetSpec = 'Cardiologist';
-    else if (combined.includes('child') || combined.includes('baby')) targetSpec = 'Pediatrician';
-    else if (combined.includes('bone') || combined.includes('joint')) targetSpec = 'Orthopedic Doctor';
-    else if (combined.includes('ear') || combined.includes('nose') || combined.includes('throat') || combined.includes('sinus')) targetSpec = 'ENT Specialist';
-
     const matchedDocs = doctorsData.filter(d =>
       d.specialty.toLowerCase().includes(targetSpec.toLowerCase().split(' ')[0])
     );

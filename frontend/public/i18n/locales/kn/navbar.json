@@ -1,0 +1,15 @@
+{
+  "home": "ಮನೆ",
+  "services": "ಸೇವೆಗಳು",
+  "doctors": "ವೈದ್ಯರು",
+  "signIn": "ಸೈನ್ ಇನ್",
+  "dashboard": "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
+  "openSidebar": "ಸೈಡ್‌ಬಾರ್ ಮೆನು ತೆರೆಯಿರಿ",
+  "openSidebarTitle": "ಸೈಡ್‌ಬಾರ್ ತೆರೆಯಿರಿ",
+  "toggleNav": "ನ್ಯಾವಿಗೇಷನ್ ಸೈಡ್‌ಬಾರ್ ಟಾಗಲ್ ಮಾಡಿ",
+  "logoAlt": "SehatSetu ಲೋಗೋ",
+  "patientPortal": "ರೋಗಿ ಪೋರ್ಟಲ್",
+  "selectLanguage": "ಭಾಷೆ ಆಯ್ಕೆಮಾಡಿ",
+  "uploadReports": "ವರದಿಗಳನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಿ",
+  "findDoctors": "ವೈದ್ಯರನ್ನು ಹುಡುಕಿ"
+}

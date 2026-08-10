@@ -1,0 +1,15 @@
+{
+  "home": "హోమ్",
+  "services": "సేవలు",
+  "doctors": "డాక్టర్లు",
+  "signIn": "సైన్ ఇన్",
+  "dashboard": "డాష్‌బోర్డ్",
+  "openSidebar": "సైడ్‌బార్ మెనూ తెరవండి",
+  "openSidebarTitle": "సైడ్‌బార్ తెరవండి",
+  "toggleNav": "నావిగేషన్ సైడ్‌బార్ టోగుల్ చేయండి",
+  "logoAlt": "SehatSetu లోగో",
+  "patientPortal": "రోగి పోర్టల్",
+  "selectLanguage": "భాష ఎంచుకోండి",
+  "uploadReports": "నివేదికలు అప్‌లోడ్ చేయండి",
+  "findDoctors": "డాక్టర్లను కనుగొనండి"
+}

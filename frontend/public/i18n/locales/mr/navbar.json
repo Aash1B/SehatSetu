@@ -1,0 +1,15 @@
+{
+  "home": "होम",
+  "services": "सेवा",
+  "doctors": "डॉक्टर",
+  "signIn": "साइन इन",
+  "dashboard": "डॅशबोर्ड",
+  "openSidebar": "साइडबार मेनू उघडा",
+  "openSidebarTitle": "साइडबार उघडा",
+  "toggleNav": "नेव्हिगेशन साइडबार टॉगल करा",
+  "logoAlt": "SehatSetu लोगो",
+  "patientPortal": "रुग्ण पोर्टल",
+  "selectLanguage": "भाषा निवडा",
+  "uploadReports": "अहवाल अपलोड करा",
+  "findDoctors": "डॉक्टर शोधा"
+}

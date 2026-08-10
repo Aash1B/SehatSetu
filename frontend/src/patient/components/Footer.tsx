@@ -1,77 +1,59 @@
-import React from 'react';
+﻿import React from 'react';
+import { useTranslation } from 'react-i18next';
+
+const footerLinkClass = 'footer-link';
 
 const Footer: React.FC = () => {
+  const { t } = useTranslation('footer');
+  const tCommon = (key: string) => t(key, { ns: 'common' });
+
+  const handleOpenChat = (e: React.MouseEvent) => {
+    e.preventDefault();
+    window.dispatchEvent(new CustomEvent('open-setu-ai'));
+    const toggleBtn = document.querySelector('.chat-toggle-btn') as HTMLElement;
+    if (toggleBtn) {
+      toggleBtn.click();
+    }
+  };
+
   return (
     <footer id="contact" className="site-footer">
       <div className="footer-container">
-        <div className="footer-top-row">
-          {/* Brand Column */}
+        <div className="footer-top-row" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div className="footer-brand-col">
             <a href="#home" className="footer-logo">
-              <div className="logo-badge">
-                <svg viewBox="0 0 24 24" fill="none" className="logo-icon" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#F97316"/>
-                  <path d="M12 7v6m-3-3h6" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
-              </div>
-              <span className="brand-title text-white">
-                Sehat<span className="brand-title-accent">Setu</span>
+              <img src="/logo.svg" alt={tCommon('brand.name')} className="w-16 h-16 sm:w-20 sm:h-20 object-contain shrink-0 footer-logo-img" />
+              <span className="brand-title text-white text-3xl sm:text-4xl font-extrabold tracking-tight">
+                {tCommon('brand.name').replace('Setu', '')}<span className="brand-title-accent">{tCommon('brand.taglineShort')}</span>
               </span>
             </a>
-            <p className="footer-about-text">
-              Making quality healthcare simpler, more human, and accessible to everyone.
+            <p className="mt-3 text-base sm:text-lg text-slate-300 font-medium">
+              Reach Us at - <a href="mailto:sehatsetu26@gmail.com" className="text-orange-400 font-bold hover:underline">sehatsetu26@gmail.com</a>
             </p>
-            <div className="footer-social-icons">
-              <a href="#email" aria-label="Email" className="social-circle">✉</a>
-              <a href="#phone" aria-label="Phone" className="social-circle">📞</a>
-              <a href="#instagram" aria-label="Instagram" className="social-circle">📷</a>
-              <a href="#linkedin" aria-label="LinkedIn" className="social-circle">in</a>
-            </div>
           </div>
 
-          {/* Right Link Columns Clustered Together */}
-          <div className="footer-right-links-wrapper">
-            {/* Services Links */}
+          <div className="footer-right-links-wrapper" style={{ marginLeft: 'auto' }}>
             <div className="footer-links-col">
-              <h4 className="footer-col-title">Services</h4>
+              <h4 className="footer-col-title">{t('connect')}</h4>
               <ul className="footer-links-list">
-                <li><a href="#doctors">Find a doctor</a></li>
-                <li><a href="#doctors">Book appointment</a></li>
-                <li><a href="#records">Health records</a></li>
+                <li><a href="/about" className={footerLinkClass}>{t('aboutUs')}</a></li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={handleOpenChat}
+                    className="talk-to-us-link cursor-pointer bg-transparent border-none p-0 inline-flex items-center gap-1 font-bold text-orange-400 hover:text-orange-300 transition-colors text-base"
+                  >
+                    {t('talkToUs')}
+                  </button>
+                </li>
               </ul>
-            </div>
-
-            {/* Support Links */}
-            <div className="footer-links-col">
-              <h4 className="footer-col-title">Support</h4>
-              <ul className="footer-links-list">
-                <li><a href="#help">Help center</a></li>
-                <li><a href="#contact">Contact us</a></li>
-                <li><a href="#privacy">Privacy policy</a></li>
-              </ul>
-            </div>
-
-            {/* Connect Column */}
-            <div className="footer-links-col">
-              <h4 className="footer-col-title">Connect</h4>
-              <ul className="footer-links-list mb-2">
-                <li><a href="#about">About us</a></li>
-              </ul>
-              <a href="#talk" className="talk-to-us-link">
-                Talk to us →
-              </a>
             </div>
           </div>
         </div>
 
-        {/* Bottom Bar */}
         <div className="footer-bottom-bar">
           <div className="copyright-text">
-            Copyright © 2026 SehatSetu. All rights reserved.
-          </div>
-          <div className="bottom-links">
-            <a href="#terms">Terms</a>
-            <a href="#privacy">Privacy</a>
+            {t('copyright')}
           </div>
         </div>
       </div>

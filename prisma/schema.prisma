@@ -14,6 +14,10 @@ model User {
   role                   Role
   authProvider           AuthProvider         @default(LOCAL)
   googleId               String?              @unique
+  phone                  String?              @unique
+  phoneVerified          Boolean              @default(false)
+  phoneOtpHash           String?
+  phoneOtpExpiresAt      DateTime?
   avatarUrl              String?
   createdAt              DateTime             @default(now())
   dataConsentAt          DateTime?
@@ -75,6 +79,9 @@ model Patient {
   id                String          @id @default(uuid())
   userId            String          @unique
   gender            String?
+  maritalStatus     String?
+  occupation        String?
+  preferredLanguages String[]        @default([])
   dateOfBirth       DateTime?
   allergies         String[]
   chronicConditions String[]
@@ -87,48 +94,341 @@ model Patient {
   profileImagePath  String?
   abhaId            String?         @unique
   appointments      Appointment[]
+  children          Child[]
   ehrRecords        EhrRecord[]
+  mchDocuments      MchDocument[]
+  mchReminders      MchReminder[]
   medicalReports    MedicalReport[]
   user              User            @relation(fields: [userId], references: [id])
   payments          Payment[]
+  pregnancies       Pregnancy[]
   prescriptions     Prescription[]
 }
 
-enum Gender {
-  MALE
-  FEMALE
-  OTHER
-  PREFER_NOT_TO_SAY
+model Pregnancy {
+  id                        String                   @id @default(uuid())
+  patientId                 String
+  status                    PregnancyStatus          @default(ACTIVE)
+  lmpDate                   DateTime?
+  eddLmp                    DateTime?
+  eddUltrasound             DateTime?
+  gestationalWeeksAtBooking Int?
+  gravida                   Int?
+  para                      Int?
+  abortions                 Int?
+  bloodGroup                String?
+  rhFactor                  String?
+  highRiskFactors           String[]
+  notes                     String?
+  deliveryDate              DateTime?
+  deliveryType              String?
+  deliveryOutcome           String?
+  createdAt                 DateTime                 @default(now())
+  updatedAt                 DateTime                 @updatedAt
+  ancVisits                 AncVisit[]
+  mchDocuments              MchDocument[]            @relation("PregnancyDocuments")
+  safetyFlags               MchSafetyFlag[]          @relation("PregnancySafetyFlags")
+  patient                   Patient                  @relation(fields: [patientId], references: [id])
+  investigations            PregnancyInvestigation[]
+
+  @@index([patientId, status])
+  @@index([patientId, createdAt])
+}
+
+model AncVisit {
+  id                 String          @id @default(uuid())
+  pregnancyId        String
+  visitDate          DateTime
+  gestationalWeek    Int?
+  weight             Float?
+  systolicBp         Int?
+  diastolicBp        Int?
+  pulseRate          Int?
+  hemoglobin         Float?
+  fetalHeartRate     Int?
+  fundalHeight       Float?
+  urineProtein       String?
+  urineGlucose       String?
+  bloodSugarFasting  Float?
+  bloodSugarPp       Float?
+  complaints         String?
+  clinicalFindings   String?
+  advice             String?
+  nextVisitDate      DateTime?
+  enteredByPatient   Boolean         @default(true)
+  verifiedByDoctorId String?
+  verifiedAt         DateTime?
+  verificationNotes  String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  pregnancy          Pregnancy       @relation(fields: [pregnancyId], references: [id])
+  safetyFlags        MchSafetyFlag[] @relation("AncSafetyFlags")
+
+  @@index([pregnancyId, visitDate])
+}
+
+model PregnancyInvestigation {
+  id                 String              @id @default(uuid())
+  pregnancyId        String
+  testName           String
+  testDate           DateTime?
+  result             String?
+  unit               String?
+  referenceRange     String?
+  notes              String?
+  reportId           String?
+  status             InvestigationStatus @default(ORDERED)
+  enteredByPatient   Boolean             @default(true)
+  verifiedByDoctorId String?
+  verifiedAt         DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  pregnancy          Pregnancy           @relation(fields: [pregnancyId], references: [id])
+
+  @@index([pregnancyId, testDate])
+}
+
+model Child {
+  id                 String                   @id @default(uuid())
+  patientId          String
+  name               String
+  dateOfBirth        DateTime
+  sex                ChildSex
+  bloodGroup         String?
+  birthWeight        Float?
+  birthLength        Float?
+  birthHeadCirc      Float?
+  notes              String?
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+  patient            Patient                  @relation(fields: [patientId], references: [id])
+  milestones         DevelopmentalMilestone[]
+  growthMeasurements GrowthMeasurement[]
+  mchDocuments       MchDocument[]            @relation("ChildDocuments")
+  mchReminders       MchReminder[]            @relation("ChildReminders")
+  safetyFlags        MchSafetyFlag[]          @relation("ChildSafetyFlags")
+  vaccinationRecords VaccinationRecord[]
+
+  @@index([patientId])
+}
+
+model VaccinationRecord {
+  id                 String            @id @default(uuid())
+  childId            String
+  vaccineName        String
+  doseNumber         Int               @default(1)
+  scheduledDate      DateTime
+  administeredDate   DateTime?
+  status             VaccinationStatus @default(UPCOMING)
+  administeredAt     String?
+  batchNumber        String?
+  notes              String?
+  verifiedByDoctorId String?
+  verifiedAt         DateTime?
+  reminderSentAt     Json?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  child              Child             @relation(fields: [childId], references: [id])
+
+  @@index([childId, scheduledDate])
+  @@index([status, scheduledDate])
+}
+
+model GrowthMeasurement {
+  id                 String          @id @default(uuid())
+  childId            String
+  measurementDate    DateTime
+  ageMonths          Float?
+  weightKg           Float?
+  heightCm           Float?
+  headCircCm         Float?
+  temperature        Float?
+  pulseRate          Int?
+  spo2               Float?
+  bmi                Float?
+  notes              String?
+  enteredByPatient   Boolean         @default(true)
+  verifiedByDoctorId String?
+  verifiedAt         DateTime?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  child              Child           @relation(fields: [childId], references: [id])
+  safetyFlags        MchSafetyFlag[] @relation("GrowthSafetyFlags")
+
+  @@index([childId, measurementDate])
+}
+
+model DevelopmentalMilestone {
+  id                   String            @id @default(uuid())
+  childId              String
+  category             MilestoneCategory
+  milestoneName        String
+  expectedAgeMonths    Int
+  expectedAgeMaxMonths Int?
+  status               MilestoneStatus   @default(PENDING)
+  achievedDate         DateTime?
+  parentObservation    String?
+  doctorAssessment     String?
+  verifiedByDoctorId   String?
+  verifiedAt           DateTime?
+  needsReview          Boolean           @default(false)
+  notes                String?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  child                Child             @relation(fields: [childId], references: [id])
+
+  @@index([childId, category])
+  @@index([childId, status])
+}
+
+model MchSafetyFlag {
+  id                  String             @id @default(uuid())
+  pregnancyId         String?
+  ancVisitId          String?
+  childId             String?
+  growthMeasurementId String?
+  flagCode            String
+  severity            FlagSeverity
+  message             String
+  ruleDescription     String
+  status              FlagStatus         @default(OPEN)
+  reviewedByDoctorId  String?
+  reviewedAt          DateTime?
+  reviewNotes         String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  ancVisit            AncVisit?          @relation("AncSafetyFlags", fields: [ancVisitId], references: [id])
+  child               Child?             @relation("ChildSafetyFlags", fields: [childId], references: [id])
+  growthMeasurement   GrowthMeasurement? @relation("GrowthSafetyFlags", fields: [growthMeasurementId], references: [id])
+  pregnancy           Pregnancy?         @relation("PregnancySafetyFlags", fields: [pregnancyId], references: [id])
+
+  @@index([pregnancyId, status])
+  @@index([ancVisitId])
+  @@index([childId, status])
+  @@index([growthMeasurementId])
+}
+
+model MchDocument {
+  id              String     @id @default(uuid())
+  patientId       String
+  pregnancyId     String?
+  childId         String?
+  investigationId String?
+  medicalReportId String?
+  title           String
+  category        String
+  notes           String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  child           Child?     @relation("ChildDocuments", fields: [childId], references: [id])
+  patient         Patient    @relation(fields: [patientId], references: [id])
+  pregnancy       Pregnancy? @relation("PregnancyDocuments", fields: [pregnancyId], references: [id])
+
+  @@index([patientId])
+  @@index([pregnancyId])
+  @@index([childId])
+}
+
+model MchReminder {
+  id                  String          @id @default(uuid())
+  patientId           String
+  childId             String?
+  vaccinationRecordId String?
+  ancVisitId          String?
+  reminderType        MchReminderType
+  eventDate           DateTime
+  status              ReminderStatus  @default(PENDING)
+  sentAt              DateTime?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  child               Child?          @relation("ChildReminders", fields: [childId], references: [id])
+  patient             Patient         @relation(fields: [patientId], references: [id])
+
+  @@unique([vaccinationRecordId, reminderType])
+  @@unique([ancVisitId, reminderType])
+  @@index([patientId, status])
+  @@index([eventDate, status])
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 model Doctor {
-  id               String         @id @default(uuid())
-  userId           String?        @unique
-  name             String?
-  gender           Gender?
-  specialty        String
-  consultationFee  Int?
-  availableToday   Boolean?       @default(true)
-  degrees          String?
-  experience       String?
-  fee              String?
-  hospital         String?
-  imageUrl         String?
-  imageStoragePath String?
-  imagePosition    String?        @default("50% 20%")
-  location         String?
-  priorityLevel    String?
-  priorityScore    Int?
-  rating           Float?         @default(4.8)
-  reviewsCount     Int?           @default(12)
-  tags             String[]
-  availability     Json?
-  profileCompleted Boolean        @default(false)
-  isVerified       Boolean        @default(false)
-  isActive         Boolean        @default(true)
-  appointments     Appointment[]
-  user             User?          @relation(fields: [userId], references: [id])
-  prescriptions    Prescription[]
+  id                  String             @id @default(uuid())
+  userId              String?            @unique
+  name                String?
+  gender              Gender?
+  specialty           String
+  consultationFee     Int?               @default(500)
+  availableToday      Boolean?           @default(true)
+  degrees             String?
+  experience          String?
+  fee                 String?
+  hospital            String?
+  imageUrl            String?
+  imageStoragePath    String?
+  imagePosition       String?            @default("50% 20%")
+  location            String?
+  priorityLevel       String?            @default("P1")
+  priorityScore       Int?               @default(90)
+  rating              Float?             @default(4.8)
+  reviewsCount        Int?               @default(0)
+  tags                String[]
+  availability        Json?
+  profileCompleted    Boolean            @default(false)
+  isVerified          Boolean            @default(false)
+  isActive            Boolean            @default(true)
+  verificationStatus  VerificationStatus @default(PENDING)
+  approvalToken       String?            @unique
+  approvalTokenExpiry DateTime?
+  rejectionReason     String?
+  appointments        Appointment[]
+  user                User?              @relation(fields: [userId], references: [id])
+  verifiedEhrRecords  EhrRecord[]
+  prescriptions       Prescription[]
+  availabilities      DoctorAvailability[]
+  slots               Slot[]
+}
+
+enum SlotStatus {
+  AVAILABLE
+  RESERVED
+  BOOKED
+  BLOCKED
+}
+
+model DoctorAvailability {
+  id          String   @id @default(uuid())
+  doctorId    String
+  doctor      Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  dayOfWeek   Int
+  startTime   String
+  endTime     String
+  slotMinutes Int      @default(15)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt @default(now())
+
+  @@unique([doctorId, dayOfWeek])
+}
+
+model Slot {
+  id            String       @id @default(uuid())
+  doctorId      String
+  doctor        Doctor       @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  date          String
+  startTime     String
+  endTime       String
+  status        SlotStatus   @default(AVAILABLE)
+  appointmentId String?      @unique
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+  createdAt     DateTime     @default(now())
+
+  @@unique([doctorId, date, startTime])
+  @@index([doctorId, date, status])
 }
 
 model Appointment {
@@ -161,6 +461,7 @@ model Appointment {
   emailRemindersEnabled Boolean         @default(true)
   doctor                Doctor          @relation(fields: [doctorId], references: [id])
   patient               Patient?        @relation(fields: [patientId], references: [id])
+  slot                  Slot?
   ehrRecord             EhrRecord?
   medicalReports        MedicalReport[]
   payment               Payment?
@@ -191,6 +492,7 @@ model MedicalReport {
   processingStartedAt    DateTime?
   processedAt            DateTime?
   updatedAt              DateTime               @updatedAt
+  ehrRecords             EhrRecord[]
   appointment            Appointment?           @relation(fields: [appointmentId], references: [id])
   patient                Patient                @relation(fields: [patientId], references: [id])
   uploadedBy             User                   @relation("MedicalReportUploader", fields: [uploadedByUserId], references: [id])
@@ -202,15 +504,22 @@ model MedicalReport {
 }
 
 model EhrRecord {
-  id            String       @id @default(uuid())
-  patientId     String
-  appointmentId String?      @unique
-  diagnosis     String?
-  notes         String?
-  aiSummary     String?
-  createdAt     DateTime     @default(now())
-  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
-  patient       Patient      @relation(fields: [patientId], references: [id])
+  id                 String         @id @default(uuid())
+  patientId          String
+  appointmentId      String?        @unique
+  diagnosis          String?
+  notes              String?
+  aiSummary          String?
+  createdAt          DateTime       @default(now())
+  medicalReportId    String?
+  status             String         @default("DRAFT")
+  structuredData     Json?
+  verifiedByDoctorId String?
+  verifiedAt         DateTime?
+  appointment        Appointment?   @relation(fields: [appointmentId], references: [id])
+  medicalReport      MedicalReport? @relation(fields: [medicalReportId], references: [id])
+  patient            Patient        @relation(fields: [patientId], references: [id])
+  verifiedByDoctor   Doctor?        @relation(fields: [verifiedByDoctorId], references: [id])
 }
 
 model Prescription {
@@ -234,6 +543,8 @@ model Payment {
   amount          Int
   status          String      @default("PENDING")
   createdAt       DateTime    @default(now())
+  errorMessage    String?
+  refundId        String?
   appointment     Appointment @relation(fields: [appointmentId], references: [id])
   patient         Patient     @relation(fields: [patientId], references: [id])
 }
@@ -244,6 +555,29 @@ model Hospital {
   type      String
   latitude  Float
   longitude Float
+}
+
+model SagaState {
+  id             String    @id @default(uuid())
+  sagaId         String    @unique
+  type           String
+  status         String
+  step           Int       @default(0)
+  appointmentId  String?
+  paymentId      String?
+  idempotencyKey String?   @unique
+  retries        Int       @default(0)
+  errorMessage   String?
+  completedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
 }
 
 enum Role {
@@ -285,4 +619,76 @@ enum MedicalReportType {
   DISCHARGE_SUMMARY
   SCAN
   OTHER
+}
+
+// ─── MCH Enums ────────────────────────────────────────────────────────────
+
+enum PregnancyStatus {
+  ACTIVE
+  COMPLETED
+  LOST
+  TERMINATED
+}
+
+enum InvestigationStatus {
+  ORDERED
+  SAMPLE_COLLECTED
+  RESULT_AVAILABLE
+  VERIFIED
+}
+
+enum ChildSex {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum VaccinationStatus {
+  UPCOMING
+  DUE
+  COMPLETED
+  MISSED
+}
+
+enum MilestoneCategory {
+  GROSS_MOTOR
+  FINE_MOTOR
+  LANGUAGE
+  SOCIAL_EMOTIONAL
+  COGNITIVE
+}
+
+enum MilestoneStatus {
+  PENDING
+  ACHIEVED
+  NEEDS_REVIEW
+}
+
+enum FlagSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+enum FlagStatus {
+  OPEN
+  REVIEWED
+  RESOLVED
+}
+
+enum MchReminderType {
+  VACCINATION_7D
+  VACCINATION_3D
+  VACCINATION_DUE
+  VACCINATION_OVERDUE
+  ANC_7D
+  ANC_3D
+  ANC_DUE
+  ANC_OVERDUE
+}
+
+enum ReminderStatus {
+  PENDING
+  SENT
+  FAILED
 }

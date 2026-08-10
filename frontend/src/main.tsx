@@ -4,6 +4,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google'
 import { Provider } from 'react-redux'
 import { store } from './patient/store'
 import './index.css'
+import './i18n'
 import App from './App.tsx'
 
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim()

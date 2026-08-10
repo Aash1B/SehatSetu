@@ -59,14 +59,14 @@ navigate('/verify-otp', { state: { email, role: 'DOCTOR' } });
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-slate-50 px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#fff7ed] via-[#fed7aa] to-[#fb923c] px-4 py-12">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-1 text-2xl font-bold">
-            <span className="text-orange-500">Sehat</span>
+          <Link to="/" className="inline-flex items-center gap-1 text-3xl font-extrabold">
+            <span className="text-[#F98513]">Sehat</span>
             <span className="text-slate-900">Setu</span>
           </Link>
-          <p className="text-slate-500 mt-2">Create your Doctor account</p>
+          <p className="text-slate-800 font-bold text-lg mt-2">Create your Doctor account</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
@@ -76,49 +76,49 @@ navigate('/verify-otp', { state: { email, role: 'DOCTOR' } });
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Full name</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-1 px-1">Full name</label>
               <input
                 type="text"
                 required
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                placeholder="Dr. Priya Sharma"
+                placeholder=""
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-1 px-1">Email</label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                placeholder="doctor@example.com"
+                placeholder=""
               />
             </div>
-           <div>
-  <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
-  <input
-    type="password"
-    required
-    value={password}
-    onChange={(e) => {
-      const val = e.target.value;
-      setPassword(val);
-      const check = validatePassword(val);
-      setPasswordHint(check.valid ? '' : check.message);
-    }}
-    className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-    placeholder="At least 8 characters"
-  />
-  {passwordHint && (
-    <p className="text-xs text-red-500 mt-1">{passwordHint}</p>
-  )}
-  <p className="text-xs text-slate-400 mt-1">
-    Min 8 chars, 1 uppercase, 1 symbol (@ or #), at least 3 letters
-  </p>
-</div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-1 px-1">Password</label>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setPassword(val);
+                  const check = validatePassword(val);
+                  setPasswordHint(check.valid ? '' : check.message);
+                }}
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                placeholder=""
+              />
+              {passwordHint && (
+                <p className="text-xs text-red-500 mt-1 px-1">{passwordHint}</p>
+              )}
+              <p className="text-xs text-slate-400 mt-1 px-1">
+                Min 8 chars, 1 uppercase, 1 symbol (@ or #), at least 3 letters
+              </p>
+            </div>
             <label className="flex items-start gap-2 text-sm text-slate-600">
               <input
                 type="checkbox"
@@ -136,24 +136,6 @@ navigate('/verify-otp', { state: { email, role: 'DOCTOR' } });
               {loading ? 'Creating account...' : 'Create account'}
             </button>
           </form>
-
-          <div className="my-6 flex items-center gap-3">
-            <div className="h-px flex-1 bg-slate-200" />
-            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">or</span>
-            <div className="h-px flex-1 bg-slate-200" />
-          </div>
-
-          <GoogleSignInButton
-            role="DOCTOR"
-            mode="signup"
-            dataConsent={dataConsent}
-            onCredential={handleGoogleCredential}
-            onError={setError}
-          />
-
-          {googleLoading && (
-            <p className="mt-3 text-center text-xs text-slate-500">Completing Google sign-in...</p>
-          )}
 
           <p className="text-center text-sm text-slate-500 mt-6">
             Already have an account?{' '}

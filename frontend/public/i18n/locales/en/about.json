@@ -1,0 +1,97 @@
+{
+  "eyebrow": "ABOUT SEHATSETU",
+  "heroTitle": "Healthcare That Reaches Beyond Distance",
+  "heroDesc": "SehatSetu brings doctors, patients, health records, intelligent assistance, and essential healthcare services together in one accessible digital platform.",
+  "heroDescSecondary": "Built to make quality healthcare easier to reach across both rural and urban India.",
+  "primaryCta": "Find a Doctor",
+  "secondaryCta": "Explore Our Services",
+  "ourStory": "Our Story",
+  "storyP1": "SehatSetu was created around a simple problem: access to timely healthcare should not depend on distance.",
+  "storyP2": "For many people, especially those living far from major healthcare centres, seeing the right doctor can involve long travel, waiting times, and difficulty managing medical information.",
+  "storyP3": "SehatSetu aims to reduce those barriers by connecting patients with verified healthcare professionals and essential digital health services through one platform.",
+  "mission": "Our Mission",
+  "missionText": "Make trusted healthcare services easier to access, understand, and manage through technology.",
+  "vision": "Our Vision",
+  "visionText": "Build a connected healthcare experience where distance, language, and digital complexity do not prevent people from receiving timely care.",
+  "whatWeProvide": "What SehatSetu Provides",
+  "featureVerifiedDoctors": {
+    "title": "Verified Care, Anywhere",
+    "desc": "Connect with verified healthcare professionals through secure video consultations, from anywhere."
+  },
+  "featureOnlineConsultations": {
+    "title": "AI-Powered Clinical Support",
+    "desc": "AI and machine learning assist doctors with consultation summaries, clinical documentation, and intelligent prescription drafts — paired with personalized dietary and nutrition guidance tailored to each patient's condition."
+  },
+  "featureSmartScheduling": {
+    "title": "Never Miss a Follow-Up",
+    "desc": "Automated reminders keep patients on track with their care plans."
+  },
+  "featureAiAssistedCare": {
+    "title": "Your Health, Permanently Recorded",
+    "desc": "Secure, encrypted Electronic Health Records ensure continuous, informed care throughout a patient's life."
+  },
+  "featureDigitalPrescriptions": {
+    "title": "Privacy by Design",
+    "desc": "Every record is protected with field-level encryption and built to DPDP Act 2023 principles, so patient data stays private by default, not by afterthought."
+  },
+  "featureHealthRecords": {
+    "title": "Prevention First",
+    "desc": "Personalized nutrition, wellness, and lifestyle guidance to help patients stay healthy, not just treat illness when it happens."
+  },
+  "featureNearbyHospitals": {
+    "title": "Smart Hospital Guidance",
+    "desc": "Intelligent, real-time recommendations for nearby hospitals when physical examination, lab testing, or emergency care is needed."
+  },
+  "featureLabGuidance": {
+    "title": "Care Without Barriers",
+    "desc": "Multilingual AI-powered support, designed to be simple and accessible for every patient."
+  },
+  "featureEmergencyGuidance": {
+    "title": "Care Without Barriers",
+    "desc": "Multilingual AI-powered support, designed to be simple and accessible for every patient."
+  },
+  "aiHeadline": "AI That Assists — Doctors Still Decide",
+  "aiDesc": "SehatSetu uses artificial intelligence to make healthcare workflows more efficient, such as organizing information, assisting with healthcare navigation, and supporting structured medical documentation.",
+  "aiDesc2": "AI-generated information is designed to support—not replace—qualified healthcare professionals. Diagnosis, treatment, prescriptions, and critical medical decisions remain under human medical supervision.",
+  "aiPoint1": "Human-in-the-loop — AI supports structured workflows reviewed by qualified professionals.",
+  "aiPoint2": "Safety-first emergency handling — high-risk situations always direct to urgent in-person care.",
+  "aiPoint3": "Structured and reviewable AI output — responses are organized, traceable, and human-reviewable.",
+  "accessibility": "Connecting Care Across India",
+  "accessibilityDesc": "SehatSetu is designed with both rural and urban healthcare access in mind. Digital consultations, nearby hospital discovery, lightweight healthcare workflows, and multilingual support can help reduce barriers caused by distance and digital complexity.",
+  "privacyHeadline": "Your Privacy & Security",
+  "privacyDesc": "Protecting your health information is fundamental to everything we do. SehatSetu applies secure authentication, controlled access to medical records, privacy-conscious AI integration, and secure handling of documents and communications.",
+  "privacyPoint1": "Secure authentication for every account",
+  "privacyPoint2": "Protected health information with controlled access",
+  "privacyPoint3": "Privacy-conscious AI integration",
+  "privacyPoint4": "Secure document and communication handling",
+  "howItWorks": "How It Works",
+  "step1": "Tell us what you need",
+  "step1Desc": "Share your health concern and preferred doctor or specialty.",
+  "step2": "Find the right option",
+  "step2Desc": "Discover verified doctors, time slots, hospitals, and lab guidance.",
+  "step3": "Connect with care",
+  "step3Desc": "Book a consultation, locate care nearby, or get structured guidance.",
+  "step4": "Keep records organized",
+  "step4Desc": "Access your appointments, prescriptions, and health records in one place.",
+  "values": "Our Values",
+  "valueAccessibility": {
+    "title": "Accessibility",
+    "desc": "Healthcare should be easier to reach."
+  },
+  "valueTrust": {
+    "title": "Trust",
+    "desc": "Healthcare technology must prioritize reliability and transparency."
+  },
+  "valueHumanCentred": {
+    "title": "Human-Centred Care",
+    "desc": "Technology should support the relationship between patients and healthcare professionals."
+  },
+  "valueResponsibleInnovation": {
+    "title": "Responsible Innovation",
+    "desc": "AI should improve workflows without replacing medical judgment."
+  },
+  "finalCtaTitle": "Better Access to Healthcare Starts Here",
+  "finalCtaDesc": "Find the right doctor, manage your care, and access essential healthcare services through SehatSetu.",
+  "finalCtaPrimary": "Find a Doctor",
+  "finalCtaSecondary": "Get Started"
+}

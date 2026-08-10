@@ -11,7 +11,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'prompt',
       includeAssets: [
-        'favicon.svg',
+        'logo.svg',
         'favicon.ico',
         'apple-touch-icon.png',
         'maskable-icon-192x192.png',
@@ -101,6 +101,9 @@ export default defineConfig({
       },
     }),
   ],
+  optimizeDeps: {
+    include: ['i18next', 'react-i18next', 'i18next-http-backend', 'i18next-browser-languagedetector'],
+  },
   server: {
     proxy: {
       '/api': {

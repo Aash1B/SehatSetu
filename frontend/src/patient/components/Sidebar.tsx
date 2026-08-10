@@ -3,12 +3,34 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../store';
 import { closeSidebar, setDashboardTab } from '../store/uiSlice';
 import { useNavigate } from 'react-router-dom';
+import { getUser, clearAuth } from '../../auth/authStorage';
 
 const Sidebar: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const isOpen = useSelector((state: RootState) => state.ui.isSidebarOpen);
   const currentPage = useSelector((state: RootState) => state.ui.currentPage);
+
+  const user = getUser();
+  const userName = user?.fullName || 'Guest User';
+  const userInitials = user?.fullName
+    ? user.fullName
+        .trim()
+        .split(/\s+/)
+        .map((part) => part[0])
+        .join('')
+        .substring(0, 2)
+        .toUpperCase()
+    : 'GU';
+  const userIdDisplay = user?.id
+    ? `Patient ID: #${user.id.slice(-5).toUpperCase()}`
+    : 'Patient Portal';
+
+  const handleLogout = () => {
+    clearAuth();
+    dispatch(closeSidebar());
+    navigate('/patient/login');
+  };
 
   // Close sidebar on ESC key press
   useEffect(() => {
@@ -52,16 +74,12 @@ const Sidebar: React.FC = () => {
         <div className="sidebar-header">
           <div className="sidebar-brand">
             <div className="sidebar-logo-icon">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#F97316"/>
-                <path d="M12 7v6m-3-3h6" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
+              <img src="/logo.svg" alt="SehatSetu" className="sidebar-logo-img" />
             </div>
-            <div>
+            <div className="sidebar-brand-text">
               <span className="sidebar-brand-title">
                 Sehat<span className="brand-title-accent">Setu</span>
               </span>
-              <span className="sidebar-portal-badge">Patient Portal</span>
             </div>
           </div>
           <button 
@@ -99,16 +117,27 @@ const Sidebar: React.FC = () => {
                 </svg>
                 <span>Dashboard</span>
               </button>
-              <a href="#services" className="sidebar-item" onClick={handleNavClick}>
-                <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-                </svg>
-                <span>Our Services</span>
-              </a>
+             <a href="#services" className="sidebar-item" onClick={handleNavClick}>
+               <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                 <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                 <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+               </svg>
+               <span>Our Services</span>
+             </a>
+             <button
+               type="button"
+               className="sidebar-item"
+               onClick={() => { navigate('/about'); dispatch(closeSidebar()); }}
+             >
+               <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                 <circle cx="12" cy="12" r="10"></circle>
+                 <line x1="12" y1="16" x2="12" y2="12"></line>
+                 <line x1="12" y1="8" x2="12.01" y2="8"></line>
+               </svg>
+               <span>About Us</span>
+             </button>
             </nav>
           </div>
-
 
           {/* Section 4: Settings & Support */}
           <div className="sidebar-group">
@@ -135,28 +164,57 @@ const Sidebar: React.FC = () => {
 
         {/* Footer User Profile Card */}
         <div className="sidebar-footer">
-          <div className="sidebar-user-info">
+          <div 
+            className="sidebar-user-info cursor-pointer"
+            onClick={() => {
+              if (user) {
+                dispatch(setDashboardTab('profile'));
+                navigate('/patient/dashboard');
+              } else {
+                navigate('/patient/login');
+              }
+              dispatch(closeSidebar());
+            }}
+          >
             <div className="user-avatar">
-              <span>AS</span>
+              <span>{userInitials}</span>
               <span className="online-indicator"></span>
             </div>
             <div className="user-details">
-              <span className="user-name">Ananya Sharma</span>
-              <span className="user-id">Patient ID: #SS-89421</span>
+              <span className="user-name">{userName}</span>
+              <span className="user-id">{userIdDisplay}</span>
             </div>
           </div>
-          <button 
-            type="button" 
-            className="user-logout-btn" 
-            title="Sign Out"
-            onClick={handleNavClick}
-          >
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-              <polyline points="16 17 21 12 16 7"></polyline>
-              <line x1="21" y1="12" x2="9" y2="12"></line>
-            </svg>
-          </button>
+          {user ? (
+            <button 
+              type="button" 
+              className="user-logout-btn" 
+              title="Sign Out"
+              onClick={handleLogout}
+            >
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+            </button>
+          ) : (
+            <button 
+              type="button" 
+              className="user-logout-btn" 
+              title="Sign In"
+              onClick={() => {
+                dispatch(closeSidebar());
+                navigate('/patient/login');
+              }}
+            >
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                <polyline points="10 17 15 12 10 7"></polyline>
+                <line x1="15" y1="12" x2="3" y2="12"></line>
+              </svg>
+            </button>
+          )}
         </div>
       </aside>
     </>
