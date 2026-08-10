@@ -42,6 +42,19 @@
   "noDoctorsMatch": "आपल्या निकषांशी जुळणारे कोणते डॉक्टर नाहीत",
   "adjustSearch": "आपले फिल्टर किंवा शोध शब्द समायोजित करा",
   "consultationFee": "सल्लामसलत शुल्क",
+  "consultationTime": {
+    "joinNow": "आता सामील व्हा",
+    "availableForTesting": "चाचणीसाठी उपलब्ध",
+    "join": "सल्लामसलतीत सामील व्हा",
+    "available": "उपलब्ध",
+    "opensBefore": "{{time}} वाजता सुरू होईल",
+    "startsInHrs": "{{hours}} तास {{minutes}} मिनिटांत सुरू होईल",
+    "opensIn": "{{minutes}} मिनिटांत सुरू होईल",
+    "scheduledFor": "{{time}} साठी निर्धारित",
+    "liveRoomActive": "थेट सल्लामसलत कक्ष सक्रिय आहे",
+    "ended": "सल्लामसलत संपली",
+    "timePassed": "निर्धारित वेळ {{time}} वाजता निघून गेली"
+  },
   "detailTicket": {
     "patientName": "रुग्णाचे नाव",
     "ageGender": "वय/लिंग",

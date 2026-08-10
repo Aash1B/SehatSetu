@@ -8,6 +8,7 @@
   "passwordLetters": "Must contain at least 3 letters",
   "passwordsDoNotMatch": "Passwords do not match",
   "ageInvalid": "Please enter a valid age between 1 and 120",
+  "nameInvalid": "Please enter a valid name (letters only).",
   "heightInvalid": "Please enter a valid height between 30 and 300 cm",
   "weightInvalid": "Please enter a valid weight between 2 and 500 kg",
   "searchTooShort": "Please enter at least 2 characters",

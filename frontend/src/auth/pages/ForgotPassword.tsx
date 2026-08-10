@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { forgotPassword } from '../api';
 import { useTranslation } from 'react-i18next';
+import BrandLogo from '../../common/components/BrandLogo';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -32,9 +33,13 @@ export default function ForgotPassword() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-blue-50 px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-1 text-2xl font-bold">
-            <span className="text-orange-500">Sehat</span>
-            <span className="text-slate-900">Setu</span>
+          <Link to="/" className="inline-flex items-center">
+            <BrandLogo
+              className="gap-2"
+              markWrapperClassName="w-8 h-8 rounded-xl bg-orange-50 flex items-center justify-center p-1.5"
+              wordmarkClassName="text-2xl font-extrabold tracking-tight"
+              accentClassName="text-blue-600 brand-title-accent"
+            />
           </Link>
           <p className="text-slate-500 mt-2">{forgotT('title')}</p>
         </div>

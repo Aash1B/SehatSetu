@@ -1,3 +1,5 @@
+import i18n from '../i18n/config';
+
 const API_BASE_URL = 'http://localhost:8000';
 
 export interface CreateOrderResponse {
@@ -27,7 +29,7 @@ export async function createOrder(appointmentId: string): Promise<CreateOrderRes
     body: JSON.stringify({ appointmentId }),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.message || 'Failed to create order');
+  if (!res.ok) throw new Error(data.message || i18n.t('errors:paymentOrderFailed'));
   return data;
 }
 
@@ -41,6 +43,6 @@ export async function verifyPayment(payload: VerifyPaymentPayload) {
     body: JSON.stringify(payload),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.message || 'Payment verification failed');
+  if (!res.ok) throw new Error(data.message || i18n.t('errors:paymentVerificationFailed'));
   return data;
 }

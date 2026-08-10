@@ -4,12 +4,12 @@ import MessageBubble from './MessageBubble';
 import QuickReplies from './QuickReplies';
 import TypingIndicator from './TypingIndicator';
 import {
-  MessageCircle,
   Send,
   X,
   Maximize2,
   Minimize2,
-  Trash2,
+  Paperclip,
+  FileText,
   RefreshCw,
   AlertCircle,
   WifiOff,
@@ -17,12 +17,31 @@ import {
 import { ChatMessage } from '../types/chatbot.types';
 import { useTranslation } from 'react-i18next';
 import { useChatbotWelcomeReplies } from '../hooks/useChatbotTranslations';
+import BrandLogo from '../../common/components/BrandLogo';
+
+const ATTACHMENT_ACCEPT = 'image/png,image/jpeg,image/jpg,image/webp,application/pdf';
+const ACCEPTED_ATTACHMENT_TYPES = new Set([
+  'image/png',
+  'image/jpeg',
+  'image/jpg',
+  'image/webp',
+  'application/pdf',
+]);
+const MAX_ATTACHMENT_SIZE_BYTES = 10 * 1024 * 1024;
+
+interface SelectedAttachment {
+  file: File;
+  previewUrl?: string;
+}
 
 const ChatWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [inputValue, setInputValue] = useState('');
+  const [attachment, setAttachment] = useState<SelectedAttachment | null>(null);
+  const [attachmentError, setAttachmentError] = useState<string | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { t } = useTranslation('chatbot');
   const welcomeReplies = useChatbotWelcomeReplies();
@@ -33,7 +52,6 @@ const ChatWidget: React.FC = () => {
     isTyping,
     error,
     sendMessage,
-    clearChat,
     retryLastMessage,
     handleQuickReply,
     handleCardAction,
@@ -42,11 +60,48 @@ const ChatWidget: React.FC = () => {
 
   const handleSend = useCallback(() => {
     if (isLoading || isTyping) return;
+    if (attachment) {
+      setAttachmentError('Attachments are not supported by the chatbot yet. Remove the attachment before sending.');
+      return;
+    }
     const trimmed = inputValue.trim();
     if (!trimmed) return;
     sendMessage(trimmed);
     setInputValue('');
-  }, [inputValue, isLoading, isTyping, sendMessage]);
+  }, [attachment, inputValue, isLoading, isTyping, sendMessage]);
+
+  const handleAttachmentChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    if (!ACCEPTED_ATTACHMENT_TYPES.has(file.type)) {
+      setAttachmentError('Unsupported file type. Choose a PNG, JPG, JPEG, WEBP, or PDF file.');
+      return;
+    }
+    if (file.size > MAX_ATTACHMENT_SIZE_BYTES) {
+      setAttachmentError('File is too large. Attachments must be 10 MB or smaller.');
+      return;
+    }
+
+    setAttachment({
+      file,
+      previewUrl: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined,
+    });
+    setAttachmentError(null);
+  }, []);
+
+  const removeAttachment = useCallback(() => {
+    setAttachment(null);
+    setAttachmentError(null);
+  }, []);
+
+  useEffect(() => {
+    const previewUrl = attachment?.previewUrl;
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [attachment?.previewUrl]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -102,7 +157,12 @@ const ChatWidget: React.FC = () => {
         aria-label={t('openChat')}
         title={t('openChatTitle')}
       >
-        <MessageCircle className="w-6 h-6" />
+        <BrandLogo
+          showWordmark={false}
+          markWrapperClassName=""
+          markClassName="chat-toggle-logo"
+          alt=""
+        />
       </button>
     );
   }
@@ -117,11 +177,15 @@ const ChatWidget: React.FC = () => {
       <div className="chat-header">
         <div className="chat-header-info">
           <div className="chat-header-avatar">
-            <MessageCircle className="w-5 h-5" />
+            <BrandLogo showWordmark={false} markWrapperClassName="" alt="" />
           </div>
           <div className="chat-header-text">
-            <h3 className="chat-header-title">{t('title')}</h3>
+            <h3 className="chat-header-title">Setu AI</h3>
             <p className="chat-header-subtitle">
+              <span
+                className={`chat-status-dot ${isLoading || isTyping ? 'chat-status-dot-typing' : ''}`}
+                aria-hidden="true"
+              />
               {isLoading || isTyping ? t('typing') : t('online')}
             </p>
           </div>
@@ -162,7 +226,7 @@ const ChatWidget: React.FC = () => {
           {messages.length === 0 ? (
             <div className="chat-welcome">
               <div className="chat-welcome-icon">
-                <MessageCircle className="w-8 h-8" />
+                <BrandLogo showWordmark={false} markWrapperClassName="" alt="" />
               </div>
               <p className="chat-welcome-text">
                 {t('welcomeMessage')}
@@ -214,39 +278,77 @@ const ChatWidget: React.FC = () => {
       )}
 
       <div className="chat-composer">
-        {messages.length > 0 && (
+        {attachmentError && (
+          <div className="chat-attachment-error" role="alert">
+            {attachmentError}
+          </div>
+        )}
+        {attachment && (
+          <div className="chat-attachment-preview" role="status">
+            {attachment.previewUrl ? (
+              <img
+                className="chat-attachment-thumbnail"
+                src={attachment.previewUrl}
+                alt=""
+              />
+            ) : (
+              <FileText className="chat-attachment-file-icon w-5 h-5" aria-hidden="true" />
+            )}
+            <span className="chat-attachment-name" title={attachment.file.name}>
+              {attachment.file.name}
+            </span>
+            <button
+              type="button"
+              className="chat-attachment-remove"
+              onClick={removeAttachment}
+              aria-label={`Remove ${attachment.file.name}`}
+              title="Remove attachment"
+            >
+              <X className="w-4 h-4" aria-hidden="true" />
+            </button>
+          </div>
+        )}
+        <div className="chat-composer-row">
           <button
             type="button"
-            className="chat-composer-btn chat-composer-btn-secondary"
-            onClick={clearChat}
-            aria-label={t('clearConversationTitle')}
-            title={t('clearConversationTitle')}
+            className="chat-composer-btn chat-composer-btn-attachment"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isLoading || isTyping}
+            aria-label="Attach file"
+            title="Attach file"
           >
-            <Trash2 className="w-4 h-4" />
+            <Paperclip className="w-6 h-6" aria-hidden="true" />
           </button>
-        )}
-        <textarea
-          ref={inputRef}
-          className="chat-input"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={t('typeMessage')}
-          disabled={isLoading || isTyping}
-          rows={1}
-          aria-label={t('typeMessageAria')}
-          maxLength={2000}
-        />
-        <button
-          type="button"
-          className="chat-composer-btn chat-composer-btn-primary"
-          onClick={handleSend}
-          disabled={isLoading || isTyping || !inputValue.trim()}
-          aria-label={t('sendMessage')}
-          title={t('sendMessageTitle')}
-        >
-          <Send className="w-5 h-5" />
-        </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept={ATTACHMENT_ACCEPT}
+            onChange={handleAttachmentChange}
+            hidden
+          />
+          <textarea
+            ref={inputRef}
+            className="chat-input"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={t('typeMessage')}
+            disabled={isLoading || isTyping}
+            rows={1}
+            aria-label={t('typeMessageAria')}
+            maxLength={2000}
+          />
+          <button
+            type="button"
+            className="chat-composer-btn chat-composer-btn-primary"
+            onClick={handleSend}
+            disabled={isLoading || isTyping || (!inputValue.trim() && !attachment)}
+            aria-label={t('sendMessage')}
+            title={t('sendMessageTitle')}
+          >
+            <Send className="w-5 h-5" />
+          </button>
+        </div>
       </div>
     </div>
   );

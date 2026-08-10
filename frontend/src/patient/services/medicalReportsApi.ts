@@ -1,5 +1,7 @@
+import i18n from '../../i18n/config';
 import { API_BASE_URL } from '../utils/constants';
 import { getToken } from '../../auth/authStorage';
+import type { EhrDraftRecord } from '../../types';
 
 const ALLOWED_TYPES = new Set([
   'application/pdf',
@@ -14,9 +16,58 @@ interface UploadIntent {
   signedUploadUrl: string;
 }
 
+export interface OcrStructuredEntity {
+  kind?: string;
+  name?: string;
+  value?: string;
+  unit?: string;
+  strength?: string;
+  dosage?: string;
+  frequency?: string;
+  duration?: string;
+  instructions?: string;
+  [key: string]: unknown;
+}
+
+export interface MedicalReportExtractedData {
+  extracted_text?: string;
+  structured_entities?: OcrStructuredEntity[];
+  summary?: string;
+  key_findings?: string[];
+  abnormal_findings?: Array<Record<string, unknown>>;
+  recommendations?: string[];
+  diagnosis?: string | null;
+  medications?: unknown[];
+  vitals?: Record<string, unknown>;
+  notes?: string | null;
+  [key: string]: unknown;
+}
+
+export interface MedicalReportResponse {
+  id: string;
+  patientId: string;
+  appointmentId: string | null;
+  originalFileName: string;
+  mimeType: string;
+  fileSizeBytes: number | string;
+  reportType: string;
+  status: string;
+  ocrStatus: string;
+  extractedText: string | null;
+  extractedData: MedicalReportExtractedData | null;
+  processingErrorCode: string | null;
+  processingErrorMessage: string | null;
+  createdAt: string;
+  uploadedAt: string | null;
+  processingStartedAt: string | null;
+  processedAt: string | null;
+  updatedAt: string;
+  ehrDraft?: EhrDraftRecord | null;
+}
+
 function authorizationHeaders(): HeadersInit {
   const token = getToken();
-  if (!token) throw new Error('Please sign in before uploading a report.');
+  if (!token) throw new Error(i18n.t('errors:authRequired'));
   return { Authorization: `Bearer ${token}` };
 }
 
@@ -34,7 +85,7 @@ async function backendRequest<T>(path: string, init?: RequestInit): Promise<T> {
     const message =
       typeof body?.message === 'string'
         ? body.message
-        : 'The medical report request failed.';
+        : i18n.t('errors:unknownError');
     throw new Error(message);
   }
   return body as T;
@@ -42,10 +93,10 @@ async function backendRequest<T>(path: string, init?: RequestInit): Promise<T> {
 
 export async function uploadMedicalReport(file: File, category?: string) {
   if (!ALLOWED_TYPES.has(file.type)) {
-    throw new Error('Choose a PDF, JPEG, PNG, or WebP report.');
+    throw new Error(i18n.t('errors:invalidReportType'));
   }
   if (!file.size || file.size > MAX_FILE_SIZE) {
-    throw new Error('The report must be between 1 byte and 20 MB.');
+    throw new Error(i18n.t('errors:reportFileSize'));
   }
 
   let reportType: 'LAB_REPORT' | 'PRESCRIPTION' | 'DISCHARGE_SUMMARY' | 'SCAN' | 'OTHER' = 'OTHER';
@@ -75,10 +126,10 @@ export async function uploadMedicalReport(file: File, category?: string) {
     body: file,
   });
   if (!upload.ok) {
-    throw new Error('The report could not be uploaded to secure storage.');
+    throw new Error(i18n.t('errors:reportUploadFailed'));
   }
 
-  return backendRequest<Record<string, unknown>>(
+  return backendRequest<MedicalReportResponse>(
     `/${intent.reportId}/upload-complete`,
     { method: 'POST' },
   );

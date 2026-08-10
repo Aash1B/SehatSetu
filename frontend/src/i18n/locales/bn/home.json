@@ -1,1 +1,57 @@
-{ "headline": "Healthcare Without Distance, from anywhere in India", "description": "Connect with verified medical specialists in minutes. Book online video appointments, receive instant digital prescriptions, and manage health records securely.", "cta": "Find a Doctor Now", "verifiedDoctors": "Verified Doctors", "aiAssistedCare": "AI-Assisted Care", "secureRecords": "Secure Health Records", "ruralUrban": "Rural & Urban Coverage", "heroAlt": "SehatSetu Doctor Consultation", "howItWorks": "How It Works", "step1Title": "Create Your Account", "step1Desc": "Quick sign-up with secure email verification", "step2Title": "Find Your Doctor", "step2Desc": "Browse specialists by your condition or location", "step3Title": "Book & Consult", "step3Desc": "Schedule your visit and consult your Doctor online through SehatSetu", "testimonialsTitle": "What Our Patients Say", "stats": { "patientsServed": "রোগী সেবা করা হয়েছে", "certifiedDoctors": "সার্টিফাইড ডাক্তার", "patientSatisfaction": "রোগী সন্তুষ্টি", "supportAvailable": "সমর্থন উপলব্ধ" }, "searchSection": { "findYourDoctor": "আপনার ডাক্তার খুঁজুন", "searchSubtitle": "কয়েক মিনিটে যাচাইকৃত চিকিৎসা বিশেষজ্ঞদের সাথে যোগাযোগ করুন", "topDoctorsNearYou": "আপনার কাছের শীর্ষ ডাক্তার", "viewAllDoctors": "সব ডাক্তার দেখুন" }, "servicesSection": { "careFitsYourLife": "আপনার জীবনের জন্য যত্ন", "services": "আমাদের সেবা", "labTestsNearby": { "title": "আসন্ন ল্যাব পরীক্ষা", "description": "আপনার অবস্থানের কাছে আপনার বিশ্বাসযোগ্য নৈদানিক ল্যাব এবং রক্ত পরীক্ষা কেন্দ্র খুঁজুন।", "learnMore": "আরও জানুন →" }, "specialistReferral": { "title": "বিশেষজ্ঞ প্রেরণ", "description": "আপনার অবস্থার জন্য সঠিক বিশেষজ্ঞের সাথে সংযোগ স্থাপন করুন।", "learnMore": "আরও জানুন →" }, "emergencyCare": { "title": "জরুরি দেখভাল", "description": "প্রতি সেকেন্ডের গুরুত্ব থাকলে দ্রুত এবং বিশ্বস্ত সহায়তা।", "learnMore": "আরও জানুন →" } }, "testimonials": [ { "quote": "“SehatSetu আমার স্বাস্থ্য ব্যবস্থাপনার উপায় পরিবর্তন করেছে। বুকিং অত্যন্ত সহজ ছিল!”", "name": "অনিকা আর.", "subText": "২০২২ থেকে রোগী", "avatar": "AR" }, { "quote": "“কয়েক মিনিটের মধ্যে আমি একজন হৃদরোগ বিশেষজ্ঞ খুঁজে পেয়েছি। অভিজ্ঞতা ছিল নিঃশেষ।”", "name": "বিক্রম এস.", "subText": "২০২৩ থেকে রোগী", "avatar": "VS" }, { "quote": "“ডাক্তাররা অত্যন্ত পেশাদার এবং যত্নশীল। অত্যন্ত সুপারিশ!”", "name": "সানা কে.", "subText": "২০২১ থেকে রোগী", "avatar": "SK" } ], "noDoctorMatches": "\"{searchTerm}\" মেলে না। আরেকটি নাম চেষ্টা করুন অথবা ফিল্টারগুলি সাফ করুন।" }
+{
+  "headline": "দূরত্বহীন স্বাস্থ্যসেবা, ভারতের যেকোনো স্থান থেকে",
+  "description": "কয়েক মিনিটে যাচাইকৃত চিকিৎসা বিশেষজ্ঞদের সঙ্গে যুক্ত হন। অনলাইন ভিডিও অ্যাপয়েন্টমেন্ট বুক করুন, তাৎক্ষণিক ডিজিটাল প্রেসক্রিপশন পান এবং স্বাস্থ্য রেকর্ড নিরাপদে পরিচালনা করুন।",
+  "cta": "এখনই ডাক্তার খুঁজুন",
+  "verifiedDoctors": "যাচাইকৃত ডাক্তার",
+  "aiAssistedCare": "AI-সহায়িত সেবা",
+  "secureRecords": "সুরক্ষিত স্বাস্থ্য রেকর্ড",
+  "ruralUrban": "গ্রাম ও শহরজুড়ে সেবা",
+  "heroAlt": "SehatSetu চিকিৎসকের পরামর্শ",
+  "howItWorks": "এটি যেভাবে কাজ করে",
+  "step1Title": "আপনার অ্যাকাউন্ট তৈরি করুন",
+  "step1Desc": "নিরাপদ ইমেল যাচাইকরণসহ দ্রুত নিবন্ধন",
+  "step2Title": "আপনার ডাক্তার খুঁজুন",
+  "step2Desc": "আপনার সমস্যা বা অবস্থান অনুযায়ী বিশেষজ্ঞ দেখুন",
+  "step3Title": "বুক করুন ও পরামর্শ নিন",
+  "step3Desc": "সাক্ষাতের সময় নির্ধারণ করুন এবং SehatSetu-এর মাধ্যমে অনলাইনে চিকিৎসকের পরামর্শ নিন",
+  "testimonialsTitle": "আমাদের রোগীরা যা বলেন",
+  "stats": {
+    "patientsServed": "সেবা পাওয়া রোগী",
+    "certifiedDoctors": "প্রত্যয়িত ডাক্তার",
+    "patientSatisfaction": "রোগীর সন্তুষ্টি",
+    "supportAvailable": "সহায়তা উপলব্ধ",
+    "connectingIndia": "ভারতকে সংযুক্ত করছি",
+    "everyCity": "প্রতিটি শহর"
+  },
+  "searchSection": {
+    "findYourDoctor": "আপনার ডাক্তার খুঁজুন",
+    "searchSubtitle": "কয়েক মিনিটে যাচাইকৃত চিকিৎসা বিশেষজ্ঞদের সঙ্গে যুক্ত হন",
+    "topDoctorsNearYou": "আপনার কাছের শীর্ষ ডাক্তার",
+    "viewAllDoctors": "সব ডাক্তার দেখুন"
+  },
+  "servicesSection": {
+    "careFitsYourLife": "আপনার জীবনের উপযোগী সেবা",
+    "services": "আমাদের সেবা",
+    "labTestsNearby": {
+      "title": "কাছাকাছি ল্যাব পরীক্ষা",
+      "description": "আপনার অবস্থানের কাছে বিশ্বস্ত ডায়াগনস্টিক ল্যাব ও রক্ত পরীক্ষার কেন্দ্র খুঁজুন।",
+      "learnMore": "আরও জানুন →"
+    },
+    "specialistReferral": {
+      "title": "বিশেষজ্ঞের পরামর্শ",
+      "description": "আপনার সমস্যার জন্য সঠিক বিশেষজ্ঞের সঙ্গে যুক্ত হন।",
+      "learnMore": "আরও জানুন →"
+    },
+    "emergencyCare": {
+      "title": "জরুরি সেবা",
+      "description": "প্রতিটি সেকেন্ড গুরুত্বপূর্ণ হলে দ্রুত ও নির্ভরযোগ্য সহায়তা।",
+      "learnMore": "আরও জানুন →"
+    }
+  },
+  "testimonials": [
+    {"quote": "“SehatSetu আমার স্বাস্থ্য পরিচালনার পদ্ধতি বদলে দিয়েছে। বুকিং করা ছিল অত্যন্ত সহজ!”", "name": "অনিকা আর.", "subText": "২০২২ থেকে রোগী", "avatar": "AR"},
+    {"quote": "“কয়েক মিনিটের মধ্যেই একজন হৃদরোগ বিশেষজ্ঞ পেয়েছি। অভিজ্ঞতাটি ছিল নির্বিঘ্ন।”", "name": "বিক্রম এস.", "subText": "২০২৩ থেকে রোগী", "avatar": "VS"},
+    {"quote": "“ডাক্তাররা অসাধারণ পেশাদার ও যত্নশীল। অত্যন্ত সুপারিশ করছি!”", "name": "সানা কে.", "subText": "২০২১ থেকে রোগী", "avatar": "SK"}
+  ],
+  "noDoctorMatches": "“{searchTerm}”-এর সঙ্গে কোনো ডাক্তার মেলে না। অন্য নাম চেষ্টা করুন বা ফিল্টার সাফ করুন।"
+}

@@ -45,7 +45,10 @@ const LOCATION_OPTION_MAP: Record<string, string> = {
 const DoctorSearchPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { t } = useTranslation(['doctor', 'appointment', 'common', 'buttons', 'patient', 'forms']);
+  const { t: tDoctor } = useTranslation('doctor');
+  const { t: tAppointment } = useTranslation('appointment');
+  const { t: tCommon } = useTranslation('common');
+  const { t: tPatient } = useTranslation('patient');
   // Dedicated translator for buttons namespace to avoid key-path ambiguity
   const { t: tBtn } = useTranslation('buttons');
 
@@ -176,10 +179,10 @@ const DoctorSearchPage: React.FC = () => {
               className="breadcrumb-back-btn"
               onClick={() => navigate('/')}
             >
-              ← {t('common.backToHome')}
+              ← {tCommon('backToHome')}
             </button>
             <span className="breadcrumb-slash">/</span>
-            <span className="breadcrumb-title">{t('patient.findDoctors')}</span>
+            <span className="breadcrumb-title">{tPatient('findDoctors')}</span>
           </div>
 
           {/* Search Bar & Filter Toolbar Box */}
@@ -192,7 +195,7 @@ const DoctorSearchPage: React.FC = () => {
                 </svg>
                 <input
                   type="text"
-                  placeholder={t('patient.searchDoctors')}
+                  placeholder={tPatient('searchDoctors')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="doctors-search-input"
@@ -207,7 +210,7 @@ const DoctorSearchPage: React.FC = () => {
                     ✕
                   </button>
                 )}
-                <button type="button" className="btn-voice-search-end" title={t('common.voiceSearch')}>
+                <button type="button" className="btn-voice-search-end" title={tCommon('voiceSearch')}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
                     <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
                     <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
@@ -224,7 +227,7 @@ const DoctorSearchPage: React.FC = () => {
                     onChange={(e) => setOnlyAvailableToday(e.target.checked)}
                   />
                   <span className="checkbox-custom"></span>
-                  <span className="checkbox-text">{t('doctor.dashboard.availability')}</span>
+                  <span className="checkbox-text">{tDoctor('dashboard.availability')}</span>
                 </label>
               </div>
             </div>
@@ -259,8 +262,8 @@ const DoctorSearchPage: React.FC = () => {
               <span className="counter-text">
                 {filteredAndSortedDoctors.length}{' '}
                 {filteredAndSortedDoctors.length === 1
-                  ? t('appointment.doctorCount')
-                  : t('appointment.doctorsCount')}
+                  ? tAppointment('doctorCount')
+                  : tAppointment('doctorsCount')}
               </span>
             </div>
           </div>
@@ -277,9 +280,8 @@ const DoctorSearchPage: React.FC = () => {
                     key={doctor.id}
                     className={`doctor-full-card ${priorityMeta.bgClass}-border`}
                   >
-                    {/* Priority badge — key doctor.priority.P1/P2/P3/P4 */}
                     <div className={`doctor-card-priority-badge ${priorityMeta.bgClass}`}>
-                      {t(`doctor.priority.${doctor.priorityLevel || 'P4'}`)}
+                      {tDoctor(`priority.${doctor.priorityLevel || 'P4'}`)}
                     </div>
 
                     <div className="relative h-[220px] w-full overflow-hidden rounded-t-2xl bg-slate-100 sm:h-[240px] lg:h-[270px]">
@@ -292,13 +294,13 @@ const DoctorSearchPage: React.FC = () => {
                         onError={handleImageError}
                       />
                       {doctor.availableToday && (
-                        <span className="status-online-dot" title={t('appointment.availableToday')}></span>
+                        <span className="status-online-dot" title={tAppointment('availableToday')}></span>
                       )}
                       <button
                         type="button"
                         className={`doctor-card-fav-btn ${isFav ? 'active' : ''}`}
                         onClick={() => toggleFavorite(doctor.id)}
-                        aria-label={t('appointment.saveDoctor', { defaultValue: 'Save Doctor' })}
+                        aria-label={tAppointment('saveDoctor')}
                       >
                         ♥
                       </button>
@@ -334,14 +336,14 @@ const DoctorSearchPage: React.FC = () => {
 
                       <div className="doctor-fee-availability-row">
                         <div className="fee-box">
-                          <span className="fee-label">{t('doctor.consultationFee')}</span>
+                          <span className="fee-label">{tDoctor('consultationFee')}</span>
                           <span className="fee-amount">{doctor.fee}</span>
                         </div>
                         <div className="availability-box">
                           <span className="slot-badge">
                             {doctor.availableToday
-                              ? t('doctor.dashboard.availableTodaySlot')
-                              : t('doctor.dashboard.nextSlotTomorrow')}
+                              ? tDoctor('dashboard.availableTodaySlot')
+                              : tDoctor('dashboard.nextSlotTomorrow')}
                           </span>
                         </div>
                       </div>
@@ -352,7 +354,7 @@ const DoctorSearchPage: React.FC = () => {
                           className="btn-full-book-now"
                           onClick={() => navigate(`/patient/book/${doctor.id}`)}
                         >
-                          {t('patient.bookAppointment')}
+                          {tPatient('bookAppointment')}
                         </button>
                       </div>
                     </div>
@@ -363,8 +365,8 @@ const DoctorSearchPage: React.FC = () => {
           ) : (
             <div className="doctors-no-results-box">
               <div className="no-results-icon">🔍</div>
-              <h3>{t('appointment.noDoctorsMatch')}</h3>
-              <p>{t('appointment.adjustSearch')}</p>
+              <h3>{tAppointment('noDoctorsMatch')}</h3>
+              <p>{tAppointment('adjustSearch')}</p>
               <button
                 type="button"
                 className="btn-clear-filters-large"

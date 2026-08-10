@@ -1,11 +1,12 @@
 ﻿import React from 'react';
 import { useTranslation } from 'react-i18next';
+import BrandLogo from '../../common/components/BrandLogo';
 
 const footerLinkClass = 'footer-link';
 
 const Footer: React.FC = () => {
   const { t } = useTranslation('footer');
-  const tCommon = (key: string) => t(key, { ns: 'common' });
+  const { t: tChatbot } = useTranslation('chatbot');
 
   const handleOpenChat = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -22,13 +23,16 @@ const Footer: React.FC = () => {
         <div className="footer-top-row" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div className="footer-brand-col">
             <a href="#home" className="footer-logo">
-              <img src="/logo.svg" alt={tCommon('brand.name')} className="w-16 h-16 sm:w-20 sm:h-20 object-contain shrink-0 footer-logo-img" />
-              <span className="brand-title text-white text-3xl sm:text-4xl font-extrabold tracking-tight">
-                {tCommon('brand.name').replace('Setu', '')}<span className="brand-title-accent">{tCommon('brand.taglineShort')}</span>
-              </span>
+              <BrandLogo
+                className="gap-4"
+                markWrapperClassName="shrink-0 footer-logo-img"
+                markClassName="w-full h-full object-contain"
+                wordmarkClassName="brand-title text-white text-3xl sm:text-4xl font-extrabold tracking-tight"
+                accentClassName="text-blue-600 brand-title-accent"
+              />
             </a>
             <p className="mt-3 text-base sm:text-lg text-slate-300 font-medium">
-              Reach Us at - <a href="mailto:sehatsetu26@gmail.com" className="text-orange-400 font-bold hover:underline">sehatsetu26@gmail.com</a>
+              {t('contactUs')}: <a href="mailto:sehatsetu26@gmail.com" className="text-orange-400 font-bold hover:underline">sehatsetu26@gmail.com</a>
             </p>
           </div>
 
@@ -47,6 +51,9 @@ const Footer: React.FC = () => {
                   </button>
                 </li>
               </ul>
+              <p className="text-xs sm:text-sm text-slate-400 mt-1 font-normal">
+                {tChatbot('title')}
+              </p>
             </div>
           </div>
         </div>

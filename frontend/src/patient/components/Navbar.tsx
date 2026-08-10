@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { getToken, getUser } from '../../auth/authStorage';
 import { useTranslation } from 'react-i18next';
 import { supportedLanguages, changeLanguage, getCurrentLanguage } from '../../i18n';
+import BrandLogo from '../../common/components/BrandLogo';
 
 const Navbar: React.FC = () => {
   const dispatch = useDispatch();
@@ -22,7 +23,6 @@ const Navbar: React.FC = () => {
 
   const handleLanguageChange = async (lng: string) => {
     await changeLanguage(lng);
-    window.location.reload();
   };
 
   return (
@@ -53,12 +53,11 @@ const Navbar: React.FC = () => {
             className="flex items-center gap-2.5 border-none bg-transparent cursor-pointer p-0 group"
             onClick={() => navigate('/')}
           >
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-orange-50 flex items-center justify-center p-1.25 shadow-xs transition group-hover:scale-105">
-              <img src="/logo.svg" alt={t('logoAlt')} className="w-full h-full object-contain" />
-            </div>
-            <span className="font-extrabold text-slate-900 text-lg sm:text-xl tracking-tight brand-title leading-none">
-              {tCommon("brand.name").replace("Setu", "")}<span className="text-orange-500 brand-title-accent">Setu</span>
-            </span>
+            <BrandLogo
+              markWrapperClassName="landing-brand-mark rounded-xl bg-orange-50 flex items-center justify-center p-1.5 shadow-xs transition group-hover:scale-105"
+              wordmarkClassName="landing-brand-wordmark font-extrabold text-slate-900 tracking-tight"
+              accentClassName="text-blue-600 brand-title-accent"
+            />
           </button>
         </div>
 

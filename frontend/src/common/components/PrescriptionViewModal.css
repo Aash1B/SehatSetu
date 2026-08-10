@@ -161,13 +161,18 @@
   height: 100%;
   object-fit: contain;
 }
-.rx-brand-text h1 {
+.rx-brand-text h1,
+.rx-brand-wordmark {
+  display: block;
   margin: 0;
   font-size: 22px;
   font-weight: 700;
   color: #1452ae;
   letter-spacing: -0.5px;
   line-height: 1.1;
+}
+.rx-brand-wordmark .brand-title-accent {
+  color: #1452ae;
 }
 .rx-brand-text p {
   margin: 2px 0 0;

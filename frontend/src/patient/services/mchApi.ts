@@ -1,3 +1,4 @@
+import i18n from '../../i18n/config';
 import { getToken } from '../../auth/authStorage';
 import { API_BASE_URL } from '../utils/constants';
 
@@ -198,7 +199,7 @@ export interface MchOverview {
 
 async function mchRequest<T>(path: string, init?: RequestInit): Promise<T> {
   const token = getToken();
-  if (!token) throw new Error('Please sign in to continue.');
+  if (!token) throw new Error(i18n.t('errors:authRequired'));
   const url = `${API_BASE_URL}/mch${path}`;
   const response = await fetch(url, {
     ...init,
@@ -210,7 +211,7 @@ async function mchRequest<T>(path: string, init?: RequestInit): Promise<T> {
   });
   const body = await response.json().catch(() => null);
   if (!response.ok) {
-    throw new Error(typeof body?.message === 'string' ? body.message : 'MCH request failed.');
+    throw new Error(typeof body?.message === 'string' ? body.message : i18n.t('errors:mchRequestFailed'));
   }
   return body as T;
 }

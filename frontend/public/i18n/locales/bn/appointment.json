@@ -42,6 +42,19 @@
   "noDoctorsMatch": "আপনার মানদণ্ডের সাথে মিলছে না কোনো ডাক্তার",
   "adjustSearch": "আপনার ফিল্টার বা অনুসন্ধান শব্দ পরিবর্তন করুন",
   "consultationFee": "পরামর্শ ফি",
+  "consultationTime": {
+    "joinNow": "এখনই যোগ দিন",
+    "availableForTesting": "পরীক্ষার জন্য উপলব্ধ",
+    "join": "পরামর্শে যোগ দিন",
+    "available": "উপলব্ধ",
+    "opensBefore": "{{time}}-এ শুরু হবে",
+    "startsInHrs": "{{hours}} ঘণ্টা {{minutes}} মিনিট পরে শুরু হবে",
+    "opensIn": "{{minutes}} মিনিট পরে শুরু হবে",
+    "scheduledFor": "{{time}}-এর জন্য নির্ধারিত",
+    "liveRoomActive": "লাইভ পরামর্শ কক্ষ সক্রিয়",
+    "ended": "পরামর্শ শেষ হয়েছে",
+    "timePassed": "নির্ধারিত সময় {{time}}-এ পেরিয়ে গেছে"
+  },
   "detailTicket": {
     "patientName": "রোগীর নাম",
     "ageGender": "বয়স/লিঙ্গ",
