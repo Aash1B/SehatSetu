@@ -13,6 +13,7 @@ import AccountDeletionDangerZone from '../../auth/components/AccountDeletionDang
 import BrandLogo from '../../common/components/BrandLogo';
 import { useTranslation } from 'react-i18next';
 import { KnownConditionsIcon, AllergiesIcon, PastSurgeriesIcon, CurrentMedicationsIcon, LastUpdatedIcon, MedicalSummaryIcon } from '../components/Ehr3dIcons';
+import { LiquidLoader } from '../../common/components/LiquidLoader';
 import type { EhrDraftStructuredData } from '../../types';
 
 interface ConsultationItem {

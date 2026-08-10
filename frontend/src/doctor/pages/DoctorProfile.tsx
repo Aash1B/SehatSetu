@@ -32,8 +32,9 @@ const DoctorProfile: React.FC = () => {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
       let freshDocs: any[] = [];
+      let fullAvail: any = null;
       if (availRes.ok) {
-        const fullAvail = await availRes.json();
+        fullAvail = await availRes.json();
         if (Array.isArray(fullAvail?.documents) && fullAvail.documents.length > 0) {
           freshDocs = fullAvail.documents;
         }
@@ -51,18 +52,18 @@ const DoctorProfile: React.FC = () => {
         clinicName: doctor.hospital || storedProfile.clinicName,
         address: doctor.location || storedProfile.address,
         languagesSpoken: Array.isArray(doctor.tags) && doctor.tags.length ? doctor.tags : storedProfile.languagesSpoken,
-        medicalLicenseNumber: availability.medicalLicenseNumber || '',
-        phoneNumber: availability.phoneNumber || '',
-        aboutMe: availability.aboutMe || '',
+        medicalLicenseNumber: fullAvail?.medicalLicenseNumber || '',
+        phoneNumber: fullAvail?.phoneNumber || '',
+        aboutMe: fullAvail?.aboutMe || '',
         availability: {
-          slots: Array.isArray(availability.slots) ? availability.slots : storedProfile.availability.slots,
-          slotDurationMinutes: availability.slotDurationMinutes || storedProfile.availability.slotDurationMinutes,
-          status: availability.status || storedProfile.availability.status,
+          slots: Array.isArray(fullAvail?.slots) ? fullAvail.slots : storedProfile.availability.slots,
+          slotDurationMinutes: fullAvail?.slotDurationMinutes || storedProfile.availability.slotDurationMinutes,
+          status: fullAvail?.status || storedProfile.availability.status,
         },
         // Prefer freshly fetched docs, fall back to those embedded in availability
         documents: freshDocs.length > 0 ? freshDocs
-          : Array.isArray(availability.documents) ? availability.documents : [],
-        isVerified: (freshDocs.length > 0 ? freshDocs : (availability.documents || [])).length >= 3,
+          : Array.isArray(fullAvail?.documents) ? fullAvail.documents : [],
+        isVerified: (freshDocs.length > 0 ? freshDocs : (fullAvail?.documents || [])).length >= 3,
         stats: doctor.stats,
       };
       setProfile(actualProfile);
