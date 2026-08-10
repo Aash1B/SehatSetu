@@ -10,6 +10,7 @@ import DocumentCard from '../components/profile/DocumentCard';
 import { DoctorProfileData } from '../types/profile.types';
 import { getDoctorProfileData } from '../utils/doctorProfile';
 import { getToken } from '../../auth/authStorage';
+import { LiquidLoader } from '../../common/components/LiquidLoader';
 
 const DoctorProfile: React.FC = () => {
   const [profile, setProfile] = useState<DoctorProfileData | null>(null);
@@ -26,7 +27,18 @@ const DoctorProfile: React.FC = () => {
       });
       if (!response.ok) throw new Error('Unable to load doctor profile');
       const doctor = await response.json();
-      const availability = doctor.availability && typeof doctor.availability === 'object' ? doctor.availability : {};
+      // Also fetch the full availability record (canonical document source)
+      const availRes = await fetch(`/api/doctor/${doctor.id}/availability`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      let freshDocs: any[] = [];
+      if (availRes.ok) {
+        const fullAvail = await availRes.json();
+        if (Array.isArray(fullAvail?.documents) && fullAvail.documents.length > 0) {
+          freshDocs = fullAvail.documents;
+        }
+      }
+
       const actualProfile: DoctorProfileData = {
         ...storedProfile,
         id: doctor.id,
@@ -47,8 +59,10 @@ const DoctorProfile: React.FC = () => {
           slotDurationMinutes: availability.slotDurationMinutes || storedProfile.availability.slotDurationMinutes,
           status: availability.status || storedProfile.availability.status,
         },
-        documents: Array.isArray(availability.documents) ? availability.documents : [],
-        isVerified: Array.isArray(availability.documents) && availability.documents.length >= 3,
+        // Prefer freshly fetched docs, fall back to those embedded in availability
+        documents: freshDocs.length > 0 ? freshDocs
+          : Array.isArray(availability.documents) ? availability.documents : [],
+        isVerified: (freshDocs.length > 0 ? freshDocs : (availability.documents || [])).length >= 3,
         stats: doctor.stats,
       };
       setProfile(actualProfile);
@@ -128,7 +142,7 @@ const DoctorProfile: React.FC = () => {
   if (isLoading || !profile) {
     return (
       <div className="flex items-center justify-center h-screen bg-luster-white">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-aster-blue"></div>
+        <LiquidLoader text="Loading Profile" />
       </div>
     );
   }
@@ -161,14 +175,14 @@ const DoctorProfile: React.FC = () => {
         />
 
         <div className="mb-6">
-          <p className="text-xs font-bold text-aster-blue uppercase tracking-wider mb-2">Performance & Activity</p>
+          <p className="text-base font-bold text-aster-blue uppercase tracking-wider mb-2">Performance & Activity</p>
           <StatisticsGrid stats={profile.stats} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
             <div>
-              <p className="text-xs font-bold text-aster-blue uppercase tracking-wider mb-2">Professional Details</p>
+              <p className="text-base font-bold text-aster-blue uppercase tracking-wider mb-2">Professional Details</p>
               <ProfessionalInfoCard 
                 profile={formData || profile} 
                 isEditing={isEditing}
@@ -176,14 +190,14 @@ const DoctorProfile: React.FC = () => {
               />
             </div>
             <div>
-              <p className="text-xs font-bold text-aster-blue uppercase tracking-wider mb-2">Verification & Documents</p>
+              <p className="text-base font-bold text-aster-blue uppercase tracking-wider mb-2">Verification & Documents</p>
               <DocumentCard documents={profile.documents} />
             </div>
           </div>
           
           <div className="space-y-8">
             <div>
-              <p className="text-xs font-bold text-aster-blue uppercase tracking-wider mb-2">Contact Info</p>
+              <p className="text-base font-bold text-aster-blue uppercase tracking-wider mb-2">Contact Info</p>
               <ContactInfoCard 
                 profile={formData || profile}
                 isEditing={isEditing}

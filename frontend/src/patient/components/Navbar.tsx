@@ -64,40 +64,36 @@ const Navbar: React.FC = () => {
 
         {/* Center: Navigation Links */}
         <nav className="hidden md:flex items-center gap-6 lg:gap-8 absolute left-1/2 -translate-x-1/2">
-          <button
-            type="button"
-            className={`relative py-1.5 text-sm font-medium transition-colors cursor-pointer border-none bg-transparent nav-link ${
-              currentPage === 'landing'
-                ? 'text-blue-600 font-bold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2.5px] after:bg-blue-600 after:rounded-full active'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-            onClick={() => navigate("/")}
-          >
-            {t("home")}
-          </button>
-          <a href="#services" className="nav-link">{t("services")}</a>
-          <button
-            type="button"
-            className={`relative py-1.5 text-sm font-medium transition-colors cursor-pointer border-none bg-transparent nav-link ${
-              currentPage === 'doctors'
-                ? 'text-blue-600 font-bold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2.5px] after:bg-blue-600 after:rounded-full active'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-            onClick={() => navigate('/patient/search')}
-          >
-            {t('doctors')}
-          </button>
-          <button
-            type="button"
-            className={`relative py-1.5 text-sm font-medium transition-colors cursor-pointer border-none bg-transparent nav-link ${
-              currentPage === 'about'
-                ? 'text-blue-600 font-bold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2.5px] after:bg-blue-600 after:rounded-full active'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-            onClick={() => navigate('/about')}
-          >
-            {tCommon('about')}
-          </button>
+          {currentPage !== 'landing' && (
+            <button
+              type="button"
+              className="relative py-1.5 text-sm font-medium transition-colors cursor-pointer border-none bg-transparent nav-link text-slate-600 hover:text-slate-900"
+              onClick={() => navigate("/")}
+            >
+              {t("home")}
+            </button>
+          )}
+          {currentPage === 'landing' ? (
+            <a href="#services" className="nav-link text-slate-600 hover:text-slate-900">{t("services")}</a>
+          ) : null}
+          {currentPage !== 'doctors' && (
+            <button
+              type="button"
+              className="relative py-1.5 text-sm font-medium transition-colors cursor-pointer border-none bg-transparent nav-link text-slate-600 hover:text-slate-900"
+              onClick={() => navigate('/patient/search')}
+            >
+              {t('doctors')}
+            </button>
+          )}
+          {currentPage !== 'about' && (
+            <button
+              type="button"
+              className="relative py-1.5 text-sm font-medium transition-colors cursor-pointer border-none bg-transparent nav-link text-slate-600 hover:text-slate-900"
+              onClick={() => navigate('/about')}
+            >
+              {tCommon('about')}
+            </button>
+          )}
         </nav>
 
         {/* Right: Language Selector & Actions */}

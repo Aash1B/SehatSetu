@@ -21,7 +21,7 @@ const ProfessionalInfoCard: React.FC<Props> = ({ profile, isEditing, onChange })
               <BookOpen className="w-5 h-5" />
             </div>
             <div className="flex-1">
-              <p className="text-xs text-gray-500 font-medium">Qualification</p>
+              <p className="text-sm text-gray-500 font-medium">Qualification</p>
               {isEditing ? (
                 <input 
                   type="text"
@@ -30,7 +30,7 @@ const ProfessionalInfoCard: React.FC<Props> = ({ profile, isEditing, onChange })
                   className={inputClassName}
                 />
               ) : (
-                <p className="text-sm text-deep-space font-medium">{profile.qualification}</p>
+                <p className="text-base text-deep-space font-medium">{profile.qualification}</p>
               )}
             </div>
           </div>
@@ -40,7 +40,7 @@ const ProfessionalInfoCard: React.FC<Props> = ({ profile, isEditing, onChange })
               <Award className="w-5 h-5" />
             </div>
             <div className="flex-1">
-              <p className="text-xs text-gray-500 font-medium">Specialization</p>
+              <p className="text-sm text-gray-500 font-medium">Specialization</p>
               {isEditing ? (
                 <input 
                   type="text"
@@ -49,7 +49,7 @@ const ProfessionalInfoCard: React.FC<Props> = ({ profile, isEditing, onChange })
                   className={inputClassName}
                 />
               ) : (
-                <p className="text-sm text-deep-space font-medium">{profile.specialization}</p>
+                <p className="text-base text-deep-space font-medium">{profile.specialization}</p>
               )}
             </div>
           </div>
@@ -59,7 +59,7 @@ const ProfessionalInfoCard: React.FC<Props> = ({ profile, isEditing, onChange })
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div className="flex-1">
-              <p className="text-xs text-gray-500 font-medium">Medical License</p>
+              <p className="text-sm text-gray-500 font-medium">Medical License</p>
               {isEditing ? (
                 <input 
                   type="text"
@@ -68,7 +68,7 @@ const ProfessionalInfoCard: React.FC<Props> = ({ profile, isEditing, onChange })
                   className={inputClassName}
                 />
               ) : (
-                <p className="text-sm text-deep-space font-medium">{profile.medicalLicenseNumber}</p>
+                <p className="text-base text-deep-space font-medium">{profile.medicalLicenseNumber}</p>
               )}
             </div>
           </div>
@@ -78,7 +78,7 @@ const ProfessionalInfoCard: React.FC<Props> = ({ profile, isEditing, onChange })
               <Languages className="w-5 h-5" />
             </div>
             <div className="flex-1">
-              <p className="text-xs text-gray-500 font-medium">Languages</p>
+              <p className="text-sm text-gray-500 font-medium">Languages</p>
               {isEditing ? (
                 <input 
                   type="text"
@@ -88,14 +88,14 @@ const ProfessionalInfoCard: React.FC<Props> = ({ profile, isEditing, onChange })
                   placeholder="Comma separated"
                 />
               ) : (
-                <p className="text-sm text-deep-space font-medium">{profile.languagesSpoken.join(', ')}</p>
+                <p className="text-base text-deep-space font-medium">{profile.languagesSpoken.join(', ')}</p>
               )}
             </div>
           </div>
         </div>
         
         <div className="pt-4 border-t border-gray-100">
-          <h4 className="text-sm font-bold text-deep-space mb-2">About Me</h4>
+          <h4 className="text-base font-bold text-deep-space mb-2">About Me</h4>
           {isEditing ? (
             <textarea 
               value={profile.aboutMe}
@@ -104,7 +104,7 @@ const ProfessionalInfoCard: React.FC<Props> = ({ profile, isEditing, onChange })
               rows={4}
             />
           ) : (
-            <p className="text-sm text-gray-600 leading-relaxed">
+            <p className="text-base text-gray-600 leading-relaxed">
               {profile.aboutMe}
             </p>
           )}

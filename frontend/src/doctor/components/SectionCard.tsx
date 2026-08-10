@@ -13,8 +13,8 @@ const SectionCard: React.FC<SectionCardProps> = ({ title, subtitle, children, cl
     <div className={cn("bg-white p-6 rounded-2xl shadow-sm border border-jodhpur-tan/30", className)}>
       {(title || subtitle) && (
         <div className="flex justify-between items-start mb-4">
-          <h3 className="font-bold text-deep-space text-sm md:text-base">{title}</h3>
-          {subtitle && <span className="text-xs text-aster-blue">{subtitle}</span>}
+          <h3 className="font-bold text-deep-space text-base md:text-lg">{title}</h3>
+          {subtitle && <span className="text-sm text-aster-blue">{subtitle}</span>}
         </div>
       )}
       {children}

@@ -8,6 +8,7 @@ import MedicalHistoryCard from '../components/MedicalHistoryCard';
 import CurrentMedicinesCard from '../components/CurrentMedicinesCard';
 import AISummaryCard from '../components/AISummaryCard';
 import ReferralModal from '../components/ReferralModal';
+import { LiquidLoader } from '../../common/components/LiquidLoader';
 import { ChevronRight } from 'lucide-react';
 import { getToken } from '../../auth/authStorage';
 
@@ -81,7 +82,7 @@ const PatientDetails: React.FC = () => {
       <div className="flex h-screen bg-luster-white font-sans text-deadly-depths">
         <DoctorSidebar />
         <main className="flex-1 flex items-center justify-center p-8">
-          <div className="text-lg font-medium text-slate-600 animate-pulse">Loading patient details...</div>
+          <LiquidLoader text="Loading patient details" />
         </main>
       </div>
     );

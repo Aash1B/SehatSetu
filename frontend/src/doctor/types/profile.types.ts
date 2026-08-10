@@ -25,6 +25,7 @@ export interface DocumentInfo {
   type: string;
   status: 'Verified' | 'Pending' | 'Rejected';
   uploadDate: string;
+  publicUrl?: string;
 }
 
 export interface DoctorProfileData {

@@ -19,7 +19,7 @@ const ConsultationCard: React.FC<ConsultationCardProps> = ({
 }) => {
   const { patient, time, tags } = consultation;
   return (
-    <div className={cn("bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between hover:shadow-md transition-shadow gap-4", className)}>
+    <div className={cn("bg-white p-5 rounded-2xl border border-slate-200 flex items-center justify-between shadow-[0_10px_30px_rgba(0,0,0,0.07)] hover:shadow-[0_14px_36px_rgba(0,0,0,0.11)] transition-shadow gap-4", className)}>
       <div className="flex items-center gap-3.5">
         <div className={cn("w-12 h-12 rounded-full font-semibold text-sm flex items-center justify-center shrink-0 bg-[#223382]/10 text-[#223382]")}>
           {patient.initials}

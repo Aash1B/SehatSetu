@@ -11,6 +11,7 @@ import { clearAuth } from '../../auth/authStorage';
 import { getPatientDashboard, updatePatientProfile, uploadPatientAvatar } from '../services/patientApi';
 import AccountDeletionDangerZone from '../../auth/components/AccountDeletionDangerZone';
 import { useTranslation } from 'react-i18next';
+import { LiquidLoader } from '../../common/components/LiquidLoader';
 
 interface ConsultationItem {
   id: string;
@@ -463,6 +464,10 @@ const DashboardPage: React.FC = () => {
     }
   };
 
+  if (dashboardLoading) {
+    return <LiquidLoader fullScreen text="Loading your dashboard" />;
+  }
+
   return (
     <div className="sehat-dashboard-root">
       {/* 1. PERMANENT SIDEBAR PANEL (Matching Home Page Sidebar 100%) */}
@@ -688,7 +693,6 @@ const DashboardPage: React.FC = () => {
             onChange={handleReportSelected}
             style={{ display: 'none' }}
           />
-          {dashboardLoading && <p className="tab-subtitle"> {t('loadingHealthData')} </p>}
           {dashboardError && <p role="alert" style={{ color: '#b91c1c', marginBottom: '16px' }}>{dashboardError}</p>}
           {activeTab === 'overview' && (
             <>

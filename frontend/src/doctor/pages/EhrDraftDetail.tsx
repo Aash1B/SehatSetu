@@ -8,6 +8,7 @@ import StatusBadge from '../components/StatusBadge';
 import ApproveDraftDialog from '../components/ApproveDraftDialog';
 import RejectDraftDialog from '../components/RejectDraftDialog';
 import { getEhrDraft, approveEhrDraft, rejectEhrDraft, EhrSessionError } from '../services/ehrApi';
+import { LiquidLoader } from '../../common/components/LiquidLoader';
 import { clearAuth } from '../../auth/authStorage';
 import { EhrDraftStatus } from '../../types';
 import type { EhrDraftRecord } from '../../types';
@@ -77,7 +78,7 @@ const EhrDraftDetail: React.FC = () => {
       <div className="flex h-screen bg-luster-white font-sans text-deep-space">
         <DoctorSidebar />
         <main className="flex-1 flex items-center justify-center p-8">
-          <div className="text-lg font-medium text-slate-600 animate-pulse">Loading EHR draft…</div>
+          <LiquidLoader text="Loading EHR draft" />
         </main>
       </div>
     );

@@ -32,7 +32,7 @@ const DoctorProfileHeader: React.FC<Props> = ({ profile, isEditing, onEdit, onCa
       <div className="flex-1 w-full">
         <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
           <div>
-            <h2 className="text-xl font-bold text-deep-space flex items-center gap-2 mb-2">
+            <h2 className="text-2xl font-bold text-deep-space flex items-center gap-2 mb-2">
               {profile.fullName}
             </h2>
             <div className="mb-3">
@@ -40,10 +40,9 @@ const DoctorProfileHeader: React.FC<Props> = ({ profile, isEditing, onEdit, onCa
                 {profile.specialization}
               </span>
             </div>
-            <div className="text-sm text-gray-600 flex flex-wrap gap-x-4 gap-y-2 font-medium">
+            <div className="text-base text-gray-600 flex flex-wrap gap-x-4 gap-y-2 font-medium">
               <p>Qualification: <span className="text-deep-space">{profile.qualification}</span></p>
               <p>Experience: <span className="text-deep-space">{profile.yearsOfExperience} Years</span></p>
-              <p>Doctor ID: <span className="text-deep-space">{profile.id}</span></p>
             </div>
           </div>
           

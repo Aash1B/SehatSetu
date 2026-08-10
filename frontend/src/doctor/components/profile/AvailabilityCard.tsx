@@ -1,8 +1,87 @@
 import React, { useState, useEffect } from 'react';
 import SectionCard from '../SectionCard';
-import { Availability } from '../../types/profile.types';
-import { CalendarClock, Clock, Check, Save } from 'lucide-react';
-import { cn } from '../../../lib/utils';
+import { Availability, AvailabilitySlot } from '../../types/profile.types';
+import { Clock, CalendarClock, Check, Save, Plus, Trash2, Copy } from 'lucide-react';
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const ALL_DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const DAY_SHORT: Record<string, string> = {
+  Monday: 'Mon', Tuesday: 'Tue', Wednesday: 'Wed', Thursday: 'Thu',
+  Friday: 'Fri', Saturday: 'Sat', Sunday: 'Sun',
+};
+const TIME_OPTIONS = [
+  '06:00 AM','06:30 AM','07:00 AM','07:30 AM','08:00 AM','08:30 AM',
+  '09:00 AM','09:30 AM','10:00 AM','10:30 AM','11:00 AM','11:30 AM',
+  '12:00 PM','12:30 PM','01:00 PM','01:30 PM','02:00 PM','02:30 PM',
+  '03:00 PM','03:30 PM','04:00 PM','04:30 PM','05:00 PM','05:30 PM',
+  '06:00 PM','06:30 PM','07:00 PM','07:30 PM','08:00 PM','08:30 PM',
+  '09:00 PM','09:30 PM','10:00 PM','10:30 PM','11:00 PM',
+];
+
+interface TimeSlot { start: string; end: string; }
+type WeeklySchedule = Record<string, TimeSlot[]>;
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function convertTo24Hour(timeStr: string): string {
+  if (!timeStr) return '09:00';
+  const parts = timeStr.split(' ');
+  if (parts.length < 2) return timeStr;
+  const [time, modifier] = parts;
+  let [hours, minutes] = time.split(':');
+  let h = parseInt(hours, 10);
+  if (modifier === 'PM' && h < 12) h += 12;
+  if (modifier === 'AM' && h === 12) h = 0;
+  return `${h.toString().padStart(2, '0')}:${minutes}`;
+}
+
+/** Convert 24h "09:00" → 12h "09:00 AM" */
+function convertTo12Hour(timeStr: string): string {
+  if (!timeStr) return '09:00 AM';
+  const [h, m] = timeStr.split(':').map(Number);
+  if (isNaN(h) || isNaN(m)) return timeStr;
+  const period = h >= 12 ? 'PM' : 'AM';
+  const hour12 = h % 12 === 0 ? 12 : h % 12;
+  return `${String(hour12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${period}`;
+}
+
+/**
+ * Build a WeeklySchedule from the legacy AvailabilitySlot[] array stored in the DB.
+ * The slots store "workingHours" as "HH:MM - HH:MM" (24h) or "HH:MM AM - HH:MM PM" (12h).
+ */
+function slotsToSchedule(slots: AvailabilitySlot[]): WeeklySchedule {
+  const schedule: WeeklySchedule = {};
+  ALL_DAYS.forEach(day => { schedule[day] = []; });
+  slots.forEach(slot => {
+    if (!slot.isWorking || !slot.workingHours || slot.workingHours === 'Off' || slot.workingHours === 'Closed') return;
+    const parts = slot.workingHours.split(' - ');
+    if (parts.length !== 2) return;
+    const [rawStart, rawEnd] = parts;
+    // Detect whether already in 12h format (contains AM/PM) or 24h
+    const is12h = /AM|PM/i.test(rawStart);
+    const start = is12h ? rawStart.trim() : convertTo12Hour(rawStart.trim());
+    const end   = is12h ? rawEnd.trim()   : convertTo12Hour(rawEnd.trim());
+    schedule[slot.day] = [{ start, end }];
+  });
+  return schedule;
+}
+
+/** Convert WeeklySchedule back to AvailabilitySlot[] */
+function scheduleToSlots(schedule: WeeklySchedule): AvailabilitySlot[] {
+  return ALL_DAYS.map(day => {
+    const daySlots = schedule[day] || [];
+    if (daySlots.length === 0) {
+      return { day, isWorking: false, workingHours: 'Off', breakTime: 'None' };
+    }
+    const workingHours = daySlots
+      .map(s => `${convertTo24Hour(s.start)} - ${convertTo24Hour(s.end)}`)
+      .join(', ');
+    return { day, isWorking: true, workingHours, breakTime: 'None' };
+  });
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 interface Props {
   availability: Availability;
@@ -10,60 +89,132 @@ interface Props {
   isSaving?: boolean;
 }
 
-const AvailabilityCard: React.FC<Props> = ({ availability, onSave, isSaving = false }) => {
-  const [data, setData] = useState<Availability>(availability);
-  const [saveSuccess, setSaveSuccess] = useState(false);
+const DEFAULT_SCHEDULE: WeeklySchedule = {
+  Monday:    [{ start: '09:00 AM', end: '05:00 PM' }],
+  Tuesday:   [{ start: '09:00 AM', end: '05:00 PM' }],
+  Wednesday: [{ start: '09:00 AM', end: '05:00 PM' }],
+  Thursday:  [{ start: '09:00 AM', end: '05:00 PM' }],
+  Friday:    [{ start: '09:00 AM', end: '05:00 PM' }],
+  Saturday:  [],
+  Sunday:    [],
+};
 
+const AvailabilityCard: React.FC<Props> = ({ availability, onSave, isSaving = false }) => {
+  const [schedule, setSchedule] = useState<WeeklySchedule>(DEFAULT_SCHEDULE);
+  const [slotDuration, setSlotDuration] = useState(availability?.slotDurationMinutes || 30);
+  const [status, setStatus] = useState<Availability['status']>(availability?.status || 'Available');
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [copiedToast, setCopiedToast] = useState(false);
+
+  // Initialise from prop
   useEffect(() => {
-    setData(availability);
+    if (availability) {
+      setSlotDuration(availability.slotDurationMinutes || 30);
+      setStatus(availability.status || 'Available');
+      if (Array.isArray(availability.slots) && availability.slots.length > 0) {
+        setSchedule(slotsToSchedule(availability.slots));
+      }
+    }
   }, [availability]);
 
-  const handleStatusChange = (newStatus: Availability['status']) => {
-    setData(prev => ({ ...prev, status: newStatus }));
+  // ── Schedule mutators ─────────────────────────────────────────────────────
+
+  const toggleDay = (day: string) => {
+    setSchedule(prev => {
+      const current = prev[day] || [];
+      return {
+        ...prev,
+        [day]: current.length > 0 ? [] : [{ start: '09:00 AM', end: '05:00 PM' }],
+      };
+    });
   };
 
-  const handleDurationChange = (minutes: number) => {
-    setData(prev => ({ ...prev, slotDurationMinutes: minutes }));
-  };
-
-  const handleSlotToggle = (day: string) => {
-    setData(prev => ({
+  const addSlot = (day: string) => {
+    setSchedule(prev => ({
       ...prev,
-      slots: prev.slots.map(s => s.day === day ? { ...s, isWorking: !s.isWorking } : s)
+      [day]: [...(prev[day] || []), { start: '02:00 PM', end: '06:00 PM' }],
     }));
   };
 
-  const handleSlotFieldChange = (day: string, field: 'workingHours' | 'breakTime', value: string) => {
-    setData(prev => ({
+  const removeSlot = (day: string, idx: number) => {
+    setSchedule(prev => ({
       ...prev,
-      slots: prev.slots.map(s => s.day === day ? { ...s, [field]: value } : s)
+      [day]: (prev[day] || []).filter((_, i) => i !== idx),
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (onSave) {
-      await onSave(data);
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
-    }
+  const updateSlotTime = (day: string, idx: number, field: 'start' | 'end', value: string) => {
+    setSchedule(prev => {
+      const slots = [...(prev[day] || [])];
+      if (slots[idx]) slots[idx] = { ...slots[idx], [field]: value };
+      return { ...prev, [day]: slots };
+    });
   };
+
+  const applyPreset = (preset: 'weekdays' | 'mon-sat' | 'all') => {
+    setSchedule(prev => {
+      const updated: WeeklySchedule = { ...prev };
+      ALL_DAYS.forEach(day => {
+        if (preset === 'weekdays') {
+          updated[day] = ['Monday','Tuesday','Wednesday','Thursday','Friday'].includes(day)
+            ? [{ start: '09:00 AM', end: '05:00 PM' }] : [];
+        } else if (preset === 'mon-sat') {
+          updated[day] = day !== 'Sunday' ? [{ start: '09:00 AM', end: '05:00 PM' }] : [];
+        } else {
+          updated[day] = [{ start: '09:00 AM', end: '05:00 PM' }];
+        }
+      });
+      return updated;
+    });
+  };
+
+  const copyMondayToAll = () => {
+    const mondaySlots = schedule['Monday']?.length ? schedule['Monday'] : [{ start: '09:00 AM', end: '05:00 PM' }];
+    setSchedule(prev => {
+      const updated: WeeklySchedule = { ...prev };
+      ALL_DAYS.forEach(day => {
+        if ((prev[day] || []).length > 0) updated[day] = mondaySlots.map(s => ({ ...s }));
+      });
+      return updated;
+    });
+    setCopiedToast(true);
+    setTimeout(() => setCopiedToast(false), 2000);
+  };
+
+  // ── Save ──────────────────────────────────────────────────────────────────
+
+  const handleSave = async () => {
+    if (!onSave) return;
+    const updated: Availability = {
+      slots: scheduleToSlots(schedule),
+      slotDurationMinutes: slotDuration,
+      status,
+    };
+    await onSave(updated);
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 3000);
+  };
+
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <SectionCard title="Availability & Schedule" subtitle="Configure your weekly consultation hours & slot durations">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Controls */}
+      <div className="space-y-6">
+
+        {/* ── Controls bar ─────────────────────────────────────────────── */}
         <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+          {/* Slot Duration */}
           <div className="flex items-center gap-3">
             <Clock className="w-5 h-5 text-aster-blue" />
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase">Consultation Slot Duration</label>
+              <label className="block text-sm font-bold text-gray-500 uppercase">Consultation Slot Duration</label>
               <select
-                value={data.slotDurationMinutes}
-                onChange={(e) => handleDurationChange(Number(e.target.value))}
-                className="mt-1 bg-white border border-gray-200 text-deep-space text-sm font-semibold rounded-lg p-1.5 focus:ring-2 focus:ring-habanero focus:outline-none"
+                value={slotDuration}
+                onChange={e => setSlotDuration(Number(e.target.value))}
+                className="mt-1 bg-white border border-gray-200 text-deep-space text-sm font-semibold rounded-lg p-1.5 focus:ring-2 focus:ring-habanero focus:outline-none cursor-pointer"
               >
                 <option value={15}>15 Minutes</option>
+                <option value={20}>20 Minutes</option>
                 <option value={30}>30 Minutes</option>
                 <option value={45}>45 Minutes</option>
                 <option value={60}>60 Minutes</option>
@@ -71,14 +222,15 @@ const AvailabilityCard: React.FC<Props> = ({ availability, onSave, isSaving = fa
             </div>
           </div>
 
+          {/* Overall Status */}
           <div className="flex items-center gap-3">
             <CalendarClock className="w-5 h-5 text-green-500" />
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase">Overall Doctor Status</label>
+              <label className="block text-sm font-bold text-gray-500 uppercase">Overall Doctor Status</label>
               <select
-                value={data.status}
-                onChange={(e) => handleStatusChange(e.target.value as Availability['status'])}
-                className="mt-1 bg-white border border-gray-200 text-deep-space text-sm font-semibold rounded-lg p-1.5 focus:ring-2 focus:ring-habanero focus:outline-none"
+                value={status}
+                onChange={e => setStatus(e.target.value as Availability['status'])}
+                className="mt-1 bg-white border border-gray-200 text-deep-space text-sm font-semibold rounded-lg p-1.5 focus:ring-2 focus:ring-habanero focus:outline-none cursor-pointer"
               >
                 <option value="Available">Available for Appointments</option>
                 <option value="Busy">Busy (Limited Slots)</option>
@@ -88,79 +240,158 @@ const AvailabilityCard: React.FC<Props> = ({ availability, onSave, isSaving = fa
           </div>
         </div>
 
-        {/* Weekly Day Slots */}
+        {/* ── Day chip row + presets ────────────────────────────────────── */}
         <div className="space-y-3">
-          {data.slots.map((slot) => (
-            <div 
-              key={slot.day} 
-              className={cn(
-                "flex flex-col md:flex-row md:items-center justify-between p-3.5 rounded-xl border transition-colors gap-3",
-                slot.isWorking ? "bg-white border-gray-200 shadow-sm" : "bg-gray-50 border-gray-100 opacity-60"
-              )}
-            >
-              <div className="flex items-center gap-3 w-40 shrink-0">
-                <input
-                  type="checkbox"
-                  id={`slot-${slot.day}`}
-                  checked={slot.isWorking}
-                  onChange={() => handleSlotToggle(slot.day)}
-                  className="w-4 h-4 text-habanero rounded border-gray-300 focus:ring-habanero cursor-pointer"
-                />
-                <label htmlFor={`slot-${slot.day}`} className="font-bold text-sm text-deep-space cursor-pointer select-none">
-                  {slot.day}
-                </label>
-              </div>
-              
-              {slot.isWorking ? (
-                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <span className="block text-[10px] text-gray-400 font-bold uppercase mb-0.5">Working Hours</span>
-                    <input
-                      type="text"
-                      value={slot.workingHours}
-                      onChange={(e) => handleSlotFieldChange(slot.day, 'workingHours', e.target.value)}
-                      placeholder="e.g. 09:00 AM - 05:00 PM"
-                      className="w-full text-xs font-medium text-gray-800 bg-gray-50 border border-gray-200 rounded-lg p-2 focus:bg-white focus:ring-1 focus:ring-habanero focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <span className="block text-[10px] text-gray-400 font-bold uppercase mb-0.5">Break Time</span>
-                    <input
-                      type="text"
-                      value={slot.breakTime}
-                      onChange={(e) => handleSlotFieldChange(slot.day, 'breakTime', e.target.value)}
-                      placeholder="e.g. 01:00 PM - 02:00 PM"
-                      className="w-full text-xs font-medium text-gray-800 bg-gray-50 border border-gray-200 rounded-lg p-2 focus:bg-white focus:ring-1 focus:ring-habanero focus:outline-none"
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className="flex-1 text-xs text-gray-400 italic">
-                  Not Available on {slot.day}s
-                </div>
-              )}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span className="text-sm font-bold text-slate-900 uppercase tracking-wider">Select Practicing Days</span>
+            <div className="flex items-center gap-1.5 text-xs flex-wrap">
+              <span className="text-slate-600 font-semibold hidden sm:inline">Presets:</span>
+              {(['weekdays','mon-sat','all'] as const).map(p => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => applyPreset(p)}
+                  className="text-xs font-bold text-[#F98513] bg-orange-50 hover:bg-orange-100 border border-orange-200 px-2.5 py-1 rounded-lg transition-all cursor-pointer"
+                >
+                  {p === 'weekdays' ? 'Mon – Fri' : p === 'mon-sat' ? 'Mon – Sat' : 'All Days'}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={copyMondayToAll}
+                className="text-xs font-bold text-[#223382] bg-blue-50 hover:bg-blue-100 border border-blue-200 px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1"
+              >
+                <Copy className="w-3 h-3" />
+                {copiedToast ? 'Copied!' : 'Copy Mon → All'}
+              </button>
             </div>
-          ))}
+          </div>
+
+          {/* 7 day chips */}
+          <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
+            {ALL_DAYS.map(day => {
+              const active = (schedule[day] || []).length > 0;
+              return (
+                <button
+                  key={day}
+                  type="button"
+                  onClick={() => toggleDay(day)}
+                  className={`py-3 px-1 rounded-xl text-xs sm:text-sm font-extrabold text-center transition-all cursor-pointer border ${
+                    active
+                      ? 'bg-[#223362] text-white border-[#223362] shadow-md scale-[1.02]'
+                      : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
+                  }`}
+                >
+                  <span className="hidden sm:inline">{day}</span>
+                  <span className="sm:hidden">{DAY_SHORT[day]}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Action Button */}
+        {/* ── Day-by-day shift editor ───────────────────────────────────── */}
+        <div className="space-y-3">
+          {ALL_DAYS.map(day => {
+            const daySlots = schedule[day] || [];
+            const isAvailable = daySlots.length > 0;
+
+            return (
+              <div
+                key={day}
+                className={`p-3.5 sm:p-4 rounded-2xl border transition-all ${
+                  isAvailable ? 'bg-white border-slate-200 shadow-sm' : 'bg-slate-50/70 border-slate-200/60 opacity-75'
+                }`}
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  {/* Day label + checkbox */}
+                  <div className="flex items-center justify-between sm:justify-start gap-3 shrink-0">
+                    <label className="flex items-center gap-2.5 cursor-pointer font-bold text-slate-900 text-sm sm:text-base">
+                      <input
+                        type="checkbox"
+                        checked={isAvailable}
+                        onChange={() => toggleDay(day)}
+                        className="w-4 h-4 accent-[#223382] rounded cursor-pointer"
+                      />
+                      <span className="w-24">{day}</span>
+                    </label>
+                    {!isAvailable && (
+                      <span className="text-sm font-bold text-slate-500 bg-slate-200/80 px-2.5 py-1 rounded-md">
+                        Not Available on {day}s
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Time slot rows */}
+                  {isAvailable && (
+                    <div className="flex-1 flex flex-col gap-2.5 sm:items-end">
+                      {daySlots.map((slot, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center gap-2 flex-wrap bg-slate-50 sm:bg-transparent p-2 sm:p-0 rounded-lg border sm:border-none border-slate-200"
+                        >
+                          <span className="text-sm font-bold text-gray-500 uppercase">Working Hours</span>
+                          <select
+                            value={slot.start}
+                            onChange={e => updateSlotTime(day, idx, 'start', e.target.value)}
+                            className="text-xs font-semibold p-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-[#F98513] outline-none cursor-pointer"
+                          >
+                            {TIME_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+                          </select>
+                          <span className="text-xs font-bold text-slate-500">–</span>
+                          <select
+                            value={slot.end}
+                            onChange={e => updateSlotTime(day, idx, 'end', e.target.value)}
+                            className="text-xs font-semibold p-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-[#F98513] outline-none cursor-pointer"
+                          >
+                            {TIME_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+                          </select>
+                          {daySlots.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeSlot(day, idx)}
+                              className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                              title="Remove shift"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => addSlot(day)}
+                        className="inline-flex items-center gap-1 text-xs font-bold text-[#F98513] hover:text-[#e0730b] hover:underline cursor-pointer mt-0.5"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> Add Time Slot (Split Shift)
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* ── Save button ───────────────────────────────────────────────── */}
         <div className="flex items-center justify-between pt-4 border-t border-gray-100">
           {saveSuccess ? (
             <span className="flex items-center gap-1.5 text-sm font-bold text-green-600">
               <Check className="w-4 h-4" /> Schedule saved to database!
             </span>
           ) : (
-            <span className="text-xs text-gray-500 font-medium">Changes will take effect immediately for patient booking.</span>
+            <span className="text-sm text-gray-500 font-medium">Changes will take effect immediately for patient booking.</span>
           )}
 
           <button
-            type="submit"
+            type="button"
+            onClick={handleSave}
             disabled={isSaving}
             className="flex items-center gap-2 bg-habanero hover:bg-[#e0750e] text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-sm transition-all disabled:opacity-50 cursor-pointer"
           >
             {isSaving ? (
               <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 Saving...
               </>
             ) : (
@@ -170,7 +401,7 @@ const AvailabilityCard: React.FC<Props> = ({ availability, onSave, isSaving = fa
             )}
           </button>
         </div>
-      </form>
+      </div>
     </SectionCard>
   );
 };

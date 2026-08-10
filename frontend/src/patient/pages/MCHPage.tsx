@@ -13,6 +13,7 @@ import {
   type Investigation, type MchDocument, type SafetyFlag,
 } from '../services/mchApi';
 import { clearAuth } from '../../auth/authStorage';
+import { LiquidLoader } from '../../common/components/LiquidLoader';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -259,9 +260,7 @@ const MCHPage: React.FC = () => {
   };
 
   if (loading) return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', color: '#64748b' }}>
-      {t('loading')}
-    </div>
+    <LiquidLoader fullScreen text="Loading MCH Data" />
   );
 
   return (
