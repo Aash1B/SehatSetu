@@ -6,6 +6,7 @@ import { DoctorProfileData, Availability } from '../types/profile.types';
 import { getActiveDoctor, type DoctorProfile as ActiveDoc } from '../utils/doctorProfile';
 import { getDoctorProfileData } from '../utils/doctorProfile';
 import { getToken } from '../../auth/authStorage';
+import { LiquidLoader } from '../../common/components/LiquidLoader';
 
 const DoctorAvailability: React.FC = () => {
   const [activeDoctor, setActiveDoctor] = useState<ActiveDoc>(getActiveDoctor());
@@ -82,7 +83,7 @@ const DoctorAvailability: React.FC = () => {
   if (isLoading || !profile) {
     return (
       <div className="flex items-center justify-center h-screen bg-luster-white">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-aster-blue"></div>
+        <LiquidLoader text="Loading Availability" />
       </div>
     );
   }

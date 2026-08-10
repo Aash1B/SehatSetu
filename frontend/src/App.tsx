@@ -70,6 +70,7 @@ const VitalsPage = lazy(() => import('./patient/pages/VitalsPage'));
 import OfflineStatusIndicator from './common/components/OfflineStatusIndicator';
 import PWAUpdatePrompt from './common/components/PWAUpdatePrompt';
 import PWAInstallPrompt from './common/components/PWAInstallPrompt';
+import { LiquidLoader } from './common/components/LiquidLoader';
 
 function App() {
   const { t } = useTranslation('common');

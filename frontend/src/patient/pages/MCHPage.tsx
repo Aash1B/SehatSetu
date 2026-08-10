@@ -14,6 +14,7 @@ import {
 } from '../services/mchApi';
 import { uploadMedicalReport } from '../services/medicalReportsApi';
 import { clearAuth } from '../../auth/authStorage';
+import { LiquidLoader } from '../../common/components/LiquidLoader';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -258,6 +259,7 @@ const MCHPage: React.FC = () => {
       setMilestones(prev => prev.map(x => x.id === m.id ? { ...x, status: next } : x));
     } catch (e: any) { setError(e.message); }
   };
+
 
 
   return (

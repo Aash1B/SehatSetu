@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CalendarCheck, CheckCircle2, ChevronRight } from 'lucide-react';
+import { CalendarCheck, CheckCircle2, SlidersHorizontal, Check } from 'lucide-react';
 
 import DoctorSidebar from '../components/DoctorSidebar';
 import DashboardHeader from '../components/DashboardHeader';
@@ -10,6 +10,7 @@ import { ConsultationStatus, Priority } from '../../types';
 import { type DoctorProfile } from '../utils/doctorProfile';
 import { fetchConsultationSummary } from '../../common/services/aiApi';
 import { getToken, getUser } from '../../auth/authStorage';
+import { LiquidLoader } from '../../common/components/LiquidLoader';
 
 const getInitials = (name?: string) => {
   if (!name) return 'DR';
@@ -36,6 +37,20 @@ const Dashboard = () => {
   });
   const [consultations, setConsultations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'SCHEDULED' | 'COMPLETED' | 'CANCELLED'>('ALL');
+  const [filterOpen, setFilterOpen] = useState(false);
+  const filterRef = useRef<HTMLDivElement>(null);
+
+  // Close popup on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
+        setFilterOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
   const [summaryModalData, setSummaryModalData] = useState<{
     patientName: string;
     loading: boolean;
@@ -84,7 +99,7 @@ const Dashboard = () => {
                 },
                 tags: [
                   { label: 'Consultation', variant: 'default' as const },
-                  { label: app.status === 'SCHEDULED' ? 'Scheduled' : (app.status || 'Scheduled'), variant: 'primary' as const },
+                  { label: app.status === 'SCHEDULED' ? 'Scheduled' : (app.status === 'COMPLETED' ? 'Completed' : (app.status === 'CANCELLED' ? 'Cancelled' : (app.status || 'Scheduled'))), variant: (app.status === 'CANCELLED' ? 'cancelled' : app.status === 'COMPLETED' ? 'completed' : 'scheduled') as any },
                 ],
                 time: app.timeSlot || '10:00 AM',
                 chiefComplaint: app.healthConcern || (app.notes ? String(app.notes).split('\n')[0].replace(/^Concern:\s*/i, '') : 'General Medical Consultation'),
@@ -108,6 +123,14 @@ const Dashboard = () => {
 
     fetchAppointments();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen w-screen bg-luster-white">
+        <LiquidLoader text="Loading appointments" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-luster-white font-sans text-deadly-depths">
@@ -144,41 +167,107 @@ const Dashboard = () => {
 
         {/* Main Area: Consultations */}
         <div className="w-full">
-          <div className="flex justify-between items-end mb-4">
+          <div className="flex justify-between items-center mb-5">
             <div>
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Your Schedule</p>
               <h2 className="text-2xl font-semibold text-slate-900">Today's Assigned Consultations</h2>
             </div>
-            <button className="text-sm font-normal text-slate-600 hover:text-slate-900 flex items-center gap-1 cursor-pointer">
-              View schedule <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
+                <div className="flex items-center gap-3">
+                  {/* Filter Icon + Popup */}
+                  <div className="relative" ref={filterRef}>
+                    <button
+                      onClick={() => setFilterOpen(o => !o)}
+                      title="Filter by status"
+                      className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-sm font-semibold transition-all duration-200 cursor-pointer ${
+                        statusFilter !== 'ALL'
+                          ? 'bg-[#223382] text-white border-[#223382] shadow-sm'
+                          : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
+                      }`}
+                    >
+                      <SlidersHorizontal className="w-4 h-4" />
+                      <span>Filter{statusFilter !== 'ALL' ? `: ${statusFilter.charAt(0) + statusFilter.slice(1).toLowerCase()}` : ''}</span>
+                    </button>
 
-          <div className="space-y-4">
-            {loading ? (
-              <div className="text-center py-8 text-black">Loading appointments...</div>
-            ) : (
-              consultations.map((consultation) => (
-                <ConsultationCard
-                  key={consultation.id}
-                  consultation={consultation}
-                  onViewPatient={() => navigate(`/doctor/patient/${consultation.patient.id}`)}
-                  onViewSummary={async () => {
-                    const text = `Patient ${consultation.patient.name}, ${consultation.patient.age}${consultation.patient.gender}, reports ${consultation.chiefComplaint}. No known drug allergies reported. Prior history includes routine wellness checkups.`;
-                    setSummaryModalData({
-                      patientName: consultation.patient.name,
-                      loading: true,
-                      summary: null,
-                    });
-                    try {
-                      const res = await fetchConsultationSummary(text);
-                      if (res && res.data) {
-                        setSummaryModalData({
-                          patientName: consultation.patient.name,
-                          loading: false,
-                          summary: res.data,
-                        });
-                      } else {
+                    {filterOpen && (
+                      <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl shadow-xl border border-slate-100 z-30 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                        <div className="px-4 py-2.5 border-b border-slate-100">
+                          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Filter by Status</p>
+                        </div>
+                        <div className="py-1.5">
+                          {([
+                            { key: 'ALL',       label: 'All Consultations', dot: 'bg-slate-400' },
+                            { key: 'SCHEDULED', label: 'Scheduled',         dot: 'bg-emerald-500' },
+                            { key: 'COMPLETED', label: 'Completed',         dot: 'bg-slate-500' },
+                            { key: 'CANCELLED', label: 'Cancelled',         dot: 'bg-red-500' },
+                          ] as const).map(({ key, label, dot }) => {
+                            const count = key === 'ALL'
+                              ? consultations.length
+                              : consultations.filter(c => c.tags?.[1]?.label?.toUpperCase() === key).length;
+                            return (
+                              <button
+                                key={key}
+                                onClick={() => { setStatusFilter(key); setFilterOpen(false); }}
+                                className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors cursor-pointer ${
+                                  statusFilter === key
+                                    ? 'bg-slate-50 text-slate-900 font-semibold'
+                                    : 'text-slate-600 hover:bg-slate-50 font-medium'
+                                }`}
+                              >
+                                <span className="flex items-center gap-2.5">
+                                  <span className={`w-2 h-2 rounded-full ${dot}`} />
+                                  {label}
+                                </span>
+                                <span className="flex items-center gap-1.5">
+                                  <span className="text-xs text-slate-400 font-medium">{count}</span>
+                                  {statusFilter === key && <Check className="w-3.5 h-3.5 text-[#223382]" />}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {consultations
+                  .filter(c => statusFilter === 'ALL' || c.tags?.[1]?.label?.toUpperCase() === statusFilter)
+                  .map((consultation) => (
+                  <ConsultationCard
+                    key={consultation.id}
+                    consultation={consultation}
+                    onViewPatient={() => navigate(`/doctor/patient/${consultation.patient.id}`)}
+                    onViewSummary={async () => {
+                      const text = `Patient ${consultation.patient.name}, ${consultation.patient.age}${consultation.patient.gender}, reports ${consultation.chiefComplaint}. No known drug allergies reported. Prior history includes routine wellness checkups.`;
+                      setSummaryModalData({
+                        patientName: consultation.patient.name,
+                        loading: true,
+                        summary: null,
+                      });
+                      try {
+                        const res = await fetchConsultationSummary(text);
+                        if (res && res.data) {
+                          setSummaryModalData({
+                            patientName: consultation.patient.name,
+                            loading: false,
+                            summary: res.data,
+                          });
+                        } else {
+                          setSummaryModalData({
+                            patientName: consultation.patient.name,
+                            loading: false,
+                            summary: {
+                              chief_complaint: consultation.chiefComplaint,
+                              symptoms: [consultation.chiefComplaint],
+                              medical_history: ['No prior chronic conditions recorded'],
+                              allergies: ['No known allergies'],
+                              doctor_advice: 'Recommended rest, hydration, and follow-up if symptoms persist.',
+                            },
+                          });
+                        }
+                      } catch (e) {
                         setSummaryModalData({
                           patientName: consultation.patient.name,
                           loading: false,
@@ -191,24 +280,10 @@ const Dashboard = () => {
                           },
                         });
                       }
-                    } catch (e) {
-                      setSummaryModalData({
-                        patientName: consultation.patient.name,
-                        loading: false,
-                        summary: {
-                          chief_complaint: consultation.chiefComplaint,
-                          symptoms: [consultation.chiefComplaint],
-                          medical_history: ['No prior chronic conditions recorded'],
-                          allergies: ['No known allergies'],
-                          doctor_advice: 'Recommended rest, hydration, and follow-up if symptoms persist.',
-                        },
-                      });
-                    }
-                  }}
-                />
-              ))
-            )}
-          </div>
+                    }}
+                  />
+                ))}
+              </div>
         </div>
 
         {/* AI Consultation Summary Modal */}
@@ -234,9 +309,8 @@ const Dashboard = () => {
               </div>
 
               {summaryModalData.loading ? (
-                <div className="py-12 text-center space-y-3">
-                  <div className="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                  <p className="text-sm font-semibold text-purple-900">Generating AI Consultation Summary...</p>
+                <div className="py-12 flex justify-center">
+                  <LiquidLoader text="Generating AI Consultation Summary" />
                 </div>
               ) : (
                 <div className="space-y-4 text-sm">

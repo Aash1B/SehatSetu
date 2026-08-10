@@ -20,7 +20,7 @@ const ContactInfoCard: React.FC<Props> = ({ profile, isEditing, onChange }) => {
             <Mail className="w-4 h-4" />
           </div>
           <div className="flex-1">
-            <p className="text-xs text-gray-500">Email Address</p>
+            <p className="text-sm text-gray-500">Email Address</p>
             {isEditing ? (
               <input 
                 type="email"
@@ -29,7 +29,7 @@ const ContactInfoCard: React.FC<Props> = ({ profile, isEditing, onChange }) => {
                 className={inputClassName}
               />
             ) : (
-              <p className="text-sm font-medium text-deep-space">{profile.email}</p>
+              <p className="text-base font-medium text-deep-space">{profile.email}</p>
             )}
           </div>
         </div>
@@ -39,7 +39,7 @@ const ContactInfoCard: React.FC<Props> = ({ profile, isEditing, onChange }) => {
             <Phone className="w-4 h-4" />
           </div>
           <div className="flex-1">
-            <p className="text-xs text-gray-500">Phone Number</p>
+            <p className="text-sm text-gray-500">Phone Number</p>
             {isEditing ? (
               <input 
                 type="tel"
@@ -48,7 +48,7 @@ const ContactInfoCard: React.FC<Props> = ({ profile, isEditing, onChange }) => {
                 className={inputClassName}
               />
             ) : (
-              <p className="text-sm font-medium text-deep-space">{profile.phoneNumber}</p>
+              <p className="text-base font-medium text-deep-space">{profile.phoneNumber}</p>
             )}
           </div>
         </div>
@@ -58,7 +58,7 @@ const ContactInfoCard: React.FC<Props> = ({ profile, isEditing, onChange }) => {
             <Building2 className="w-4 h-4" />
           </div>
           <div className="flex-1">
-            <p className="text-xs text-gray-500">Primary Clinic/Hospital</p>
+            <p className="text-sm text-gray-500">Primary Clinic/Hospital</p>
             {isEditing ? (
               <input 
                 type="text"
@@ -67,7 +67,7 @@ const ContactInfoCard: React.FC<Props> = ({ profile, isEditing, onChange }) => {
                 className={inputClassName}
               />
             ) : (
-              <p className="text-sm font-medium text-deep-space">{profile.clinicName}</p>
+              <p className="text-base font-medium text-deep-space">{profile.clinicName}</p>
             )}
           </div>
         </div>
@@ -77,7 +77,7 @@ const ContactInfoCard: React.FC<Props> = ({ profile, isEditing, onChange }) => {
             <MapPin className="w-4 h-4" />
           </div>
           <div className="flex-1">
-            <p className="text-xs text-gray-500">Address</p>
+            <p className="text-sm text-gray-500">Address</p>
             {isEditing ? (
               <input 
                 type="text"
@@ -86,7 +86,7 @@ const ContactInfoCard: React.FC<Props> = ({ profile, isEditing, onChange }) => {
                 className={inputClassName}
               />
             ) : (
-              <p className="text-sm font-medium text-deep-space">{profile.address}</p>
+              <p className="text-base font-medium text-deep-space">{profile.address}</p>
             )}
           </div>
         </div>

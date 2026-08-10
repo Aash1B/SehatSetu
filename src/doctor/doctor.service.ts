@@ -6,6 +6,7 @@ import { randomBytes } from 'crypto';
 export interface DocumentUploadResult {
   id: string;
   name: string;
+  documentType: string; // ✅ FIX ADDED
   type: string;
   status: 'Verified' | 'Pending' | 'Rejected';
   uploadDate: string;
@@ -14,11 +15,10 @@ export interface DocumentUploadResult {
   publicUrl: string;
   fileSizeBytes: number;
 }
-
 @Injectable()
 export class DoctorService {
-  constructor(private readonly mailService: MailService) {}
-  
+  constructor(private readonly mailService: MailService) { }
+
   /**
    * Uploads doctor profile image to Supabase Storage Bucket 'doctor-profile-images'
    */
@@ -131,6 +131,7 @@ export class DoctorService {
     return {
       id: `doc-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       name: file.originalname || `${documentType}.pdf`,
+      documentType,
       type: (file.mimetype || 'application/pdf').includes('pdf') ? 'PDF' : 'IMAGE',
       status: 'Verified',
       uploadDate: new Date().toISOString().split('T')[0],

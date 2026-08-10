@@ -7,6 +7,7 @@ import EhrDraftCard from '../components/EhrDraftCard';
 import { listPendingEhrDrafts, EhrSessionError } from '../services/ehrApi';
 import { clearAuth } from '../../auth/authStorage';
 import type { EhrDraftRecord } from '../../types';
+import { LiquidLoader } from '../../common/components/LiquidLoader';
 
 const EhrDrafts: React.FC = () => {
   const navigate = useNavigate();
@@ -37,6 +38,14 @@ const EhrDrafts: React.FC = () => {
     fetchDrafts();
   }, [fetchDrafts]);
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen w-screen bg-luster-white">
+        <LiquidLoader text="Loading pending drafts" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen bg-luster-white font-sans text-deep-space">
       <DoctorSidebar />
@@ -51,9 +60,7 @@ const EhrDrafts: React.FC = () => {
               patient's verified record.
             </p>
 
-            {loading ? (
-              <div className="text-center py-12 text-gray-500">Loading pending drafts…</div>
-            ) : error ? (
+            {error ? (
               <div className="bg-white rounded-2xl border border-red-200 p-8 text-center shadow-sm">
                 <h3 className="text-lg font-bold text-red-600 mb-2">Could not load drafts</h3>
                 <p className="text-slate-600 mb-6">{error}</p>

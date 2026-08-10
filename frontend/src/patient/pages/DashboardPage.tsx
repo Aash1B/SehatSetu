@@ -711,6 +711,10 @@ const DashboardPage: React.FC = () => {
     }
   };
 
+  if (dashboardLoading) {
+    return <LiquidLoader fullScreen text="Loading your dashboard" />;
+  }
+
   return (
     <div className="sehat-dashboard-root">
       {/* 1. PERMANENT SIDEBAR PANEL (Matching Home Page Sidebar 100%) */}

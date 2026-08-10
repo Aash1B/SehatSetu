@@ -28,7 +28,7 @@ const StatCard: React.FC<StatCardProps> = ({
       <div className="text-4xl font-semibold text-slate-900 mb-1.5">
         {value}
       </div>
-      <p className="text-xs text-slate-500 font-normal mt-auto">{subtitle}</p>
+      <p className="text-sm text-slate-500 font-normal mt-auto">{subtitle}</p>
     </div>
   );
 };

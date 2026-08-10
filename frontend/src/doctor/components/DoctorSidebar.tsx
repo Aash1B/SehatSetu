@@ -125,28 +125,14 @@ const DoctorSidebar: React.FC<DoctorSidebarProps> = ({ className }) => {
         </nav>
       </div>
 
-      {/* Doctor Account Display */}
-      <div className="p-4 m-4 bg-white/15 rounded-xl flex flex-col gap-2.5 border border-white/10">
-        <p className="text-xs uppercase tracking-wider text-white/70 font-extrabold">Doctor Account</p>
-
-        <div className="flex items-center gap-3">
-          {/* Avatar with initials */}
-          <div className="w-10 h-10 rounded-full bg-habanero text-white flex items-center justify-center font-bold text-base shrink-0 select-none shadow-xs">
-            {initials}
-          </div>
-          <div className="overflow-hidden flex-1">
-            <p className="text-base font-extrabold text-white truncate leading-tight">{displayName}</p>
-            <p className="text-xs text-white/80 truncate mt-0.5 font-medium">{displaySpec}</p>
-          </div>
-        </div>
-
-        {/* Logout button */}
+      {/* Logout button */}
+      <div className="px-4 mb-6 mt-auto">
         <button
           onClick={handleLogout}
-          className="mt-1 flex items-center gap-2 text-xs font-bold text-white/80 hover:text-white transition-colors cursor-pointer"
+          className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-lg font-bold transition-colors relative text-white/80 hover:text-white hover:bg-white/10 cursor-pointer text-left"
         >
-          <LogOut className="w-4 h-4" />
-          Sign Out
+          <LogOut className="w-7 h-7 text-white" />
+          <span>Sign Out</span>
         </button>
       </div>
     </aside>
