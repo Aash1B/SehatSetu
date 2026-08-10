@@ -1,4 +1,33 @@
 {
+  "videoConsultation": {
+    "backToDashboard": "డాష్‌బోర్డ్‌కు తిరిగి వెళ్లండి",
+    "endToEndEncrypted": "ఎండ్-టు-ఎండ్ గుప్తీకరణ",
+    "connecting": "కనెక్ట్ అవుతోంది...",
+    "doctorOnline": "వైద్యుడు ఆన్‌లైన్‌లో ఉన్నారు",
+    "secure": "సురక్షితం",
+    "verifiedDoctor": "ధృవీకరించిన వైద్యుడు",
+    "clinic": "క్లినిక్",
+    "experience": "అనుభవం",
+    "notProvided": "అందించలేదు",
+    "languages": "భాషలు",
+    "engHindi": "ఇంగ్లీష్, హిందీ",
+    "consultationInProgress": "సంప్రదింపు కొనసాగుతోంది",
+    "availableNow": "ఇప్పుడు అందుబాటులో ఉంది",
+    "consultationChat": "సంప్రదింపు చాట్",
+    "privateEncrypted": "ప్రైవేట్ మరియు గుప్తీకరించబడింది",
+    "yourChat": "వైద్యుడితో మీ చాట్ ఇక్కడ కనిపిస్తుంది",
+    "shareSymptoms": "మీ లక్షణాలు మరియు ఆందోళనలను పంచుకోండి",
+    "askQuestion": "ప్రశ్న అడగండి...",
+    "shareSymptom": "లక్షణాన్ని పంచుకోండి...",
+    "typeMessage": "సందేశాన్ని టైప్ చేయండి...",
+    "messageLabel": "సందేశాన్ని టైప్ చేయండి",
+    "send": "పంపండి"
+  },
+  "relativeDate": {
+    "today": "ఈరోజు",
+    "tomorrow": "రేపు",
+    "yesterday": "నిన్న"
+  },
   "patientPortal": "రోగి పోర్టల్",
   "dashboard": "డాష్‌బోర్డ్",
   "myAppointments": "నా అపాయింట్‌మెంట్లు",
@@ -208,7 +237,7 @@
   "healthConcernTitle": "ఆరోగ్య సమస్య",
   "chatMessage": "చాట్ / సందేశం",
   "inPersonVisit": "వ్యక్తిగత సందర్శన",
-  "videoConsultation": "వీడియో సంప్రదింపు",
+  "videoConsultationLabel": "వీడియో సంప్రదింపు",
   "all": "అన్నీ",
   "allDoctors": "అన్నీ",
   "noDoctorMatches": "సరిపోలిన వైద్యులు లేరు",
@@ -216,6 +245,9 @@
   "bookingSummary": "బుకింగ్ సారాంశం",
   "needHelpChatBox": "సహాయం కావాలా?",
   "supportTeamHere": "మా సపోర్ట్ బృందం మీకు సహాయం చేయడానికి ఇక్కడ ఉంది.",
+  "emergency": {
+    "title": "అత్యవసర పరిస్థితి"
+  },
   "emergencyHelp": "అత్యవసర వైద్య సహాయం",
   "emergencySubtitle": "ప్రతి సెకను విలువైనప్పుడు వేగంగా, 24/7 ప్రతిస్పందన",
   "callAmbulance": "అంబులెన్స్ పిలవండి",
@@ -325,5 +357,18 @@
   "uploadedEhrReport": "అప్‌లోడ్ చేసిన EHR రిపోర్ట్",
   "extractedParameters": "సేకరించిన పారామీటర్లు",
   "noClinicalSummary": "క్లినికల్ సారాంశం అందుబాటులో లేదు",
-  "noAppointments": "మీకు {filter} అపాయింట్‌మెంట్లు లేవు."
+  "noAppointments": "మీకు {filter} అపాయింట్‌మెంట్లు లేవు.",
+  "healthQuestionnaireTitle": "ఆరోగ్య ప్రశ్నావళి",
+  "paymentTestTitle": "చెల్లింపు పరీక్ష",
+  "paymentTestVerified": "చెల్లింపు విజయవంతంగా ధృవీకరించబడింది! ✅",
+  "timezoneInfo": "అన్ని స్లాట్‌లు {{doctor}} డేటాబేస్ షెడ్యూల్ (IST) ఆధారంగా ప్రత్యక్షంగా రూపొందించబడతాయి",
+  "clinicalData": {
+    "diagnosis": "నిర్ధారణ",
+    "medications": "మందులు",
+    "vitals": "జీవ సూచికలు",
+    "notes": "గమనికలు",
+    "notAvailable": "అందుబాటులో లేదు",
+    "ocrText": "OCR వచనం",
+    "ocrResult": "OCR ఫలితం"
+  }
 }

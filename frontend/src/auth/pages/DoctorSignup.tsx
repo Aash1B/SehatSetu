@@ -5,6 +5,7 @@ import { signup, googleLogin } from '../api';
 import { validatePassword } from '../validatePassword';
 import GoogleSignInButton from '../components/GoogleSignInButton';
 import { saveAuth } from '../authStorage';
+import BrandLogo from '../../common/components/BrandLogo';
 
 export default function DoctorSignup() {
   const navigate = useNavigate();
@@ -62,9 +63,13 @@ navigate('/verify-otp', { state: { email, role: 'DOCTOR' } });
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#fff7ed] via-[#fed7aa] to-[#fb923c] px-4 py-12">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-1 text-3xl font-extrabold">
-            <span className="text-[#F98513]">Sehat</span>
-            <span className="text-slate-900">Setu</span>
+          <Link to="/" className="inline-flex items-center">
+            <BrandLogo
+              className="gap-2"
+              markWrapperClassName="w-9 h-9 rounded-lg bg-orange-50 flex items-center justify-center p-1.5"
+              wordmarkClassName="text-3xl font-extrabold tracking-tight"
+              accentClassName="text-blue-600 brand-title-accent"
+            />
           </Link>
           <p className="text-slate-800 font-bold text-lg mt-2">Create your Doctor account</p>
         </div>

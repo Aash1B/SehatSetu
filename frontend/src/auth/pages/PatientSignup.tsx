@@ -7,13 +7,15 @@ import { validatePassword } from '../validatePassword';
 import GoogleSignInButton from '../components/GoogleSignInButton';
 import { saveAuth } from '../authStorage';
 import { useTranslation } from 'react-i18next';
+import BrandLogo from '../../common/components/BrandLogo';
 
 type SignupMethod = 'email' | 'phone';
 
 export default function PatientSignup() {
   const navigate = useNavigate();
   const { t } = useTranslation(['auth', 'forms']);
-  const formsT = (key: string) => t(`forms:${key}`);
+  const { t: tForms } = useTranslation('forms');
+  const formsT = (key: string) => tForms(key);
   
   // Tab state
   const [signupMethod, setSignupMethod] = useState<SignupMethod>('email');
@@ -236,9 +238,13 @@ export default function PatientSignup() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-blue-50 px-4 py-12">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-1 text-2xl font-bold">
-            <span className="text-orange-500">Sehat</span>
-            <span className="text-slate-900">Setu</span>
+          <Link to="/" className="inline-flex items-center">
+            <BrandLogo
+              className="gap-2"
+              markWrapperClassName="w-8 h-8 rounded-xl bg-orange-50 flex items-center justify-center p-1.5"
+              wordmarkClassName="text-2xl font-extrabold tracking-tight"
+              accentClassName="text-blue-600 brand-title-accent"
+            />
           </Link>
           <p className="text-slate-500 mt-2">{t('patientSignup.portalLabel')}</p>
         </div>

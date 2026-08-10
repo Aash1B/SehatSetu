@@ -42,6 +42,19 @@
   "noDoctorsMatch": "உங்கள் தேவைகளுக்கு மருத்துவர்கள் இல்லை",
   "adjustSearch": "உங்கள் வடிகட்டிகள் அல்லது தேடல் வார்த்தைகளை சரிசெய்யவும்",
   "consultationFee": "ஆலோசனை கட்டணம்",
+  "consultationTime": {
+    "joinNow": "இப்போது சேரவும்",
+    "availableForTesting": "சோதனைக்கு கிடைக்கிறது",
+    "join": "ஆலோசனையில் சேரவும்",
+    "available": "கிடைக்கிறது",
+    "opensBefore": "{{time}} மணிக்கு தொடங்கும்",
+    "startsInHrs": "{{hours}} மணி {{minutes}} நிமிடங்களில் தொடங்கும்",
+    "opensIn": "{{minutes}} நிமிடங்களில் தொடங்கும்",
+    "scheduledFor": "{{time}} மணிக்கு திட்டமிடப்பட்டது",
+    "liveRoomActive": "நேரடி ஆலோசனை அறை செயல்பாட்டில் உள்ளது",
+    "ended": "ஆலோசனை முடிந்தது",
+    "timePassed": "திட்டமிடப்பட்ட நேரம் {{time}} மணிக்கு கடந்துவிட்டது"
+  },
   "detailTicket": {
     "patientName": "நோயாளி பெயர்",
     "ageGender": "வயது/பாலினம்",

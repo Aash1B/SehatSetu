@@ -18,7 +18,6 @@ interface UseChatbotResult {
   isTyping: boolean;
   error: ChatError | null;
   sendMessage: (message: string, opts?: { location?: { latitude: number; longitude: number } }) => void;
-  clearChat: () => void;
   retryLastMessage: () => void;
   handleQuickReply: (reply: string) => void;
   handleCardAction: (action: ChatCardAction, card: ChatCard) => void;
@@ -34,7 +33,7 @@ export function useChatbot(): UseChatbotResult {
   const [error, setError] = useState<ChatError | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const isOnline = useNetworkStatus();
-  const { saveMessages, loadMessages, clearMessages: clearPersistence } = useChatPersistence();
+  const { saveMessages, loadMessages } = useChatPersistence();
 
   const pendingRequestRef = useRef<AbortController | null>(null);
   const lastRequestRef = useRef<{ text: string; request: ChatRequest } | null>(null);
@@ -178,15 +177,6 @@ export function useChatbot(): UseChatbotResult {
     }
   }, [sendMessage]);
 
-  const clearChat = useCallback(() => {
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    rafRef.current = null;
-    setMessages([]);
-    setConversationId(null);
-    setError(null);
-    clearPersistence();
-  }, [clearPersistence]);
-
   const handleQuickReply = useCallback(
     (reply: string) => {
       sendMessage(reply);
@@ -305,7 +295,6 @@ export function useChatbot(): UseChatbotResult {
     isTyping,
     error,
     sendMessage,
-    clearChat,
     retryLastMessage,
     handleQuickReply,
     handleCardAction,

@@ -4,6 +4,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { type DoctorProfile } from '../utils/doctorProfile';
 import { getToken, getUser, clearAuth } from '../../auth/authStorage';
+import BrandLogo from '../../common/components/BrandLogo';
 
 export interface DoctorSidebarProps {
   className?: string;
@@ -87,10 +88,12 @@ const DoctorSidebar: React.FC<DoctorSidebarProps> = ({ className }) => {
       <div>
         {/* Logo */}
         <div className="p-6 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-md bg-habanero text-white flex items-center justify-center font-bold text-2xl leading-none pt-1">
-            s
-          </div>
-          <span className="font-bold text-2xl text-white tracking-tight">Sehat Setu</span>
+          <BrandLogo
+            className="gap-3"
+            markWrapperClassName="w-10 h-10 rounded-md bg-habanero flex items-center justify-center p-1.5"
+            wordmarkClassName="font-bold text-2xl text-white tracking-tight"
+            accentClassName="text-blue-400"
+          />
         </div>
 
         {/* Navigation */}

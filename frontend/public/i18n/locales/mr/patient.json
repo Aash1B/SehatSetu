@@ -1,4 +1,33 @@
 {
+  "videoConsultation": {
+    "backToDashboard": "डॅशबोर्डवर परत जा",
+    "endToEndEncrypted": "एंड-टू-एंड एन्क्रिप्टेड",
+    "connecting": "कनेक्ट होत आहे...",
+    "doctorOnline": "डॉक्टर ऑनलाइन",
+    "secure": "सुरक्षित",
+    "verifiedDoctor": "सत्यापित डॉक्टर",
+    "clinic": "क्लिनिक",
+    "experience": "अनुभव",
+    "notProvided": "माहिती दिलेली नाही",
+    "languages": "भाषा",
+    "engHindi": "इंग्रजी, हिंदी",
+    "consultationInProgress": "सल्लामसलत सुरू आहे",
+    "availableNow": "आत्ता उपलब्ध",
+    "consultationChat": "सल्लामसलत चॅट",
+    "privateEncrypted": "खाजगी आणि एन्क्रिप्टेड",
+    "yourChat": "डॉक्टरांसोबतची तुमची चॅट येथे दिसेल",
+    "shareSymptoms": "तुमची लक्षणे आणि चिंता सांगा",
+    "askQuestion": "प्रश्न विचारा...",
+    "shareSymptom": "लक्षण सांगा...",
+    "typeMessage": "संदेश टाइप करा...",
+    "messageLabel": "संदेश टाइप करा",
+    "send": "पाठवा"
+  },
+  "relativeDate": {
+    "today": "आज",
+    "tomorrow": "उद्या",
+    "yesterday": "काल"
+  },
   "patientPortal": "रुग्ण पोर्टल",
   "dashboard": "डॅशबोर्ड",
   "myAppointments": "माझे अपॉइंटमेंट",
@@ -207,7 +236,7 @@
   "healthConcernTitle": "आरोग्य समस्या",
   "chatMessage": "चॅट / संदेश",
   "inPersonVisit": "वैयक्तिक भेट",
-  "videoConsultation": "व्हिडिओ सल्लामसलत",
+  "videoConsultationLabel": "व्हिडिओ सल्लामसलत",
   "all": "सर्व",
   "allDoctors": "सर्व",
   "noDoctorMatches": "कोणताही डॉक्टर जुळत नाही",
@@ -215,6 +244,9 @@
   "bookingSummary": "बुकिंग सारांश",
   "needHelpChatBox": "मदत हवी आहे का?",
   "supportTeamHere": "आमची सपोर्ट टीम तुम्हाला मदत करण्यासाठी येथे आहे.",
+  "emergency": {
+    "title": "आणीबाणी"
+  },
   "emergencyHelp": "आपत्कालीन वैद्यकीय मदत",
   "emergencySubtitle": "प्रत्येक सेकंद महत्त्वाचा असताना जलद, 24/7 प्रतिसाद",
   "callAmbulance": "रुग्णवाहिका बोलवा",
@@ -323,5 +355,18 @@
   "uploadedEhrReport": "अपलोड केलेला EHR रिपोर्ट",
   "extractedParameters": "काढलेले मापदंड",
   "noClinicalSummary": "कोणताही क्लिनिकल सारांश उपलब्ध नाही",
-  "noAppointments": "तुमच्याकडे {filter} अपॉइंटमेंट नाहीत."
+  "noAppointments": "तुमच्याकडे {filter} अपॉइंटमेंट नाहीत.",
+  "healthQuestionnaireTitle": "आरोग्य प्रश्नावली",
+  "paymentTestTitle": "पेमेंट चाचणी",
+  "paymentTestVerified": "पेमेंट यशस्वीरित्या पडताळले गेले! ✅",
+  "timezoneInfo": "सर्व स्लॉट {{doctor}} यांच्या डेटाबेस वेळापत्रकावरून (IST) थेट तयार केले जातात",
+  "clinicalData": {
+    "diagnosis": "निदान",
+    "medications": "औषधे",
+    "vitals": "जीवनचिन्हे",
+    "notes": "नोंदी",
+    "notAvailable": "उपलब्ध नाही",
+    "ocrText": "OCR मजकूर",
+    "ocrResult": "OCR निकाल"
+  }
 }

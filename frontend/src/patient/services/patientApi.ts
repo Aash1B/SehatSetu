@@ -1,10 +1,14 @@
+import i18n from '../../i18n/config';
 import { getToken } from '../../auth/authStorage';
+import type { EhrDraftRecord } from '../../types';
+import type { MedicalReportResponse } from './medicalReportsApi';
 import { API_BASE_URL } from '../utils/constants';
 
 async function patientRequest<T>(path: string, init?: RequestInit): Promise<T> {
   const token = getToken();
-  if (!token) throw new Error('Please sign in to view your patient portal.');
+  if (!token) throw new Error(i18n.t('errors:authRequired'));
 
+<<<<<<< HEAD
   try {
     const response = await fetch(`${API_BASE_URL}/patient${path}`, {
       ...init,
@@ -29,15 +33,33 @@ async function patientRequest<T>(path: string, init?: RequestInit): Promise<T> {
       throw new Error('Unable to connect to SehatSetu backend server. Please check if the backend is running.');
     }
     throw err;
+=======
+  const response = await fetch(`${API_BASE_URL}/patient${path}`, {
+    ...init,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
+      ...init?.headers,
+    },
+  });
+  const body = await response.json().catch(() => null);
+  if (!response.ok) {
+    const fallbackKey = path === '/dashboard'
+      ? 'errors:unableToLoadDashboard'
+      : path.startsWith('/profile')
+        ? 'errors:unableToSaveProfile'
+        : 'errors:patientRequestFailed';
+    throw new Error(typeof body?.message === 'string' ? body.message : i18n.t(fallbackKey));
+>>>>>>> f2ba3bd81d747842c31a22fd223d1aa108909b66
   }
 }
 
 export interface PatientDashboardData {
   profile: Record<string, any>;
   appointments: any[];
-  ehrRecords: any[];
+  ehrRecords: EhrDraftRecord[];
   prescriptions: any[];
-  medicalReports: any[];
+  medicalReports: MedicalReportResponse[];
   payments: any[];
 }
 
@@ -68,7 +90,7 @@ export async function uploadPatientAvatar(file: File) {
     headers: { 'Content-Type': file.type, 'x-upsert': 'false' },
     body: file,
   });
-  if (!upload.ok) throw new Error('The profile picture could not be uploaded to storage.');
+  if (!upload.ok) throw new Error(i18n.t('errors:profilePictureUploadFailed'));
 
   return patientRequest<{ profileImagePath: string; profileImageUrl: string }>(
     `/profile/avatar/${intent.uploadId}/complete`,

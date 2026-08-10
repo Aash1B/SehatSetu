@@ -42,6 +42,19 @@
   "noDoctorsMatch": "ನಿಮ್ಮ ಮಾನದಂಡಗಳಿಗೆ ಹೊಂದಿಕೆಯಾಗುವ ವೈದ್ಯರಿಲ್ಲ",
   "adjustSearch": "ನಿಮ್ಮ ಫಿಲ್ಟರ್‌ಗಳು ಅಥವಾ ಹುಡುಕಾಟ ಪದಗಳನ್ನು ಸರಿಹೊಂದಿಸಿ",
   "consultationFee": "ಸಂಪರ್ಕ ಶುಲ್ಕ",
+  "consultationTime": {
+    "joinNow": "ಈಗ ಸೇರಿ",
+    "availableForTesting": "ಪರೀಕ್ಷೆಗೆ ಲಭ್ಯವಿದೆ",
+    "join": "ಸಮಾಲೋಚನೆಯಲ್ಲಿ ಸೇರಿ",
+    "available": "ಲಭ್ಯವಿದೆ",
+    "opensBefore": "{{time}}ಕ್ಕೆ ಆರಂಭವಾಗುತ್ತದೆ",
+    "startsInHrs": "{{hours}} ಗಂಟೆ {{minutes}} ನಿಮಿಷಗಳಲ್ಲಿ ಆರಂಭವಾಗುತ್ತದೆ",
+    "opensIn": "{{minutes}} ನಿಮಿಷಗಳಲ್ಲಿ ಆರಂಭವಾಗುತ್ತದೆ",
+    "scheduledFor": "{{time}}ಕ್ಕೆ ನಿಗದಿಯಾಗಿದೆ",
+    "liveRoomActive": "ಲೈವ್ ಸಮಾಲೋಚನಾ ಕೊಠಡಿ ಸಕ್ರಿಯವಾಗಿದೆ",
+    "ended": "ಸಮಾಲೋಚನೆ ಮುಗಿದಿದೆ",
+    "timePassed": "ನಿಗದಿತ ಸಮಯ {{time}}ಕ್ಕೆ ಕಳೆದಿದೆ"
+  },
   "detailTicket": {
     "patientName": "ರೋಗಿಯ ಹೆಸರು",
     "ageGender": "ವಯಸ್ಸು/ಲಿಂಗ",

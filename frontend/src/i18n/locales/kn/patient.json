@@ -1,4 +1,33 @@
 ﻿{
+  "videoConsultation": {
+    "backToDashboard": "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ಗೆ ಹಿಂತಿರುಗಿ",
+    "endToEndEncrypted": "ಎಂಡ್-ಟು-ಎಂಡ್ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಲಾಗಿದೆ",
+    "connecting": "ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ...",
+    "doctorOnline": "ವೈದ್ಯರು ಆನ್‌ಲೈನ್‌ನಲ್ಲಿ",
+    "secure": "ಸುರಕ್ಷಿತ",
+    "verifiedDoctor": "ಪರಿಶೀಲಿತ ವೈದ್ಯರು",
+    "clinic": "ಕ್ಲಿನಿಕ್",
+    "experience": "ಅನುಭವ",
+    "notProvided": "ಒದಗಿಸಲಾಗಿಲ್ಲ",
+    "languages": "ಭಾಷೆಗಳು",
+    "engHindi": "English, Hindi",
+    "consultationInProgress": "ಸಮಾಲೋಚನೆ ನಡೆಯುತ್ತಿದೆ",
+    "availableNow": "ಈಗ ಲಭ್ಯ",
+    "consultationChat": "ಸಮಾಲೋಚನಾ ಚಾಟ್",
+    "privateEncrypted": "ಖಾಸಗಿ ಮತ್ತು ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಲಾಗಿದೆ",
+    "yourChat": "ವೈದ್ಯರೊಂದಿಗಿನ ನಿಮ್ಮ ಚಾಟ್ ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ",
+    "shareSymptoms": "ನಿಮ್ಮ ರೋಗಲಕ್ಷಣಗಳು ಮತ್ತು ಕಾಳಜಿಗಳನ್ನು ಹಂಚಿಕೊಳ್ಳಿ",
+    "askQuestion": "ಪ್ರಶ್ನೆ ಕೇಳಿ...",
+    "shareSymptom": "ರೋಗಲಕ್ಷಣ ಹಂಚಿಕೊಳ್ಳಿ...",
+    "typeMessage": "ಸಂದೇಶ ಟೈಪ್ ಮಾಡಿ...",
+    "messageLabel": "ಸಂದೇಶ ಟೈಪ್ ಮಾಡಿ",
+    "send": "ಕಳುಹಿಸಿ"
+  },
+  "relativeDate": {
+    "today": "ಇಂದು",
+    "tomorrow": "ನಾಳೆ",
+    "yesterday": "ನಿನ್ನೆ"
+  },
   "patientPortal": "ರೋಗಿ ಪೋರ್ಟಲ್",
   "dashboard": "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
   "myAppointments": "ನನ್ನ ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್‌ಗಳು",
@@ -207,7 +236,7 @@
   "healthConcernTitle": "ಆರೋಗ್ಯ ಕಾಳಜಿ",
   "chatMessage": "ಚಾಟ್ / ಸಂದೇಶ",
   "inPersonVisit": "ವ್ಯಕ್ತಿಗತ ಭೇಟಿ",
-  "videoConsultation": "ವೀಡಿಯೋ ಸಮಾಲೋಚನೆ",
+  "videoConsultationLabel": "ವೀಡಿಯೋ ಸಮಾಲೋಚನೆ",
   "all": "ಎಲ್ಲ",
   "allDoctors": "ಎಲ್ಲ",
   "noDoctorMatches": "ಹೊಂದಿಕೆಯಾಗುವ ವೈದ್ಯರಿಲ್ಲ",
@@ -215,6 +244,9 @@
   "bookingSummary": "ಬುಕಿಂಗ್ ಸಾರಾಂಶ",
   "needHelpChatBox": "ಸಹಾಯ ಬೇಕೇ?",
   "supportTeamHere": "ನಮ್ಮ ಸಪೋರ್ಟ್ ತಂಡ ನಿಮಗೆ ಸಹಾಯ ಮಾಡಲು ಇಲ್ಲಿದೆ.",
+  "emergency": {
+    "title": "ತುರ್ತು ಪರಿಸ್ಥಿತಿ"
+  },
   "emergencyHelp": "ತುರ್ತು ವೈದ್ಯಕೀಯ ಸಹಾಯ",
   "emergencySubtitle": "ಪ್ರತಿ ಸೆಕೆಂಡು ಮುಖ್ಯವಾದಾಗ ವೇಗ, 24/7 ಪ್ರತಿಕ್ರಿಯೆ",
   "callAmbulance": "ಆಂಬ್ಯುಲೆನ್ಸ್ ಕರೆಯಿರಿ",
@@ -323,5 +355,18 @@
   "uploadedEhrReport": "ಅಪ್‌ಲೋಡ್ ಮಾಡಿದ EHR ವರದಿ",
   "extractedParameters": "ಹೊರತೆಗೆದ ನಿಯತಾಂಕಗಳು",
   "noClinicalSummary": "ಕ್ಲಿನಿಕಲ್ ಸಾರಾಂಶ ಲಭ್ಯವಿಲ್ಲ",
-  "noAppointments": "ನಿಮಗೆ {filter} ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್‌ಗಳಿಲ್ಲ."
+  "noAppointments": "ನಿಮಗೆ {filter} ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್‌ಗಳಿಲ್ಲ.",
+  "healthQuestionnaireTitle": "ಆರೋಗ್ಯ ಪ್ರಶ್ನಾವಳಿ",
+  "paymentTestTitle": "ಪಾವತಿ ಪರೀಕ್ಷೆ",
+  "paymentTestVerified": "ಪಾವತಿಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಪರಿಶೀಲಿಸಲಾಗಿದೆ! ✅",
+  "timezoneInfo": "ಎಲ್ಲ ಸ್ಲಾಟ್‌ಗಳನ್ನು {{doctor}} ಅವರ ಡೇಟಾಬೇಸ್ ವೇಳಾಪಟ್ಟಿಯ (IST) ಆಧಾರದ ಮೇಲೆ ಲೈವ್ ರಚಿಸಲಾಗುತ್ತದೆ",
+  "clinicalData": {
+    "diagnosis": "ರೋಗನಿರ್ಣಯ",
+    "medications": "ಔಷಧಗಳು",
+    "vitals": "ಜೀವಾಂಶಗಳು",
+    "notes": "ಟಿಪ್ಪಣಿಗಳು",
+    "notAvailable": "ಲಭ್ಯವಿಲ್ಲ",
+    "ocrText": "OCR ಪಠ್ಯ",
+    "ocrResult": "OCR ಫಲಿತಾಂಶ"
+  }
 }

@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { ChatMessage, ChatCard, ChatCardAction, ChatSlot } from '../types/chatbot.types';
 import { renderMarkdown } from '../utils/markdown';
-import { Copy, Check, Clock } from 'lucide-react';
+import { Copy, Check } from 'lucide-react';
 import CardRenderer from './CardRenderer';
 import QuickReplies from './QuickReplies';
+import BrandLogo from '../../common/components/BrandLogo';
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -43,10 +44,16 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   const isUser = message.role === 'user';
 
   return (
-    <div
-      className={`message-bubble ${isUser ? 'message-bubble-user' : 'message-bubble-assistant'}`}
-      data-message-id={message.id}
-    >
+    <div className={`message-row ${isUser ? 'message-row-user' : 'message-row-assistant'}`}>
+      {!isUser && (
+        <div className="message-assistant-avatar" aria-hidden="true">
+          <BrandLogo showWordmark={false} markWrapperClassName="" alt="" />
+        </div>
+      )}
+      <div
+        className={`message-bubble ${isUser ? 'message-bubble-user' : 'message-bubble-assistant'}`}
+        data-message-id={message.id}
+      >
       {message.isTyping ? (
         <div className="message-content" dangerouslySetInnerHTML={{ __html: html }} />
       ) : (
@@ -74,7 +81,6 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 
       {isUser && message.timestamp && (
         <div className="message-timestamp-user" aria-hidden="true">
-          <Clock className="w-3 h-3" />
           {formattedTime}
         </div>
       )}
@@ -101,6 +107,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           onReplyClick={(reply) => onQuickReplyClick?.(reply)}
         />
       )}
+      </div>
     </div>
   );
 };

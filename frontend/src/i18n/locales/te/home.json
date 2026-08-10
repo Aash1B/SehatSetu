@@ -1,1 +1,72 @@
-{ "headline": "Healthcare Without Distance, from anywhere in India", "description": "Connect with verified medical specialists in minutes. Book online video appointments, receive instant digital prescriptions, and manage health records securely.", "cta": "Find a Doctor Now", "verifiedDoctors": "Verified Doctors", "aiAssistedCare": "AI-Assisted Care", "secureRecords": "Secure Health Records", "ruralUrban": "Rural & Urban Coverage", "heroAlt": "SehatSetu Doctor Consultation", "howItWorks": "How It Works", "step1Title": "Create Your Account", "step1Desc": "Quick sign-up with secure email verification", "step2Title": "Find Your Doctor", "step2Desc": "Browse specialists by your condition or location", "step3Title": "Book & Consult", "step3Desc": "Schedule your visit and consult your Doctor online through SehatSetu", "testimonialsTitle": "What Our Patients Say", "stats": { "patientsServed": "సేవ చేసిన రోగులు", "certifiedDoctors": "ధృవీకరించిన డాక్టర్లు", "patientSatisfaction": "రోగి సంతృప్తి", "supportAvailable": "మద్దతు లభ్యత" }, "searchSection": { "findYourDoctor": "మీ డాక్టర్ ని కనుగొనండి", "searchSubtitle": "కొంత సేపటిలో ధృవీకరించిన వైద్య నిపుణులతో కనెక్ట్ అవ్వండి", "topDoctorsNearYou": "మీకు దగ్గరలోని ఉన్నత డాక్టర్లు", "viewAllDoctors": "అన్ని డాక్టర్లు చూడండి" }, "servicesSection": { "careFitsYourLife": "మీ జీవితానికి అనుకూలమైన సంరక్షణ", "services": "మా సేవలు", "labTestsNearby": { "title": "దగ్గరలోని ల్యాబ్ పరీక్షలు", "description": "మీ స్థానం దగ్గర నమ్మదలచు నిదానికి ల్యాబ్లు మరియు రక్త పరీక్షా కేంద్రాలు కనుగొనండి.", "learnMore": "మరింత తెలుసుకోండి →" }, "specialistReferral": { "title": "నిపుణుడికి ఉపసంహారం", "description": "మీ స్థితికి సరిపోవడానికి సరైన నిపుణుడికి కనెక్ట్ అవ్వండి.", "learnMore": "మరింత తెలుసుకోండి →" }, "emergencyCare": { "title": "ఎమర్జెన్సీ సంరక్షణ", "description": "ప్రతి సెకను ప్రాణవంతంగా ఉన్నప్పుడు వేగవంతమైన, నమ్మదలచు మద్దతు.", "learnMore": "మరింత తెలుసుకోండి →" } }, "testimonials": [ { "quote": "“SehatSetu నా ఆరోగ్య నిర్వహణ పద్ధతిని మార్చింది. బుకింగ్ సులభంగా ఉంది!”", "name": "అనికా ఆర్.", "subText": "2022 నుండి రోగి", "avatar": "AR" }, { "quote": "“నేను కొంత సేపటిలో ఒక హృద్రోగ నిపుణుడిని కనుగొన్నాను. అనుభవం అంతరాయం లేకుండా ఉంది.”", "name": "విక్రమ్ ఎస్.", "subText": "2023 నుండి రోగి", "avatar": "VS" }, { "quote": "“డాక్టర్లు అత్యంత ప్రొఫెషనల్ మరియు సహానుభూతి ఉన్నవారు. చాలా సిఫార్సు చేస్తాను!”", "name": "సానా కె.", "subText": "2021 నుండి రోగి", "avatar": "SK" } ], "noDoctorMatches": "\"{searchTerm}\" తో సరిపోలేదు. మరొక పేరు ప్రయత్నించండి లేదా ఫిల్టర్లు క్లియర్ చేయండి." }
+{
+  "headline": "దూరం లేకుండా, భారతదేశంలోని ఎక్కడి నుంచైనా ఆరోగ్య సంరక్షణ",
+  "description": "నిమిషాల్లో ధృవీకరించిన వైద్య నిపుణులతో కనెక్ట్ అవ్వండి. ఆన్‌లైన్ వీడియో అపాయింట్‌మెంట్లు బుక్ చేసుకోండి, తక్షణ డిజిటల్ ప్రిస్క్రిప్షన్లు పొందండి, ఆరోగ్య రికార్డులను సురక్షితంగా నిర్వహించండి.",
+  "cta": "ఇప్పుడే వైద్యుడిని కనుగొనండి",
+  "verifiedDoctors": "ధృవీకరించిన వైద్యులు",
+  "aiAssistedCare": "AI సహాయక సంరక్షణ",
+  "secureRecords": "సురక్షిత ఆరోగ్య రికార్డులు",
+  "ruralUrban": "గ్రామీణ మరియు పట్టణ ప్రాంతాల కవరేజ్",
+  "heroAlt": "SehatSetu వైద్యుడి సంప్రదింపు",
+  "howItWorks": "ఇది ఎలా పనిచేస్తుంది",
+  "step1Title": "మీ ఖాతాను సృష్టించండి",
+  "step1Desc": "సురక్షిత ఇమెయిల్ ధృవీకరణతో త్వరిత సైన్-అప్",
+  "step2Title": "మీ వైద్యుడిని కనుగొనండి",
+  "step2Desc": "మీ ఆరోగ్య పరిస్థితి లేదా స్థానం ఆధారంగా నిపుణులను చూడండి",
+  "step3Title": "బుక్ చేసి సంప్రదించండి",
+  "step3Desc": "మీ సందర్శనను షెడ్యూల్ చేసి SehatSetu ద్వారా మీ వైద్యుడిని ఆన్‌లైన్‌లో సంప్రదించండి",
+  "testimonialsTitle": "మా రోగులు ఏమంటున్నారు",
+  "stats": {
+    "patientsServed": "సేవ చేసిన రోగులు",
+    "certifiedDoctors": "ధృవీకరించిన డాక్టర్లు",
+    "patientSatisfaction": "రోగి సంతృప్తి",
+    "supportAvailable": "మద్దతు లభ్యత",
+    "connectingIndia": "భారతదేశాన్ని అనుసంధానించడం",
+    "everyCity": "ప్రతి నగరం"
+  },
+  "searchSection": {
+    "findYourDoctor": "మీ వైద్యుడిని కనుగొనండి",
+    "searchSubtitle": "నిమిషాల్లో ధృవీకరించిన వైద్య నిపుణులతో కనెక్ట్ అవ్వండి",
+    "topDoctorsNearYou": "మీ సమీపంలోని అగ్ర వైద్యులు",
+    "viewAllDoctors": "అందరు వైద్యులను చూడండి"
+  },
+  "servicesSection": {
+    "careFitsYourLife": "మీ జీవితానికి సరిపోయే సంరక్షణ",
+    "services": "మా సేవలు",
+    "labTestsNearby": {
+      "title": "సమీపంలోని ల్యాబ్ పరీక్షలు",
+      "description": "మీ స్థానానికి సమీపంలో నమ్మకమైన నిర్ధారణ ల్యాబ్‌లు మరియు రక్త పరీక్షా కేంద్రాలను కనుగొనండి.",
+      "learnMore": "మరింత తెలుసుకోండి →"
+    },
+    "specialistReferral": {
+      "title": "నిపుణుడి రిఫరల్",
+      "description": "మీ ఆరోగ్య పరిస్థితికి సరైన నిపుణుడితో కనెక్ట్ అవ్వండి.",
+      "learnMore": "మరింత తెలుసుకోండి →"
+    },
+    "emergencyCare": {
+      "title": "అత్యవసర సంరక్షణ",
+      "description": "ప్రతి సెకను ముఖ్యమైనప్పుడు వేగవంతమైన, నమ్మకమైన మద్దతు.",
+      "learnMore": "మరింత తెలుసుకోండి →"
+    }
+  },
+  "testimonials": [
+    {
+      "quote": "“SehatSetu నా ఆరోగ్య నిర్వహణ పద్ధతిని మార్చింది. బుకింగ్ సులభంగా ఉంది!”",
+      "name": "అనికా ఆర్.",
+      "subText": "2022 నుండి రోగి",
+      "avatar": "AR"
+    },
+    {
+      "quote": "“నేను కొంత సేపటిలో ఒక హృద్రోగ నిపుణుడిని కనుగొన్నాను. అనుభవం అంతరాయం లేకుండా ఉంది.”",
+      "name": "విక్రమ్ ఎస్.",
+      "subText": "2023 నుండి రోగి",
+      "avatar": "VS"
+    },
+    {
+      "quote": "“డాక్టర్లు అత్యంత ప్రొఫెషనల్ మరియు సహానుభూతి ఉన్నవారు. చాలా సిఫార్సు చేస్తాను!”",
+      "name": "సానా కె.",
+      "subText": "2021 నుండి రోగి",
+      "avatar": "SK"
+    }
+  ],
+  "noDoctorMatches": "\"{searchTerm}\" కు సరిపోలే వైద్యుడు లేరు. మరొక పేరు ప్రయత్నించండి లేదా ఫిల్టర్లను క్లియర్ చేయండి."
+}

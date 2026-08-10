@@ -23,5 +23,15 @@
   "appointmentNotFound": "Unable to load the appointment being rescheduled.",
   "invalidOtp": "Please enter a valid 6-digit code.",
   "unknownError": "Something went wrong. Please try again.",
-  "unexpectedError": "An unexpected error occurred."
-}
+  "unexpectedError": "An unexpected error occurred.",
+  "videoRoomToken": "Unable to get the video room token.",
+  "videoRoomConfig": "The video room configuration is incomplete.",
+  "videoRoomConnect": "Unable to connect to the video consultation.",
+  "consultationEnded": "Consultation ended by the patient.",
+  "authRequired": "Please sign in to continue.",
+  "patientRequestFailed": "Unable to complete the patient request.",
+  "mchRequestFailed": "The MCH request failed.",
+  "invalidReportType": "Choose a PDF, JPEG, PNG, or WebP report.",
+  "reportFileSize": "The report must be between 1 byte and 20 MB.",
+  "paymentOrderFailed": "Failed to create payment order.",
+  "paymentVerificationFailed": "Payment verification failed."}

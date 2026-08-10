@@ -80,8 +80,8 @@ export function getAppointmentTimeStatus(
     return {
       isJoinable: true,
       status: 'JOIN_NOW',
-      label: t('appointment.consultationTime.joinNow'),
-      sublabel: t('appointment.consultationTime.availableForTesting'),
+      label: t('appointment:consultationTime.joinNow'),
+      sublabel: t('appointment:consultationTime.availableForTesting'),
       minutesUntilStart: 0,
       scheduledDateTime: null,
     };
@@ -104,8 +104,8 @@ export function getAppointmentTimeStatus(
     return {
       isJoinable: true,
       status: 'JOIN_NOW',
-      label: t('appointment.consultationTime.join'),
-      sublabel: t('appointment.consultationTime.available'),
+      label: t('appointment:consultationTime.join'),
+      sublabel: t('appointment:consultationTime.available'),
       minutesUntilStart: 0,
       scheduledDateTime: null,
     };
@@ -126,18 +126,18 @@ export function getAppointmentTimeStatus(
 
   if (nowMs < joinWindowStartMs) {
     // Too early
-    let timeSublabel = t('appointment.consultationTime.opensBefore', { time: timeFormatted });
+    let timeSublabel = t('appointment:consultationTime.opensBefore', { time: timeFormatted });
     if (minutesUntilStart > 60) {
       const hours = Math.floor(minutesUntilStart / 60);
-      timeSublabel = t('appointment.consultationTime.startsInHrs', { hours, minutes: minutesUntilStart % 60 });
+      timeSublabel = t('appointment:consultationTime.startsInHrs', { hours, minutes: minutesUntilStart % 60 });
     } else if (minutesUntilStart > 0) {
-      timeSublabel = t('appointment.consultationTime.opensIn', { minutes: minutesUntilStart - 10 });
+      timeSublabel = t('appointment:consultationTime.opensIn', { minutes: minutesUntilStart - 10 });
     }
 
     return {
       isJoinable: false,
       status: 'UPCOMING',
-      label: t('appointment.consultationTime.scheduledFor', { time: timeFormatted }),
+      label: t('appointment:consultationTime.scheduledFor', { time: timeFormatted }),
       sublabel: timeSublabel,
       minutesUntilStart,
       scheduledDateTime: apptDate,
@@ -147,8 +147,8 @@ export function getAppointmentTimeStatus(
     return {
       isJoinable: true,
       status: 'JOIN_NOW',
-      label: t('appointment.consultationTime.joinNow'),
-      sublabel: t('appointment.consultationTime.liveRoomActive'),
+      label: t('appointment:consultationTime.joinNow'),
+      sublabel: t('appointment:consultationTime.liveRoomActive'),
       minutesUntilStart: 0,
       scheduledDateTime: apptDate,
     };
@@ -157,8 +157,8 @@ export function getAppointmentTimeStatus(
     return {
       isJoinable: false,
       status: 'EXPIRED',
-      label: t('appointment.consultationTime.ended'),
-      sublabel: t('appointment.consultationTime.timePassed', { time: timeFormatted }),
+      label: t('appointment:consultationTime.ended'),
+      sublabel: t('appointment:consultationTime.timePassed', { time: timeFormatted }),
       minutesUntilStart: 0,
       scheduledDateTime: apptDate,
     };

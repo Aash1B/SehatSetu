@@ -32,7 +32,8 @@ interface ConsultationAppointment {
 const VideoConsultationPage: React.FC = () => {
   const { id = '1' } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { t } = useTranslation(['patient', 'common']);
+  const { t: tPatient } = useTranslation('patient');
+  const { t: tErrors } = useTranslation('errors');
   const [showPrescriptionModal, setShowPrescriptionModal] = useState<boolean>(false);
   const [patientPrescription, setPatientPrescription] = useState<Record<string, unknown> | null>(null);
   const [appointment, setAppointment] = useState<ConsultationAppointment | null>(null);
@@ -62,7 +63,7 @@ const VideoConsultationPage: React.FC = () => {
             if (prescription) {
               setPatientPrescription({
                 id: prescription.id,
-                doctorName: appointmentData.doctor?.name || appointmentData.doctor?.user?.fullName || 'Doctor',
+                doctorName: appointmentData.doctor?.name || appointmentData.doctor?.user?.fullName || tPatient('doctor'),
                 doctorSpecialty: appointmentData.doctor?.specialty || '',
                 doctorHospital: appointmentData.doctor?.hospital || 'SehatSetu Digital Health Clinic',
                 patientName: appointmentData.patient?.user?.fullName || appointmentData.patientName || 'Patient',
@@ -84,18 +85,18 @@ const VideoConsultationPage: React.FC = () => {
         const resp = await fetch(`/api/livekit/token?appointmentId=${encodeURIComponent(consultationId)}`, {
           headers: authHeaders,
         });
-        if (!resp.ok) throw new Error(`${t('errors.videoRoomToken')} (${resp.status})`);
+        if (!resp.ok) throw new Error(`${tErrors('videoRoomToken')} (${resp.status})`);
         const data = await resp.json();
-        if (!data.token || !data.serverUrl) throw new Error(t('errors.videoRoomConfig'));
+        if (!data.token || !data.serverUrl) throw new Error(tErrors('videoRoomConfig'));
         setToken(data.token);
         setServerUrl(data.serverUrl);
         setConnectionError('');
       } catch (e) {
         console.error(e);
-        setConnectionError(e instanceof Error ? e.message : t('errors.videoRoomConnect'));
+        setConnectionError(e instanceof Error ? e.message : tErrors('videoRoomConnect'));
       }
     })();
-  }, [consultationId, t]);
+  }, [consultationId, tErrors]);
 
   // Timer interval effect
   useEffect(() => {
@@ -117,7 +118,7 @@ const VideoConsultationPage: React.FC = () => {
         body: JSON.stringify({
           appointmentId: id || '1',
           durationSeconds: secondsElapsed,
-          notes: t('errors.consultationEnded'),
+          notes: tErrors('consultationEnded'),
         }),
       });
     } catch (err) {
@@ -141,7 +142,7 @@ const VideoConsultationPage: React.FC = () => {
           const rx = latest.prescription;
           setPatientPrescription({
             id: rx.id,
-            doctorName: latest.doctor?.name || latest.doctor?.user?.fullName || 'Doctor',
+            doctorName: latest.doctor?.name || latest.doctor?.user?.fullName || tPatient('doctor'),
             doctorSpecialty: latest.doctor?.specialty || '',
             doctorHospital: latest.doctor?.hospital || 'SehatSetu Digital Health Clinic',
             patientName: latest.patient?.user?.fullName || latest.patientName || 'Patient',
@@ -178,12 +179,12 @@ const VideoConsultationPage: React.FC = () => {
               onClick={() => navigate('/patient/dashboard')}
               className="text-gray-500 hover:text-deep-space font-medium text-sm transition-colors"
             >
-              ← {t('patient.videoConsultation.backToDashboard')}
+              ← {tPatient('videoConsultation.backToDashboard')}
             </button>
             <div className="h-6 w-px bg-gray-200"></div>
             <div className="flex items-center gap-2 text-green-600 bg-green-50 px-3 py-1 rounded-full text-xs font-bold border border-green-200">
               <Shield className="w-4 h-4" />
-              {t('patient.videoConsultation.endToEndEncrypted')}
+              {tPatient('videoConsultation.endToEndEncrypted')}
             </div>
           </div>
           <ConsultationTimer />
@@ -215,7 +216,7 @@ const VideoConsultationPage: React.FC = () => {
                   <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
                     <div className="text-white/40 flex flex-col items-center gap-3">
                       <User className="w-20 h-20" />
-                      <p className="font-medium text-lg">{connectionError || `${appointment?.doctor?.name || appointment?.doctor?.user?.fullName || 'Doctor'} (${t('patient.videoConsultation.connecting')})`}</p>
+                      <p className="font-medium text-lg">{connectionError || `${appointment?.doctor?.name || appointment?.doctor?.user?.fullName || tPatient('doctor')} (${tPatient('videoConsultation.connecting')})`}</p>
                     </div>
                   </div>
                 )}
@@ -227,55 +228,55 @@ const VideoConsultationPage: React.FC = () => {
             <aside className="consultation-side-panel">
               <section className="consultation-doctor-card">
                 <div className="consultation-doctor-topline">
-                  <span className="consultation-live-dot"><i /> {t('patient.videoConsultation.doctorOnline')}</span>
-                  <span className="consultation-secure-chip"><Shield /> {t('patient.videoConsultation.secure')}</span>
+                  <span className="consultation-live-dot"><i /> {tPatient('videoConsultation.doctorOnline')}</span>
+                  <span className="consultation-secure-chip"><Shield /> {tPatient('videoConsultation.secure')}</span>
                 </div>
                 <div className="consultation-doctor-identity">
                   <div className="consultation-doctor-avatar">
-                    {(appointment?.doctor?.name || appointment?.doctor?.user?.fullName || t('patient.videoConsultation.doctorOnline', { defaultValue: 'Doctor' })).split(/\s+/).filter(Boolean).slice(-2).map((part: string) => part[0]).join('').toUpperCase()}
+                    {(appointment?.doctor?.name || appointment?.doctor?.user?.fullName || tPatient('doctor')).split(/\s+/).filter(Boolean).slice(-2).map((part: string) => part[0]).join('').toUpperCase()}
                   </div>
                   <div>
-                    <span className="consultation-verified-label"><BadgeCheck /> {t('patient.videoConsultation.verifiedDoctor')}</span>
-                    <h3>{appointment?.doctor?.name || appointment?.doctor?.user?.fullName || 'Doctor'}</h3>
+                    <span className="consultation-verified-label"><BadgeCheck /> {tPatient('videoConsultation.verifiedDoctor')}</span>
+                    <h3>{appointment?.doctor?.name || appointment?.doctor?.user?.fullName || tPatient('doctor')}</h3>
                     <p>{appointment?.doctor?.specialty || ''}</p>
-                    <span className="consultation-clinic-label">{appointment?.doctor?.hospital || t('patient.videoConsultation.clinic')}</span>
+                    <span className="consultation-clinic-label">{appointment?.doctor?.hospital || tPatient('videoConsultation.clinic')}</span>
                   </div>
                 </div>
                 <div className="consultation-doctor-facts">
                   <div>
-                    <span>{t('patient.videoConsultation.experience')}</span>
-                    <strong>{appointment?.doctor?.experience || t('patient.videoConsultation.notProvided')}</strong>
+                    <span>{tPatient('videoConsultation.experience')}</span>
+                    <strong>{appointment?.doctor?.experience || tPatient('videoConsultation.notProvided')}</strong>
                   </div>
                   <div>
-                    <span>{t('patient.videoConsultation.languages')}</span>
-                    <strong>{t('patient.videoConsultation.engHindi')}</strong>
+                    <span>{tPatient('videoConsultation.languages')}</span>
+                    <strong>{tPatient('videoConsultation.engHindi')}</strong>
                   </div>
                 </div>
                 <div className="consultation-session-strip">
-                  <span><Clock3 /> {t('patient.videoConsultation.consultationInProgress')}</span>
-                  <strong>{t('patient.videoConsultation.availableNow')}</strong>
+                  <span><Clock3 /> {tPatient('videoConsultation.consultationInProgress')}</span>
+                  <strong>{tPatient('videoConsultation.availableNow')}</strong>
                 </div>
               </section>
 
               <section className="consultation-chat-card">
                 <header className="consultation-chat-header">
                   <span className="consultation-chat-icon"><MessageSquare /></span>
-                  <div><h4>{t('patient.videoConsultation.consultationChat')}</h4><p>{t('patient.videoConsultation.privateEncrypted')}</p></div>
+                  <div><h4>{tPatient('videoConsultation.consultationChat')}</h4><p>{tPatient('videoConsultation.privateEncrypted')}</p></div>
                 </header>
                 <div className="consultation-chat-body">
                   <div className="consultation-chat-empty">
                     <span><MessageSquare /></span>
-                    <strong>{t('patient.videoConsultation.yourChat')}</strong>
-                    <p>{t('patient.videoConsultation.shareSymptoms')}</p>
+                    <strong>{tPatient('videoConsultation.yourChat')}</strong>
+                    <p>{tPatient('videoConsultation.shareSymptoms')}</p>
                     <div className="consultation-quick-notes" aria-hidden="true">
-                      <small>{t('patient.videoConsultation.askQuestion')}</small>
-                      <small>{t('patient.videoConsultation.shareSymptom')}</small>
+                      <small>{tPatient('videoConsultation.askQuestion')}</small>
+                      <small>{tPatient('videoConsultation.shareSymptom')}</small>
                     </div>
                   </div>
                 </div>
                 <div className="consultation-chat-composer">
-                  <input type="text" placeholder={t('patient.videoConsultation.typeMessage')} aria-label={t('patient.videoConsultation.messageLabel')} />
-                  <button type="button" aria-label={t('appointment.inPerson', { defaultValue: t('appointment.video') })}><Send /><span>{t('patient.videoConsultation.send')}</span></button>
+                  <input type="text" placeholder={tPatient('videoConsultation.typeMessage')} aria-label={tPatient('videoConsultation.messageLabel')} />
+                  <button type="button" aria-label={tPatient('videoConsultation.send')}><Send /><span>{tPatient('videoConsultation.send')}</span></button>
                 </div>
               </section>
             </aside>

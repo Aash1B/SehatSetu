@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../utils/constants';
 import { setToken } from '../utils/storage';
+import { useTranslation } from 'react-i18next';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -24,16 +26,16 @@ const LoginPage: React.FC = () => {
       const body = await response.json().catch(() => null);
       if (!response.ok || typeof body?.accessToken !== 'string') {
         throw new Error(
-          typeof body?.message === 'string' ? body.message : 'Sign in failed.',
+          typeof body?.message === 'string' ? body.message : t('auth:patientLogin.signInFailed'),
         );
       }
       if (body.role !== 'PATIENT') {
-        throw new Error('Please use a patient account for the patient portal.');
+        throw new Error(t('auth:patientLogin.patientAccountRequired'));
       }
       setToken(body.accessToken);
       navigate('/patient/dashboard');
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Sign in failed.');
+      setError(reason instanceof Error ? reason.message : t('auth:patientLogin.signInFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -45,13 +47,13 @@ const LoginPage: React.FC = () => {
         onSubmit={handleSubmit}
         className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg"
       >
-        <h1 className="mb-2 text-3xl font-bold text-slate-900">Patient sign in</h1>
+        <h1 className="mb-2 text-3xl font-bold text-slate-900">{t('auth:patientLogin.title')}</h1>
         <p className="mb-6 text-sm text-slate-600">
-          Sign in to upload and securely process your medical reports.
+          {t('auth:patientLogin.description')}
         </p>
 
         <label className="mb-2 block text-sm font-semibold text-slate-700">
-          Email
+          {t('auth:patientLogin.emailLabel')}
         </label>
         <input
           type="email"
@@ -63,7 +65,7 @@ const LoginPage: React.FC = () => {
         />
 
         <label className="mb-2 block text-sm font-semibold text-slate-700">
-          Password
+          {t('auth:patientLogin.passwordLabel')}
         </label>
         <input
           type="password"
@@ -81,7 +83,7 @@ const LoginPage: React.FC = () => {
           disabled={submitting}
           className="w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white disabled:opacity-60"
         >
-          {submitting ? 'Signing in…' : 'Sign in'}
+          {submitting ? t('auth:patientLogin.submitting') : t('auth:patientLogin.submit')}
         </button>
       </form>
     </div>
