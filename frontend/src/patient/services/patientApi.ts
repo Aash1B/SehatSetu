@@ -5,19 +5,31 @@ async function patientRequest<T>(path: string, init?: RequestInit): Promise<T> {
   const token = getToken();
   if (!token) throw new Error('Please sign in to view your patient portal.');
 
-  const response = await fetch(`${API_BASE_URL}/patient${path}`, {
-    ...init,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
-      ...init?.headers,
-    },
-  });
-  const body = await response.json().catch(() => null);
-  if (!response.ok) {
-    throw new Error(typeof body?.message === 'string' ? body.message : 'Unable to load patient data.');
+  try {
+    const response = await fetch(`${API_BASE_URL}/patient${path}`, {
+      ...init,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
+        ...init?.headers,
+      },
+    });
+    const body = await response.json().catch(() => null);
+
+    if (response.status === 401) {
+      throw new Error('Session expired. Please sign out and sign in again.');
+    }
+
+    if (!response.ok) {
+      throw new Error(typeof body?.message === 'string' ? body.message : 'Unable to load patient data.');
+    }
+    return body as T;
+  } catch (err: any) {
+    if (err instanceof TypeError && (err.message === 'Failed to fetch' || err.message.includes('fetch'))) {
+      throw new Error('Unable to connect to SehatSetu backend server. Please check if the backend is running.');
+    }
+    throw err;
   }
-  return body as T;
 }
 
 export interface PatientDashboardData {

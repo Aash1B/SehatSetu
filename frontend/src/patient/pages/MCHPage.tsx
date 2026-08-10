@@ -7,11 +7,12 @@ import {
   listAncVisits, listVaccinations, listGrowthMeasurements,
   listMilestones, createGrowthMeasurement, updateMilestone,
   listInvestigations, createInvestigation, listMchDocuments,
-  listSafetyFlags, recordVaccination,
+  createMchDocument, listSafetyFlags, recordVaccination,
   type MchOverview, type Pregnancy, type Child, type AncVisit,
   type VaccinationRecord, type GrowthMeasurement, type Milestone,
   type Investigation, type MchDocument, type SafetyFlag,
 } from '../services/mchApi';
+import { uploadMedicalReport } from '../services/medicalReportsApi';
 import { clearAuth } from '../../auth/authStorage';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -258,42 +259,39 @@ const MCHPage: React.FC = () => {
     } catch (e: any) { setError(e.message); }
   };
 
-  if (loading) return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', color: '#64748b' }}>
-      {t('loading')}
-    </div>
-  );
 
   return (
     <div className="mch-page" style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc', fontFamily: 'inherit' }}>
       {/* Sidebar */}
       <aside style={{ width: 220, background: '#fff', borderRight: '1px solid #e2e8f0', padding: '24px 0', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
         <div style={{ padding: '0 20px 20px', borderBottom: '1px solid #f1f5f9' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ width: 32, height: 32, background: 'linear-gradient(135deg,#f97316,#F0541E)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fff" strokeWidth="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" /></svg>
-            </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 12 }}>
+            <img src="/MCH Tracking.png?v=2" alt="MCH Tracking" style={{ width: 104, height: 104, objectFit: 'contain' }} />
             <div>
-              <div style={{ fontWeight: 700, fontSize: 14, color: '#1e293b' }}>{t('mchTitle')}</div>
-              <div style={{ fontSize: 11, color: '#64748b' }}>{t('mchSubtitle')}</div>
+              <div style={{ fontWeight: 800, fontSize: 22, color: '#0f172a', letterSpacing: '-0.01em', lineHeight: 1.2 }}>{t('mchTitle')}</div>
+              <div style={{ fontSize: 14.5, color: '#64748b', fontWeight: 500, marginTop: 4 }}>{t('mchSubtitle')}</div>
             </div>
           </div>
         </div>
         {([
-          { key: 'overview', icon: '📊', label: t('nav.overview') },
-          { key: 'pregnancy', icon: '🤰', label: t('nav.pregnancy') },
-          { key: 'children', icon: '👶', label: t('nav.children') },
-          { key: 'documents', icon: '📄', label: t('nav.documents') },
-          { key: 'flags', icon: '🚩', label: t('nav.safetyFlags') },
+          { key: 'overview', label: t('nav.overview') },
+          { key: 'pregnancy', label: t('nav.pregnancy') },
+          { key: 'children', label: t('nav.children') },
+          { key: 'documents', label: t('nav.documents') },
+          { key: 'flags', label: t('nav.safetyFlags') },
         ] as const).map(item => (
           <button key={item.key} onClick={() => setTab(item.key as MCHTab)}
             style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 20px', border: 'none', background: tab === item.key ? '#fff7ed' : 'transparent', color: tab === item.key ? '#F0541E' : '#475569', fontWeight: tab === item.key ? 600 : 400, fontSize: 13, cursor: 'pointer', borderLeft: tab === item.key ? '3px solid #F0541E' : '3px solid transparent', textAlign: 'left', width: '100%' }}>
-            <span>{item.icon}</span>{item.label}
+            {item.label}
           </button>
         ))}
         <div style={{ flex: 1 }} />
-        <button onClick={() => navigate('/patient/dashboard')} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 20px', border: 'none', background: 'transparent', color: '#94a3b8', fontSize: 13, cursor: 'pointer', textAlign: 'left', width: '100%' }}>
-          ← {t('backToDashboard')}
+        <button onClick={() => navigate('/patient/dashboard')} style={{ display: 'flex', alignItems: 'center', gap: 18, padding: '12px 20px', border: 'none', background: 'transparent', color: '#1e293b', fontWeight: 600, fontSize: 13, cursor: 'pointer', width: '100%', transition: 'color 0.15s ease' }}>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+            <line x1="19" y1="12" x2="5" y2="12" />
+            <polyline points="12 19 5 12 12 5" />
+          </svg>
+          <span>{t('backToDashboard')}</span>
         </button>
       </aside>
 
@@ -333,7 +331,7 @@ const MCHPage: React.FC = () => {
             t={t}
           />
         )}
-        {tab === 'documents' && <DocumentsTab documents={documents} t={t} />}
+        {tab === 'documents' && <DocumentsTab documents={documents} t={t} onRefresh={() => listMchDocuments().then(setDocuments).catch(() => {})} />}
         {tab === 'flags' && <FlagsTab flags={flags} t={t} />}
       </main>
     </div>
@@ -360,7 +358,7 @@ const OverviewTab: React.FC<{
 
   return (
     <div>
-      <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1e293b', margin: '0 0 4px' }}>{t('overview.title')}</h1>
+      <h1 style={{ fontSize: 34, fontWeight: 800, color: '#0f172a', margin: '0 0 4px' }}>{t('overview.title')}</h1>
       <p style={{ color: '#64748b', fontSize: 14, margin: '0 0 24px' }}>{t('overview.subtitle')}</p>
 
       {/* Critical flags banner */}
@@ -386,8 +384,8 @@ const OverviewTab: React.FC<{
         {/* Pregnancy card */}
         <div style={{ background: '#fff', borderRadius: 14, border: '1px solid #e2e8f0', padding: '20px 22px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-            <div style={{ fontWeight: 700, fontSize: 15, color: '#1e293b' }}>🤰 {t('overview.pregnancyCard')}</div>
-            <button onClick={() => setTab('pregnancy')} style={{ fontSize: 12, color: '#F0541E', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>{t('overview.viewAll')}</button>
+            <div style={{ fontWeight: 700, fontSize: 20, color: '#0f172a' }}>{t('overview.pregnancyCard')}</div>
+            <button onClick={() => setTab('pregnancy')} style={{ fontSize: 15, color: '#F0541E', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 }}>{t('overview.viewAll')}</button>
           </div>
           {p ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -411,7 +409,7 @@ const OverviewTab: React.FC<{
           ) : (
             <div style={{ color: '#94a3b8', fontSize: 14, textAlign: 'center', padding: '16px 0' }}>
               {t('overview.noActivePregnancy')}
-              <br /><button onClick={() => { setTab('pregnancy'); }} style={{ marginTop: 8, background: '#F0541E', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontSize: 13, cursor: 'pointer' }}>{t('overview.addPregnancy')}</button>
+              <br /><button onClick={() => { setTab('pregnancy'); }} style={{ marginTop: 8, background: '#10b981', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontSize: 13, cursor: 'pointer' }}>{t('overview.addPregnancy')}</button>
             </div>
           )}
         </div>
@@ -419,8 +417,8 @@ const OverviewTab: React.FC<{
         {/* Children summary */}
         <div style={{ background: '#fff', borderRadius: 14, border: '1px solid #e2e8f0', padding: '20px 22px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-            <div style={{ fontWeight: 700, fontSize: 15, color: '#1e293b' }}>👶 {t('overview.childrenCard')}</div>
-            <button onClick={() => setTab('children')} style={{ fontSize: 12, color: '#F0541E', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>{t('overview.viewAll')}</button>
+            <div style={{ fontWeight: 700, fontSize: 20, color: '#0f172a' }}>{t('overview.childrenCard')}</div>
+            <button onClick={() => setTab('children')} style={{ fontSize: 15, color: '#F0541E', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 }}>{t('overview.viewAll')}</button>
           </div>
           {overview.children.length === 0 ? (
             <div style={{ color: '#94a3b8', fontSize: 14, textAlign: 'center', padding: '16px 0' }}>
@@ -451,7 +449,7 @@ const OverviewTab: React.FC<{
 
         {/* Stats */}
         <div style={{ background: '#fff', borderRadius: 14, border: '1px solid #e2e8f0', padding: '20px 22px' }}>
-          <div style={{ fontWeight: 700, fontSize: 15, color: '#1e293b', marginBottom: 14 }}>📋 {t('overview.summaryCard')}</div>
+          <div style={{ fontWeight: 700, fontSize: 20, color: '#0f172a', marginBottom: 14 }}>{t('overview.summaryCard')}</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             {[
               { label: t('overview.pregnancies'), value: pregnancies.length, color: '#4f46e5' },
@@ -483,8 +481,11 @@ const PregnancyTab: React.FC<any> = ({
 }) => (
   <div>
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-      <h2 style={{ fontSize: 20, fontWeight: 700, color: '#1e293b', margin: 0 }}>🤰 {t('pregnancy.title')}</h2>
-      <button onClick={() => setShowPregnancyForm(true)} style={{ background: '#F0541E', color: '#fff', border: 'none', borderRadius: 10, padding: '8px 16px', fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>+ {t('pregnancy.addPregnancy')}</button>
+      <h2 style={{ fontSize: 28, fontWeight: 800, color: '#0f172a', margin: 0 }}>{t('pregnancy.title')}</h2>
+      <button onClick={() => setShowPregnancyForm(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#10b981', color: '#fff', border: 'none', borderRadius: 10, padding: '8px 16px 8px 10px', fontSize: 13, cursor: 'pointer', fontWeight: 600, marginTop: -4 }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, transform: 'translateY(-1px)' }}>+</span>
+        <span style={{ display: 'inline-flex', alignItems: 'center' }}>{t('pregnancy.addPregnancy')}</span>
+      </button>
     </div>
 
     {showPregnancyForm && (
@@ -584,7 +585,10 @@ const AncTab: React.FC<any> = ({ ancVisits, showForm, setShowForm, ancForm, setA
   <div>
     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
       <div style={{ fontWeight: 600, fontSize: 15, color: '#1e293b' }}>{t('anc.title')} ({ancVisits.length})</div>
-      <button onClick={() => setShowForm(true)} style={{ background: '#223382', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 14px', fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>+ {t('anc.addVisit')}</button>
+      <button onClick={() => setShowForm(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#223382', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 14px 7px 9px', fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, transform: 'translateY(-1px)' }}>+</span>
+        <span style={{ display: 'inline-flex', alignItems: 'center' }}>{t('anc.addVisit')}</span>
+      </button>
     </div>
     {showForm && (
       <FormCard title={t('anc.addVisit')} onClose={() => setShowForm(false)} onSubmit={submitAnc} saving={formSaving} error={formError} t={t}>
@@ -636,7 +640,10 @@ const InvestigationsTab: React.FC<any> = ({ investigations, showForm, setShowFor
   <div>
     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
       <div style={{ fontWeight: 600, fontSize: 15, color: '#1e293b' }}>{t('investigations.title')}</div>
-      <button onClick={() => setShowForm(true)} style={{ background: '#7c3aed', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 14px', fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>+ {t('investigations.add')}</button>
+      <button onClick={() => setShowForm(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#7c3aed', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 14px 7px 9px', fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, transform: 'translateY(-1px)' }}>+</span>
+        <span style={{ display: 'inline-flex', alignItems: 'center' }}>{t('investigations.add')}</span>
+      </button>
     </div>
     {showForm && (
       <FormCard title={t('investigations.add')} onClose={() => setShowForm(false)} onSubmit={submitInvestigation} saving={formSaving} error={formError} t={t}>
@@ -684,8 +691,11 @@ const ChildrenTab: React.FC<any> = ({
 }) => (
   <div>
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-      <h2 style={{ fontSize: 20, fontWeight: 700, color: '#1e293b', margin: 0 }}>👶 {t('children.title')}</h2>
-      <button onClick={() => setShowChildForm(true)} style={{ background: '#10b981', color: '#fff', border: 'none', borderRadius: 10, padding: '8px 16px', fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>+ {t('children.addChild')}</button>
+      <h2 style={{ fontSize: 28, fontWeight: 800, color: '#0f172a', margin: 0 }}>{t('children.title')}</h2>
+      <button onClick={() => setShowChildForm(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#10b981', color: '#fff', border: 'none', borderRadius: 10, padding: '8px 16px 8px 10px', fontSize: 13, cursor: 'pointer', fontWeight: 600, marginTop: -4 }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, transform: 'translateY(-1px)' }}>+</span>
+        <span style={{ display: 'inline-flex', alignItems: 'center' }}>{t('children.addChild')}</span>
+      </button>
     </div>
 
     {showChildForm && (
@@ -757,7 +767,7 @@ const VaccinationTab: React.FC<{ vaccinations: VaccinationRecord[]; markDone: (i
   }
   return (
     <div>
-      <div style={{ fontWeight: 600, fontSize: 15, color: '#1e293b', marginBottom: 14 }}>💉 {t('vaccinations.title')} ({vaccinations.length})</div>
+      <div style={{ fontWeight: 600, fontSize: 15, color: '#1e293b', marginBottom: 14 }}>{t('vaccinations.title')} ({vaccinations.length})</div>
       {['DUE', 'UPCOMING', 'MISSED', 'COMPLETED'].map(status => {
         const items = groups[status] ?? [];
         if (items.length === 0) return null;
@@ -794,8 +804,11 @@ const VaccinationTab: React.FC<{ vaccinations: VaccinationRecord[]; markDone: (i
 const GrowthTab: React.FC<any> = ({ growth, showForm, setShowForm, growthForm, setGrowthForm, formSaving, formError, submitGrowth, t }) => (
   <div>
     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
-      <div style={{ fontWeight: 600, fontSize: 15, color: '#1e293b' }}>📈 {t('growth.title')}</div>
-      <button onClick={() => setShowForm(true)} style={{ background: '#0891b2', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 14px', fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>+ {t('growth.addMeasurement')}</button>
+      <div style={{ fontWeight: 600, fontSize: 15, color: '#1e293b' }}>{t('growth.title')}</div>
+      <button onClick={() => setShowForm(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#0891b2', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 14px 7px 9px', fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, transform: 'translateY(-1px)' }}>+</span>
+        <span style={{ display: 'inline-flex', alignItems: 'center' }}>{t('growth.addMeasurement')}</span>
+      </button>
     </div>
     {showForm && (
       <FormCard title={t('growth.addMeasurement')} onClose={() => setShowForm(false)} onSubmit={submitGrowth} saving={formSaving} error={formError} t={t}>
@@ -849,7 +862,7 @@ const MilestonesTab: React.FC<{ milestones: Milestone[]; toggle: (m: Milestone) 
   }, {});
   return (
     <div>
-      <div style={{ fontWeight: 600, fontSize: 15, color: '#1e293b', marginBottom: 14 }}>🧩 {t('milestones.title')}</div>
+      <div style={{ fontWeight: 600, fontSize: 15, color: '#1e293b', marginBottom: 14 }}>{t('milestones.title')}</div>
       {Object.entries(byCat).map(([cat, items]) => (
         <div key={cat} style={{ marginBottom: 18 }}>
           <div style={{ fontWeight: 600, fontSize: 13, color: '#475569', marginBottom: 8 }}>{CATEGORY_LABELS[cat] ?? cat}</div>
@@ -882,31 +895,75 @@ const MilestonesTab: React.FC<{ milestones: Milestone[]; toggle: (m: Milestone) 
 
 // ─── Documents Tab ────────────────────────────────────────────────────────────
 
-const DocumentsTab: React.FC<{ documents: MchDocument[]; t: any }> = ({ documents, t }) => (
-  <div>
-    <h2 style={{ fontSize: 20, fontWeight: 700, color: '#1e293b', margin: '0 0 20px' }}>📄 {t('documents.title')}</h2>
-    {documents.length === 0 ? <EmptyState message={t('documents.noDocuments')} /> : (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {documents.map(doc => (
-          <div key={doc.id} style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <div style={{ fontWeight: 600, fontSize: 14, color: '#1e293b' }}>{doc.title}</div>
-              <div style={{ fontSize: 12, color: '#64748b' }}>{doc.category} · {fmt(doc.createdAt)}</div>
-              {doc.notes && <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>{doc.notes}</div>}
-            </div>
-            <Chip label={doc.category} bg="#eff6ff" color="#2563eb" />
-          </div>
-        ))}
+const DocumentsTab: React.FC<{ documents: MchDocument[]; t: any; onRefresh: () => void }> = ({ documents, t, onRefresh }) => {
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const report: any = await uploadMedicalReport(file, 'MCH');
+      if (report?.id) {
+        await createMchDocument({
+          medicalReportId: report.id,
+          title: file.name,
+          category: 'MCH Document',
+        });
+      }
+      onRefresh();
+    } catch (err: any) {
+      console.error('Document upload error:', err);
+    } finally {
+      setUploading(false);
+      if (e.target) e.target.value = '';
+    }
+  };
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <h2 style={{ fontSize: 28, fontWeight: 800, color: '#0f172a', margin: 0 }}>{t('documents.title')}</h2>
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#10b981', color: '#fff', border: 'none', borderRadius: 10, padding: '8px 16px 8px 10px', fontSize: 13, cursor: uploading ? 'not-allowed' : 'pointer', fontWeight: 600, opacity: uploading ? 0.7 : 1, marginTop: -4 }}
+        >
+          <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, transform: 'translateY(-1px)' }}>+</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center' }}>{uploading ? 'Uploading...' : 'Upload Document'}</span>
+        </button>
+        <input
+          type="file"
+          ref={fileInputRef}
+          style={{ display: 'none' }}
+          accept="image/*,.pdf,.doc,.docx"
+          onChange={handleFileChange}
+        />
       </div>
-    )}
-  </div>
-);
+      {documents.length === 0 ? <EmptyState message={t('documents.noDocuments')} /> : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {documents.map(doc => (
+            <div key={doc.id} style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: 14, color: '#1e293b' }}>{doc.title}</div>
+                <div style={{ fontSize: 12, color: '#64748b' }}>{doc.category} · {fmt(doc.createdAt)}</div>
+                {doc.notes && <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>{doc.notes}</div>}
+              </div>
+              <Chip label={doc.category} bg="#eff6ff" color="#2563eb" />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 // ─── Safety Flags Tab ─────────────────────────────────────────────────────────
 
 const FlagsTab: React.FC<{ flags: SafetyFlag[]; t: any }> = ({ flags, t }) => (
   <div>
-    <h2 style={{ fontSize: 20, fontWeight: 700, color: '#1e293b', margin: '0 0 8px' }}>🚩 {t('flags.title')}</h2>
+    <h2 style={{ fontSize: 28, fontWeight: 800, color: '#0f172a', margin: '0 0 8px' }}>{t('flags.title')}</h2>
     <p style={{ color: '#64748b', fontSize: 13, margin: '0 0 20px' }}>{t('flags.disclaimer')}</p>
     {flags.length === 0 ? <EmptyState message={t('flags.noFlags')} /> : (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

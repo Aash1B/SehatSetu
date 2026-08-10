@@ -46,9 +46,12 @@ const ALL_SYMPTOMS = [
 ];
 
 function doctorMatchesCategory(doctor: Doctor, category: string) {
-  const specialty = doctor.specialty.toLowerCase().split(/[ (&/-]/)[0];
-  const normalizedCategory = category.toLowerCase().split(/[ (&/-]/)[0];
-  return specialty === normalizedCategory;
+  if (!category) return true;
+  const spec = doctor.specialty.toLowerCase();
+  const cat = category.toLowerCase();
+  const specKeyword = spec.split(/[ (&/-]/)[0];
+  const catKeyword = cat.split(/[ (&/-]/)[0];
+  return spec.includes(catKeyword) || cat.includes(specKeyword);
 }
 
 const CONSULT_MODE_LABEL: Record<string, string> = {
@@ -161,7 +164,7 @@ const BookAppointmentPage: React.FC = () => {
   const [loadingAvailability, setLoadingAvailability] = useState<boolean>(false);
   const [aiRecommendation, setAiRecommendation] = useState<RecommendationResult | null>(null);
   const [, setLoadingRecommendation] = useState<boolean>(false);
-  const [showAllDoctors, setShowAllDoctors] = useState<boolean>(false);
+  const [showAllDoctors, setShowAllDoctors] = useState<boolean>(true);
   const [allDoctorsList, setAllDoctorsList] = useState<Doctor[]>([]);
 
     // Load registered doctors from the backend.
@@ -304,26 +307,26 @@ const BookAppointmentPage: React.FC = () => {
 
   useEffect(() => {
     if (currentStep === 2) {
+      if (formData.symptoms.length === 0 && !formData.healthConcern) {
+        setAiRecommendation(null);
+        setLoadingRecommendation(false);
+        if (allDoctorsList.length > 0 && !formData.selectedDoctor) {
+          setFormData(prev => ({ ...prev, selectedDoctor: allDoctorsList[0] }));
+        }
+        return;
+      }
       Promise.resolve().then(() => setLoadingRecommendation(true));
       recommendDoctorsApi(formData.healthConcern, formData.symptoms)
         .then(rec => {
           setAiRecommendation(rec);
-          const matchingSpecialists = rec.recommendedDoctors.filter((doctor) =>
+          const matchingSpecialists = allDoctorsList.filter((doctor) =>
             doctorMatchesCategory(doctor, rec.recommendedCategory),
           );
-          const localSpecialists = allDoctorsList.filter((doctor) =>
-            doctorMatchesCategory(doctor, rec.recommendedCategory),
-          );
-          const generalPhysicians = allDoctorsList.filter((doctor) =>
-            doctorMatchesCategory(doctor, 'General Physician'),
-          );
-          const recommended = matchingSpecialists.length
-            ? matchingSpecialists
-            : localSpecialists.length
-              ? localSpecialists
-              : generalPhysicians;
+          const recommended = matchingSpecialists.length > 0 ? matchingSpecialists : allDoctorsList;
           setAiRecommendation({ ...rec, recommendedDoctors: recommended });
-          setFormData(prev => ({ ...prev, selectedDoctor: recommended[0] || null }));
+          if (recommended.length > 0) {
+            setFormData(prev => ({ ...prev, selectedDoctor: recommended[0] }));
+          }
         })
         .catch(() => setAiRecommendation(null))
         .finally(() => setLoadingRecommendation(false));
@@ -366,6 +369,8 @@ const BookAppointmentPage: React.FC = () => {
     }
   }, [formData.selectedDoctor?.id, formData.selectedDate]);
 
+  const hasSymptoms = formData.symptoms.length > 0 || Boolean(formData.healthConcern);
+
   const filteredStep2Doctors = allDoctorsList.filter(doc => {
     const matchesSearch = 
       doc.name.toLowerCase().includes(step2SearchTerm.toLowerCase()) ||
@@ -373,9 +378,12 @@ const BookAppointmentPage: React.FC = () => {
       doc.hospital.toLowerCase().includes(step2SearchTerm.toLowerCase()) ||
       doc.location.toLowerCase().includes(step2SearchTerm.toLowerCase());
 
-    const matchesSpecialty = 
-      step2Specialty === 'All' || 
-      doc.specialty.toLowerCase().includes(step2Specialty.toLowerCase());
+    let matchesSpecialty = true;
+    if (step2Specialty !== 'All') {
+      matchesSpecialty = doc.specialty.toLowerCase().includes(step2Specialty.toLowerCase());
+    } else if (hasSymptoms && aiRecommendation?.recommendedCategory) {
+      matchesSpecialty = doctorMatchesCategory(doc, aiRecommendation.recommendedCategory);
+    }
 
     return matchesSearch && matchesSpecialty;
   });
@@ -574,27 +582,27 @@ const BookAppointmentPage: React.FC = () => {
           
           <div className={`step-node ${currentStep >= 1 ? 'active' : ''}`}>
             <div className="step-number">{currentStep > 1 ? '✓' : '1'}</div>
-            <span className="step-label">{t('bookingFlow.stepHealthConcern')}</span>
+            <span className="step-label">Health Concern</span>
           </div>
 
           <div className={`step-node ${currentStep >= 2 ? 'active' : ''}`}>
             <div className="step-number">{currentStep > 2 ? '✓' : '2'}</div>
-            <span className="step-label">{t('bookingFlow.stepSelectDoctor')}</span>
+            <span className="step-label">Select Doctor</span>
           </div>
 
           <div className={`step-node ${currentStep >= 3 ? 'active' : ''}`}>
             <div className="step-number">{currentStep > 3 ? '✓' : '3'}</div>
-            <span className="step-label">{t('bookingFlow.stepChooseSlot')}</span>
+            <span className="step-label">Choose Slot</span>
           </div>
 
           <div className={`step-node ${currentStep >= 4 ? 'active' : ''}`}>
             <div className="step-number">{currentStep > 4 ? '✓' : '4'}</div>
-            <span className="step-label">{t('patient.patientInfo')}</span>
+            <span className="step-label">Patient Info</span>
           </div>
 
           <div className={`step-node ${currentStep >= 5 ? 'active' : ''}`}>
             <div className="step-number">{bookingConfirmed ? '✓' : '5'}</div>
-            <span className="step-label">{t('bookingFlow.stepConfirmPay')}</span>
+            <span className="step-label">Confirm & Pay</span>
           </div>
         </div>
       </div>
@@ -613,7 +621,7 @@ const BookAppointmentPage: React.FC = () => {
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M19 12H5M12 19l-7-7 7-7"/>
                 </svg>
-                <span>{t('bookingFlow.backToStep', { step: currentStep - 1 })}</span>
+                <span>Back</span>
               </button>
             )}
 
@@ -728,15 +736,47 @@ const BookAppointmentPage: React.FC = () => {
                       </svg>
                       <input 
                         type="text" 
-                        placeholder="Search or type a symptom (e.g., fever, cough, headache)"
+                        placeholder="Search or type a symptom (press Enter to add)"
                         value={symptomSearch}
                         onChange={(e) => setSymptomSearch(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (symptomSearch.trim()) {
+                              const val = symptomSearch.trim();
+                              const formatted = val.charAt(0).toUpperCase() + val.slice(1);
+                              if (!formData.symptoms.includes(formatted)) {
+                                setFormData(prev => ({ ...prev, symptoms: [...prev.symptoms, formatted] }));
+                              }
+                              setSymptomSearch('');
+                            }
+                          }
+                        }}
                       />
                     </div>
 
+                    {symptomSearch.trim() && !formData.symptoms.includes(symptomSearch.trim()) && (
+                      <div className="mt-2">
+                        <button
+                          type="button"
+                          className="py-1.5 px-3 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all inline-flex items-center gap-1.5 cursor-pointer"
+                          onClick={() => {
+                            const val = symptomSearch.trim();
+                            const formatted = val.charAt(0).toUpperCase() + val.slice(1);
+                            if (!formData.symptoms.includes(formatted)) {
+                              setFormData(prev => ({ ...prev, symptoms: [...prev.symptoms, formatted] }));
+                            }
+                            setSymptomSearch('');
+                          }}
+                        >
+                          <span>➕ Add "{symptomSearch.trim()}"</span>
+                        </button>
+                      </div>
+                    )}
+
                     {/* Popular Symptoms */}
                     <div className="symptom-subsection">
-                      <span className="subsection-label">{t('forms.subsectionPopular')}</span>
+                      <span className="subsection-label">{t('forms:subsectionPopular', { defaultValue: 'Popular Symptoms' })}</span>
                       <div className="popular-symptoms-grid">
                         {[
                           { name: 'Fever', icon: '🌡️' },
@@ -1016,9 +1056,9 @@ const BookAppointmentPage: React.FC = () => {
                   {/* Doctor Cards Horizontal Rows List */}
                   <div className="step2-doctors-list">
                     {(() => {
-                      const docsToRender = showAllDoctors
-                        ? filteredStep2Doctors
-                        : recommendedDoctorsForDisplay.slice(0, 1);
+                      const docsToRender = (formData.symptoms.length === 0 || showAllDoctors || filteredStep2Doctors.length === 0)
+                        ? (filteredStep2Doctors.length > 0 ? filteredStep2Doctors : allDoctorsList)
+                        : filteredStep2Doctors;
                       return docsToRender.map(doc => {
                         const isSelected = formData.selectedDoctor?.id === doc.id;
                         return (
@@ -1065,30 +1105,7 @@ const BookAppointmentPage: React.FC = () => {
                     })()}
                   </div>
 
-                  {/* Toggle All Doctors / Other Specialists */}
-                  {!showAllDoctors && filteredStep2Doctors.length > 1 && (
-                    <div className="text-center mt-4 mb-2">
-                      <button
-                        type="button"
-                        className="py-2.5 px-6 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium text-sm rounded-xl shadow-sm transition-all inline-flex items-center gap-2"
-                        onClick={() => setShowAllDoctors(true)}
-                      >
-                        <span>🔍 View Other Available Specialists ({filteredStep2Doctors.length - 1} more)</span>
-                      </button>
-                    </div>
-                  )}
 
-                  {showAllDoctors && (
-                    <div className="text-center mt-4 mb-2">
-                      <button
-                        type="button"
-                        className="py-2 px-5 bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium text-xs rounded-lg transition-all"
-                        onClick={() => setShowAllDoctors(false)}
-                      >
-                        ▲ Show Only AI Recommended Doctor
-                      </button>
-                    </div>
-                  )}
                 </div>
               )}
 
@@ -1273,11 +1290,7 @@ const BookAppointmentPage: React.FC = () => {
                         </div>
                       )}
 
-                      {/* Timezone Info Alert Banner */}
-                      <div className="timezone-info-banner">
-                        <span className="info-circle-icon">ⓘ</span>
-                        <span>All slots are generated live based on {formData.selectedDoctor?.name}'s database schedule (IST)</span>
-                      </div>
+
                     </div>
                   </div>
                 );
@@ -1644,13 +1657,7 @@ const BookAppointmentPage: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Security Blue Banner */}
-                    <div className="security-blue-banner">
-                      <svg viewBox="0 0 24 24" fill="#2563EB" width="18" height="18">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                      </svg>
-                      <span>{t('common.privacyNotice')}</span>
-                    </div>
+
                   </div>
 
                   {/* Bottom Footer Row under Appointment Details Card */}
@@ -1688,35 +1695,23 @@ const BookAppointmentPage: React.FC = () => {
                   className="btn-form-back"
                   onClick={handlePrevStep}
                 >
-                  ← {t('buttons.back')}
+                  ← {t('buttons:back', { defaultValue: 'Back' })}
                 </button>
-
-                <div className="privacy-badge">
-                  🔒 {t('common.privacyNotice')}
-                </div>
 
                 <button 
                   type="button" 
                   className="btn-form-next-orange"
                   onClick={handleNextStep}
                 >
-                  {currentStep === 1 && (hasPreselectedDoctor && formData.selectedDoctor ? t('bookingFlow.btnNextChooseSlot') : t('bookingFlow.btnNextSelectDoctor'))}
-                  {currentStep === 2 && t('bookingFlow.btnNextChooseSlot')}
-                  {currentStep === 3 && t('bookingFlow.btnNextPatientInfo')}
-                  {currentStep === 4 && t('bookingFlow.btnNextConfirmPay')}
-                  {currentStep === 5 && t('bookingFlow.btnConfirmPayNow')}
+                  {currentStep === 1 && (hasPreselectedDoctor && formData.selectedDoctor ? t('bookingFlow:btnNextChooseSlot', { defaultValue: 'Next: Choose Slot →' }) : t('bookingFlow:btnNextSelectDoctor', { defaultValue: 'Next: Select Doctor →' }))}
+                  {currentStep === 2 && t('bookingFlow:btnNextChooseSlot', { defaultValue: 'Next: Choose Slot →' })}
+                  {currentStep === 3 && t('bookingFlow:btnNextPatientInfo', { defaultValue: 'Next: Patient Info →' })}
+                  {currentStep === 4 && t('bookingFlow:btnNextConfirmPay', { defaultValue: 'Next: Confirm & Pay →' })}
+                  {currentStep === 5 && t('bookingFlow:btnConfirmPayNow', { defaultValue: 'Confirm & Pay Now' })}
                 </button>
               </div>
 
-              {/* Collapsed Accordion for Next Step preview */}
-              {currentStep === 1 && (
-                <div className="collapsed-step-accordion">
-                <div className="accordion-header">
-                      <span>🔒 {t('bookingFlow.stepSelectDoctor')}</span>
-                      <span className="accordion-sub">{t('bookingFlow.stepPreview')}</span>
-                    </div>
-                </div>
-              )}
+
             </div>
 
             {/* Right Column: Sticky Summary Card */}
@@ -1877,11 +1872,11 @@ const BookAppointmentPage: React.FC = () => {
 
                   {/* Card 3: Need Help Box */}
                   <div className="summary-card help-sidebar-card">
-                    <div className="help-sidebar-content" onClick={() => setShowHelpModal(true)}>
+                    <div className="help-sidebar-content" onClick={() => setShowHelpModal(false)}>
                       <span className="headset-icon">🎧</span>
                       <div>
-                        <h5 className="help-sidebar-title">{t('appointment.help.title')}</h5>
-                        <p className="help-sidebar-sub">{t('bookingFlow.helpSidebarSub')}</p>
+                        <h5 className="help-sidebar-title">{t('appointment:helpTitle', { defaultValue: 'Need Assistance?' })}</h5>
+                        <p className="help-sidebar-sub">{t('appointment:helpSubtitle', { defaultValue: 'Our support team is available 24/7' })}</p>
                       </div>
                     </div>
                   </div>

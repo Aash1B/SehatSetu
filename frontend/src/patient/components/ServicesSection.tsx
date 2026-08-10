@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -11,21 +11,21 @@ const ServicesSection: React.FC = () => {
       id: "lab_nearby",
       title: t("servicesSection.labTestsNearby.title"),
       description: t("servicesSection.labTestsNearby.description"),
-      icon: "🧪",
+      icon: "/Lab Tests Nearby.png",
       route: "google",
     },
     {
       id: "specialist",
       title: t("servicesSection.specialistReferral.title"),
       description: t("servicesSection.specialistReferral.description"),
-      icon: "➡️",
+      icon: "/Specialist Referral.png",
       route: "/patient/book/new",
     },
     {
       id: "emergency",
       title: t("servicesSection.emergencyCare.title"),
       description: t("servicesSection.emergencyCare.description"),
-      icon: "💝",
+      icon: "/Emergency Care.png",
       route: "/patient/search?emergency=true",
     },
   ];
@@ -65,7 +65,9 @@ const ServicesSection: React.FC = () => {
               style={{ cursor: "pointer" }}
               onClick={() => handleCardClick(service.id, service.route)}
             >
-              <div className="service-icon-box">{service.icon}</div>
+              <div className="service-icon-box">
+                <img src={service.icon} alt={service.title} style={{ width: 52, height: 52, objectFit: 'contain', mixBlendMode: 'screen' }} />
+              </div>
               <h3 className="service-card-title">{service.title}</h3>
               <p className="service-card-desc">{service.description}</p>
               <button

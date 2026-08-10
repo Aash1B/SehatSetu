@@ -223,14 +223,12 @@ const DoctorSearchPage: React.FC = () => {
 
             <div className="doctors-dropdowns-row">
               <CustomSelect
-                icon="⚕️"
                 options={specialtyOptions}
                 value={specialtyFilter}
                 onChange={setSpecialtyFilter}
               />
 
               <CustomSelect
-                icon="📍"
                 options={locationOptions}
                 value={locationFilter}
                 onChange={setLocationFilter}
@@ -302,12 +300,11 @@ const DoctorSearchPage: React.FC = () => {
 
                       <div className="doctor-meta-tags-row">
                         <span className="meta-tag exp-tag">
-                          ⌛ {doctor.experience}
+                          {doctor.experience}
                         </span>
                       </div>
 
                       <div className="doctor-hospital-detail">
-                        <span className="hospital-pin">📍</span>
                         <div className="hospital-text">
                           <strong className="hospital-name">{doctor.hospital}</strong>
                           <span className="location-city">{doctor.location}</span>

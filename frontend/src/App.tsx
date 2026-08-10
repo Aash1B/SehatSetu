@@ -80,7 +80,7 @@ function App() {
         <PWAUpdatePrompt />
         <PWAInstallPrompt />
         <ChatProvider />
-        <Suspense fallback={<div className="flex min-h-screen items-center justify-center text-slate-500">{t('loading')}</div>}>
+        <Suspense fallback={null}>
         <Routes>
 
           {/* Auth Routes (new) */}

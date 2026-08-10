@@ -63,11 +63,11 @@ export default function AccountDeletionDangerZone({ role }: { role: 'PATIENT' | 
 
   return (
     <>
-      <section className="mt-6 rounded-2xl border border-red-200 bg-red-50/70 p-5">
+      <section className="mt-6 rounded-2xl bg-red-50/70 p-5">
         <div className="flex items-start gap-3">
           <div className="min-w-0 flex-1">
             <p className="text-sm leading-5 text-red-700 font-medium">Permanently delete your account and personal information. This action cannot be undone.</p>
-            <button type="button" onClick={() => setOpen(true)} className="mt-3 inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-200"><Trash2 className="h-4 w-4" />Delete account</button>
+            <button type="button" onClick={() => setOpen(true)} className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-200"><Trash2 className="h-3.5 w-3.5" />Delete account</button>
           </div>
         </div>
       </section>

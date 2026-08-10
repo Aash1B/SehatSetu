@@ -159,51 +159,23 @@ const DoctorSearchSection: React.FC = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <button
-              type="button"
-              className="btn-voice-search"
-              title={t("voiceSearch")}
-              onClick={async () => {
-                if (!searchTerm.trim()) return;
-                try {
-                  const res = await recommendDoctorSpecialist(searchTerm);
-                  if (res && res.data && res.data.specialization) {
-                    setSpecialtyFilter(res.data.specialization);
-                  }
-                } catch (e) {
-                  console.error("AI doctor recommendation error", e);
-                }
-              }}
-            >
-              <span className="text-xs font-bold text-orange-600 flex items-center gap-1 px-1">{t("aiMatch")}</span>
-            </button>
-            <button type="button" className="btn-search-submit" onClick={handleSearchSubmit}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
-                <circle cx="11" cy="11" r="8" />
-                <path d="M21 21l-4.35-4.35" />
-              </svg>
-              {t("search")}
-            </button>
           </div>
 
           {/* Quick Filter Pill Buttons */}
           <div className="filter-pills-row">
             <CustomSelect
-              icon="⚕️"
               options={SPECIALTY_OPTIONS}
               value={specialtyFilter}
               onChange={setSpecialtyFilter}
             />
 
             <CustomSelect
-              icon="📍"
               options={LOCATION_OPTIONS}
               value={locationFilter}
               onChange={setLocationFilter}
             />
 
             <CustomSelect
-              icon="🏥"
               options={HOSPITAL_OPTIONS}
               value={hospitalFilter}
               onChange={setHospitalFilter}
@@ -220,7 +192,7 @@ const DoctorSearchSection: React.FC = () => {
             onClick={handleSearchSubmit}
           >
             {t("searchSection.viewAllDoctors")}
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="32" height="32">
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
           </button>
@@ -233,7 +205,15 @@ const DoctorSearchSection: React.FC = () => {
           </button>
 
           <div className="doctors-cards-grid">
-            {visibleDoctors.map((doctor: Doctor) => (
+            {visibleDoctors.map((doctor: Doctor) => {
+              const loc = (doctor.location || '').trim();
+              let hosp = (doctor.hospital || '').trim();
+              if (hosp && loc) {
+                const regex = new RegExp(`,\\s*${loc.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')}$`, 'i');
+                if (regex.test(hosp)) hosp = hosp.replace(regex, '').trim();
+              }
+
+              return (
               <div key={doctor.id} className="doctor-card-item">
                 <div className="relative h-[220px] w-full overflow-hidden rounded-t-2xl bg-slate-100 sm:h-[240px] lg:h-[270px]">
                   <img
@@ -249,7 +229,9 @@ const DoctorSearchSection: React.FC = () => {
                     onClick={() => toggleFavorite(doctor.id)}
                     aria-label="Favorite doctor"
                   >
-                    ♥
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill={favorites.includes(doctor.id) ? "#ef4444" : "none"} stroke={favorites.includes(doctor.id) ? "#ef4444" : "#64748b"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
                   </button>
                 </div>
 
@@ -258,15 +240,16 @@ const DoctorSearchSection: React.FC = () => {
                   <p className="doctor-specialty">{doctor.specialty}</p>
                   <p className="doctor-experience-tag">{doctor.experience}</p>
 
-                  <div className="doctor-rating-row">
-                    <span className="star-icon">⭐</span>
+                  <div className="doctor-rating-row" style={{ display: 'flex', alignItems: 'center' }}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" strokeWidth="1" style={{ flexShrink: 0, marginRight: 4 }}>
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                    </svg>
                     <span className="rating-score">{doctor.rating}</span>
                     <span className="reviews-count">({doctor.reviewsCount} reviews)</span>
                   </div>
 
-                  <p className="doctor-hospital-location">
-                    <span className="location-pin">📍</span>
-                    {doctor.hospital}, {doctor.location}
+                  <p className="doctor-hospital-location" style={{ fontWeight: 700, color: '#1e293b' }}>
+                    {hosp}{loc ? `, ${loc}` : ''}
                   </p>
 
                   <div className="doctor-card-actions">
@@ -284,10 +267,11 @@ const DoctorSearchSection: React.FC = () => {
                     >
                       {tFilters("bookNow")}
                     </button>
-                  </div>
+                    </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
             {filteredDoctors.length === 0 && (
               <div className="appointments-empty-state">
                 {t("noDoctorMatches", { searchTerm })}

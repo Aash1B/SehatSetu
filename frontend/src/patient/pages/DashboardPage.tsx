@@ -11,6 +11,7 @@ import { clearAuth } from '../../auth/authStorage';
 import { getPatientDashboard, updatePatientProfile, uploadPatientAvatar } from '../services/patientApi';
 import AccountDeletionDangerZone from '../../auth/components/AccountDeletionDangerZone';
 import { useTranslation } from 'react-i18next';
+import { KnownConditionsIcon, AllergiesIcon, PastSurgeriesIcon, CurrentMedicationsIcon, LastUpdatedIcon, MedicalSummaryIcon } from '../components/Ehr3dIcons';
 
 interface ConsultationItem {
   id: string;
@@ -139,6 +140,27 @@ const DashboardPage: React.FC = () => {
   const [reportUploadMessage, setReportUploadMessage] = useState('');
   const reportInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  // Health Documents per-category upload state
+  type DocCategory = 'PREVIOUS_PRESCRIPTION' | 'TEST_REPORTS' | 'X_RAY' | 'MRI' | 'CT_SCAN' | 'ECG' | 'DISCHARGE_SUMMARY' | 'OTHER';
+  const DOC_CATEGORIES: { key: DocCategory; label: string }[] = [
+    { key: 'PREVIOUS_PRESCRIPTION', label: 'Previous Prescription' },
+    { key: 'TEST_REPORTS',          label: 'Test Reports'           },
+    { key: 'X_RAY',                 label: 'X-Ray'                  },
+    { key: 'MRI',                   label: 'MRI'                    },
+    { key: 'CT_SCAN',               label: 'CT Scan'                },
+    { key: 'ECG',                   label: 'ECG'                    },
+    { key: 'DISCHARGE_SUMMARY',     label: 'Discharge Summary'      },
+    { key: 'OTHER',                 label: 'Other Past Records'     },
+  ];
+  const [docUploadStates, setDocUploadStates] = useState<Record<DocCategory, 'idle' | 'uploading' | 'success' | 'error'>>(
+    {} as Record<DocCategory, 'idle' | 'uploading' | 'success' | 'error'>
+  );
+  const [docUploadMessages, setDocUploadMessages] = useState<Record<DocCategory, string>>({} as Record<DocCategory, string>);
+  const [docUploadedFiles, setDocUploadedFiles] = useState<Record<DocCategory, Array<{ name: string; url: string; date: string; mimeType: string }>>>(
+    {} as Record<DocCategory, Array<{ name: string; url: string; date: string; mimeType: string }>>
+  );
+  const docInputRefs = useRef<Partial<Record<DocCategory, HTMLInputElement | null>>>({});
   const [profileImageUrl, setProfileImageUrl] = useState('');
   const [avatarUploading, setAvatarUploading] = useState(false);
 
@@ -178,6 +200,7 @@ const DashboardPage: React.FC = () => {
   const [showCustomSevereCondInput, setShowCustomSevereCondInput] = useState(false);
   const [customFamilyHistInput, setCustomFamilyHistInput] = useState('');
   const [showCustomFamilyHistInput, setShowCustomFamilyHistInput] = useState(false);
+  const [activeStatCard, setActiveStatCard] = useState<number | null>(null);
 
   const languageOptions = ['Hindi', 'Bengali', 'Marathi', 'Telugu', 'Tamil', 'Kannada'];
   const maritalStatusOptions = ['Single', 'Married', 'Divorced', 'Widowed', 'Separated'];
@@ -198,6 +221,19 @@ const DashboardPage: React.FC = () => {
   });
 
   const [profileSaveSuccess, setProfileSaveSuccess] = useState(false);
+
+  const [userReminders, setUserReminders] = useState<Array<{ icon: string; title: string; sub: string; time: string }>>(() => {
+    try {
+      const saved = localStorage.getItem('sehatsetu_user_reminders');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [showAddReminderForm, setShowAddReminderForm] = useState(false);
+  const [newReminderTitle, setNewReminderTitle] = useState('');
+  const [newReminderSub, setNewReminderSub] = useState('');
+  const [newReminderTime, setNewReminderTime] = useState('Daily');
 
   const [ehrReportsList, setEhrReportsList] = useState<any[]>(false ? [
     {
@@ -297,12 +333,12 @@ const DashboardPage: React.FC = () => {
     }
   }, []);
 
-  useEffect(() => {
-    let active = true;
-    getPatientDashboard()
+  const loadDashboardData = () => {
+    setDashboardLoading(true);
+    setDashboardError('');
+    return getPatientDashboard()
       .then((data) => {
-        if (!active) return;
-        const p = data.profile;
+        const p = data.profile || {};
         setProfileImageUrl(p.profileImageUrl || '');
         setProfileData({
           fullName: p.fullName || '', email: p.email || '', phone: p.phone || '',
@@ -381,9 +417,15 @@ const DashboardPage: React.FC = () => {
         setEhrReportsList([...reports, ...clinicalRecords]);
         setDashboardError('');
       })
-      .catch((error) => setDashboardError(error instanceof Error ? error.message : 'Unable to load patient dashboard.'))
+      .catch((error) => {
+        const msg = error instanceof Error ? error.message : 'Unable to load patient dashboard.';
+        setDashboardError(msg === 'Failed to fetch' ? 'Unable to connect to SehatSetu backend server. Please make sure the backend is running.' : msg);
+      })
       .finally(() => setDashboardLoading(false));
-    return () => { active = false; };
+  };
+
+  useEffect(() => {
+    loadDashboardData();
   }, []);
 
   const handleTabClick = (tab: DashboardTabType) => {
@@ -471,16 +513,12 @@ const DashboardPage: React.FC = () => {
         <div className="sidebar-header">
           <div className="sidebar-brand" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
             <div className="sidebar-logo-icon">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#F97316" />
-                <path d="M12 7v6m-3-3h6" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" />
-              </svg>
+              <img src="/logo.svg" alt="SehatSetu" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </div>
-            <div>
+            <div className="sidebar-brand-text">
               <span className="sidebar-brand-title">
                 Sehat<span className="brand-title-accent">Setu</span>
               </span>
-              <span className="sidebar-portal-badge"> {t('patientPortal')} </span>
             </div>
           </div>
         </div>
@@ -520,19 +558,6 @@ const DashboardPage: React.FC = () => {
                 {tNav('dashboard')}
               </button>
 
-              <button
-                type="button"
-                className={`sidebar-item ${currentPage === 'doctors' ? 'active' : ''}`}
-                onClick={() => navigate('/patient/search')}
-              >
-                <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="8.5" cy="7" r="4"></circle>
-                  <line x1="20" y1="8" x2="20" y2="14"></line>
-                  <line x1="17" y1="11" x2="23" y2="11"></line>
-                </svg>
-                <span> {t('findDoctors')} </span>
-              </button>
             </nav>
           </div>
 
@@ -579,16 +604,19 @@ const DashboardPage: React.FC = () => {
                 </svg>
                 <span> {t('prescriptions')} </span>
               </button>
+            </nav>
+          </div>
 
+          {/* MCH Section */}
+          <div className="sidebar-group">
+            <span className="sidebar-group-title"> MCH </span>
+            <nav className="sidebar-menu">
               <button
                 type="button"
                 className="sidebar-item"
                 onClick={() => navigate('/patient/mch')}
               >
-                <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
-                  <path d="M12 8v4m-2-2h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"></path>
-                </svg>
+                <img src="/MCH Tracking.png?v=2" alt="MCH Tracking" style={{ width: 52, height: 52, objectFit: 'contain' }} />
                 <span> MCH Tracking </span>
               </button>
             </nav>
@@ -614,26 +642,29 @@ const DashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Footer User Profile Card */}
+
+        {/* Footer Sign Out */}
         <div className="sidebar-footer">
-          <div className="sidebar-user-info">
-            <div className="user-avatar">
-              {profileImageUrl ? (
-                <img src={profileImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
-              ) : <span>{patientInitials}</span>}
-              <span className="online-indicator"></span>
-            </div>
-            <div className="user-details">
-              <span className="user-name">{profileData.fullName || 'Patient'}</span>
-              <span className="user-id"> {t('patientPortal')} </span>
-            </div>
-          </div>
           <button
             type="button"
-            className="user-logout-btn"
-            title={t('logout')}
             onClick={() => { clearAuth(); navigate('/patient/login'); }}
+            style={{
+              width: '100%',
+              padding: '14px',
+              background: 'transparent',
+              border: 'none',
+              color: '#64748b',
+              fontSize: '14px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              transition: 'all 0.2s ease'
+            }}
           >
+            Sign out
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
               <polyline points="16 17 21 12 16 7"></polyline>
@@ -646,18 +677,26 @@ const DashboardPage: React.FC = () => {
       {/* 2. MAIN DASHBOARD CONTENT AREA (Covers Full Page Width) */}
       <div className="sehat-main-wrapper">
         {/* Top Header Navbar Bar */}
-        <header className="sehat-top-bar">
-          <div className="top-bar-space"></div>
-          <div className="top-bar-actions">
-            {/* Notification Bell */}
-            <button type="button" className="btn-notification-bell" aria-label="Notifications">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#334155" strokeWidth="2" strokeLinecap="round">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-              </svg>
-              <span className="bell-badge">2</span>
-            </button>
-
+        <header className="sehat-top-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div className="top-bar-left" style={{ flex: 1 }}></div>
+          <div className="top-bar-center" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', transform: 'translateX(-45px)' }}>
+            <span
+              style={{
+                fontSize: '18px',
+                fontWeight: 800,
+                color: '#f97316',
+                letterSpacing: '1px',
+                textTransform: 'uppercase',
+                background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                display: 'inline-block'
+              }}
+            >
+              PATIENT PORTAL
+            </span>
+          </div>
+          <div className="top-bar-actions" style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
             {/* User Profile Display */}
             <div className="top-user-pill">
               {profileImageUrl ? (
@@ -667,11 +706,7 @@ const DashboardPage: React.FC = () => {
               )}
               <div className="user-pill-info">
                 <span className="user-pill-name">{profileData.fullName || 'Patient'}</span>
-                <span className="user-pill-role"> {t('patient')} </span>
               </div>
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#64748B" strokeWidth="2.5">
-                <path d="M6 9l6 6 6-6" />
-              </svg>
             </div>
           </div>
         </header>
@@ -689,15 +724,93 @@ const DashboardPage: React.FC = () => {
             style={{ display: 'none' }}
           />
           {dashboardLoading && <p className="tab-subtitle"> {t('loadingHealthData')} </p>}
-          {dashboardError && <p role="alert" style={{ color: '#b91c1c', marginBottom: '16px' }}>{dashboardError}</p>}
+          {dashboardError && (
+            <div
+              role="alert"
+              style={{
+                padding: '12px 18px',
+                background: '#fef2f2',
+                border: '1px solid #fecaca',
+                borderRadius: '10px',
+                color: '#991b1b',
+                marginBottom: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '12px',
+                fontSize: '14px',
+                fontWeight: 500,
+                boxShadow: '0 2px 8px rgba(220,38,38,0.08)'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, color: '#dc2626' }}>
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span>{dashboardError}</span>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                {dashboardError.toLowerCase().includes('session') || dashboardError.toLowerCase().includes('sign') ? (
+                  <button
+                    type="button"
+                    onClick={() => { clearAuth(); navigate('/login'); }}
+                    style={{
+                      padding: '6px 14px',
+                      background: '#1e3a8a',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontWeight: 600,
+                      fontSize: '13px',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Sign In Again
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={() => loadDashboardData()}
+                  style={{
+                    padding: '6px 14px',
+                    background: '#dc2626',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontWeight: 600,
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    transition: 'background 0.2s ease'
+                  }}
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          )}
           {activeTab === 'overview' && (
             <>
               {/* Greeting Header */}
               <div className="dash-greeting-header">
-                <h1 className="greeting-title">
-                  {t('goodMorning')}, {patientFirstName} <img src="/namaskar.png" alt="Namaskar" style={{ width: "28px", height: "28px", marginLeft: "6px", display: "inline-block", verticalAlign: "text-bottom", transform: "translateY(-2px)" }} />
+                <h1 className="greeting-title" style={{ fontSize: '2.2rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+                  <span
+                    style={{
+                      background: 'linear-gradient(90deg, #FF9933 0%, #D4AC0D 50%, #138808 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      fontWeight: 900,
+                      display: 'inline-block'
+                    }}
+                  >
+                    {t('goodMorning')}
+                  </span>
+                  <span style={{ color: '#0f172a', fontWeight: 800 }}>, {patientFirstName}</span>
+                  <img src="/namaskar.png" alt="Namaskar" className="namaskar-animated-icon" />
                 </h1>
-                <p className="greeting-subtitle"> {t('healthSummary')} </p>
               </div>
 
               {/* Quick Action Cards Grid */}
@@ -705,20 +818,30 @@ const DashboardPage: React.FC = () => {
                 {/* Card 1: Book Appointment */}
                 <div className="action-card" onClick={() => navigate('/patient/book/new')}>
                   <div className="card-icon-badge blue-badge">
-                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#2563EB" strokeWidth="2.2" strokeLinecap="round">
-                      <rect x="3" y="4" width="18" height="18" rx="2" />
-                      <line x1="16" y1="2" x2="16" y2="6" />
-                      <line x1="8" y1="2" x2="8" y2="6" />
-                      <line x1="3" y1="10" x2="21" y2="10" />
-                      <line x1="12" y1="13" x2="12" y2="17" />
-                      <line x1="10" y1="15" x2="14" y2="15" />
+                    {/* Calendar with orange checkmark */}
+                    <svg viewBox="0 0 56 56" width="56" height="56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      {/* Calendar body */}
+                      <rect x="4" y="10" width="38" height="34" rx="4" stroke="#1E3A6E" strokeWidth="2.5" fill="none"/>
+                      {/* Top bar */}
+                      <line x1="4" y1="20" x2="42" y2="20" stroke="#1E3A6E" strokeWidth="2.5"/>
+                      {/* Left peg */}
+                      <line x1="13" y1="6" x2="13" y2="14" stroke="#1E3A6E" strokeWidth="2.5" strokeLinecap="round"/>
+                      {/* Right peg */}
+                      <line x1="33" y1="6" x2="33" y2="14" stroke="#1E3A6E" strokeWidth="2.5" strokeLinecap="round"/>
+                      {/* Grid dots */}
+                      <rect x="10" y="26" width="4" height="4" rx="1" fill="#1E3A6E"/>
+                      <rect x="19" y="26" width="4" height="4" rx="1" fill="#1E3A6E"/>
+                      <rect x="10" y="35" width="4" height="4" rx="1" fill="#1E3A6E"/>
+                      <rect x="19" y="35" width="4" height="4" rx="1" fill="#1E3A6E"/>
+                      {/* Orange checkmark circle */}
+                      <circle cx="38" cy="38" r="10" fill="#F97316" stroke="white" strokeWidth="2"/>
+                      <polyline points="33,38 36.5,41.5 43,35" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
                     </svg>
                   </div>
                   <div className="action-card-text">
                     <h3 className="card-heading"> {t('bookAppointment')} </h3>
                     <p className="card-desc"> {t('findDoctors')} </p>
                   </div>
-                  <span className="arrow-link blue-arrow">→</span>
                 </div>
 
                 {/* Card 2: Upload Reports */}
@@ -742,11 +865,19 @@ const DashboardPage: React.FC = () => {
                   }}
                 >
                   <div className="card-icon-badge purple-badge">
-                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#9333EA" strokeWidth="2.2" strokeLinecap="round">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                      <polyline points="14 2 14 8 20 8" />
-                      <polyline points="12 18 12 12 9 15" />
-                      <polyline points="12 12 15 15" />
+                    {/* Document with orange upload arrow */}
+                    <svg viewBox="0 0 56 56" width="56" height="56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      {/* Document body */}
+                      <path d="M10 6 H30 L44 20 V50 A2 2 0 0 1 42 52 H12 A2 2 0 0 1 10 50 Z" stroke="#1E3A6E" strokeWidth="2.5" fill="none" strokeLinejoin="round"/>
+                      {/* Folded corner */}
+                      <path d="M30 6 L30 20 L44 20" stroke="#1E3A6E" strokeWidth="2.5" fill="none" strokeLinejoin="round"/>
+                      {/* Lines */}
+                      <line x1="18" y1="32" x2="36" y2="32" stroke="#1E3A6E" strokeWidth="2.2" strokeLinecap="round"/>
+                      <line x1="18" y1="39" x2="30" y2="39" stroke="#1E3A6E" strokeWidth="2.2" strokeLinecap="round"/>
+                      {/* Orange upload circle */}
+                      <circle cx="38" cy="40" r="10" fill="#F97316" stroke="white" strokeWidth="2"/>
+                      <line x1="38" y1="46" x2="38" y2="36" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
+                      <polyline points="34,40 38,35 42,40" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
                     </svg>
                   </div>
                   <div className="action-card-text">
@@ -764,7 +895,6 @@ const DashboardPage: React.FC = () => {
                       {reportUploadMessage || t('uploadDesc')}
                     </p>
                   </div>
-                  <span className="arrow-link blue-arrow">→</span>
                 </div>
               </div>
 
@@ -810,11 +940,9 @@ const DashboardPage: React.FC = () => {
                               <h3 className="doctor-name">{displayDocName}</h3>
                               <span className="verified-blue-tick">✓</span>
                             </div>
-                            <p className="doctor-sub">{displayDocSub}</p>
-
                             <div className="appt-datetime-row">
-                              <span className="icon-text">📅 {displayDate}</span>
-                              <span className="icon-text">🕒 {displayTime}</span>
+                              <span className="icon-text">{displayDate}</span>
+                              <span className="icon-text">{displayTime}</span>
                             </div>
 
                             <div className="appt-mode-chip">
@@ -823,6 +951,12 @@ const DashboardPage: React.FC = () => {
                                 <rect x="1" y="5" width="15" height="14" rx="2" />
                               </svg>
                               <span>{translateMode(displayMode)}</span>
+                              <span style={{ color: '#6B7280', margin: '0 4px' }}>•</span>
+                              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#2563EB" strokeWidth="2">
+                                <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
+                                <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
+                              </svg>
+                              <span>Audio Consultation</span>
                             </div>
                           </div>
 
@@ -835,9 +969,16 @@ const DashboardPage: React.FC = () => {
 
                             return (
                               <div className="upcoming-card-right">
-                                <span className="badge-confirmed">
-                                  {latestAppointment?.status === 'COMPLETED' ? t('completed') : timeStatus.isJoinable ? t('liveNow') : t('confirmed')}
-                                </span>
+                                {timeStatus.isJoinable ? (
+                                   <span className="badge-live-now-creative animate-pulse">
+                                     <span className="live-green-dot"></span>
+                                     Live Now
+                                   </span>
+                                 ) : (
+                                   <span className="badge-confirmed">
+                                     {latestAppointment?.status === 'COMPLETED' ? t('completed') : t('confirmed')}
+                                   </span>
+                                 )}
                                 <div className="action-buttons-group">
                                   <button
                                     type="button"
@@ -850,7 +991,7 @@ const DashboardPage: React.FC = () => {
                                       className="btn-join-consultation animate-pulse bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
                                       onClick={() => navigate(`/patient/consultation/${apptId}`)}
                                     >
-                                      📹 {t('joinConsultation')}
+                                      {t('joinConsultation')}
                                     </button>
                                   ) : (
                                     <button
@@ -859,15 +1000,10 @@ const DashboardPage: React.FC = () => {
                                       title={timeStatus.sublabel}
                                       onClick={() => alert(t('youCanJoin'))}
                                     >
-                                      🔒 {timeStatus.label}
+                                      {timeStatus.label}
                                     </button>
                                   )}
                                 </div>
-                                {!timeStatus.isJoinable && timeStatus.sublabel && (
-                                  <span className="text-[11px] font-semibold text-amber-600 block text-right mt-1">
-                                    ⏱️ {timeStatus.sublabel}
-                                  </span>
-                                )}
                               </div>
                             );
                           })()}
@@ -983,7 +1119,7 @@ const DashboardPage: React.FC = () => {
                   {(() => {
                     const doctorPrescribedReminders = (latestAppointment?.prescriptions && Array.isArray(latestAppointment.prescriptions) && latestAppointment.prescriptions.length > 0)
                       ? latestAppointment.prescriptions.map((rx: any) => ({
-                        icon: '💊',
+                        icon: '',
                         title: rx.medicationName || t('prescribedMedication'),
                         sub: `${rx.dosage || t('takeAsDirected')} (${rx.frequency || t('daily')})`,
                         time: rx.timing || t('daily'),
@@ -992,67 +1128,185 @@ const DashboardPage: React.FC = () => {
 
                     const defaultGenericReminders = [
                       {
-                        icon: '💧',
+                        icon: '',
                         title: t('drinkWater'),
                         sub: t('drinkWaterDesc'),
                         time: t('daily'),
                       },
                       {
-                        icon: '🚶',
+                        icon: '',
                         title: t('dailyWalk'),
                         sub: t('dailyWalkDesc'),
                         time: t('daily'),
                       },
                       {
-                        icon: '😴',
+                        icon: '',
                         title: t('restfulSleep'),
                         sub: t('sleepDesc'),
                         time: t('daily'),
                       },
                     ];
 
-                    const displayReminders: Array<{ icon: string; title: string; sub: string; time: string }> = doctorPrescribedReminders.length > 0
-                      ? doctorPrescribedReminders
-                      : defaultGenericReminders;
+                    const displayReminders: Array<{ icon: string; title: string; sub: string; time: string }> = [
+                      ...(doctorPrescribedReminders.length > 0 ? doctorPrescribedReminders : defaultGenericReminders),
+                      ...userReminders,
+                    ];
 
                     const isDocRecommended = doctorPrescribedReminders.length > 0;
 
+                    const handleSaveCustomReminder = (e: React.FormEvent) => {
+                      e.preventDefault();
+                      if (!newReminderTitle.trim()) return;
+                      const item = {
+                        icon: '',
+                        title: newReminderTitle.trim(),
+                        sub: newReminderSub.trim() || 'Custom Wellness Reminder',
+                        time: newReminderTime.trim() || 'Daily',
+                      };
+                      const updated = [...userReminders, item];
+                      setUserReminders(updated);
+                      try {
+                        localStorage.setItem('sehatsetu_user_reminders', JSON.stringify(updated));
+                      } catch (err) {
+                        console.error('Failed to save user reminder:', err);
+                      }
+                      setNewReminderTitle('');
+                      setNewReminderSub('');
+                      setNewReminderTime('Daily');
+                      setShowAddReminderForm(false);
+                    };
+
+                    const handleRemoveCustomReminder = (indexToRemove: number) => {
+                      const updated = userReminders.filter((_, idx) => idx !== indexToRemove);
+                      setUserReminders(updated);
+                      try {
+                        localStorage.setItem('sehatsetu_user_reminders', JSON.stringify(updated));
+                      } catch (err) {
+                        console.error('Failed to remove user reminder:', err);
+                      }
+                    };
+
+                    const rawAddReminderText = t('addReminder', { defaultValue: 'Add Reminder' });
+                    const cleanAddReminderLabel = rawAddReminderText.startsWith('+')
+                      ? rawAddReminderText.replace(/^\+\s*/, '')
+                      : rawAddReminderText;
+
                     return (
-                      <div className="dash-widget-card">
+                      <div className="dash-widget-card health-reminders-gradient-card">
                         <div className="widget-header">
                           <div>
-                            <h3 className="widget-title"> {t('healthReminders')} </h3>
+                            <h3 className="widget-title" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+                              <span className="continuous-ringing-bell">
+                                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#ffffff', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.25))' }}>
+                                  <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" fill="rgba(255, 255, 255, 0.25)" />
+                                  <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+                                  <path d="M4 2C2.8 3.7 2 5.7 2 8" />
+                                  <path d="M22 8c0-2.3-.8-4.3-2-6" />
+                                </svg>
+                              </span>
+                              <span>{t('healthReminders')}</span>
+                            </h3>
                             <span className="text-[11px] font-semibold text-slate-500 block mt-0.5">
-                              {isDocRecommended ? `🩺 ${t('doctorPrescribed')}` : `🌿 ${t('dailyWellness')}`}
+                              {isDocRecommended ? t('doctorPrescribed') : t('dailyWellness')}
                             </span>
                           </div>
                           <button type="button" className="widget-link" onClick={() => handleTabClick('records')}> {t('viewAll')} </button>
                         </div>
 
                         <div className="reminders-list">
-                          {displayReminders.map((item, idx) => (
-                            <div key={idx} className="reminder-item">
-                              <div className={`reminder-icon-box ${idx % 2 === 0 ? 'blue' : 'green'}`}>
-                                {item.icon}
+                          {displayReminders.map((item, idx) => {
+                            const isCustom = idx >= (doctorPrescribedReminders.length > 0 ? doctorPrescribedReminders.length : defaultGenericReminders.length);
+                            const customIdx = idx - (doctorPrescribedReminders.length > 0 ? doctorPrescribedReminders.length : defaultGenericReminders.length);
+                            return (
+                              <div key={idx} className="reminder-item flex items-center justify-between group">
+                                <div className="flex items-center gap-3">
+                                  {item.icon ? (
+                                    <div className={`reminder-icon-box ${idx % 2 === 0 ? 'blue' : 'green'}`}>
+                                      {item.icon}
+                                    </div>
+                                  ) : null}
+                                  <div className="reminder-info flex flex-col gap-0.5">
+                                    <div className="flex items-center gap-2">
+                                      <span className="reminder-bullet-dot"></span>
+                                      <span className="reminder-title">{item.title}</span>
+                                    </div>
+                                    <span className="reminder-sub">{item.sub}</span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="reminder-time">{item.time}</span>
+                                  {isCustom && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRemoveCustomReminder(customIdx)}
+                                      className="text-gray-400 hover:text-red-500 text-xs px-1"
+                                      title="Remove reminder"
+                                    >
+                                      ✕
+                                    </button>
+                                  )}
+                                </div>
                               </div>
-                              <div className="reminder-info">
-                                <span className="reminder-title">{item.title}</span>
-                                <span className="reminder-sub">{item.sub}</span>
-                              </div>
-                              <span className="reminder-time">{item.time}</span>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
 
-                        <button type="button" className="btn-add-reminder" onClick={() => alert('Add reminder modal opened')}>
-                          + {t('addReminder')}
-                        </button>
+                        {showAddReminderForm ? (
+                          <form onSubmit={handleSaveCustomReminder} className="mt-3 p-3.5 bg-white border border-orange-200 rounded-xl space-y-2.5 text-left shadow-lg">
+                            <span className="text-xs font-bold text-slate-800 block">Add Custom Reminder</span>
+                            <input
+                              type="text"
+                              placeholder="Reminder title (e.g., Take Calcium, Morning Water)"
+                              value={newReminderTitle}
+                              onChange={(e) => setNewReminderTitle(e.target.value)}
+                              className="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-800"
+                              autoFocus
+                              required
+                            />
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                placeholder="Note (e.g., After lunch)"
+                                value={newReminderSub}
+                                onChange={(e) => setNewReminderSub(e.target.value)}
+                                className="flex-1 px-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-800"
+                              />
+                              <input
+                                type="text"
+                                placeholder="Time (e.g., Daily, 8 AM)"
+                                value={newReminderTime}
+                                onChange={(e) => setNewReminderTime(e.target.value)}
+                                className="w-28 px-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-800"
+                              />
+                            </div>
+                            <div className="flex justify-end gap-2 pt-1">
+                              <button
+                                type="button"
+                                onClick={() => setShowAddReminderForm(false)}
+                                className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg font-semibold"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="submit"
+                                className="px-4 py-1.5 text-xs text-white font-bold rounded-lg transition shadow-md"
+                                style={{ backgroundColor: '#EA580C' }}
+                              >
+                                Save Reminder
+                              </button>
+                            </div>
+                          </form>
+                        ) : (
+                          <button type="button" className="btn-add-reminder" onClick={() => setShowAddReminderForm(true)}>
+                            + {cleanAddReminderLabel}
+                          </button>
+                        )}
                       </div>
                     );
                   })()}
 
                   {/* Widget 3: Need Immediate Help? (Emergency) */}
-                  <div className="emergency-widget-card">
+                  <div className="emergency-widget-card" style={{border: 'none', background: 'transparent', borderRadius: '0'}}>
                     <h3 className="emergency-heading"> {t('needImmediateHelp')} </h3>
                     <p className="emergency-sub"> {t('supportTeam')} </p>
 
@@ -1060,18 +1314,11 @@ const DashboardPage: React.FC = () => {
                       <a
                         href="tel:102"
                         className="btn-emergency-call cursor-pointer"
-                        style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-                        onClick={() => {
-                          window.location.href = 'tel:102';
-                        }}
+                        style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                        onClick={() => { window.location.href = 'tel:102'; }}
                       >
-                        📞 {t('emergencyCall')}
+                        {t('emergencyCall')}
                       </a>
-
-                      <div className="headset-badge-247">
-                        <span className="headset-emoji">🎧</span>
-                        <span className="tag-247">24/7</span>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -1135,7 +1382,7 @@ const DashboardPage: React.FC = () => {
                               className="btn-join-video-sm animate-pulse bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
                               onClick={() => navigate(`/patient/consultation/${item.id}`)}
                             >
-                              📹 {t('joinConsultation')}
+                              {t('joinConsultation')}
                             </button>
                           ) : (
                             <button
@@ -1143,7 +1390,7 @@ const DashboardPage: React.FC = () => {
                               className="btn-join-video-sm opacity-60 cursor-not-allowed bg-slate-200 text-slate-600 border border-slate-300"
                               onClick={() => alert(t('youCanJoin'))}
                             >
-                              🔒 {cardTimeStatus.label}
+                              {cardTimeStatus.label}
                             </button>
                           )}
                           {appointmentFilter === 'upcoming' && (
@@ -1171,86 +1418,302 @@ const DashboardPage: React.FC = () => {
             </div>
           )}
 
-          {activeTab === 'records' && (
-            <div className="records-tab-content" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <div className="tab-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h2 className="tab-title" style={{ fontSize: '24px', fontWeight: 'bold', color: '#0f172a' }}> {t('ehrTitle')} </h2>
-                  <p className="tab-subtitle" style={{ fontSize: '14px', color: '#64748b' }}>{t('connectedToDatabase')}.</p>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+          {activeTab === 'records' && (() => {
+            const conditions: string[] = profileData.chronicConditions || [];
+            const allergies: string[] = profileData.allergies || [];
+            const totalMeds = prescriptionsList.reduce((acc: number, rx: any) => {
+              const meds = Array.isArray(rx.fullData?.medications) ? rx.fullData.medications.length : 0;
+              return Math.max(acc, meds);
+            }, 0);
+
+            return (
+              <div className="ehr-dashboard-root">
+
+                {/* Upload button row */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '4px', alignItems: 'center', gap: '10px' }}>
                   <button
                     type="button"
                     disabled={reportUploadState === 'uploading'}
-                    onClick={() => {
-                      if (reportUploadState !== 'uploading') {
-                        reportInputRef.current?.click();
-                      }
-                    }}
-                    style={{
-                      backgroundColor: reportUploadState === 'uploading' ? '#93c5fd' : '#2563eb',
-                      color: 'white',
-                      fontWeight: 'bold',
-                      padding: '10px 20px',
-                      borderRadius: '12px',
-                      border: 'none',
-                      cursor: reportUploadState === 'uploading' ? 'not-allowed' : 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)'
-                    }}
+                    onClick={() => { if (reportUploadState !== 'uploading') reportInputRef.current?.click(); }}
+                    style={{ backgroundColor: reportUploadState === 'uploading' ? '#fed7aa' : '#f97316', color: 'white', fontWeight: 'bold', padding: '8px 18px', borderRadius: '10px', border: 'none', cursor: reportUploadState === 'uploading' ? 'not-allowed' : 'pointer', fontSize: '13px' }}
                   >
-                    📁 {reportUploadState === 'uploading' ? t('uploading') : t('uploadNewEhr')}
+                    {reportUploadState === 'uploading'
+                      ? t('uploading')
+                      : (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontSize: '16px', lineHeight: 1, fontWeight: 700 }}>+</span>
+                          <span>Upload Report</span>
+                        </span>
+                      )
+                    }
                   </button>
-                  {reportUploadMessage && (
-                    <p
-                      role="status"
-                      style={{
-                        fontSize: '12px',
-                        margin: 0,
-                        color: reportUploadState === 'error' ? '#dc2626' : reportUploadState === 'success' ? '#15803d' : '#64748b'
-                      }}
-                    >
-                      {reportUploadMessage}
-                    </p>
-                  )}
+                  {reportUploadMessage && <p role="status" style={{ fontSize: '12px', margin: 0, color: reportUploadState === 'error' ? '#dc2626' : '#15803d' }}>{reportUploadMessage}</p>}
                 </div>
-              </div>
 
-              {/* EHR Overview Summary Banner */}
-              <div style={{ background: 'linear-gradient(135deg, #eff6ff, #dbeafe)', border: '1px solid #bfdbfe', borderRadius: '20px', padding: '20px' }}>
-                <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#1e40af', marginBottom: '8px' }}>🏥 {t('verifiedEhrTimeline')}</h3>
-                <p style={{ fontSize: '13px', color: '#1e3a8a', lineHeight: '1.5' }}> {t('ehrDesc')} </p>
-              </div>
-
-              {/* EHR Database Records Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
-                {ehrReportsList.map((item) => (
-                  <div key={item.id} style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', alignItems: 'center' }}>
-                      <span style={{ background: item.status.includes('OCR') ? '#dcfce7' : '#dbeafe', color: item.status.includes('OCR') ? '#15803d' : '#1e40af', fontSize: '11px', fontWeight: 'bold', padding: '4px 10px', borderRadius: '20px' }}>
-                        {item.status}
-                      </span>
-                      <span style={{ fontSize: '12px', color: '#94a3b8' }}>{item.date}</span>
+                {/* ── Row 1: 4 Stat Cards ── */}
+                <div className="ehr-stat-cards-row">
+                  <div
+                    className={`ehr-stat-card ${activeStatCard === 0 ? 'ehr-stat-card-active' : ''}`}
+                    onClick={() => setActiveStatCard(activeStatCard === 0 ? null : 0)}
+                  >
+                    <div className="ehr-stat-icon">
+                      <img src="/Known Conditions.png" alt="Known Conditions" style={{ width: 44, height: 44, objectFit: 'contain' }} />
                     </div>
-                    <h4 style={{ fontSize: '16px', fontWeight: 'bold', color: '#0f172a' }}>{item.title}</h4>
-                    <p style={{ fontSize: '12px', color: '#64748b', marginTop: '4px', lineHeight: '1.4' }}>{item.summary}</p>
-                    <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#2563eb' }}>{t('patientID')} {item.id}</span>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedEhrModalData(item)}
-                        style={{ background: '#2563eb', color: 'white', border: 'none', padding: '6px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
-                      >
-                        🔍 {t('viewOcrData')}
-                      </button>
+                    <div className="ehr-stat-body">
+                      <div className="ehr-stat-label">Known Conditions</div>
+                      <div className="ehr-stat-count">{conditions.length || 0}</div>
+                      <div className="ehr-stat-sub">Known conditions</div>
+                      <button type="button" className="ehr-stat-link">View Details</button>
                     </div>
                   </div>
-                ))}
+                  <div
+                    className={`ehr-stat-card ${activeStatCard === 1 ? 'ehr-stat-card-active' : ''}`}
+                    onClick={() => setActiveStatCard(activeStatCard === 1 ? null : 1)}
+                  >
+                    <div className="ehr-stat-icon">
+                      <img src="/Allergies.png" alt="Allergies" style={{ width: 44, height: 44, objectFit: 'contain' }} />
+                    </div>
+                    <div className="ehr-stat-body">
+                      <div className="ehr-stat-label">Allergies</div>
+                      <div className="ehr-stat-count">{allergies.length || 0}</div>
+                      <div className="ehr-stat-sub">Known {allergies.length === 1 ? 'allergy' : 'allergies'}</div>
+                      <button type="button" className="ehr-stat-link">View Details</button>
+                    </div>
+                  </div>
+                  <div
+                    className={`ehr-stat-card ${activeStatCard === 2 ? 'ehr-stat-card-active' : ''}`}
+                    onClick={() => {
+                      setActiveStatCard(activeStatCard === 2 ? null : 2);
+                      handleTabClick('prescriptions');
+                    }}
+                  >
+                    <div className="ehr-stat-icon">
+                      <img src="/Current Medications.png" alt="Current Medications" style={{ width: 44, height: 44, objectFit: 'contain' }} />
+                    </div>
+                    <div className="ehr-stat-body">
+                      <div className="ehr-stat-label">Current Medications</div>
+                      <div className="ehr-stat-count">{totalMeds || prescriptionsList.length}</div>
+                      <div className="ehr-stat-sub">Active medications</div>
+                      <button type="button" className="ehr-stat-link" onClick={(e) => { e.stopPropagation(); handleTabClick('prescriptions'); }}>View Details</button>
+                    </div>
+                  </div>
+                  <div
+                    className={`ehr-stat-card ${activeStatCard === 3 ? 'ehr-stat-card-active' : ''}`}
+                    onClick={() => setActiveStatCard(activeStatCard === 3 ? null : 3)}
+                  >
+                    <div className="ehr-stat-icon">
+                      <img src="/Past Surgeries/Procedures.png" alt="Past Surgeries" style={{ width: 44, height: 44, objectFit: 'contain' }} />
+                    </div>
+                    <div className="ehr-stat-body">
+                      <div className="ehr-stat-label">Past Surgeries / Procedures</div>
+                      <div className="ehr-stat-count">{ehrReportsList.filter((r: any) => r.source === 'Uploaded medical report').length}</div>
+                      <div className="ehr-stat-sub">Surgery / Procedure</div>
+                      <button type="button" className="ehr-stat-link">View Details</button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ── Row 2: Medical Summary + Recent EHR Records ── */}
+                <div className="ehr-mid-row">
+                  <div className="ehr-medical-summary-card">
+                    <div className="ehr-section-title-row">
+                      <span className="ehr-section-title">Medical Summary</span>
+                    </div>
+                    <div className="ehr-summary-list">
+                      <div className="ehr-summary-item">
+                        <div className="ehr-summary-icon-wrap" style={{ background: '#0f1d5c', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 2px 8px rgba(0,0,0,0.25)' }}>
+                          <img src="/Known Conditions.png" alt="Known Conditions" style={{ width: 34, height: 34, objectFit: 'contain' }} />
+                        </div>
+                        <div>
+                          <div className="ehr-summary-item-label">Known Conditions</div>
+                          <div className="ehr-summary-item-value">{conditions.length > 0 ? conditions.join(', ') : 'None recorded'}</div>
+                        </div>
+                      </div>
+                      <div className="ehr-summary-item">
+                        <div className="ehr-summary-icon-wrap" style={{ background: '#0f1d5c', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 2px 8px rgba(0,0,0,0.25)' }}>
+                          <img src="/Allergies.png" alt="Allergies" style={{ width: 34, height: 34, objectFit: 'contain' }} />
+                        </div>
+                        <div>
+                          <div className="ehr-summary-item-label">Allergies</div>
+                          <div className="ehr-summary-item-value">{allergies.length > 0 ? allergies.join(', ') : 'None recorded'}</div>
+                        </div>
+                      </div>
+                      <div className="ehr-summary-item">
+                        <div className="ehr-summary-icon-wrap" style={{ background: '#0f1d5c', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 2px 8px rgba(0,0,0,0.25)' }}>
+                          <img src="/Past Surgeries/Procedures.png" alt="Past Surgeries" style={{ width: 34, height: 34, objectFit: 'contain' }} />
+                        </div>
+                        <div>
+                          <div className="ehr-summary-item-label">Past Surgeries / Procedures</div>
+                          <div className="ehr-summary-item-value">{ehrReportsList.length > 0 ? `${ehrReportsList.length} record(s) on file` : 'None recorded'}</div>
+                        </div>
+                      </div>
+                      <div className="ehr-summary-item">
+                        <div className="ehr-summary-icon-wrap" style={{ background: '#0f1d5c', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 2px 8px rgba(0,0,0,0.25)' }}>
+                          <img src="/Current Medications.png" alt="Current Medications" style={{ width: 34, height: 34, objectFit: 'contain' }} />
+                        </div>
+                        <div>
+                          <div className="ehr-summary-item-label">Current Medications</div>
+                          <div className="ehr-summary-item-value">{prescriptionsList.length > 0 ? `${prescriptionsList.length} active prescription(s)` : 'None recorded'}</div>
+                        </div>
+                      </div>
+                      <div className="ehr-summary-item">
+                        <div className="ehr-summary-icon-wrap" style={{ background: '#0f1d5c', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 2px 8px rgba(0,0,0,0.25)' }}>
+                          <img src="/Last Updated.png" alt="Last Updated" style={{ width: 34, height: 34, objectFit: 'contain' }} />
+                        </div>
+                        <div>
+                          <div className="ehr-summary-item-label">Last Updated</div>
+                          <div className="ehr-summary-item-value">
+                            {prescriptionsList[0]?.date || 'Not available'}
+                            {prescriptionsList[0] ? ` by ${prescriptionsList[0].doctorName}` : ''}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <button type="button" className="ehr-summary-full-btn" onClick={() => handleTabClick('prescriptions')}>
+                      View Full Medical Summary →
+                    </button>
+                  </div>
+
+                  <div className="ehr-recent-consult-card">
+                    <div className="ehr-section-title-row" style={{ justifyContent: 'space-between' }}>
+                      <span className="ehr-section-title">Recent Consultation / EHR Records</span>
+                      <button type="button" className="ehr-view-all-btn">View All</button>
+                    </div>
+                    {consultationsList.length === 0 && ehrReportsList.length === 0 ? (
+                      <div style={{ textAlign: 'center', padding: '40px 20px', color: '#94a3b8', fontSize: '14px' }}>
+                        No consultation records yet. Book your first appointment to get started.
+                      </div>
+                    ) : (
+                      <div className="ehr-consult-list">
+                        {consultationsList.slice(0, 3).map((consult: any) => {
+                          const matchedRx = prescriptionsList.find((rx: any) =>
+                            rx.fullData?.appointment?.id === consult.id || rx.doctorName === consult.doctorName
+                          );
+                          const medCount = matchedRx && Array.isArray(matchedRx.fullData?.medications) ? matchedRx.fullData.medications.length : 0;
+                          const dateParts = consult.date ? consult.date.split(' ') : [];
+                          const day = dateParts[1]?.replace(',', '') || '--';
+                          const month = dateParts[0]?.toUpperCase().slice(0, 3) || '---';
+                          const year = dateParts[2] || '';
+                          const matchedEhr = ehrReportsList.find((e: any) => e.source === 'SehatSetu consultation');
+                          return (
+                            <div key={consult.id} className="ehr-consult-row">
+                              <div className="ehr-consult-date-col">
+                                <span className="ehr-date-day">{day}</span>
+                                <span className="ehr-date-month">{month}</span>
+                                <span className="ehr-date-year">{year}</span>
+                              </div>
+                              <div className="ehr-consult-doctor-col">
+                                <div className="ehr-doctor-name">{consult.doctorName}</div>
+                                <div className="ehr-doctor-spec">{consult.specialty}</div>
+                              </div>
+                              <div className="ehr-consult-detail-col">
+                                <div className="ehr-detail-label">Chief Complaint</div>
+                                <div className="ehr-detail-value">{matchedRx?.fullData?.symptoms?.join(', ') || matchedRx?.fullData?.diagnosis || 'Consultation record'}</div>
+                                <div className="ehr-detail-label" style={{ marginTop: '6px' }}>Diagnosis</div>
+                                <div className="ehr-detail-value">{matchedEhr?.title || matchedRx?.fullData?.diagnosis || consult.mode || '—'}</div>
+                              </div>
+                              <div className="ehr-consult-rx-col">
+                                <div className="ehr-detail-label">Prescription</div>
+                                <div className="ehr-detail-value">{medCount > 0 ? `${medCount} medicine${medCount > 1 ? 's' : ''}` : matchedRx ? 'Issued' : 'None'}</div>
+                                <div className="ehr-detail-label" style={{ marginTop: '6px' }}>Follow-up</div>
+                                <div className="ehr-detail-value">{consult.status === 'COMPLETED' ? 'As advised' : 'As needed'}</div>
+                              </div>
+                              <button
+                                type="button"
+                                className="ehr-view-full-btn"
+                                onClick={() => setSelectedEhrModalData(matchedEhr || { id: consult.id, title: `${consult.doctorName} - ${consult.date}`, extractedData: matchedRx?.fullData?.diagnosis || 'No data', source: 'SehatSetu', date: consult.date })}
+                              >
+                                View Full EHR
+                              </button>
+                            </div>
+                          );
+                        })}
+                        {consultationsList.length === 0 && ehrReportsList.slice(0, 3).map((item: any) => (
+                          <div key={item.id} className="ehr-consult-row">
+                            <div className="ehr-consult-date-col">
+                              <span className="ehr-date-day">{item.date?.split(' ')[1]?.replace(',', '') || '--'}</span>
+                              <span className="ehr-date-month">{item.date?.split(' ')[0]?.toUpperCase().slice(0, 3) || '---'}</span>
+                              <span className="ehr-date-year">{item.date?.split(' ')[2] || ''}</span>
+                            </div>
+                            <div className="ehr-consult-doctor-col">
+                              <div className="ehr-doctor-name">{item.title}</div>
+                              <div className="ehr-doctor-spec">{item.source}</div>
+                            </div>
+                            <div className="ehr-consult-detail-col">
+                              <div className="ehr-detail-label">Summary</div>
+                              <div className="ehr-detail-value">{item.summary}</div>
+                            </div>
+                            <div className="ehr-consult-rx-col">
+                              <div className="ehr-detail-label">Status</div>
+                              <div className="ehr-detail-value">{item.status}</div>
+                            </div>
+                            <button type="button" className="ehr-view-full-btn" onClick={() => setSelectedEhrModalData(item)}>View Full EHR</button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* ── Row 3: Prescription History + Investigations + Vitals ── */}
+                <div className="ehr-bottom-row">
+                  <div className="ehr-bottom-card">
+                    <div className="ehr-section-title-row" style={{ justifyContent: 'space-between' }}>
+                      <span className="ehr-section-title" style={{ fontSize: '14px' }}>Prescription History</span>
+                      <button type="button" className="ehr-view-all-btn" onClick={() => handleTabClick('prescriptions')}>View All</button>
+                    </div>
+                    <div className="ehr-rx-list">
+                      {prescriptionsList.length === 0 ? (
+                        <div style={{ color: '#94a3b8', fontSize: '13px', padding: '12px 0' }}>No prescriptions yet.</div>
+                      ) : (
+                        prescriptionsList.slice(0, 3).map((rx: any) => (
+                          <div key={rx.id} className="ehr-rx-row">
+                            <div>
+                              <div className="ehr-rx-date">{rx.date} · {rx.doctorName}</div>
+                              <div className="ehr-rx-detail">{rx.meds} · {rx.fullData?.diagnosis || 'Consultation'}</div>
+                            </div>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    <button type="button" className="ehr-summary-full-btn" onClick={() => handleTabClick('prescriptions')}>View All Prescriptions →</button>
+                  </div>
+
+                  <div className="ehr-bottom-card">
+                    <div className="ehr-section-title-row" style={{ justifyContent: 'space-between' }}>
+                      <span className="ehr-section-title" style={{ fontSize: '14px' }}>Investigations / Tests Ordered</span>
+                      <button type="button" className="ehr-view-all-btn">View All</button>
+                    </div>
+                    <div className="ehr-investigations-list">
+                      {ehrReportsList.length === 0 ? (
+                        <div style={{ color: '#94a3b8', fontSize: '13px', padding: '12px 0' }}>No investigations on file.</div>
+                      ) : (
+                        ehrReportsList.slice(0, 3).map((report: any) => (
+                          <div key={report.id} className="ehr-investigation-row">
+                            <div>
+                              <div className="ehr-inv-name">{report.title}</div>
+                              <div className="ehr-inv-date">Ordered on {report.date}</div>
+                            </div>
+                            <span className="ehr-inv-status" style={{
+                              color: report.status === 'SUCCEEDED' || report.status?.includes('OCR') ? '#22c55e' : '#f59e0b',
+                              background: report.status === 'SUCCEEDED' || report.status?.includes('OCR') ? '#f0fdf4' : '#fffbeb'
+                            }}>
+                              {report.status === 'SUCCEEDED' || report.status?.includes('OCR') ? 'Completed' : 'Recommended'}
+                            </span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    <button type="button" className="ehr-summary-full-btn">View All Investigations →</button>
+                  </div>
+
+
+                </div>
+
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {activeTab === 'profile' && (
             <div className="profile-tab-content">
@@ -1286,23 +1749,21 @@ const DashboardPage: React.FC = () => {
                     <span className="profile-badge-pill profile-badge-verified">
                       ✓ {t('verifiedPatient')}
                     </span>
-                    <span className="profile-badge-pill profile-badge-gold">
-                      ⭐ {t('goldMember')}
-                    </span>
                   </div>
-                  <p className="profile-hero-sub">{profileData.email} • {profileData.phone}</p>
-                  <p className="profile-hero-meta">Patient ID: <span style={{ fontFamily: 'monospace', fontWeight: 'bold', color: '#ffffff' }}>#PAT-2026-9812</span> • Reg Date: Aug 2026</p>
+                  <p className="profile-hero-sub">{profileData.email}</p>
+                  <p className="profile-hero-meta">Patient ID: <span style={{ fontFamily: 'monospace', fontWeight: 'bold', color: '#ffffff' }}>#PAT-2026-9812</span></p>
+                  <p className="profile-hero-meta" style={{ marginTop: '4px' }}>User Registration Date: Aug 2026</p>
                 </div>
               </div>
 
               {/* Settings Sub-Tabs Header Bar */}
               <div className="profile-subtabs-bar">
                 {[
-                  { id: 'personal', label: '👤 ' + t('personalDetails') },
-                  { id: 'medical', label: '🩺 ' + t('medicalProfileVitals') },
-                  { id: 'security', label: '🔒 ' + t('passwordSecurity') },
-                  { id: 'notifications', label: '🔔 ' + t('notificationPrefs') },
-                  { id: 'billing', label: '💳 ' + t('billingPayments') },
+                  { id: 'personal', label: t('personalDetails') },
+                  { id: 'medical', label: t('medicalProfileVitals') },
+                  { id: 'security', label: t('passwordSecurity') },
+                  { id: 'notifications', label: t('notificationPrefs') },
+                  { id: 'billing', label: t('billingPayments') },
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -1683,7 +2144,7 @@ const DashboardPage: React.FC = () => {
                   {/* ── Known Allergies ── */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', borderRadius: '14px', background: '#fff5f5', border: '1px solid #fecdd3' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '18px' }}>⚠️</span>
+                      
                       <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#9f1239' }}>Known Allergies</h4>
                     </div>
                     {/* Preset chips */}
@@ -1752,7 +2213,7 @@ const DashboardPage: React.FC = () => {
                   {/* ── Current Medical Conditions ── */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', borderRadius: '14px', background: '#f0f9ff', border: '1px solid #bae6fd' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '18px' }}>🩺</span>
+                      
                       <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#0369a1' }}>Current Medical Conditions</h4>
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -1818,7 +2279,7 @@ const DashboardPage: React.FC = () => {
                   {/* ── Severe Medical Conditions ── */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', borderRadius: '14px', background: '#fff7ed', border: '1px solid #fed7aa' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '18px' }}>🚨</span>
+                      
                       <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#c2410c' }}>Severe Medical Conditions</h4>
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -1884,7 +2345,7 @@ const DashboardPage: React.FC = () => {
                   {/* ── Family Medical History ── */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', borderRadius: '14px', background: '#f5f3ff', border: '1px solid #ddd6fe' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '18px' }}>🧬</span>
+                      
                       <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#6d28d9' }}>Family Medical History</h4>
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -1946,6 +2407,186 @@ const DashboardPage: React.FC = () => {
                       <button type="button" onClick={() => setShowCustomFamilyHistInput(true)} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: '1.5px dashed #c4b5fd', borderRadius: '10px', padding: '7px 14px', color: '#6d28d9', fontSize: '12px', fontWeight: 600, cursor: 'pointer', width: 'fit-content' }}>+ Add Family History</button>
                     )}
                   </div>
+
+                  {/* ── HEALTH DOCUMENTS UPLOAD SECTION ── */}
+                  <div style={{ marginTop: '28px', border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', background: '#fff' }}>
+                    {/* Header */}
+                    <div style={{ padding: '14px 18px', borderBottom: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div>
+                        <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#1e293b' }}>Health Documents</h4>
+                        <p style={{ margin: 0, fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>PDF, JPEG, PNG, WebP &middot; Max 20 MB per file</p>
+                      </div>
+                    </div>
+
+                    {/* Rows */}
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      {DOC_CATEGORIES.map((cat, idx) => {
+                        const state = docUploadStates[cat.key] || 'idle';
+                        const uploadedFiles = docUploadedFiles[cat.key] || [];
+                        return (
+                          <div
+                            key={cat.key}
+                            style={{
+                              borderBottom: idx < DOC_CATEGORIES.length - 1 ? '1px solid #f1f5f9' : 'none',
+                            }}
+                          >
+                            {/* Main row */}
+                            <div style={{ display: 'flex', alignItems: 'center', padding: '12px 18px', gap: '12px' }}>
+                              {/* File icon (SVG, no emoji) */}
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                              </svg>
+
+                              {/* Label */}
+                              <span style={{ flex: 1, fontSize: '13px', fontWeight: 600, color: '#374151' }}>{cat.label}</span>
+
+                              {/* Uploading indicator */}
+                              {state === 'uploading' && (
+                                <span style={{ fontSize: '11px', color: '#6366f1', fontWeight: 500, marginRight: '8px' }}>Uploading...</span>
+                              )}
+
+                              {/* Upload button */}
+                              <button
+                                type="button"
+                                disabled={state === 'uploading'}
+                                onClick={() => docInputRefs.current[cat.key]?.click()}
+                                style={{
+                                  display: 'inline-flex', alignItems: 'center', gap: '5px',
+                                  padding: '5px 13px', borderRadius: '6px', fontSize: '12px', fontWeight: 600,
+                                  cursor: state === 'uploading' ? 'not-allowed' : 'pointer',
+                                  border: '1px solid #d1d5db',
+                                  background: state === 'uploading' ? '#f3f4f6' : '#fff',
+                                  color: state === 'uploading' ? '#9ca3af' : '#374151',
+                                  flexShrink: 0,
+                                  transition: 'background 0.15s',
+                                }}
+                              >
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                  <polyline points="17 8 12 3 7 8"/>
+                                  <line x1="12" y1="3" x2="12" y2="15"/>
+                                </svg>
+                                {state === 'uploading' ? 'Uploading...' : 'Upload'}
+                              </button>
+
+                              {/* Hidden file input */}
+                              <input
+                                type="file"
+                                ref={(el) => { docInputRefs.current[cat.key] = el; }}
+                                accept=".pdf,.jpeg,.jpg,.png,.webp"
+                                style={{ display: 'none' }}
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  e.target.value = '';
+                                  if (!file) return;
+                                  // Create a local object URL so we can preview before/after upload
+                                  const localUrl = URL.createObjectURL(file);
+                                  setDocUploadStates(prev => ({ ...prev, [cat.key]: 'uploading' }));
+                                  setDocUploadMessages(prev => ({ ...prev, [cat.key]: `Uploading ${file.name}…` }));
+                                  try {
+                                    const result: any = await uploadMedicalReport(file, cat.key);
+                                    setDocUploadStates(prev => ({ ...prev, [cat.key]: 'idle' }));
+                                    setDocUploadMessages(prev => ({ ...prev, [cat.key]: '' }));
+                                    // Save the file to the per-category uploaded list
+                                    const fileEntry = {
+                                      name: file.name,
+                                      url: result?.publicUrl || result?.fileUrl || localUrl,
+                                      date: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+                                      mimeType: file.type,
+                                    };
+                                    setDocUploadedFiles(prev => ({
+                                      ...prev,
+                                      [cat.key]: [...(prev[cat.key] || []), fileEntry],
+                                    }));
+                                    // Also add to the main EHR list
+                                    const newEhrItem = {
+                                      id: result?.id || `EHR-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+                                      title: `[${cat.label}] ${file.name.replace(/\.[^/.]+$/, '')}`,
+                                      date: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+                                      status: 'Processed via OCR',
+                                      summary: result?.extractedText ? `${result.extractedText.slice(0, 80)}…` : 'AI-extracted health data available',
+                                      source: cat.label,
+                                      extractedData: result?.extractedText || 'Extracted parameters available',
+                                    };
+                                    setEhrReportsList(prev => [newEhrItem, ...prev]);
+                                  } catch (err) {
+                                    setDocUploadStates(prev => ({ ...prev, [cat.key]: 'error' }));
+                                    setDocUploadMessages(prev => ({ ...prev, [cat.key]: err instanceof Error ? err.message : 'Upload failed. Try again.' }));
+                                    // Still show the file locally even if backend fails
+                                    const fileEntry = {
+                                      name: file.name,
+                                      url: localUrl,
+                                      date: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+                                      mimeType: file.type,
+                                    };
+                                    setDocUploadedFiles(prev => ({
+                                      ...prev,
+                                      [cat.key]: [...(prev[cat.key] || []), fileEntry],
+                                    }));
+                                  }
+                                }}
+                              />
+                            </div>
+
+                            {/* Error message */}
+                            {state === 'error' && docUploadMessages[cat.key] && (
+                              <div style={{ padding: '6px 18px 10px 46px', fontSize: '11px', color: '#b91c1c' }}>
+                                {docUploadMessages[cat.key]}
+                              </div>
+                            )}
+
+                            {/* Uploaded files list */}
+                            {uploadedFiles.length > 0 && (
+                              <div style={{ background: '#f8fafc', borderTop: '1px solid #f1f5f9', padding: '8px 18px 10px 46px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                {uploadedFiles.map((f, fi) => (
+                                  <div key={fi} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    {/* Small file type icon */}
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                      <polyline points="14 2 14 8 20 8"/>
+                                    </svg>
+                                    <span style={{ flex: 1, fontSize: '12px', color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                      {f.name}
+                                    </span>
+                                    <span style={{ fontSize: '11px', color: '#9ca3af', flexShrink: 0 }}>{f.date}</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => setPreviewDoc({ url: f.url, fileName: f.name })}
+                                      style={{
+                                        fontSize: '11px', fontWeight: 600, color: '#2563eb',
+                                        background: 'none', border: 'none', cursor: 'pointer', padding: '0 4px',
+                                        textDecoration: 'underline', flexShrink: 0,
+                                      }}
+                                    >
+                                      View
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const a = document.createElement('a');
+                                        a.href = f.url;
+                                        a.download = f.name;
+                                        a.click();
+                                      }}
+                                      style={{
+                                        fontSize: '11px', fontWeight: 600, color: '#374151',
+                                        background: 'none', border: 'none', cursor: 'pointer', padding: '0 4px',
+                                        textDecoration: 'underline', flexShrink: 0,
+                                      }}
+                                    >
+                                      Download
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
                 </div>
               )}
 
@@ -2017,7 +2658,7 @@ const DashboardPage: React.FC = () => {
                           type="checkbox"
                           checked={(notificationSettings as any)[item.key]}
                           onChange={(e) => setNotificationSettings({ ...notificationSettings, [item.key]: e.target.checked })}
-                          style={{ width: '20px', height: '20px', accentColor: '#2563eb', cursor: 'pointer' }}
+                          style={{ width: '20px', height: '20px', accentColor: '#f97316', cursor: 'pointer' }}
                         />
                       </div>
                     ))}
@@ -2327,6 +2968,10 @@ const DashboardPage: React.FC = () => {
 };
 
 export default DashboardPage;
+
+
+
+
 
 
 
