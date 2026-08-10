@@ -40,6 +40,40 @@
   --radius-pill: 9999px;
 }
 
+.hero-headline-gradient {
+  display: inline;
+  background-image: linear-gradient(
+    100deg,
+    #2563EB 0%,
+    #3B82F6 34%,
+    #93C5FD 50%,
+    #3B82F6 66%,
+    #2563EB 100%
+  );
+  background-size: 220% 100%;
+  background-position: 0% 50%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: hero-headline-shimmer 4s ease-in-out infinite;
+}
+
+@keyframes hero-headline-shimmer {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-headline-gradient {
+    animation: none;
+    background-position: 50% 50%;
+  }
+}
+
 /* Patient video consultation sidebar */
 .consultation-side-panel {
   display: flex;
@@ -2488,6 +2522,27 @@
     }
   }
 
+  .landing-brand-mark {
+    width: 40px;
+    height: 40px;
+  }
+
+  .landing-brand-wordmark {
+    font-size: 1.8rem;
+    line-height: 1;
+  }
+
+  @media (min-width: 769px) {
+    .landing-brand-mark {
+      width: 44px;
+      height: 44px;
+    }
+
+    .landing-brand-wordmark {
+      font-size: 2.3rem;
+    }
+  }
+
   .text-white {
     color: #FFFFFF;
   }
@@ -2658,260 +2713,354 @@
   /* ==========================================================================
    Floating Emergency Button & SOS Modal
    ========================================================================== */
-  .floating-emergency-btn {
-    position: fixed;
-    bottom: 18px;
-    right: 18px;
-    z-index: 1000;
-    width: 102px;
-    height: 102px;
-    padding: 0;
-    border-radius: 50%;
-    background: none;
-    border: 4px solid #FFFFFF;
-    box-shadow: 0 10px 24px rgba(220, 38, 38, 0.5);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-
-  .floating-emergency-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 12px 28px rgba(220, 38, 38, 0.58);
-  }
-
-  .siren-pulse-ring {
-    position: absolute;
-    top: -5px;
-    left: -5px;
-    right: -5px;
-    bottom: -5px;
-    border-radius: 50%;
-    border: 2px solid rgba(239, 68, 68, 0.6);
-    animation: emergencyPulse 2s infinite;
-    pointer-events: none;
-  }
-
-  .emergency-icon-wrap {
-    width: 100%;
-    height: 100%;
-  }
-
-  .emergency-img {
-    border-radius: 50%;
-  }
-
 }
-
-@keyframes emergencyPulse {
-  0% {
-    transform: scale(0.95);
-    opacity: 0.9;
-  }
-
-  50% {
-    transform: scale(1.15);
-    opacity: 0.3;
-  }
-
-  100% {
-    transform: scale(0.95);
-    opacity: 0.9;
-  }
-}
-
-@keyframes namaskarPulse {
-  0%, 100% { transform: scale(1) rotate(0deg); }
-  25% { transform: scale(1.1) rotate(-6deg); }
-  50% { transform: scale(1) rotate(0deg); }
-  75% { transform: scale(1.1) rotate(6deg); }
-}
-
-.patient-portal {
-
-  .emergency-icon-wrap {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    overflow: hidden;
-  }
-
-  .emergency-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    display: block;
-  }
-
-  .siren-svg-icon {
-    width: 100%;
-    height: 100%;
-  }
-
-  .emergency-label {
-    font-size: 0.68rem;
-    font-weight: 800;
-    letter-spacing: 0.04em;
-    color: #FFFFFF;
-    line-height: 1;
-    text-align: center;
-  }
-
-  /* Emergency Assistance Modal Overlay */
-.emergency-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(15, 23, 42, 0.65);
-    backdrop-filter: blur(6px);
-    z-index: 2000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-  }
-
-  .emergency-modal-card {
-    position: relative;
-    background: #FFFFFF;
-    border-radius: var(--radius-lg);
-    max-width: 440px;
-    width: 100%;
-    padding: 32px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    animation: modalSlideUp 0.25s ease-out;
-  }
-
-}
-
 @keyframes modalSlideUp {
   from {
     opacity: 0;
     transform: translateY(20px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
-
-  .close-modal-btn {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    background: #F1F5F9;
-    border: none;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    font-size: 1rem;
-    color: #64748B;
-    cursor: pointer;
+.emergency-btn-wrap {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.emergency-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 180px;
+  height: 180px;
+  padding: 0;
+  cursor: pointer;
+  border: none;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #FF5A4E 0%, #E4231A 55%, #B4160F 100%);
+  box-shadow:
+    0 0 0 4px rgba(228, 35, 26, 0.14),
+    0 0 30px 8px rgba(228, 35, 26, 0.55),
+    inset 0 -6px 14px rgba(0, 0, 0, 0.25),
+    inset 0 6px 10px rgba(255, 255, 255, 0.25);
+  appearance: none;
+  transition: transform 0.2s ease;
+}
+.emergency-btn:active {
+  transform: scale(0.97);
+}
+.emergency-btn .ring {
+  position: absolute;
+  inset: 10px;
+  pointer-events: none;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+}
+.emergency-btn .siren-svg {
+  display: block;
+  width: 72px;
+  height: 72px;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.25));
+}
+.emergency-btn .text-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+.emergency-btn .label {
+  max-width: calc(100% - 24px);
+  color: #FFFFFF;
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  text-transform: uppercase;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.emergency-btn .divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.emergency-btn .divider .line {
+  width: 22px;
+  height: 1.5px;
+  background: linear-gradient(90deg, rgba(255, 178, 59, 0), #FFB23B);
+}
+.emergency-btn .divider .line.right {
+  background: linear-gradient(90deg, #FFB23B, rgba(255, 178, 59, 0));
+}
+.emergency-btn .divider .dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #FFB23B;
+}
+.patient-portal {
+  .siren-svg-icon {
+    width: 100%;
+    height: 100%;
+  }
+  /* Emergency Medical Help Modal */
+  .emergency-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 100vw;
+    min-height: 100vh;
+    padding: 20px;
+    background: rgba(3, 7, 18, 0.82);
+    backdrop-filter: blur(12px);
+    box-sizing: border-box;
+  }
+  .emergency-modal-card {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    padding: 40px 32px;
+    overflow: hidden;
+    color: #FFFFFF;
+    background:
+      radial-gradient(circle at 50% 0%, rgba(93, 77, 173, 0.22), transparent 34%),
+      linear-gradient(145deg, rgba(15, 22, 66, 0.98), rgba(19, 27, 77, 0.98));
+    border: 1px solid rgba(165, 173, 199, 0.22);
+    border-radius: 24px;
+    box-shadow: 0 28px 80px rgba(0, 0, 0, 0.52), 0 0 0 1px rgba(103, 91, 194, 0.08);
+    animation: modalSlideUp 0.25s ease-out;
+    box-sizing: border-box;
+  }
+  .close-modal-btn {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    color: #FFFFFF;
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+    background: rgba(4, 10, 35, 0.56);
+    border: 1px solid rgba(165, 173, 199, 0.28);
+    border-radius: 50%;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  }
+
+  .close-modal-btn:hover {
+    background: rgba(111, 91, 197, 0.32);
+    border-color: rgba(255, 255, 255, 0.55);
+    transform: rotate(6deg);
+  }
+
+  .close-modal-btn:focus-visible,
+  .emergency-action-item:focus-visible {
+    outline: 3px solid rgba(165, 173, 255, 0.9);
+    outline-offset: 3px;
   }
 
   .emergency-modal-header {
+    margin-bottom: 28px;
     text-align: center;
-    margin-bottom: 24px;
   }
 
   .modal-siren-badge {
-    font-size: 2.5rem;
-    margin-bottom: 8px;
+    display: grid;
+    place-items: center;
+    width: 112px;
+    height: 112px;
+    margin: 0 auto 18px;
+    font-size: 4rem;
+    line-height: 1;
+    background: radial-gradient(circle, rgba(242, 132, 181, 0.28) 0%, rgba(91, 76, 178, 0.2) 42%, transparent 72%);
+    border-radius: 50%;
+    filter: drop-shadow(0 0 24px rgba(202, 92, 181, 0.34));
+  }
+
+  .modal-siren-image {
+    display: block;
+    width: 82px;
+    height: 82px;
+    object-fit: contain;
   }
 
   .modal-title {
-    font-size: 1.5rem;
+    margin: 0;
+    color: #FFFFFF;
+    font-size: 2rem;
     font-weight: 800;
-    color: #DC2626;
-    margin-bottom: 4px;
+    line-height: 1.15;
   }
 
   .modal-subtitle {
-    font-size: 0.9rem;
-    color: var(--color-text-muted);
+    margin: 10px auto 0;
+    color: #A5ADC7;
+    font-size: 1rem;
+    line-height: 1.5;
   }
 
   .emergency-actions-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
   }
 
   .emergency-action-item {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 16px;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
-    transition: background-color 0.2s ease, transform 0.15s ease;
+    width: 100%;
+    min-height: 120px;
+    gap: 18px;
+    padding: 24px;
+    color: #FFFFFF;
+    font-family: inherit;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-radius: 20px;
+    box-sizing: border-box;
+    transition: transform 0.2s ease, filter 0.2s ease, border-color 0.2s ease;
   }
 
   .emergency-action-item:hover {
-    transform: translateX(4px);
+    transform: translateY(-2px);
+    filter: brightness(1.12);
   }
 
   .call-ambulance {
-    background: #FEF2F2;
-    border-color: #FCA5A5;
+    background: linear-gradient(110deg, rgba(91, 25, 59, 0.68), rgba(64, 19, 49, 0.76));
+    border-color: rgba(248, 113, 149, 0.82);
+    box-shadow: inset 0 0 24px rgba(244, 63, 94, 0.08), 0 0 20px rgba(225, 29, 72, 0.16);
   }
 
   .call-doctor {
-    background: #EFF6FF;
-    border-color: #BFDBFE;
+    background: rgba(34, 55, 135, 0.34);
+    border-color: rgba(59, 76, 202, 0.46);
   }
 
   .find-nearest {
-    background: #F8FAFC;
-    border-color: #E2E8F0;
+    background: rgba(18, 26, 67, 0.62);
+    border-color: rgba(165, 173, 199, 0.2);
   }
 
   .action-icon {
-    font-size: 1.6rem;
+    display: grid;
+    place-items: center;
+    width: 60px;
+    height: 60px;
+    flex: 0 0 60px;
+    font-size: 1.9rem;
+    line-height: 1;
+    border-radius: 14px;
+  }
+
+  .call-ambulance .action-icon {
+    background: linear-gradient(145deg, #F43F5E, #BE123C);
+  }
+
+  .call-doctor .action-icon {
+    background: linear-gradient(145deg, #3B4CCA, #1E2A78);
+  }
+
+  .find-nearest .action-icon {
+    background: linear-gradient(145deg, #6B4CCA, #3A2478);
   }
 
   .action-info {
+    min-width: 0;
     flex: 1;
   }
 
   .action-title {
-    font-size: 0.98rem;
+    color: #FFFFFF;
+    font-size: 1.12rem;
     font-weight: 800;
-    color: var(--color-navy-dark);
+    line-height: 1.35;
   }
 
   .action-sub {
-    font-size: 0.78rem;
-    color: var(--color-text-muted);
+    margin-top: 6px;
+    color: #A5ADC7;
+    font-size: 0.88rem;
+    line-height: 1.4;
   }
 
   .call-now-tag,
   .arrow-tag {
-    font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    gap: 4px;
+    padding: 10px 14px;
+    color: #FFFFFF;
+    font-size: 0.78rem;
     font-weight: 800;
-    color: #DC2626;
-    background: #FFFFFF;
-    padding: 4px 10px;
+    line-height: 1.15;
+    white-space: nowrap;
     border-radius: var(--radius-pill);
-    box-shadow: var(--shadow-sm);
+  }
+
+  .call-now-tag {
+    background: linear-gradient(135deg, #E64980, #B9275A);
   }
 
   .call-doctor .call-now-tag {
-    color: #2563EB;
+    background: linear-gradient(135deg, #3B4CCA, #1E2A78);
   }
 
   .arrow-tag {
-    color: #475569;
+    background: transparent;
+    border: 1px solid rgba(165, 173, 199, 0.38);
+  }
+
+  @media (max-width: 480px) {
+    .emergency-modal-card {
+      padding: 36px 20px 24px;
+    }
+
+    .modal-title {
+      font-size: 1.75rem;
+    }
+
+    .emergency-action-item {
+      padding: 18px;
+      gap: 12px;
+    }
+
+    .action-icon {
+      width: 52px;
+      height: 52px;
+      flex-basis: 52px;
+      font-size: 1.65rem;
+    }
+
+    .call-now-tag,
+    .arrow-tag {
+      padding: 8px 10px;
+      font-size: 0.7rem;
+    }
   }
 
   /* ==========================================================================
@@ -3092,7 +3241,6 @@
     animation: namaskarPulse 2.4s ease-in-out infinite;
     transform-origin: bottom center;
   }
-
 
   .profile-sub-card {
     background: #FEF2F2;
@@ -3277,6 +3425,8 @@
     box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4);
     animation: pulse-red 2s infinite;
   }
+
+}
 
 @keyframes pulse-red {
   0% {
@@ -8703,6 +8853,34 @@
 
 }
 
+@keyframes heartPulse {
+  0% { transform: scale(1); }
+  14% { transform: scale(1.28); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.18); }
+  70% { transform: scale(1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes sparkleTwinkle {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.85; filter: drop-shadow(0 0 2px rgba(251, 191, 36, 0.4)); }
+  50% { transform: scale(1.25) rotate(12deg); opacity: 1; filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.9)); }
+}
+
+@keyframes sunRotate {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.15); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes namaskarSway {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  20% { transform: rotate(-10deg) translateY(-2px); }
+  40% { transform: rotate(0deg) translateY(0); }
+  60% { transform: rotate(10deg) translateY(-2px); }
+  80% { transform: rotate(0deg) translateY(0); }
+}
+
 @keyframes wave-hand {
   0% {
     transform: rotate(0.0deg)
@@ -9747,3 +9925,10 @@
 
 
 
+
+@keyframes namaskarPulse {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.1) rotate(-6deg); }
+  50% { transform: scale(1) rotate(0deg); }
+  75% { transform: scale(1.1) rotate(6deg); }
+}

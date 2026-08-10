@@ -1,4 +1,33 @@
 ﻿{
+  "videoConsultation": {
+    "backToDashboard": "டாஷ்போர்டுக்குத் திரும்பவும்",
+    "endToEndEncrypted": "முனையிலிருந்து முனை வரை குறியாக்கம் செய்யப்பட்டது",
+    "connecting": "இணைக்கப்படுகிறது...",
+    "doctorOnline": "மருத்துவர் ஆன்லைனில் உள்ளார்",
+    "secure": "பாதுகாப்பானது",
+    "verifiedDoctor": "சரிபார்க்கப்பட்ட மருத்துவர்",
+    "clinic": "கிளினிக்",
+    "experience": "அனுபவம்",
+    "notProvided": "வழங்கப்படவில்லை",
+    "languages": "மொழிகள்",
+    "engHindi": "ஆங்கிலம், இந்தி",
+    "consultationInProgress": "ஆலோசனை நடைபெறுகிறது",
+    "availableNow": "இப்போது கிடைக்கும்",
+    "consultationChat": "ஆலோசனை அரட்டை",
+    "privateEncrypted": "தனிப்பட்டது மற்றும் குறியாக்கம் செய்யப்பட்டது",
+    "yourChat": "மருத்துவருடனான உங்கள் அரட்டை இங்கே தோன்றும்",
+    "shareSymptoms": "உங்கள் அறிகுறிகள் மற்றும் கவலைகளைப் பகிரவும்",
+    "askQuestion": "கேள்வியைக் கேட்கவும்...",
+    "shareSymptom": "அறிகுறியைப் பகிரவும்...",
+    "typeMessage": "செய்தியைத் தட்டச்சிடவும்...",
+    "messageLabel": "செய்தியைத் தட்டச்சிடவும்",
+    "send": "அனுப்பவும்"
+  },
+  "relativeDate": {
+    "today": "இன்று",
+    "tomorrow": "நாளை",
+    "yesterday": "நேற்று"
+  },
   "patientPortal": "நோயாளி போர்டல்",
   "dashboard": "முகப்புப்பக்கம்",
   "myAppointments": "என் சந்திப்புகள்",
@@ -207,7 +236,7 @@
   "healthConcernTitle": "சுகாதார கவலை",
   "chatMessage": "அரட்டை / செய்தி",
   "inPersonVisit": "நேரில் சந்திப்பு",
-  "videoConsultation": "வீடியோ ஆலோசனை",
+  "videoConsultationLabel": "வீடியோ ஆலோசனை",
   "all": "அனைத்தும்",
   "allDoctors": "அனைத்தும்",
   "noDoctorMatches": "பொருந்தும் மருத்துவர்கள் இல்லை",
@@ -215,6 +244,9 @@
   "bookingSummary": "பதிவு சுருக்கம்",
   "needHelpChatBox": "உதவி தேவையா?",
   "supportTeamHere": "எங்கள் ஆதரவு குழு உங்களுக்கு உதவ இங்கே உள்ளது.",
+  "emergency": {
+    "title": "அவசரநிலை"
+  },
   "emergencyHelp": "அவசர மருத்துவ உதவி",
   "emergencySubtitle": "ஒவ்வொரு நொடியும் முக்கியமானபோது வேகமான, 24/7 பதில்",
   "callAmbulance": "அம்புலன்ஸ் அழைக்கவும்",
@@ -323,5 +355,18 @@
   "uploadedEhrReport": "பதிவேற்றிய EHR அறிக்கை",
   "extractedParameters": "பிரித்தெடுக்கப்பட்ட அளவுருக்கள்",
   "noClinicalSummary": "மருத்துவ சுருக்கம் கிடைக்கவில்லை",
-  "noAppointments": "உங்களுக்கு {filter} சந்திப்புகள் இல்லை."
+  "noAppointments": "உங்களுக்கு {filter} சந்திப்புகள் இல்லை.",
+  "healthQuestionnaireTitle": "சுகாதார கேள்வித்தாள்",
+  "paymentTestTitle": "கட்டண சோதனை",
+  "paymentTestVerified": "கட்டணம் வெற்றிகரமாகச் சரிபார்க்கப்பட்டது! ✅",
+  "timezoneInfo": "அனைத்து நேர இடங்களும் {{doctor}}-ன் தரவுத்தள அட்டவணையின் (IST) அடிப்படையில் நேரடியாக உருவாக்கப்படுகின்றன",
+  "clinicalData": {
+    "diagnosis": "நோயறிதல்",
+    "medications": "மருந்துகள்",
+    "vitals": "உயிர் அளவுகள்",
+    "notes": "குறிப்புகள்",
+    "notAvailable": "கிடைக்கவில்லை",
+    "ocrText": "OCR உரை",
+    "ocrResult": "OCR முடிவு"
+  }
 }

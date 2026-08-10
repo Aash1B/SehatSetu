@@ -48,5 +48,6 @@
   "enterFullName": "Please enter full name.",
   "enterAge": "Please enter age.",
   "enterPhone": "Please enter phone number.",
-  "consentRequired": "You must consent to data processing to create an account."
+  "consentRequired": "You must consent to data processing to create an account.",
+  "bloodGroupUnknown": "Unknown"
 }

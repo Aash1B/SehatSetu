@@ -10,6 +10,9 @@ const DoctorSearchSection: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation("home");
   const { t: tFilters } = useTranslation("buttons");
+  const { t: tCommon } = useTranslation("common");
+  const { t: tAppointment } = useTranslation("appointment");
+  const { t: tDoctor } = useTranslation("doctor");
 
   const SPECIALTY_OPTIONS: OptionItem[] = [
     { value: "All", label: tFilters("specializationAll") },
@@ -228,7 +231,7 @@ const DoctorSearchSection: React.FC = () => {
 
         {/* Carousel Container */}
         <div className="doctors-carousel-wrapper">
-          <button type="button" className="carousel-nav-btn prev-btn" onClick={handlePrev} aria-label="Previous">
+          <button type="button" className="carousel-nav-btn prev-btn" onClick={handlePrev} aria-label={tCommon("previous")}>
             ‹
           </button>
 
@@ -247,7 +250,7 @@ const DoctorSearchSection: React.FC = () => {
                     type="button"
                     className={`favorite-btn ${favorites.includes(doctor.id) ? "active" : ""}`}
                     onClick={() => toggleFavorite(doctor.id)}
-                    aria-label="Favorite doctor"
+                    aria-label={tAppointment("saveDoctor")}
                   >
                     ♥
                   </button>
@@ -261,7 +264,7 @@ const DoctorSearchSection: React.FC = () => {
                   <div className="doctor-rating-row">
                     <span className="star-icon">⭐</span>
                     <span className="rating-score">{doctor.rating}</span>
-                    <span className="reviews-count">({doctor.reviewsCount} reviews)</span>
+                    <span className="reviews-count">({doctor.reviewsCount} {tDoctor("reviews")})</span>
                   </div>
 
                   <p className="doctor-hospital-location">
@@ -295,7 +298,7 @@ const DoctorSearchSection: React.FC = () => {
             )}
           </div>
 
-          <button type="button" className="carousel-nav-btn next-btn" onClick={handleNext} aria-label="Next">
+          <button type="button" className="carousel-nav-btn next-btn" onClick={handleNext} aria-label={tCommon("next")}>
             ›
           </button>
         </div>

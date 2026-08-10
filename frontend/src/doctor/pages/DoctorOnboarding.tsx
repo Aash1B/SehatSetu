@@ -32,6 +32,7 @@ import {
 import { getDoctorProfileData, setActiveDoctorId } from '../utils/doctorProfile';
 import { getToken } from '../../auth/authStorage';
 import { DoctorProfileData } from '../types/profile.types';
+import BrandLogo from '../../common/components/BrandLogo';
 
 const SPECIALIZATIONS = [
   'General Physician',
@@ -776,11 +777,18 @@ const DoctorOnboarding: React.FC = () => {
       {/* Top Bar Header */}
       <header className="bg-deep-space text-white border-b border-white/10 px-6 py-4 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-habanero text-white flex items-center justify-center font-bold text-xl leading-none">
-            s
-          </div>
+          <BrandLogo
+            showWordmark={false}
+            markWrapperClassName="w-9 h-9 rounded-lg bg-habanero flex items-center justify-center p-1.5"
+            markClassName="w-full h-full object-contain"
+            alt=""
+          />
           <div>
-            <h1 className="font-bold text-lg leading-tight tracking-tight">Sehat Setu</h1>
+            <BrandLogo
+              showMark={false}
+              wordmarkClassName="font-bold text-lg leading-tight tracking-tight text-white"
+              accentClassName="text-blue-400"
+            />
             <p className="text-xs text-white/60">Doctor Partner Onboarding & Profile Setup</p>
           </div>
         </div>

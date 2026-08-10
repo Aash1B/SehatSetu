@@ -42,6 +42,19 @@
   "noDoctorsMatch": "మీ ప్రమాణాలతో సరిపోలే డాక్టర్లు లేరు",
   "adjustSearch": "మీ ఫిల్టర్లు లేదా శోధన పదాలను సర్దుబాటు చేయండి",
   "consultationFee": "సంప్రదింపు రుసుము",
+  "consultationTime": {
+    "joinNow": "ఇప్పుడే చేరండి",
+    "availableForTesting": "పరీక్ష కోసం అందుబాటులో ఉంది",
+    "join": "సంప్రదింపులో చేరండి",
+    "available": "అందుబాటులో ఉంది",
+    "opensBefore": "{{time}}కి ప్రారంభమవుతుంది",
+    "startsInHrs": "{{hours}} గంటలు {{minutes}} నిమిషాల్లో ప్రారంభమవుతుంది",
+    "opensIn": "{{minutes}} నిమిషాల్లో ప్రారంభమవుతుంది",
+    "scheduledFor": "{{time}}కి షెడ్యూల్ చేయబడింది",
+    "liveRoomActive": "లైవ్ సంప్రదింపు గది క్రియాశీలంగా ఉంది",
+    "ended": "సంప్రదింపు ముగిసింది",
+    "timePassed": "షెడ్యూల్ సమయం {{time}}కి దాటిపోయింది"
+  },
   "detailTicket": {
     "patientName": "రోగి పేరు",
     "ageGender": "వయస్సు/లింగం",

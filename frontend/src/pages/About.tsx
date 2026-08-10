@@ -225,7 +225,7 @@ const ValuesSection: React.FC = () => {
       <main>
         <section
           className="about-hero-section"
-          aria-label="About SehatSetu"
+          aria-label={t('about:eyebrow')}
           aria-labelledby="about-hero-title"
         >
         <div className="about-hero-container">
@@ -259,12 +259,12 @@ const ValuesSection: React.FC = () => {
         <div className="about-section-container">
           <header className="about-section-header">
             <h2 id="our-story-title" className="about-section-title">{t('about:ourStory')}</h2>
-            <h3 className="text-xl sm:text-2xl font-bold text-orange-500 mt-2">{t('about:storySubtitle')}</h3>
           </header>
 
           <div className="about-story-content max-w-4xl mx-auto space-y-6 text-slate-600 text-base sm:text-lg leading-relaxed mt-8">
             <p className="about-story-paragraph">{t('about:storyP1')}</p>
             <p className="about-story-paragraph">{t('about:storyP2')}</p>
+            <p className="about-story-paragraph">{t('about:storyP3')}</p>
 
             {/* How we deliver on that */}
             <div className="mt-12 pt-8 border-t border-slate-200/80">
@@ -317,8 +317,8 @@ const ValuesSection: React.FC = () => {
 
             {/* Privacy Block */}
             <div className="mt-12 pt-8 border-t border-slate-200/80 text-left bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 text-white p-8 sm:p-10 rounded-3xl shadow-xl">
-              <h3 className="text-2xl sm:text-3xl font-extrabold text-white mb-4">{t('about:privacyTitle')}</h3>
-              <p className="text-slate-300 text-base sm:text-lg leading-relaxed">{t('about:privacyBody')}</p>
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-white mb-4">{t('about:privacyHeadline')}</h3>
+              <p className="text-slate-300 text-base sm:text-lg leading-relaxed">{t('about:privacyDesc')}</p>
             </div>
           </div>
         </div>
@@ -333,14 +333,8 @@ const ValuesSection: React.FC = () => {
                 <span className="inline-block px-3.5 py-1 rounded-full bg-orange-100 text-orange-600 text-xs font-bold uppercase tracking-wider mb-4">
                   {t('about:mission')}
                 </span>
-                <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 leading-snug mb-4">
-                  {t('about:missionHeadline')}
-                </h3>
-                <p className="text-slate-600 text-base sm:text-lg leading-relaxed mb-4">
-                  {t('about:missionP1')}
-                </p>
                 <p className="text-slate-600 text-base sm:text-lg leading-relaxed">
-                  {t('about:missionP2')}
+                  {t('about:missionText')}
                 </p>
               </div>
             </div>
@@ -351,14 +345,8 @@ const ValuesSection: React.FC = () => {
                 <span className="inline-block px-3.5 py-1 rounded-full bg-indigo-100 text-indigo-600 text-xs font-bold uppercase tracking-wider mb-4">
                   {t('about:vision')}
                 </span>
-                <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 leading-snug mb-4">
-                  {t('about:visionHeadline')}
-                </h3>
-                <p className="text-slate-600 text-base sm:text-lg leading-relaxed mb-4">
-                  {t('about:visionP1')}
-                </p>
                 <p className="text-slate-600 text-base sm:text-lg leading-relaxed">
-                  {t('about:visionP2')}
+                  {t('about:visionText')}
                 </p>
               </div>
             </div>
@@ -421,7 +409,7 @@ const ValuesSection: React.FC = () => {
 
       <ValuesSection />
 
-      <section className="about-final-cta-section" aria-label="Call to action">
+      <section className="about-final-cta-section" aria-label={t('about:finalCtaTitle')}>
         <div className="about-final-cta-container">
           <h2 className="about-final-cta-title">{t('about:finalCtaTitle')}</h2>
           <p className="about-final-cta-desc">{t('about:finalCtaDesc')}</p>

@@ -3,14 +3,16 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../store';
 import { setDashboardTab, type DashboardTabType } from '../store/uiSlice';
 import { useNavigate } from 'react-router-dom';
-import { uploadMedicalReport } from '../services/medicalReportsApi';
+import { uploadMedicalReport, type MedicalReportExtractedData, type MedicalReportResponse, type OcrStructuredEntity } from '../services/medicalReportsApi';
 import { doctorsData } from '../data/doctorsData';
 import { getAppointmentTimeStatus } from '../../utils/appointmentTime';
 import PrescriptionViewModal from '../../common/components/PrescriptionViewModal';
 import { clearAuth } from '../../auth/authStorage';
 import { getPatientDashboard, updatePatientProfile, uploadPatientAvatar } from '../services/patientApi';
 import AccountDeletionDangerZone from '../../auth/components/AccountDeletionDangerZone';
+import BrandLogo from '../../common/components/BrandLogo';
 import { useTranslation } from 'react-i18next';
+import type { EhrDraftStructuredData } from '../../types';
 
 interface ConsultationItem {
   id: string;
@@ -25,6 +27,181 @@ interface ConsultationItem {
   doctorId?: string;
   prescription?: any;
 }
+
+interface PatientEhrModalItem {
+  id: string;
+  title: string;
+  date: string;
+  status: string;
+  summary: string;
+  source: string;
+  extractedText?: string | null;
+  extractedData?: MedicalReportExtractedData | string | null;
+  diagnosis?: string | null;
+  notes?: string | null;
+  structuredData?: EhrDraftStructuredData | null;
+  isVerified?: boolean;
+}
+
+interface ClinicalData {
+  diagnosis: string | null;
+  medications: string[];
+  vitals: Array<{ label: string; value: string }>;
+  notes: string | null;
+}
+
+const asRecord = (value: unknown): Record<string, unknown> | null => (
+  value && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null
+);
+
+const textValue = (value: unknown): string | null => {
+  if (typeof value === 'string' || typeof value === 'number') {
+    const text = String(value).trim();
+    return text || null;
+  }
+  const record = asRecord(value);
+  if (!record) return null;
+  for (const key of ['name', 'medicine', 'value', 'text', 'label']) {
+    const text = textValue(record[key]);
+    if (text) return text;
+  }
+  return null;
+};
+
+const formatClinicalLabel = (value: string): string => value
+  .replace(/([a-z])([A-Z])/g, '$1 $2')
+  .replace(/[_-]+/g, ' ')
+  .replace(/\b\w/g, (letter) => letter.toUpperCase());
+
+const formatVitalValue = (value: unknown, unit?: unknown): string | null => {
+  const text = textValue(value);
+  if (!text) return null;
+  const unitText = textValue(unit);
+  return unitText && !text.toLowerCase().includes(unitText.toLowerCase())
+    ? `${text} ${unitText}`
+    : text;
+};
+
+const medicationValues = (value: unknown): string[] => {
+  if (!Array.isArray(value)) return [];
+  return value.map((medication) => {
+    const record = asRecord(medication);
+    if (!record) return textValue(medication);
+    const name = textValue(record.name) || textValue(record.medicine) || textValue(record.value);
+    const details = [record.strength, record.dosage, record.frequency, record.duration]
+      .map(textValue)
+      .filter((part): part is string => Boolean(part));
+    return name ? [name, ...details].join(' ') : textValue(medication);
+  }).filter((medication): medication is string => Boolean(medication));
+};
+
+const vitalValues = (value: unknown): Array<{ label: string; value: string }> => {
+  const record = asRecord(value);
+  if (!record) return [];
+  return Object.entries(record)
+    .map(([key, rawValue]) => {
+      const rawRecord = asRecord(rawValue);
+      const formattedValue = rawRecord
+        ? formatVitalValue(rawRecord.value, rawRecord.unit)
+        : formatVitalValue(rawValue);
+      return formattedValue ? { label: formatClinicalLabel(key), value: formattedValue } : null;
+    })
+    .filter((vital): vital is { label: string; value: string } => Boolean(vital));
+};
+
+const getClinicalData = (item: PatientEhrModalItem): ClinicalData => {
+  const raw = asRecord(item.extractedData) as MedicalReportExtractedData | null;
+  const structured = asRecord(item.structuredData);
+  const diagnosis = textValue(item.diagnosis) || textValue(raw?.diagnosis);
+  const rawNotes = textValue(raw?.notes)
+    || textValue(raw?.summary)
+    || (Array.isArray(raw?.key_findings) ? raw.key_findings.map(textValue).filter(Boolean).join(' ') : null);
+  let medications = medicationValues(structured?.medications || raw?.medications);
+  let vitals = vitalValues(structured?.vitals || raw?.vitals);
+  const entities = Array.isArray(raw?.structured_entities) ? raw.structured_entities as OcrStructuredEntity[] : [];
+
+  if (!medications.length) {
+    medications = entities
+      .filter((entity) => /medic|drug|prescription/i.test(entity.kind || ''))
+      .map((entity) => medicationValues([entity])[0])
+      .filter((medication): medication is string => Boolean(medication));
+  }
+  if (!vitals.length) {
+    vitals = entities
+      .filter((entity) => /vital|measurement/i.test(entity.kind || ''))
+      .map((entity) => {
+        const value = formatVitalValue(entity.value, entity.unit);
+        return value ? { label: formatClinicalLabel(entity.name || entity.kind || 'Vital'), value } : null;
+      })
+      .filter((vital): vital is { label: string; value: string } => Boolean(vital));
+  }
+
+  return {
+    diagnosis,
+    medications: [...new Set(medications)],
+    vitals,
+    notes: textValue(item.notes) || rawNotes,
+  };
+};
+
+const PatientClinicalDataPanel: React.FC<{ item: PatientEhrModalItem }> = ({ item }) => {
+  const { t } = useTranslation('patient');
+  const clinicalData = getClinicalData(item);
+  const hasClinicalData = Boolean(
+    clinicalData.diagnosis
+      || clinicalData.medications.length
+      || clinicalData.vitals.length
+      || clinicalData.notes,
+  );
+
+  return (
+    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
+      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">{t('aiExtractedData')}</span>
+      {hasClinicalData ? (
+        <div className="space-y-3 text-sm text-slate-700">
+          {clinicalData.diagnosis && (
+            <div>
+              <h4 className="font-bold text-slate-900">{t('clinicalData.diagnosis')}</h4>
+              <p>{clinicalData.diagnosis}</p>
+            </div>
+          )}
+          {clinicalData.medications.length > 0 && (
+            <div>
+              <h4 className="font-bold text-slate-900">{t('clinicalData.medications')}</h4>
+              <ul className="list-disc pl-5 space-y-1">
+                {clinicalData.medications.map((medication) => <li key={medication}>{medication}</li>)}
+              </ul>
+            </div>
+          )}
+          {clinicalData.vitals.length > 0 && (
+            <div>
+              <h4 className="font-bold text-slate-900">{t('clinicalData.vitals')}</h4>
+              <ul className="list-disc pl-5 space-y-1">
+                {clinicalData.vitals.map((vital) => <li key={vital.label}>{vital.label}: {vital.value}</li>)}
+              </ul>
+            </div>
+          )}
+          {clinicalData.notes && (
+            <div>
+              <h4 className="font-bold text-slate-900">{t('clinicalData.notes')}</h4>
+              <p className="whitespace-pre-wrap">{clinicalData.notes}</p>
+            </div>
+          )}
+        </div>
+      ) : (
+        <p className="text-sm text-slate-500">{t('clinicalData.notAvailable')}</p>
+      )}
+      {item.extractedText && (
+        <details className="border-t border-slate-200 pt-3">
+          <summary className="cursor-pointer text-xs font-bold text-slate-500">{t('clinicalData.ocrText')}</summary>
+          <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap break-words bg-white p-3 rounded-xl border border-slate-200 text-xs text-slate-700">{item.extractedText}</pre>
+        </details>
+      )}
+    </div>
+  );
+};
 
 /* Legacy mock datasets were removed. Patient records now come from the authenticated API. */
 const recentConsultationsData: ConsultationItem[] = [
@@ -116,16 +293,17 @@ const DashboardPage: React.FC = () => {
   const { t, i18n } = useTranslation(['patient', 'common', 'buttons', 'errors', 'appointment']);
   const tCommon = (key: string) => i18n.t(key, { ns: 'common' });
   const tNav = (key: string) => i18n.t(key, { ns: 'navbar' });
+  const tButtons = (key: string) => i18n.t(key, { ns: 'buttons' });
 
   const CONSULT_MODE: Record<string, string> = {
-    'Video Consultation': 'forms.consultMode.video',
-    'Chat Consultation': 'forms.consultMode.chat',
-    'In-Person Visit': 'forms.consultMode.inPerson',
-    VIDEO: 'forms.consultMode.video',
-    CHAT: 'forms.consultMode.chat',
-    IN_PERSON: 'forms.consultMode.inPerson',
+    'Video Consultation': 'consultMode.video',
+    'Chat Consultation': 'consultMode.chat',
+    'In-Person Visit': 'consultMode.inPerson',
+    VIDEO: 'consultMode.video',
+    CHAT: 'consultMode.chat',
+    IN_PERSON: 'consultMode.inPerson',
   };
-  const translateMode = (mode: string) => i18n.t(CONSULT_MODE[mode] || 'forms.consultMode.video', { ns: 'forms', defaultValue: mode });
+  const translateMode = (mode: string) => i18n.t(CONSULT_MODE[mode] || 'consultMode.video', { ns: 'forms', defaultValue: mode });
   const currentPage = useSelector((state: RootState) => state.ui.currentPage);
   const activeTab = useSelector((state: RootState) => state.ui.dashboardTab);
   const [activeSubTab, setActiveSubTab] = useState<'consultations' | 'prescriptions'>('prescriptions');
@@ -148,7 +326,7 @@ const DashboardPage: React.FC = () => {
   const [dashboardError, setDashboardError] = useState('');
   const [showRxModal, setShowRxModal] = useState<boolean>(false);
   const [selectedRxData, setSelectedRxData] = useState<any>(null);
-  const [selectedEhrModalData, setSelectedEhrModalData] = useState<any>(null);
+  const [selectedEhrModalData, setSelectedEhrModalData] = useState<PatientEhrModalItem | null>(null);
   const [previewDoc, setPreviewDoc] = useState<{ url: string; fileName: string } | null>(null);
 
   // Profile & Settings states
@@ -199,7 +377,7 @@ const DashboardPage: React.FC = () => {
 
   const [profileSaveSuccess, setProfileSaveSuccess] = useState(false);
 
-  const [ehrReportsList, setEhrReportsList] = useState<any[]>(false ? [
+  const [ehrReportsList, setEhrReportsList] = useState<PatientEhrModalItem[]>(false ? [
     {
       id: 'EHR-2026-001',
       title: 'Blood CBC & Dengue Test Report',
@@ -348,7 +526,7 @@ const DashboardPage: React.FC = () => {
           const date = new Date(rx.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
           return {
             id: rx.id, doctorName, date,
-            meds: medications.map((m: any) => m.name || String(m)).join(', ') || t('noMedicines'),
+            meds: medications.map((m: any) => m.name || String(m)).join(', ') || t('noPrescriptions'),
             fullData: {
               ...rx,
               doctorName,
@@ -366,18 +544,40 @@ const DashboardPage: React.FC = () => {
           };
         }));
 
-        const clinicalRecords = (data.ehrRecords || []).map((record: any) => ({
-          id: record.id, title: record.diagnosis || 'Consultation health record',
+        const verifiedEhrByReportId = new Map(
+          (data.ehrRecords || [])
+            .filter((record) => record.status === 'VERIFIED' && record.medicalReportId)
+            .map((record) => [record.medicalReportId as string, record]),
+        );
+        const clinicalRecords: PatientEhrModalItem[] = (data.ehrRecords || []).map((record) => ({
+          id: record.id,
+          title: record.diagnosis || 'Consultation health record',
           date: new Date(record.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
-          status: 'Clinical Record', summary: record.aiSummary || record.notes || t('noClinicalSummary'),
-          source: 'SehatSetu consultation', extractedData: record.notes || record.aiSummary || '',
+          status: 'VERIFIED Clinical Record',
+          summary: record.aiSummary || record.notes || t('noClinicalSummary'),
+          source: 'SehatSetu consultation',
+          diagnosis: record.diagnosis,
+          notes: record.notes,
+          structuredData: record.structuredData,
+          isVerified: record.status === 'VERIFIED',
         }));
-        const reports = (data.medicalReports || []).map((report: any) => ({
-          id: report.id, title: report.originalFileName,
-          date: new Date(report.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
-          status: report.ocrStatus, summary: report.extractedText || 'Report uploaded; processing may still be in progress.',
-          source: 'Uploaded medical report', extractedData: report.extractedText || '',
-        }));
+        const reports: PatientEhrModalItem[] = (data.medicalReports || []).map((report) => {
+          const verifiedRecord = verifiedEhrByReportId.get(report.id);
+          return {
+            id: report.id,
+            title: report.originalFileName,
+            date: new Date(report.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+            status: report.ocrStatus,
+            summary: report.extractedText || 'Report uploaded; processing may still be in progress.',
+            source: 'Uploaded medical report',
+            extractedText: report.extractedText,
+            extractedData: report.extractedData,
+            diagnosis: verifiedRecord?.diagnosis,
+            notes: verifiedRecord?.notes,
+            structuredData: verifiedRecord?.structuredData,
+            isVerified: Boolean(verifiedRecord),
+          };
+        });
         setEhrReportsList([...reports, ...clinicalRecords]);
         setDashboardError('');
       })
@@ -440,21 +640,27 @@ const DashboardPage: React.FC = () => {
     setReportUploadState('uploading');
     setReportUploadMessage(`🔍 ${t('uploadingReport', { file: file.name })}`);
     try {
-      const result: any = await uploadMedicalReport(file);
+      const result: MedicalReportResponse = await uploadMedicalReport(file);
       setReportUploadState('success');
       setReportUploadMessage(`✨ ${t('uploadSuccess', { file: file.name })}`);
 
-      const newEhrItem = {
-        id: result?.id || `EHR-2026-${Math.floor(1000 + Math.random() * 9000)}`,
-        title: file.name.replace(/\.[^/.]+$/, ""),
-        date: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
-        status: t('processedViaOcr'),
-        summary: result?.extractedText ? `${t('ocrExtractedText')}: ${result.extractedText.slice(0, 80)}...` : t('aiExtractedSummary'),
+      const newEhrItem: PatientEhrModalItem = {
+        id: result.id,
+        title: result.originalFileName || file.name.replace(/\.[^/.]+$/, ''),
+        date: new Date(result.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+        status: result.ocrStatus || result.status || t('processedViaOcr'),
+        summary: result.extractedText ? `${t('ocrExtractedText')}: ${result.extractedText.slice(0, 80)}...` : t('aiExtractedSummary'),
         source: t('uploadedEhrReport'),
-        extractedData: result?.extractedText || t('extractedParameters')
+        extractedText: result.extractedText,
+        extractedData: result.extractedData,
+        diagnosis: result.ehrDraft?.diagnosis,
+        notes: result.ehrDraft?.notes,
+        structuredData: result.ehrDraft?.structuredData,
+        isVerified: result.ehrDraft?.status === 'VERIFIED',
       };
 
       setEhrReportsList((prev) => [newEhrItem, ...prev]);
+      setSelectedEhrModalData(newEhrItem);
     } catch (error) {
       setReportUploadState('error');
       setReportUploadMessage(
@@ -471,15 +677,10 @@ const DashboardPage: React.FC = () => {
         <div className="sidebar-header">
           <div className="sidebar-brand" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
             <div className="sidebar-logo-icon">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#F97316" />
-                <path d="M12 7v6m-3-3h6" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" />
-              </svg>
+              <BrandLogo showWordmark={false} markWrapperClassName="" markClassName="sidebar-logo-img" alt="" />
             </div>
             <div>
-              <span className="sidebar-brand-title">
-                Sehat<span className="brand-title-accent">Setu</span>
-              </span>
+              <BrandLogo showMark={false} wordmarkClassName="sidebar-brand-title" />
               <span className="sidebar-portal-badge"> {t('patientPortal')} </span>
             </div>
           </div>
@@ -589,7 +790,7 @@ const DashboardPage: React.FC = () => {
                   <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
                   <path d="M12 8v4m-2-2h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"></path>
                 </svg>
-                <span> MCH Tracking </span>
+                <span> {t('mch:mchTitle')} </span>
               </button>
             </nav>
           </div>
@@ -650,7 +851,7 @@ const DashboardPage: React.FC = () => {
           <div className="top-bar-space"></div>
           <div className="top-bar-actions">
             {/* Notification Bell */}
-            <button type="button" className="btn-notification-bell" aria-label="Notifications">
+            <button type="button" className="btn-notification-bell" aria-label={t('notifications')}>
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#334155" strokeWidth="2" strokeLinecap="round">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                 <path d="M13.73 21a2 2 0 0 1-3.46 0" />
@@ -1667,7 +1868,7 @@ const DashboardPage: React.FC = () => {
                       onClick={saveProfile}
                       className="profile-save-btn"
                     >
-                      💾 {tCommon('buttons.saveChanges')}
+                      💾 {tButtons('saveChanges')}
                     </button>
                   </div>
                 </div>
@@ -2168,7 +2369,9 @@ const DashboardPage: React.FC = () => {
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
             <div className="flex justify-between items-center border-b border-gray-100 pb-4">
               <div>
-                <span className="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-0.5 rounded-full">✓ {t('verifiedOcrResult')}</span>
+                <span className="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-0.5 rounded-full">
+                  ✓ {selectedEhrModalData.isVerified ? t('verifiedOcrResult') : t('clinicalData.ocrResult')}
+                </span>
                 <h3 className="text-xl font-bold text-gray-900 mt-1">{selectedEhrModalData.title}</h3>
               </div>
               <button
@@ -2179,12 +2382,7 @@ const DashboardPage: React.FC = () => {
               </button>
             </div>
 
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block"> {t('aiExtractedData')} </span>
-              <p className="text-xs font-mono text-slate-800 leading-relaxed bg-white p-3 rounded-xl border border-slate-200">
-                {selectedEhrModalData.extractedData}
-              </p>
-            </div>
+            <PatientClinicalDataPanel item={selectedEhrModalData} />
 
             <div className="text-xs text-gray-500">
               <p>• {t('reportId')}: <span className="font-mono font-bold">{selectedEhrModalData.id}</span></p>

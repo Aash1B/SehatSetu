@@ -276,9 +276,10 @@ export class MedicalReportsService {
       // Best-effort EHR draft creation. OCR having succeeded with usable text
       // is a prerequisite; AI parsing/draft-creation failures are swallowed so
       // they never break the medical-report processing pipeline.
+      let ehrDraft: Awaited<ReturnType<EhrService['createDraftFromOcr']>> = null;
       if (ocrSucceeded && result.extractedText?.trim()) {
         try {
-          await this.createEhrDraft(existing.id, existing.patientId, result);
+          ehrDraft = await this.createEhrDraft(existing.id, existing.patientId, result);
         } catch (ehrError: any) {
           console.warn(
             `[EHR WARN] EHR draft creation failed for report ${existing.id}: ${ehrError?.message || ehrError}`,
@@ -286,7 +287,7 @@ export class MedicalReportsService {
         }
       }
 
-      return this.present(updated);
+      return { ...this.present(updated), ehrDraft };
     } catch (error) {
       await this.reports
         .update(existing.id, {
@@ -351,12 +352,12 @@ export class MedicalReportsService {
     medicalReportId: string,
     patientId: string,
     ocrResult: { extractedText: string; extractedData: Record<string, unknown> },
-  ): Promise<void> {
+  ): Promise<Awaited<ReturnType<EhrService['createDraftFromOcr']>>> {
     const parsed = await this.ehrParser.parse(
       ocrResult.extractedText,
       ocrResult.extractedData,
     );
-    await this.ehrService.createDraftFromOcr({
+    return this.ehrService.createDraftFromOcr({
       patientId,
       medicalReportId,
       diagnosis: parsed.diagnosis,

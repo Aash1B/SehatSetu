@@ -23,6 +23,11 @@
     "messageLabel": "Type a message",
     "send": "Send"
   },
+  "relativeDate": {
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "yesterday": "Yesterday"
+  },
   "patientPortal": "Patient Portal",
   "dashboard": "Dashboard",
   "myAppointments": "My Appointments",
@@ -228,7 +233,7 @@
   "healthConcernTitle": "Health Concern",
   "chatMessage": "Chat / Message",
   "inPersonVisit": "In-Person Visit",
-  "videoConsultation": "Video Consultation",
+  "videoConsultationLabel": "Video Consultation",
   "all": "All",
   "allDoctors": "All",
   "noDoctorMatches": "No doctor matches",
@@ -236,6 +241,9 @@
   "bookingSummary": "Booking Summary",
   "needHelpChatBox": "Need Help?",
   "supportTeamHere": "Our support team is here to help you.",
+  "emergency": {
+    "title": "Emergency"
+  },
   "emergencyHelp": "Emergency Medical Help",
   "emergencySubtitle": "Fast, 24/7 response when every second counts",
   "callAmbulance": "Call Ambulance",
@@ -343,7 +351,18 @@
   "uploadedEhrReport": "Uploaded EHR Report",
   "extractedParameters": "Extracted Parameters",
   "noClinicalSummary": "No clinical summary available",
-  "noAppointments": "You have no {filter} appointments."
+  "noAppointments": "You have no {filter} appointments.",
+  "healthQuestionnaireTitle": "Health Questionnaire",
+  "paymentTestTitle": "Payment Test",
+  "paymentTestVerified": "Payment verified successfully! ✅",
+  "timezoneInfo": "All slots are generated live based on {{doctor}}'s database schedule (IST)",
+  "clinicalData": {
+    "diagnosis": "Diagnosis",
+    "medications": "Medications",
+    "vitals": "Vitals",
+    "notes": "Notes",
+    "notAvailable": "Not available",
+    "ocrText": "OCR text",
+    "ocrResult": "OCR Result"
+  }
 }
-
-

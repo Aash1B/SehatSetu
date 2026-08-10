@@ -4,7 +4,8 @@ import { useTranslation } from "react-i18next";
 
 const ServicesSection: React.FC = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation(['home', 'buttons']);
+  const { t } = useTranslation('home');
+  const { t: tButtons } = useTranslation('buttons');
 
   const services = [
     {
@@ -76,7 +77,7 @@ const ServicesSection: React.FC = () => {
                   handleCardClick(service.id, service.route);
                 }}
               >
-                {t("buttons.learnMore")}
+                {tButtons("learnMore")}
               </button>
             </div>
           ))}

@@ -14,6 +14,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import QRCode from 'qrcode';
 import './PrescriptionViewModal.css';
+import BrandLogo from './BrandLogo';
 
 export interface PrescriptionData {
   id?: string;
@@ -129,10 +130,10 @@ const PrescriptionViewModal: React.FC<PrescriptionViewModalProps> = ({
         {/* Left: logo + brand */}
         <div className="rx-brand">
           <div className="rx-logo">
-            <img src="/logo.svg" alt="SehatSetu logo" />
+            <BrandLogo showWordmark={false} markWrapperClassName="" alt="" />
           </div>
           <div className="rx-brand-text">
-            <h1>SehatSetu</h1>
+            <BrandLogo showMark={false} wordmarkClassName="rx-brand-wordmark" />
             <p>Digital Health Clinic</p>
           </div>
         </div>

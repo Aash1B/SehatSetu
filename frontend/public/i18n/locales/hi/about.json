@@ -1,19 +1,19 @@
 {
-  "eyebrow": "ABOUT SEHATSETU",
-  "heroTitle": "Healthcare That Reaches Beyond Distance",
-  "heroDesc": "SehatSetu brings doctors, patients, health records, intelligent assistance, and essential healthcare services together in one accessible digital platform.",
-  "heroDescSecondary": "Built to make quality healthcare easier to reach across both rural and urban India.",
-  "primaryCta": "Find a Doctor",
-  "secondaryCta": "Explore Our Services",
-  "ourStory": "Our Story",
-  "storyP1": "SehatSetu was created around a simple problem: access to timely healthcare should not depend on distance.",
-  "storyP2": "For many people, especially those living far from major healthcare centres, seeing the right doctor can involve long travel, waiting times, and difficulty managing medical information.",
-  "storyP3": "SehatSetu aims to reduce those barriers by connecting patients with verified healthcare professionals and essential digital health services through one platform.",
-  "mission": "Our Mission",
-  "missionText": "Make trusted healthcare services easier to access, understand, and manage through technology.",
-  "vision": "Our Vision",
-  "visionText": "Build a connected healthcare experience where distance, language, and digital complexity do not prevent people from receiving timely care.",
-  "whatWeProvide": "What SehatSetu Provides",
+  "eyebrow": "SEHATSETU के बारे में",
+  "heroTitle": "दूरी से परे पहुँचने वाली स्वास्थ्य सेवा",
+  "heroDesc": "SehatSetu डॉक्टरों, रोगियों, स्वास्थ्य रिकॉर्ड, बुद्धिमान सहायता और आवश्यक स्वास्थ्य सेवाओं को एक सुलभ डिजिटल प्लेटफ़ॉर्म पर साथ लाता है।",
+  "heroDescSecondary": "गुणवत्तापूर्ण स्वास्थ्य सेवा को भारत के ग्रामीण और शहरी दोनों क्षेत्रों में आसानी से पहुँचाने के लिए बनाया गया।",
+  "primaryCta": "डॉक्टर खोजें",
+  "secondaryCta": "हमारी सेवाएँ देखें",
+  "ourStory": "हमारी कहानी",
+  "storyP1": "SehatSetu एक सरल समस्या को ध्यान में रखकर बनाया गया: समय पर स्वास्थ्य सेवा की पहुँच दूरी पर निर्भर नहीं होनी चाहिए।",
+  "storyP2": "कई लोगों के लिए, विशेषकर प्रमुख स्वास्थ्य केंद्रों से दूर रहने वालों के लिए, सही डॉक्टर से मिलना लंबी यात्रा, प्रतीक्षा और चिकित्सीय जानकारी संभालने की कठिनाई से जुड़ा हो सकता है।",
+  "storyP3": "SehatSetu सत्यापित स्वास्थ्य पेशेवरों और आवश्यक डिजिटल स्वास्थ्य सेवाओं से रोगियों को एक ही प्लेटफ़ॉर्म पर जोड़कर इन बाधाओं को कम करना चाहता है।",
+  "mission": "हमारा मिशन",
+  "missionText": "तकनीक के माध्यम से भरोसेमंद स्वास्थ्य सेवाओं तक पहुँचना, उन्हें समझना और प्रबंधित करना आसान बनाना।",
+  "vision": "हमारा विज़न",
+  "visionText": "एक जुड़ा हुआ स्वास्थ्य अनुभव बनाना, जहाँ दूरी, भाषा और डिजिटल जटिलता लोगों को समय पर देखभाल पाने से न रोकें।",
+  "whatWeProvide": "SehatSetu क्या उपलब्ध कराता है",
   "featureVerifiedDoctors": {
     "title": "सत्यापित देखभाल, कहीं भी",
     "desc": "सत्यापित स्वास्थ्य सेवा पेशेवरों से सुरक्षित वीडियो परामर्श के माध्यम से कहीं भी जुड़ें।"
@@ -31,67 +31,80 @@
     "desc": "सुरक्षित, एन्क्रिप्ट किए गए इलेक्ट्रॉनिक स्वास्थ्य रिकॉर्ड रोगी के पूरे जीवन में निरंतर, सूचित देखभाल सुनिश्चित करते हैं।"
   },
   "featureDigitalPrescriptions": {
-    "title": "डिजाइन से गोपनीयता",
-    "desc": "हर रिकॉर्ड फील्ड-स्तरीय एन्क्रिप्शन से सुरक्षित है और DPDP अधिनियम 2023 सिद्धांतों के अनुसार निर्मित है, ताकि रोगी डेटा डिफ़ॉल्ट रूप से निजी रहे, पश्चिमोत्तर विचार से नहीं।"
+    "title": "डिज़ाइन से गोपनीयता",
+    "desc": "हर रिकॉर्ड फ़ील्ड-स्तरीय एन्क्रिप्शन से सुरक्षित है और DPDP अधिनियम 2023 सिद्धांतों के अनुसार निर्मित है, ताकि रोगी डेटा डिफ़ॉल्ट रूप से निजी रहे, बाद में विचार के रूप में नहीं।"
   },
   "featureHealthRecords": {
     "title": "पहले रोकथाम",
-    "desc": "व्यक्तिगत पोषण, स्वास्थ्य और जीवनशैली मार्गदर्शन रोगियों को केवल बीमारी का इलाज नहीं करते समय स्वस्थ रहने में मदद करता है।"
+    "desc": "व्यक्तिगत पोषण, स्वास्थ्य और जीवनशैली मार्गदर्शन रोगियों को केवल बीमारी का इलाज होने पर नहीं, बल्कि स्वस्थ रहने में मदद करता है।"
   },
   "featureNearbyHospitals": {
     "title": "स्मार्ट अस्पताल मार्गदर्शन",
-    "desc": "शारीरिक परीक्षण, प्रयोगशाला परीक्षण, या आपातकालीन देखभाल की आवश्यकता होने पर नजदीकी अस्पतालों के लिए बुद्धिमान, वास्तविक समय की सिफारिशें।"
+    "desc": "शारीरिक परीक्षण, प्रयोगशाला परीक्षण या आपातकालीन देखभाल की आवश्यकता होने पर नज़दीकी अस्पतालों के लिए बुद्धिमान, वास्तविक समय की सिफारिशें।"
   },
   "featureLabGuidance": {
     "title": "बाधाओं के बिना देखभाल",
-    "desc": "बहुभाषी एआई-संचालित समर्थन, प्रत्येक रोगी के लिए सरल और सुलभ होने के लिए डिज़ाइन किया गया।"
+    "desc": "बहुभाषी एआई-संचालित सहायता, जिसे हर रोगी के लिए सरल और सुलभ बनाया गया है।"
   },
   "featureEmergencyGuidance": {
     "title": "बाधाओं के बिना देखभाल",
-    "desc": "बहुभाषी एआई-संचालित समर्थन, प्रत्येक रोगी के लिए सरल और सुलभ होने के लिए डिज़ाइन किया गया।"
+    "desc": "बहुभाषी एआई-संचालित सहायता, जिसे हर रोगी के लिए सरल और सुलभ बनाया गया है।"
   },
-  "aiHeadline": "AI That Assists — Doctors Still Decide",
-  "aiDesc": "SehatSetu uses artificial intelligence to make healthcare workflows more efficient, such as organizing information, assisting with healthcare navigation, and supporting structured medical documentation.",
-  "aiDesc2": "AI-generated information is designed to support—not replace—qualified healthcare professionals. Diagnosis, treatment, prescriptions, and critical medical decisions remain under human medical supervision.",
-  "aiPoint1": "Human-in-the-loop — AI supports structured workflows reviewed by qualified professionals.",
-  "aiPoint2": "Safety-first emergency handling — high-risk situations always direct to urgent in-person care.",
-  "aiPoint3": "Structured and reviewable AI output — responses are organized, traceable, and human-reviewable.",
-  "accessibility": "Connecting Care Across India",
-  "accessibilityDesc": "SehatSetu is designed with both rural and urban healthcare access in mind. Digital consultations, nearby hospital discovery, lightweight healthcare workflows, and multilingual support can help reduce barriers caused by distance and digital complexity.",
-  "privacyHeadline": "Your Privacy & Security",
-  "privacyDesc": "Protecting your health information is fundamental to everything we do. SehatSetu applies secure authentication, controlled access to medical records, privacy-conscious AI integration, and secure handling of documents and communications.",
-  "privacyPoint1": "Secure authentication for every account",
-  "privacyPoint2": "Protected health information with controlled access",
-  "privacyPoint3": "Privacy-conscious AI integration",
-  "privacyPoint4": "Secure document and communication handling",
-  "howItWorks": "How It Works",
-  "step1": "Tell us what you need",
-  "step1Desc": "Share your health concern and preferred doctor or specialty.",
-  "step2": "Find the right option",
-  "step2Desc": "Discover verified doctors, time slots, hospitals, and lab guidance.",
-  "step3": "Connect with care",
-  "step3Desc": "Book a consultation, locate care nearby, or get structured guidance.",
-  "step4": "Keep records organized",
-  "step4Desc": "Access your appointments, prescriptions, and health records in one place.",
-  "values": "Our Values",
+  "aiHeadline": "AI सहायता करता है — निर्णय डॉक्टर लेते हैं",
+  "aiDesc": "SehatSetu जानकारी व्यवस्थित करने, स्वास्थ्य सेवा तक पहुँच में सहायता करने और संरचित चिकित्सीय दस्तावेज़ीकरण का समर्थन करने जैसे कार्यों से स्वास्थ्य कार्यप्रवाहों को अधिक कुशल बनाने के लिए कृत्रिम बुद्धिमत्ता का उपयोग करता है।",
+  "aiDesc2": "AI से बनाई गई जानकारी योग्य स्वास्थ्य पेशेवरों की सहायता के लिए है, उनका स्थान लेने के लिए नहीं। निदान, उपचार, प्रिस्क्रिप्शन और महत्वपूर्ण चिकित्सीय निर्णय मानव चिकित्सा पर्यवेक्षण में ही रहते हैं।",
+  "aiPoint1": "मानव-निगरानी — AI योग्य पेशेवरों द्वारा समीक्षा किए गए संरचित कार्यप्रवाहों में सहायता करता है।",
+  "aiPoint2": "सुरक्षा-प्रथम आपातकालीन प्रबंधन — उच्च जोखिम वाली स्थितियों में हमेशा तत्काल व्यक्तिगत देखभाल की सलाह दी जाती है।",
+  "aiPoint3": "संरचित और समीक्षा योग्य AI आउटपुट — जवाब व्यवस्थित, ट्रेस करने योग्य और मानव समीक्षा योग्य होते हैं।",
+  "accessibility": "पूरे भारत में देखभाल को जोड़ना",
+  "accessibilityDesc": "SehatSetu ग्रामीण और शहरी दोनों क्षेत्रों में स्वास्थ्य सेवा की पहुँच को ध्यान में रखकर बनाया गया है। डिजिटल परामर्श, नज़दीकी अस्पताल खोज, सरल स्वास्थ्य कार्यप्रवाह और बहुभाषी सहायता दूरी और डिजिटल जटिलता से बनी बाधाओं को कम कर सकती है।",
+  "privacyHeadline": "आपकी गोपनीयता और सुरक्षा",
+  "privacyDesc": "आपकी स्वास्थ्य जानकारी की सुरक्षा हमारे हर काम का आधार है। SehatSetu सुरक्षित प्रमाणीकरण, चिकित्सीय रिकॉर्ड तक नियंत्रित पहुँच, गोपनीयता-केंद्रित AI एकीकरण और दस्तावेज़ों व संचार का सुरक्षित प्रबंधन उपलब्ध कराता है।",
+  "privacyPoint1": "हर खाते के लिए सुरक्षित प्रमाणीकरण",
+  "privacyPoint2": "नियंत्रित पहुँच के साथ सुरक्षित स्वास्थ्य जानकारी",
+  "privacyPoint3": "गोपनीयता-केंद्रित AI एकीकरण",
+  "privacyPoint4": "दस्तावेज़ों और संचार का सुरक्षित प्रबंधन",
+  "howItWorks": "यह कैसे काम करता है",
+  "step1": "हमें बताएँ कि आपको क्या चाहिए",
+  "step1Desc": "अपनी स्वास्थ्य समस्या और पसंदीदा डॉक्टर या विशेषज्ञता साझा करें।",
+  "step2": "सही विकल्प खोजें",
+  "step2Desc": "सत्यापित डॉक्टर, समय स्लॉट, अस्पताल और लैब मार्गदर्शन खोजें।",
+  "step3": "देखभाल से जुड़ें",
+  "step3Desc": "परामर्श बुक करें, नज़दीकी देखभाल खोजें या संरचित मार्गदर्शन पाएँ।",
+  "step4": "रिकॉर्ड व्यवस्थित रखें",
+  "step4Desc": "अपने अपॉइंटमेंट, प्रिस्क्रिप्शन और स्वास्थ्य रिकॉर्ड एक ही जगह देखें।",
+  "values": "हमारे मूल्य",
   "valueAccessibility": {
-    "title": "Accessibility",
-    "desc": "Healthcare should be easier to reach."
+    "title": "सुलभता",
+    "desc": "स्वास्थ्य सेवा तक पहुँचना आसान होना चाहिए।"
   },
   "valueTrust": {
-    "title": "Trust",
-    "desc": "Healthcare technology must prioritize reliability and transparency."
+    "title": "विश्वास",
+    "desc": "स्वास्थ्य तकनीक को विश्वसनीयता और पारदर्शिता को प्राथमिकता देनी चाहिए।"
   },
   "valueHumanCentred": {
-    "title": "Human-Centred Care",
-    "desc": "Technology should support the relationship between patients and healthcare professionals."
+    "title": "मानव-केंद्रित देखभाल",
+    "desc": "तकनीक को रोगियों और स्वास्थ्य पेशेवरों के संबंध का समर्थन करना चाहिए।"
   },
   "valueResponsibleInnovation": {
-    "title": "Responsible Innovation",
-    "desc": "AI should improve workflows without replacing medical judgment."
+    "title": "जिम्मेदार नवाचार",
+    "desc": "AI को चिकित्सीय निर्णय का स्थान लिए बिना कार्यप्रवाह बेहतर बनाने चाहिए।"
   },
-  "finalCtaTitle": "Better Access to Healthcare Starts Here",
-  "finalCtaDesc": "Find the right doctor, manage your care, and access essential healthcare services through SehatSetu.",
-  "finalCtaPrimary": "Find a Doctor",
-  "finalCtaSecondary": "Get Started"
+  "howWeDeliverTitle": "हम बेहतर देखभाल कैसे पहुँचाते हैं",
+  "deliverPoint1Title": "सत्यापित विशेषज्ञ।",
+  "deliverPoint1Desc": "सुरक्षित डिजिटल परामर्श के माध्यम से योग्य डॉक्टरों से जुड़ें।",
+  "deliverPoint2Title": "आसान पहुँच।",
+  "deliverPoint2Desc": "अनावश्यक यात्रा या प्रतीक्षा के बिना सही देखभाल पाएँ।",
+  "deliverPoint3Title": "सुरक्षित परामर्श।",
+  "deliverPoint3Desc": "आपके अपॉइंटमेंट और बातचीत को सुरक्षित डिजिटल सेवाओं के माध्यम से संभाला जाता है।",
+  "deliverPoint4Title": "सुस्पष्ट स्वास्थ्य रिकॉर्ड।",
+  "deliverPoint4Desc": "प्रिस्क्रिप्शन, रिपोर्ट और परामर्श की जानकारी एक ही जगह व्यवस्थित रखें।",
+  "deliverPoint5Title": "बहुभाषी सहायता।",
+  "deliverPoint5Desc": "अपने लिए आसान भाषाओं में स्वास्थ्य मार्गदर्शन पाएँ।",
+  "deliverPoint6Title": "मानव-निर्देशित निर्णय।",
+  "deliverPoint6Desc": "तकनीक देखभाल में सहायता करती है, जबकि चिकित्सा निर्णयों की जिम्मेदारी योग्य पेशेवरों की रहती है।",
+  "finalCtaTitle": "स्वास्थ्य सेवा तक बेहतर पहुँच यहीं से शुरू होती है",
+  "finalCtaDesc": "सही डॉक्टर खोजें, अपनी देखभाल प्रबंधित करें और SehatSetu के माध्यम से आवश्यक स्वास्थ्य सेवाओं तक पहुँचें।",
+  "finalCtaPrimary": "डॉक्टर खोजें",
+  "finalCtaSecondary": "शुरू करें"
 }

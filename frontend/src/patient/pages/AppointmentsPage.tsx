@@ -5,7 +5,7 @@ const AppointmentsPage: React.FC = () => {
   const { t } = useTranslation(['patient', 'appointment']);
   return (
     <div>
-      <h1>{t('patient.appointmentsPage.title')}</h1>
+      <h1>{t('myAppointments')}</h1>
       {/* List of upcoming and past appointments */}
     </div>
   );

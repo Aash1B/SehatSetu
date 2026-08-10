@@ -4,12 +4,18 @@ import type { RootState } from '../store';
 import { closeSidebar, setDashboardTab } from '../store/uiSlice';
 import { useNavigate } from 'react-router-dom';
 import { getUser, clearAuth } from '../../auth/authStorage';
+import { useTranslation } from 'react-i18next';
+import BrandLogo from '../../common/components/BrandLogo';
 
 const Sidebar: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const isOpen = useSelector((state: RootState) => state.ui.isSidebarOpen);
   const currentPage = useSelector((state: RootState) => state.ui.currentPage);
+  const { t: tCommon } = useTranslation('common');
+  const { t: tNavbar } = useTranslation('navbar');
+  const { t: tFooter } = useTranslation('footer');
+  const { t: tButtons } = useTranslation('buttons');
 
   const user = getUser();
   const userName = user?.fullName || 'Guest User';
@@ -69,24 +75,22 @@ const Sidebar: React.FC = () => {
       />
 
       {/* Slide-out Sidebar Drawer */}
-      <aside className={`sidebar-drawer ${isOpen ? 'open' : ''}`} aria-label="Sidebar Menu">
+      <aside className={`sidebar-drawer ${isOpen ? 'open' : ''}`} aria-label={tNavbar('openSidebar')}>
         {/* Header */}
         <div className="sidebar-header">
           <div className="sidebar-brand">
             <div className="sidebar-logo-icon">
-              <img src="/logo.svg" alt="SehatSetu" className="sidebar-logo-img" />
+              <BrandLogo showWordmark={false} markWrapperClassName="" markClassName="sidebar-logo-img" alt="" />
             </div>
             <div className="sidebar-brand-text">
-              <span className="sidebar-brand-title">
-                Sehat<span className="brand-title-accent">Setu</span>
-              </span>
+              <BrandLogo showMark={false} wordmarkClassName="sidebar-brand-title" />
             </div>
           </div>
           <button 
             type="button" 
             className="sidebar-close-btn"
             onClick={() => dispatch(closeSidebar())}
-            aria-label="Close sidebar menu"
+            aria-label={tCommon('close')}
           >
             <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -99,14 +103,14 @@ const Sidebar: React.FC = () => {
         <div className="sidebar-content">
           {/* Section 1: Main Menu */}
           <div className="sidebar-group">
-            <span className="sidebar-group-title">Main Navigation</span>
+            <span className="sidebar-group-title">{tFooter('mainNavigation')}</span>
             <nav className="sidebar-menu">
               <a href="#home" className={`sidebar-item ${currentPage === 'landing' ? 'active' : ''}`} onClick={() => { navigate('/'); dispatch(closeSidebar()); }}>
                 <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                   <polyline points="9 22 9 12 15 12 15 22"></polyline>
                 </svg>
-                <span>Home</span>
+                <span>{tCommon('home')}</span>
               </a>
               <button type="button" className={`sidebar-item ${currentPage === 'dashboard' ? 'active' : ''}`} onClick={() => { navigate('/patient/dashboard'); dispatch(closeSidebar()); }}>
                 <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -115,14 +119,14 @@ const Sidebar: React.FC = () => {
                   <rect x="14" y="14" width="7" height="7" rx="1"></rect>
                   <rect x="3" y="14" width="7" height="7" rx="1"></rect>
                 </svg>
-                <span>Dashboard</span>
+                <span>{tCommon('dashboard')}</span>
               </button>
              <a href="#services" className="sidebar-item" onClick={handleNavClick}>
                <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
                </svg>
-               <span>Our Services</span>
+               <span>{tFooter('ourServices')}</span>
              </a>
              <button
                type="button"
@@ -134,14 +138,14 @@ const Sidebar: React.FC = () => {
                  <line x1="12" y1="16" x2="12" y2="12"></line>
                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
                </svg>
-               <span>About Us</span>
+               <span>{tFooter('aboutUs')}</span>
              </button>
             </nav>
           </div>
 
           {/* Section 4: Settings & Support */}
           <div className="sidebar-group">
-            <span className="sidebar-group-title">Account & Support</span>
+            <span className="sidebar-group-title">{tFooter('accountSupport')}</span>
             <nav className="sidebar-menu">
               <button 
                 type="button" 
@@ -156,7 +160,7 @@ const Sidebar: React.FC = () => {
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
-                <span>Profile & Settings</span>
+                <span>{tFooter('profileSettings')}</span>
               </button>
             </nav>
           </div>
@@ -189,7 +193,7 @@ const Sidebar: React.FC = () => {
             <button 
               type="button" 
               className="user-logout-btn" 
-              title="Sign Out"
+              title={tFooter('signOut')}
               onClick={handleLogout}
             >
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -202,7 +206,7 @@ const Sidebar: React.FC = () => {
             <button 
               type="button" 
               className="user-logout-btn" 
-              title="Sign In"
+              title={tButtons('signIn')}
               onClick={() => {
                 dispatch(closeSidebar());
                 navigate('/patient/login');

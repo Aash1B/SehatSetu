@@ -42,6 +42,19 @@
   "noDoctorsMatch": "No doctors match your criteria",
   "adjustSearch": "Try adjusting your filters or search terms",
   "consultationFee": "Consultation Fee",
+  "consultationTime": {
+    "joinNow": "Join Now",
+    "availableForTesting": "Available for testing",
+    "join": "Join Consultation",
+    "available": "Available",
+    "opensBefore": "Opens at {{time}}",
+    "startsInHrs": "Starts in {{hours}}h {{minutes}}m",
+    "opensIn": "Opens in {{minutes}} minutes",
+    "scheduledFor": "Scheduled for {{time}}",
+    "liveRoomActive": "Live consultation room is active",
+    "ended": "Consultation ended",
+    "timePassed": "The scheduled time passed at {{time}}"
+  },
   "detailTicket": {
     "patientName": "Patient Name",
     "ageGender": "Age/Gender",

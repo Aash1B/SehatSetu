@@ -42,7 +42,9 @@ const HeroSection: React.FC = () => {
 
           {/* Tagline */}
           <p className="mb-6 text-3xl font-extrabold leading-[1.17] tracking-tight text-slate-900 sm:text-4xl lg:text-[42px]">
-            {t('headline')}
+            <span className="hero-headline-gradient font-extrabold">
+              {t('headline')}
+            </span>
             <span className="bg-gradient-to-r from-[#FF9933] to-[#138808] bg-clip-text text-transparent font-extrabold">
               {' '}{t('country')}
             </span>
@@ -100,7 +102,7 @@ const HeroSection: React.FC = () => {
         </div>
 
         {/* Right Column: Hero Image Frame */}
-        <div className="relative w-full h-[350px] sm:h-[420px] lg:h-[470px] min-w-0 overflow-hidden rounded-[28px] sm:rounded-[32px] border border-slate-100/90 bg-white/95 backdrop-blur-md shadow-[0_12px_35px_rgba(0,0,0,0.08)] ring-1 ring-slate-900/5 transition-all duration-300 hover:shadow-[0_16px_40px_rgba(0,0,0,0.12)]">
+        <div className="relative w-full aspect-[1600/959] min-w-0 overflow-hidden rounded-[28px] sm:rounded-[32px] border border-slate-100/90 bg-white/95 backdrop-blur-md shadow-[0_12px_35px_rgba(0,0,0,0.08)] ring-1 ring-slate-900/5 transition-all duration-300 hover:shadow-[0_16px_40px_rgba(0,0,0,0.12)]">
           <div className="absolute top-4 right-4 z-10 p-2 bg-slate-900/30 backdrop-blur-md text-white rounded-full shadow-xs hover:bg-slate-900/50 transition cursor-pointer">
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
@@ -110,12 +112,12 @@ const HeroSection: React.FC = () => {
           <img
             src="/hero.jpeg"
             alt={t('heroAlt')}
-            width={1920}
-            height={840}
+            width={1600}
+            height={959}
             decoding="async"
             loading="eager"
             fetchPriority="high"
-            className="block h-full w-full object-cover object-center transition-transform duration-500 hover:scale-[1.02]"
+            className="block h-full w-full object-contain object-center transition-transform duration-500"
           />
         </div>
       </div>

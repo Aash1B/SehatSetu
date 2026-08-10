@@ -27,8 +27,8 @@ export const getRelativeDate = (dateString: string): string => {
   const now = new Date();
   const diffDays = Math.floor((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
-  if (diffDays === 0) return i18n.t('patient.relativeDate.today', { defaultValue: 'Today' });
-  if (diffDays === 1) return i18n.t('patient.relativeDate.tomorrow', { defaultValue: 'Tomorrow' });
-  if (diffDays === -1) return i18n.t('patient.relativeDate.yesterday', { defaultValue: 'Yesterday' });
+  if (diffDays === 0) return i18n.t('patient:relativeDate.today');
+  if (diffDays === 1) return i18n.t('patient:relativeDate.tomorrow');
+  if (diffDays === -1) return i18n.t('patient:relativeDate.yesterday');
   return formatDate(dateString);
 };
