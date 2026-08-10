@@ -26,8 +26,8 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <header className={`sticky top-0 z-50 w-full pointer-events-none transition-all duration-300 ${isLandingPage ? 'px-0' : 'px-2 sm:px-4 lg:px-6 flex justify-center'}`}>
-      <div className={`pointer-events-auto w-full bg-white/96 backdrop-blur-md px-4 sm:px-6 lg:px-8 py-3 sm:py-3.5 lg:py-4 flex items-center justify-between gap-3 sm:gap-4 transition-all duration-300 ${isLandingPage ? 'rounded-none shadow-none border-0 border-b border-slate-200/80' : 'max-w-[98%] sm:max-w-[96%] lg:max-w-[95%] xl:max-w-[96%] rounded-[22px] shadow-[0_10px_30px_rgba(0,0,0,0.07)] border border-slate-100/90'}`}>
+    <header className="sticky top-0 z-50 w-full pointer-events-none transition-all duration-300 px-2 sm:px-4 lg:px-6 flex justify-center py-2 sm:py-3">
+      <div className="pointer-events-auto w-full max-w-[98%] sm:max-w-[96%] lg:max-w-[95%] xl:max-w-[96%] bg-white/96 backdrop-blur-md px-4 sm:px-6 lg:px-8 py-3 sm:py-3.5 lg:py-4 flex items-center justify-between gap-3 sm:gap-4 rounded-[22px] shadow-[0_10px_30px_rgba(0,0,0,0.07)] border border-slate-100/90 transition-all duration-300">
         
         {/* Left: Brand Logo (Sidebar Toggle Button hidden on Landing Page) */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
@@ -75,7 +75,21 @@ const Navbar: React.FC = () => {
           )}
           {currentPage === 'landing' ? (
             <a href="#services" className="nav-link text-slate-600 hover:text-slate-900">{t("services")}</a>
-          ) : null}
+          ) : (
+            <button
+              type="button"
+              className="relative py-1.5 text-sm font-medium transition-colors cursor-pointer border-none bg-transparent nav-link text-slate-600 hover:text-slate-900"
+              onClick={() => {
+                navigate('/#services');
+                setTimeout(() => {
+                  const elem = document.querySelector('#services');
+                  if (elem) elem.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+              }}
+            >
+              {t("services")}
+            </button>
+          )}
           {currentPage !== 'doctors' && (
             <button
               type="button"

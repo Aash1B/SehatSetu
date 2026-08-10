@@ -26,7 +26,7 @@ const HeroSection: React.FC = () => {
   return (
     <section
       id="home"
-      className="w-full bg-gradient-to-b from-brand-50/60 via-white to-slate-50/30 -mt-14 sm:-mt-16 pt-22 sm:pt-26 lg:pt-28 pb-8 px-2 sm:px-4 lg:px-6 flex justify-center"
+      className="w-full bg-gradient-to-b from-brand-50/60 via-white to-slate-50/30 -mt-16 sm:-mt-20 pt-16 sm:pt-18 lg:pt-20 pb-8 px-2 sm:px-4 lg:px-6 flex justify-center"
     >
       {/* Pop-out Hero Card container matching Navbar width & shadow */}
       <div className="w-full max-w-[98%] sm:max-w-[96%] lg:max-w-[95%] xl:max-w-[96%] bg-white/95 backdrop-blur-md rounded-[28px] sm:rounded-[36px] shadow-[0_15px_40px_rgba(0,0,0,0.06)] border border-slate-100/90 py-10 sm:py-14 lg:py-16 px-6 sm:px-10 lg:px-12 transition-all duration-300">

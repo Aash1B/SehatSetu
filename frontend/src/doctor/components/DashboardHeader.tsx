@@ -31,10 +31,18 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       <div>
         <p className="text-sm font-normal text-slate-500 mb-1">{date}</p>
         <div className="mb-1.5">
-          <h1 className="text-3xl font-semibold text-slate-900 tracking-tight flex items-center gap-2">
-            Namaste, {doctor.name}
+          <h1 className="text-4xl font-semibold text-slate-900 tracking-tight flex items-center gap-2">
+            <span style={{
+              display: 'inline-block',
+              background: 'linear-gradient(to right, #FF9933 0%, #138808 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              fontWeight: 700,
+            }}>Namaste,</span>
+            {' '}{doctor.name}
             <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#F4F1EC', borderRadius: '50%', width: '44px', height: '44px', marginLeft: '2px', transform: 'translateY(4px)' }}>
-              <img src="/namaskar.png" alt="Namaskar" style={{ width: '32px', height: '32px' }} />
+              <img src="/P.jpeg" alt="Namaskar" style={{ width: '32px', height: '32px', objectFit: 'cover', borderRadius: '50%' }} />
             </span>
           </h1>
         </div>

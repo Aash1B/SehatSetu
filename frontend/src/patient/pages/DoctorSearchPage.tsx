@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { setCurrentPage } from '../store/uiSlice';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import Footer from '../components/Footer';
@@ -74,6 +76,12 @@ const DoctorSearchPage: React.FC = () => {
     image.onerror = null;
     image.src = defaultDoctor;
   };
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(setCurrentPage('doctors'));
+  }, [dispatch]);
 
   useEffect(() => {
     (async () => {

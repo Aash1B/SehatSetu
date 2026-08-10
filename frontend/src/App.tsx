@@ -70,6 +70,7 @@ const VitalsPage = lazy(() => import('./patient/pages/VitalsPage'));
 import OfflineStatusIndicator from './common/components/OfflineStatusIndicator';
 import PWAUpdatePrompt from './common/components/PWAUpdatePrompt';
 import PWAInstallPrompt from './common/components/PWAInstallPrompt';
+import { LiquidLoader } from './common/components/LiquidLoader';
 
 function App() {
   const { t } = useTranslation('common');
@@ -80,7 +81,7 @@ function App() {
         <PWAUpdatePrompt />
         <PWAInstallPrompt />
         <ChatProvider />
-        <Suspense fallback={<div className="flex min-h-screen items-center justify-center text-slate-500">{t('loading')}</div>}>
+        <Suspense fallback={<LiquidLoader fullScreen text="Loading" />}>
         <Routes>
 
           {/* Auth Routes (new) */}

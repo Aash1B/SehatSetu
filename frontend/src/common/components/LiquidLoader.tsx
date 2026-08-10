@@ -14,7 +14,7 @@ export const LiquidLoader: React.FC<LiquidLoaderProps> = ({
   const content = (
     <div className={`liquid-loader ${className}`}>
       <div className="loading-text">
-        {text}
+        Loading
         <span className="dot">.</span>
         <span className="dot">.</span>
         <span className="dot">.</span>
@@ -27,7 +27,7 @@ export const LiquidLoader: React.FC<LiquidLoaderProps> = ({
 
   if (fullScreen) {
     return (
-      <div className="flex items-center justify-center h-screen w-screen bg-luster-white fixed inset-0 z-50">
+      <div className="flex items-center justify-center h-screen w-screen bg-white fixed inset-0 z-50">
         {content}
       </div>
     );
