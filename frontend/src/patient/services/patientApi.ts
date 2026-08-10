@@ -8,7 +8,6 @@ async function patientRequest<T>(path: string, init?: RequestInit): Promise<T> {
   const token = getToken();
   if (!token) throw new Error(i18n.t('errors:authRequired'));
 
-<<<<<<< HEAD
   try {
     const response = await fetch(`${API_BASE_URL}/patient${path}`, {
       ...init,
@@ -25,7 +24,12 @@ async function patientRequest<T>(path: string, init?: RequestInit): Promise<T> {
     }
 
     if (!response.ok) {
-      throw new Error(typeof body?.message === 'string' ? body.message : 'Unable to load patient data.');
+      const fallbackKey = path === '/dashboard'
+        ? 'errors:unableToLoadDashboard'
+        : path.startsWith('/profile')
+          ? 'errors:unableToSaveProfile'
+          : 'errors:patientRequestFailed';
+      throw new Error(typeof body?.message === 'string' ? body.message : i18n.t(fallbackKey));
     }
     return body as T;
   } catch (err: any) {
@@ -33,24 +37,6 @@ async function patientRequest<T>(path: string, init?: RequestInit): Promise<T> {
       throw new Error('Unable to connect to SehatSetu backend server. Please check if the backend is running.');
     }
     throw err;
-=======
-  const response = await fetch(`${API_BASE_URL}/patient${path}`, {
-    ...init,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
-      ...init?.headers,
-    },
-  });
-  const body = await response.json().catch(() => null);
-  if (!response.ok) {
-    const fallbackKey = path === '/dashboard'
-      ? 'errors:unableToLoadDashboard'
-      : path.startsWith('/profile')
-        ? 'errors:unableToSaveProfile'
-        : 'errors:patientRequestFailed';
-    throw new Error(typeof body?.message === 'string' ? body.message : i18n.t(fallbackKey));
->>>>>>> f2ba3bd81d747842c31a22fd223d1aa108909b66
   }
 }
 

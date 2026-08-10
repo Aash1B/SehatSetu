@@ -581,47 +581,27 @@ const BookAppointmentPage: React.FC = () => {
           
           <div className={`step-node ${currentStep >= 1 ? 'active' : ''}`}>
             <div className="step-number">{currentStep > 1 ? '✓' : '1'}</div>
-<<<<<<< HEAD
-            <span className="step-label">Health Concern</span>
-=======
             <span className="step-label">{t('bookingFlow:stepHealthConcern')}</span>
->>>>>>> f2ba3bd81d747842c31a22fd223d1aa108909b66
           </div>
 
           <div className={`step-node ${currentStep >= 2 ? 'active' : ''}`}>
             <div className="step-number">{currentStep > 2 ? '✓' : '2'}</div>
-<<<<<<< HEAD
-            <span className="step-label">Select Doctor</span>
-=======
             <span className="step-label">{t('bookingFlow:stepSelectDoctor')}</span>
->>>>>>> f2ba3bd81d747842c31a22fd223d1aa108909b66
           </div>
 
           <div className={`step-node ${currentStep >= 3 ? 'active' : ''}`}>
             <div className="step-number">{currentStep > 3 ? '✓' : '3'}</div>
-<<<<<<< HEAD
-            <span className="step-label">Choose Slot</span>
-=======
             <span className="step-label">{t('bookingFlow:stepChooseSlot')}</span>
->>>>>>> f2ba3bd81d747842c31a22fd223d1aa108909b66
           </div>
 
           <div className={`step-node ${currentStep >= 4 ? 'active' : ''}`}>
             <div className="step-number">{currentStep > 4 ? '✓' : '4'}</div>
-<<<<<<< HEAD
-            <span className="step-label">Patient Info</span>
-=======
             <span className="step-label">{t('patient:step4Title')}</span>
->>>>>>> f2ba3bd81d747842c31a22fd223d1aa108909b66
           </div>
 
           <div className={`step-node ${currentStep >= 5 ? 'active' : ''}`}>
             <div className="step-number">{bookingConfirmed ? '✓' : '5'}</div>
-<<<<<<< HEAD
-            <span className="step-label">Confirm & Pay</span>
-=======
             <span className="step-label">{t('bookingFlow:stepConfirmPay')}</span>
->>>>>>> f2ba3bd81d747842c31a22fd223d1aa108909b66
           </div>
         </div>
       </div>
@@ -640,11 +620,7 @@ const BookAppointmentPage: React.FC = () => {
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M19 12H5M12 19l-7-7 7-7"/>
                 </svg>
-<<<<<<< HEAD
-                <span>Back</span>
-=======
                 <span>{t('bookingFlow:backToStep', { step: currentStep - 1 })}</span>
->>>>>>> f2ba3bd81d747842c31a22fd223d1aa108909b66
               </button>
             )}
 
@@ -759,11 +735,7 @@ const BookAppointmentPage: React.FC = () => {
                       </svg>
                       <input 
                         type="text" 
-<<<<<<< HEAD
-                        placeholder="Search or type a symptom (press Enter to add)"
-=======
                         placeholder={t('patient:searchSymptoms')}
->>>>>>> f2ba3bd81d747842c31a22fd223d1aa108909b66
                         value={symptomSearch}
                         onChange={(e) => setSymptomSearch(e.target.value)}
                         onKeyDown={(e) => {
@@ -803,11 +775,7 @@ const BookAppointmentPage: React.FC = () => {
 
                     {/* Popular Symptoms */}
                     <div className="symptom-subsection">
-<<<<<<< HEAD
-                      <span className="subsection-label">{t('forms:subsectionPopular', { defaultValue: 'Popular Symptoms' })}</span>
-=======
                       <span className="subsection-label">{t('patient:popularSymptoms')}</span>
->>>>>>> f2ba3bd81d747842c31a22fd223d1aa108909b66
                       <div className="popular-symptoms-grid">
                         {[
                           { name: 'Fever', icon: '🌡️' },
@@ -1136,9 +1104,6 @@ const BookAppointmentPage: React.FC = () => {
                     })()}
                   </div>
 
-<<<<<<< HEAD
-
-=======
                   {/* Toggle All Doctors / Other Specialists */}
                   {!showAllDoctors && filteredStep2Doctors.length > 1 && (
                     <div className="text-center mt-4 mb-2">
@@ -1163,7 +1128,6 @@ const BookAppointmentPage: React.FC = () => {
                       </button>
                     </div>
                   )}
->>>>>>> f2ba3bd81d747842c31a22fd223d1aa108909b66
                 </div>
               )}
 
@@ -1348,15 +1312,11 @@ const BookAppointmentPage: React.FC = () => {
                         </div>
                       )}
 
-<<<<<<< HEAD
-
-=======
                       {/* Timezone Info Alert Banner */}
                       <div className="timezone-info-banner">
                         <span className="info-circle-icon">ⓘ</span>
                         <span>{t('patient:timezoneInfo', { doctor: formData.selectedDoctor?.name })}</span>
                       </div>
->>>>>>> f2ba3bd81d747842c31a22fd223d1aa108909b66
                     </div>
                   </div>
                 );
@@ -1723,9 +1683,6 @@ const BookAppointmentPage: React.FC = () => {
                       </div>
                     </div>
 
-<<<<<<< HEAD
-
-=======
                     {/* Security Blue Banner */}
                     <div className="security-blue-banner">
                       <svg viewBox="0 0 24 24" fill="#2563EB" width="18" height="18">
@@ -1733,7 +1690,6 @@ const BookAppointmentPage: React.FC = () => {
                       </svg>
                       <span>{t('auth:privacyNotice.title')}</span>
                     </div>
->>>>>>> f2ba3bd81d747842c31a22fd223d1aa108909b66
                   </div>
 
                   {/* Bottom Footer Row under Appointment Details Card */}
@@ -1771,11 +1727,6 @@ const BookAppointmentPage: React.FC = () => {
                   className="btn-form-back"
                   onClick={handlePrevStep}
                 >
-<<<<<<< HEAD
-                  ← {t('buttons:back', { defaultValue: 'Back' })}
-                </button>
-
-=======
                   ← {t('common:back')}
                 </button>
 
@@ -1783,23 +1734,11 @@ const BookAppointmentPage: React.FC = () => {
                   🔒 {t('auth:privacyNotice.title')}
                 </div>
 
->>>>>>> f2ba3bd81d747842c31a22fd223d1aa108909b66
                 <button 
                   type="button" 
                   className="btn-form-next-orange"
                   onClick={handleNextStep}
                 >
-<<<<<<< HEAD
-                  {currentStep === 1 && (hasPreselectedDoctor && formData.selectedDoctor ? t('bookingFlow:btnNextChooseSlot', { defaultValue: 'Next: Choose Slot →' }) : t('bookingFlow:btnNextSelectDoctor', { defaultValue: 'Next: Select Doctor →' }))}
-                  {currentStep === 2 && t('bookingFlow:btnNextChooseSlot', { defaultValue: 'Next: Choose Slot →' })}
-                  {currentStep === 3 && t('bookingFlow:btnNextPatientInfo', { defaultValue: 'Next: Patient Info →' })}
-                  {currentStep === 4 && t('bookingFlow:btnNextConfirmPay', { defaultValue: 'Next: Confirm & Pay →' })}
-                  {currentStep === 5 && t('bookingFlow:btnConfirmPayNow', { defaultValue: 'Confirm & Pay Now' })}
-                </button>
-              </div>
-
-
-=======
                   {currentStep === 1 && (hasPreselectedDoctor && formData.selectedDoctor ? t('patient:nextStepChooseSlot') : t('patient:nextStep'))}
                   {currentStep === 2 && t('patient:nextStepChooseSlot')}
                   {currentStep === 3 && t('patient:nextStepPatientInfo')}
@@ -1817,7 +1756,6 @@ const BookAppointmentPage: React.FC = () => {
                     </div>
                 </div>
               )}
->>>>>>> f2ba3bd81d747842c31a22fd223d1aa108909b66
             </div>
 
             {/* Right Column: Sticky Summary Card */}
@@ -1981,13 +1919,8 @@ const BookAppointmentPage: React.FC = () => {
                     <div className="help-sidebar-content" onClick={() => setShowHelpModal(false)}>
                       <span className="headset-icon">🎧</span>
                       <div>
-<<<<<<< HEAD
-                        <h5 className="help-sidebar-title">{t('appointment:helpTitle', { defaultValue: 'Need Assistance?' })}</h5>
-                        <p className="help-sidebar-sub">{t('appointment:helpSubtitle', { defaultValue: 'Our support team is available 24/7' })}</p>
-=======
                         <h5 className="help-sidebar-title">{t('patient:needHelp')}</h5>
                         <p className="help-sidebar-sub">{t('patient:supportOnline')}</p>
->>>>>>> f2ba3bd81d747842c31a22fd223d1aa108909b66
                       </div>
                     </div>
                   </div>

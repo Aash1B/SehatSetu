@@ -12,11 +12,8 @@ import { getPatientDashboard, updatePatientProfile, uploadPatientAvatar } from '
 import AccountDeletionDangerZone from '../../auth/components/AccountDeletionDangerZone';
 import BrandLogo from '../../common/components/BrandLogo';
 import { useTranslation } from 'react-i18next';
-<<<<<<< HEAD
 import { KnownConditionsIcon, AllergiesIcon, PastSurgeriesIcon, CurrentMedicationsIcon, LastUpdatedIcon, MedicalSummaryIcon } from '../components/Ehr3dIcons';
-=======
 import type { EhrDraftStructuredData } from '../../types';
->>>>>>> f2ba3bd81d747842c31a22fd223d1aa108909b66
 
 interface ConsultationItem {
   id: string;
@@ -403,7 +400,6 @@ const DashboardPage: React.FC = () => {
 
   const [profileSaveSuccess, setProfileSaveSuccess] = useState(false);
 
-<<<<<<< HEAD
   const [userReminders, setUserReminders] = useState<Array<{ icon: string; title: string; sub: string; time: string }>>(() => {
     try {
       const saved = localStorage.getItem('sehatsetu_user_reminders');
@@ -418,9 +414,6 @@ const DashboardPage: React.FC = () => {
   const [newReminderTime, setNewReminderTime] = useState('Daily');
 
   const [ehrReportsList, setEhrReportsList] = useState<any[]>(false ? [
-=======
-  const [ehrReportsList, setEhrReportsList] = useState<PatientEhrModalItem[]>(false ? [
->>>>>>> f2ba3bd81d747842c31a22fd223d1aa108909b66
     {
       id: 'EHR-2026-001',
       title: 'Blood CBC & Dengue Test Report',
@@ -726,20 +719,11 @@ const DashboardPage: React.FC = () => {
         <div className="sidebar-header">
           <div className="sidebar-brand" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
             <div className="sidebar-logo-icon">
-<<<<<<< HEAD
-              <img src="/logo.svg" alt="SehatSetu" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-            </div>
-            <div className="sidebar-brand-text">
-              <span className="sidebar-brand-title">
-                Sehat<span className="brand-title-accent">Setu</span>
-              </span>
-=======
               <BrandLogo showWordmark={false} markWrapperClassName="" markClassName="sidebar-logo-img" alt="" />
             </div>
             <div>
               <BrandLogo showMark={false} wordmarkClassName="sidebar-brand-title" />
               <span className="sidebar-portal-badge"> {t('patientPortal')} </span>
->>>>>>> f2ba3bd81d747842c31a22fd223d1aa108909b66
             </div>
           </div>
         </div>
@@ -837,16 +821,8 @@ const DashboardPage: React.FC = () => {
                 className="sidebar-item"
                 onClick={() => navigate('/patient/mch')}
               >
-<<<<<<< HEAD
                 <img src="/MCH Tracking.png?v=2" alt="MCH Tracking" style={{ width: 52, height: 52, objectFit: 'contain' }} />
                 <span> MCH Tracking </span>
-=======
-                <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
-                  <path d="M12 8v4m-2-2h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"></path>
-                </svg>
-                <span> {t('mch:mchTitle')} </span>
->>>>>>> f2ba3bd81d747842c31a22fd223d1aa108909b66
               </button>
             </nav>
           </div>
@@ -906,7 +882,6 @@ const DashboardPage: React.FC = () => {
       {/* 2. MAIN DASHBOARD CONTENT AREA (Covers Full Page Width) */}
       <div className="sehat-main-wrapper">
         {/* Top Header Navbar Bar */}
-<<<<<<< HEAD
         <header className="sehat-top-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div className="top-bar-left" style={{ flex: 1 }}></div>
           <div className="top-bar-center" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', transform: 'translateX(-45px)' }}>
@@ -926,12 +901,7 @@ const DashboardPage: React.FC = () => {
               PATIENT PORTAL
             </span>
           </div>
-          <div className="top-bar-actions" style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
-=======
-        <header className="sehat-top-bar">
-          <div className="top-bar-space"></div>
-          <div className="top-bar-actions">
-            {/* Notification Bell */}
+          <div className="top-bar-actions" style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '12px' }}>
             <button type="button" className="btn-notification-bell" aria-label={t('notifications')}>
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#334155" strokeWidth="2" strokeLinecap="round">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -939,8 +909,6 @@ const DashboardPage: React.FC = () => {
               </svg>
               <span className="bell-badge">2</span>
             </button>
-
->>>>>>> f2ba3bd81d747842c31a22fd223d1aa108909b66
             {/* User Profile Display */}
             <div className="top-user-pill">
               {profileImageUrl ? (
