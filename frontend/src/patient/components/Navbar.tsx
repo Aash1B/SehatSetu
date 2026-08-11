@@ -31,21 +31,7 @@ const Navbar: React.FC = () => {
         
         {/* Left: Brand Logo (Sidebar Toggle Button hidden on Landing Page) */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          {!isLandingPage && (
-            <button
-              type="button"
-              className="p-2 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-full transition cursor-pointer flex items-center justify-center border-none bg-transparent"
-              onClick={() => dispatch(toggleSidebar())}
-              aria-label={t('openSidebarTitle')}
-              title={t('openSidebarTitle')}
-            >
-              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <line x1="3" y1="12" x2="17" y2="12"></line>
-                <line x1="3" y1="18" x2="21" y2="18"></line>
-              </svg>
-            </button>
-          )}
+
 
           {/* Brand Logo */}
           <button
@@ -149,19 +135,7 @@ const Navbar: React.FC = () => {
             </button>
           )}
 
-          {/* Mobile Navigation Toggle Button - hidden on landing page */}
-          {!isLandingPage && (
-            <button
-              type="button"
-              className="md:hidden p-1.5 text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer border-none bg-transparent mobile-toggle"
-              onClick={() => dispatch(toggleSidebar())}
-              aria-label={t('toggleNav')}
-            >
-              <span className="hamburger-line"></span>
-              <span className="hamburger-line"></span>
-              <span className="hamburger-line"></span>
-            </button>
-          )}
+
         </div>
 
       </div>

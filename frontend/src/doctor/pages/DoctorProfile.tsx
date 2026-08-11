@@ -238,7 +238,7 @@ const DoctorProfile: React.FC = () => {
             </div>
             <div>
               <p className="text-base font-bold text-aster-blue uppercase tracking-wider mb-2">Verification & Documents</p>
-              <DocumentCard documents={profile.documents} />
+              <DocumentCard documents={profile.documents} doctorId={profile.id} onRefresh={loadProfile} />
             </div>
           </div>
           

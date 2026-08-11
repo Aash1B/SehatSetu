@@ -67,7 +67,7 @@ const VideoConsultation: React.FC = () => {
         {/* Header Area */}
         <div className="shrink-0 px-6 py-4 flex items-center justify-between border-b border-gray-100 bg-white shadow-sm z-10">
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={() => navigate(appointment?.patient?.id ? `/doctor/patient/${appointment.patient.id}` : '/doctor/consultations')}
               className="text-gray-500 hover:text-deep-space font-medium text-sm transition-colors cursor-pointer"
             >
@@ -82,11 +82,10 @@ const VideoConsultation: React.FC = () => {
             <button
               type="button"
               onClick={isRecording ? stopRecording : startRecording}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                isRecording 
-                  ? 'bg-red-500 text-white animate-pulse shadow-md' 
+              className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${isRecording
+                  ? 'bg-red-500 text-white animate-pulse shadow-md'
                   : 'bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-300'
-              }`}
+                }`}
             >
               <Mic className="w-3.5 h-3.5" />
               {isRecording ? '🔴 Listening Live Speech...' : '🎙️ Start AI Mic Listening'}
@@ -98,13 +97,13 @@ const VideoConsultation: React.FC = () => {
         {/* Main Consultation Area */}
         <div className="flex-1 min-h-0 overflow-hidden p-6">
           <div className="grid h-full min-h-0 grid-cols-1 grid-rows-[minmax(0,1fr)] lg:grid-cols-12 gap-6">
-            
+
             {/* Left Column: Video & Controls */}
             <div className="lg:col-span-8 flex flex-col h-full gap-4">
               <div className="flex-1 min-h-0 relative rounded-2xl overflow-hidden bg-gray-900 border border-gray-200 shadow-sm">
                 {token && serverUrl ? (
                   <LiveKitRoom
-                    connect={Boolean(token && serverUrl)}
+                    connect={Boolean(token && serverUrl && roomConnected)}
                     video={true}
                     audio={true}
                     token={token}
@@ -139,7 +138,7 @@ const VideoConsultation: React.FC = () => {
                 weight: appointment.patient?.weight || appointment.patientWeight,
                 height: appointment.patient?.height || appointment.patientHeight,
               } as PatientProfile} />}
-              
+
               <div className="flex-1 flex flex-col gap-4 min-h-0">
                 <section className="rounded-2xl bg-white p-3 shadow-sm border border-gray-200">
                   <label htmlFor="doctor-clinical-notes" className="mb-2 block text-sm font-bold text-deep-space">
@@ -175,7 +174,7 @@ const VideoConsultation: React.FC = () => {
         </div>
       </main>
 
-      <EndConsultationDialog 
+      <EndConsultationDialog
         isOpen={isEndCallOpen}
         onClose={() => setIsEndCallOpen(false)}
         consultationId={consultationId}
@@ -183,19 +182,19 @@ const VideoConsultation: React.FC = () => {
           doctorName: appointment?.doctor?.name || appointment?.doctor?.user?.fullName || 'Doctor',
           doctorSpecialty: appointment?.doctor?.specialty || '',
           doctorHospital: appointment?.doctor?.hospital || 'SehatSetu Digital Health Clinic',
-          patientName: appointment?.patient?.user?.fullName || appointment?.patientName || 'Patient',
+          patientName: appointment?.patientName || appointment?.patient?.user?.fullName || 'Patient',
           patientAge: appointment?.patientAge || appointment?.patient?.age || '',
           patientGender: appointment?.patientGender || appointment?.patient?.gender || '',
           diagnosis: appointment?.ehrRecord?.diagnosis || appointment?.healthConcern || '',
           symptoms: consultationSymptoms.length ? consultationSymptoms : (appointment?.symptoms || []),
           medications: consultationMedicines.length
             ? consultationMedicines.map((m) => ({
-                name: m.name,
-                dosage: m.dosage,
-                frequency: m.frequency,
-                duration: m.duration,
-                timing: m.timing,
-              }))
+              name: m.name,
+              dosage: m.dosage,
+              frequency: m.frequency,
+              duration: m.duration,
+              timing: m.timing,
+            }))
             : [],
           dietAdvice: consultationDiet.join('\n'),
           notes: [
@@ -211,7 +210,7 @@ const VideoConsultation: React.FC = () => {
         }}
       />
 
-      <PrescriptionViewModal 
+      <PrescriptionViewModal
         isOpen={showRxModal}
         isModal={true}
         onClose={() => {

@@ -39,6 +39,7 @@ const Dashboard = () => {
   const [consultations, setConsultations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'SCHEDULED' | 'COMPLETED' | 'CANCELLED'>('ALL');
+  const [dateFilter, setDateFilter] = useState<string>('');
   const [filterOpen, setFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
 
@@ -89,6 +90,17 @@ const Dashboard = () => {
               const patientGenderStr = app.patientGender || app.patient?.gender || 'Female';
               const genderChar = patientGenderStr.toUpperCase().startsWith('M') ? 'M' : (patientGenderStr.toUpperCase().startsWith('F') ? 'F' : 'O');
 
+              let displayDate = app.date || '';
+              if (app.scheduledAt) {
+                const sDate = new Date(app.scheduledAt);
+                if (!isNaN(sDate.getTime())) {
+                  displayDate = sDate.toISOString().split('T')[0];
+                }
+              }
+              if (!displayDate) {
+                displayDate = new Date().toISOString().split('T')[0];
+              }
+
               return {
                 id: String(app.id || Math.random()),
                 patient: {
@@ -104,6 +116,7 @@ const Dashboard = () => {
                   { label: app.status === 'SCHEDULED' ? 'Scheduled' : (app.status === 'COMPLETED' ? 'Completed' : (app.status === 'CANCELLED' ? 'Cancelled' : (app.status || 'Scheduled'))), variant: (app.status === 'CANCELLED' ? 'cancelled' : app.status === 'COMPLETED' ? 'completed' : 'scheduled') as any },
                 ],
                 time: app.timeSlot || '10:00 AM',
+                date: displayDate,
                 chiefComplaint: app.healthConcern || (app.notes ? String(app.notes).split('\n')[0].replace(/^Concern:\s*/i, '') : 'General Medical Consultation'),
                 status: (app.status === 'COMPLETED' ? ConsultationStatus.COMPLETED : (app.status === 'CANCELLED' ? ConsultationStatus.NO_SHOW : ConsultationStatus.WAITING)),
                 priority: Priority.ROUTINE,
@@ -173,9 +186,30 @@ const Dashboard = () => {
           <div className="flex justify-between items-center mb-5">
             <div>
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Your Schedule</p>
-              <h2 className="text-2xl font-semibold text-slate-900">Today's Assigned Consultations</h2>
+              <h2 className="text-2xl font-semibold text-slate-900">Consultations</h2>
             </div>
                 <div className="flex items-center gap-3">
+                  {/* Date Filter */}
+                  <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-2xs">
+                    <span className="text-xs font-semibold text-slate-500">Date:</span>
+                    <input
+                      type="date"
+                      value={dateFilter}
+                      onChange={(e) => setDateFilter(e.target.value)}
+                      className="text-xs font-semibold text-slate-700 outline-none bg-transparent cursor-pointer"
+                    />
+                    {dateFilter && (
+                      <button
+                        type="button"
+                        onClick={() => setDateFilter('')}
+                        className="text-xs text-slate-400 hover:text-slate-600 font-bold ml-1 cursor-pointer"
+                        title="Clear date filter"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+
                   {/* Filter Icon + Popup */}
                   <div className="relative" ref={filterRef}>
                     <button
@@ -236,7 +270,7 @@ const Dashboard = () => {
 
               <div className="space-y-4">
                 {consultations
-                  .filter(c => statusFilter === 'ALL' || c.tags?.[1]?.label?.toUpperCase() === statusFilter)
+                  .filter(c => (statusFilter === 'ALL' || c.tags?.[1]?.label?.toUpperCase() === statusFilter) && (!dateFilter || c.date === dateFilter))
                   .map((consultation) => (
                   <ConsultationCard
                     key={consultation.id}
