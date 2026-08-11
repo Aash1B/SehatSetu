@@ -79,7 +79,6 @@ const VitalsPage: React.FC = () => {
               <span className="sidebar-brand-title">
                 Sehat<span className="brand-title-accent">Setu</span>
               </span>
-              <span className="sidebar-portal-badge">Patient Portal</span>
             </div>
           </div>
         </div>

@@ -446,6 +446,46 @@ const DashboardPage: React.FC = () => {
   const [profileImageUrl, setProfileImageUrl] = useState('');
   const [avatarUploading, setAvatarUploading] = useState(false);
 
+  // Additional Health Options with Typebars states
+  const [pastSurgeriesInput, setPastSurgeriesInput] = useState('');
+  const [pastSurgeriesList, setPastSurgeriesList] = useState<string[]>([]);
+
+  const [healthConcernsInput, setHealthConcernsInput] = useState('');
+  const [healthConcernsList, setHealthConcernsList] = useState<string[]>([]);
+
+  const [ongoingMedsInput, setOngoingMedsInput] = useState('');
+  const [ongoingMedsList, setOngoingMedsList] = useState<string[]>([]);
+
+  const handleAddSurgery = () => {
+    if (pastSurgeriesInput.trim()) {
+      setPastSurgeriesList(prev => [...prev, pastSurgeriesInput.trim()]);
+      setPastSurgeriesInput('');
+    }
+  };
+  const removeSurgery = (idx: number) => {
+    setPastSurgeriesList(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleAddHealthConcern = () => {
+    if (healthConcernsInput.trim()) {
+      setHealthConcernsList(prev => [...prev, healthConcernsInput.trim()]);
+      setHealthConcernsInput('');
+    }
+  };
+  const removeHealthConcern = (idx: number) => {
+    setHealthConcernsList(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleAddOngoingMed = () => {
+    if (ongoingMedsInput.trim()) {
+      setOngoingMedsList(prev => [...prev, ongoingMedsInput.trim()]);
+      setOngoingMedsInput('');
+    }
+  };
+  const removeOngoingMed = (idx: number) => {
+    setOngoingMedsList(prev => prev.filter((_, i) => i !== idx));
+  };
+
   const [consultationsList, setConsultationsList] = useState<ConsultationItem[]>([]);
   const [prescriptionsList, setPrescriptionsList] = useState<any[]>([]);
   const [dashboardLoading, setDashboardLoading] = useState(true);
@@ -836,7 +876,6 @@ const DashboardPage: React.FC = () => {
             </div>
             <div>
               <BrandLogo showMark={false} wordmarkClassName="sidebar-brand-title" />
-              <span className="sidebar-portal-badge"> {t('patientPortal')} </span>
             </div>
           </div>
         </div>
@@ -934,7 +973,7 @@ const DashboardPage: React.FC = () => {
                 className="sidebar-item"
                 onClick={() => navigate('/patient/mch')}
               >
-                <img src="/MCH Tracking.png?v=2" alt="MCH Tracking" style={{ width: 52, height: 52, objectFit: 'contain' }} />
+                <img src="/MCH Tracking.png?v=2" alt="MCH Tracking" style={{ width: 52, height: 52, objectFit: 'cover', borderRadius: '50%' }} />
                 <span> MCH Tracking </span>
               </button>
             </nav>
@@ -1114,20 +1153,20 @@ const DashboardPage: React.FC = () => {
             <>
               {/* Greeting Header */}
               <div className="dash-greeting-header">
-                <h1 className="greeting-title" style={{ fontSize: '2.2rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+                <h1 className="greeting-title" style={{ fontSize: '2.8rem', fontWeight: 900, display: 'inline-flex', alignItems: 'center', margin: 0 }}>
                   <span
                     style={{
                       background: 'linear-gradient(90deg, #FF9933 0%, #D4AC0D 50%, #138808 100%)',
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
-                      fontWeight: 900,
+                      fontWeight: 950,
                       display: 'inline-block'
                     }}
                   >
-                    {t('goodMorning')}
+                    Namaste
                   </span>
-                  <span style={{ color: '#0f172a', fontWeight: 800 }}>, {patientFirstName}</span>
-                  <img src="/namaskar.png" alt="Namaskar" className="namaskar-animated-icon" />
+                  <span style={{ color: '#111144', fontWeight: 800 }}>, {patientFirstName}</span>
+                  <img src="/namaskar-clean.png" alt="Namaste" className="namaskar-animated-icon" style={{ marginLeft: 6, transform: 'translateY(-16px)', verticalAlign: 'middle' }} />
                 </h1>
               </div>
 
@@ -1362,7 +1401,7 @@ const DashboardPage: React.FC = () => {
                             </div>
 
                             <div className="row-datetime">
-                              <span>📅 {item.date}</span>
+                              <span>{item.date}</span>
                               <span>🕒 {item.time}</span>
                             </div>
 
@@ -1385,7 +1424,7 @@ const DashboardPage: React.FC = () => {
                         {prescriptionsList.map((rx) => (
                           <div key={rx.id} className="consultation-row">
                             <div className="row-doctor-info">
-                              <div className="rx-icon-box">💊</div>
+                              <div className="rx-icon-box"><img src="/recent pres.png" alt="Prescription" style={{ width: 65, height: 65, objectFit: 'contain' }} /></div>
                               <div>
                                 <h4 className="row-doc-name">{rx.doctorName}</h4>
                                 <span className="row-doc-spec">{rx.meds}</span>
@@ -1393,7 +1432,7 @@ const DashboardPage: React.FC = () => {
                             </div>
 
                             <div className="row-datetime">
-                              <span>📅 {rx.date}</span>
+                              <span>{rx.date}</span>
                             </div>
 
                             <div className="row-mode">
@@ -1680,7 +1719,7 @@ const DashboardPage: React.FC = () => {
 
                     <div className="appt-card-details">
                       <div className="detail-chip highlight">
-                        <span>📅</span> {item.date}
+                        {item.date}
                       </div>
                       <div className="detail-chip">
                         <span>🕒</span> {item.time}
@@ -1752,17 +1791,16 @@ const DashboardPage: React.FC = () => {
                     type="button"
                     disabled={reportUploadState === 'uploading'}
                     onClick={() => { if (reportUploadState !== 'uploading') reportInputRef.current?.click(); }}
-                    style={{ backgroundColor: reportUploadState === 'uploading' ? '#fed7aa' : '#f97316', color: 'white', fontWeight: 'bold', padding: '8px 18px', borderRadius: '10px', border: 'none', cursor: reportUploadState === 'uploading' ? 'not-allowed' : 'pointer', fontSize: '13px' }}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 8, backgroundColor: reportUploadState === 'uploading' ? '#fed7aa' : '#f97316', color: '#ffffff', border: 'none', borderRadius: 12, padding: '11px 22px 11px 16px', fontSize: 14, cursor: reportUploadState === 'uploading' ? 'not-allowed' : 'pointer', fontWeight: 700, opacity: reportUploadState === 'uploading' ? 0.7 : 1, boxShadow: '0 4px 14px rgba(249, 115, 22, 0.35)' }}
                   >
-                    {reportUploadState === 'uploading'
-                      ? t('uploading')
-                      : (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ fontSize: '16px', lineHeight: 1, fontWeight: 700 }}>+</span>
-                          <span>Upload Report</span>
-                        </span>
-                      )
-                    }
+                    {reportUploadState === 'uploading' ? (
+                      <span>{t('uploading')}</span>
+                    ) : (
+                      <>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 800, transform: 'translateY(-1px)' }}>+</span>
+                        <span style={{ display: 'inline-flex', alignItems: 'center' }}>Upload Report</span>
+                      </>
+                    )}
                   </button>
                   {reportUploadMessage && <p role="status" style={{ fontSize: '12px', margin: 0, color: reportUploadState === 'error' ? '#dc2626' : '#15803d' }}>{reportUploadMessage}</p>}
                 </div>
@@ -2921,6 +2959,120 @@ const DashboardPage: React.FC = () => {
                     </div>
                   </div>
 
+                  {/* ── ADDITIONAL HEALTH QUESTIONS WITH TYPEBARS ── */}
+                  <div style={{ marginTop: '24px', border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', background: '#fff', padding: '20px' }}>
+                    <h4 style={{ margin: '0 0 6px 0', fontSize: '15px', fontWeight: 700, color: '#1e293b' }}>
+                      Additional Health Information & History
+                    </h4>
+                    <p style={{ margin: '0 0 20px 0', fontSize: '12px', color: '#64748b' }}>
+                      Type details into the typebars below to add information to your health profile.
+                    </p>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                      {/* Option 1: Past Surgeries or Hospitalizations */}
+                      <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                        <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '8px' }}>
+                          Past Surgeries or Hospitalizations
+                        </label>
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                          <input
+                            type="text"
+                            value={pastSurgeriesInput}
+                            onChange={(e) => setPastSurgeriesInput(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') handleAddSurgery(); }}
+                            placeholder="Type surgery or hospitalization details..."
+                            style={{ flex: 1, padding: '9px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', outline: 'none', background: '#fff' }}
+                          />
+                          <button
+                            type="button"
+                            onClick={handleAddSurgery}
+                            style={{ padding: '9px 18px', borderRadius: '8px', background: '#f97316', color: '#fff', border: 'none', fontSize: '13px', fontWeight: 600, cursor: 'pointer', flexShrink: 0, boxShadow: '0 3px 10px rgba(249, 115, 22, 0.3)' }}
+                          >
+                            + Add
+                          </button>
+                        </div>
+                        {pastSurgeriesList.length > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px' }}>
+                            {pastSurgeriesList.map((item, idx) => (
+                              <span key={idx} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1e40af', padding: '5px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>
+                                {item}
+                                <button type="button" onClick={() => removeSurgery(idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1e40af', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Option 2: What health concern do you deal with most often? */}
+                      <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                        <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '8px' }}>
+                          What health concern do you deal with most often?
+                        </label>
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                          <input
+                            type="text"
+                            value={healthConcernsInput}
+                            onChange={(e) => setHealthConcernsInput(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') handleAddHealthConcern(); }}
+                            placeholder="Type frequent health concerns..."
+                            style={{ flex: 1, padding: '9px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', outline: 'none', background: '#fff' }}
+                          />
+                          <button
+                            type="button"
+                            onClick={handleAddHealthConcern}
+                            style={{ padding: '9px 18px', borderRadius: '8px', background: '#f97316', color: '#fff', border: 'none', fontSize: '13px', fontWeight: 600, cursor: 'pointer', flexShrink: 0, boxShadow: '0 3px 10px rgba(249, 115, 22, 0.3)' }}
+                          >
+                            + Add
+                          </button>
+                        </div>
+                        {healthConcernsList.length > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px' }}>
+                            {healthConcernsList.map((item, idx) => (
+                              <span key={idx} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#f0fdf4', border: '1px solid #bbf7d0', color: '#166534', padding: '5px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>
+                                {item}
+                                <button type="button" onClick={() => removeHealthConcern(idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#166534', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Option 3: Any Ongoing Medications */}
+                      <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                        <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '8px' }}>
+                          Any Ongoing Medications
+                        </label>
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                          <input
+                            type="text"
+                            value={ongoingMedsInput}
+                            onChange={(e) => setOngoingMedsInput(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') handleAddOngoingMed(); }}
+                            placeholder="Type ongoing medication name and dosage..."
+                            style={{ flex: 1, padding: '9px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', outline: 'none', background: '#fff' }}
+                          />
+                          <button
+                            type="button"
+                            onClick={handleAddOngoingMed}
+                            style={{ padding: '9px 18px', borderRadius: '8px', background: '#f97316', color: '#fff', border: 'none', fontSize: '13px', fontWeight: 600, cursor: 'pointer', flexShrink: 0, boxShadow: '0 3px 10px rgba(249, 115, 22, 0.3)' }}
+                          >
+                            + Add
+                          </button>
+                        </div>
+                        {ongoingMedsList.length > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px' }}>
+                            {ongoingMedsList.map((item, idx) => (
+                              <span key={idx} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#fff7ed', border: '1px solid #fed7aa', color: '#c2410c', padding: '5px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>
+                                {item}
+                                <button type="button" onClick={() => removeOngoingMed(idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#c2410c', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
               )}
 
@@ -3023,7 +3175,7 @@ const DashboardPage: React.FC = () => {
                   {prescriptionsList.map((rx) => (
                     <div key={rx.id} className="consultation-row">
                       <div className="row-doctor-info">
-                        <div className="rx-icon-box">💊</div>
+                        <div className="rx-icon-box"><img src="/recent pres.png" alt="Prescription" style={{ width: 65, height: 65, objectFit: 'contain' }} /></div>
                         <div>
                           <h4 className="row-doc-name">{rx.doctorName}</h4>
                           <span className="row-doc-spec">{rx.meds}</span>
@@ -3031,7 +3183,7 @@ const DashboardPage: React.FC = () => {
                       </div>
 
                       <div className="row-datetime">
-                        <span>📅 {rx.date}</span>
+                        <span>{rx.date}</span>
                       </div>
 
                       <div className="row-mode">

@@ -56,7 +56,7 @@ const Navbar: React.FC = () => {
             <BrandLogo
               markWrapperClassName="landing-brand-mark rounded-xl bg-transparent flex items-center justify-center p-1.5 shadow-none transition group-hover:scale-105"
               wordmarkClassName="landing-brand-wordmark font-extrabold text-slate-900 tracking-tight"
-              accentClassName="text-orange-500 brand-title-accent"
+              accentClassName="brand-title-accent-royal"
             />
           </button>
         </div>
@@ -73,11 +73,11 @@ const Navbar: React.FC = () => {
             </button>
           )}
           {currentPage === 'landing' ? (
-            <a href="#services" className="nav-link text-slate-600 hover:text-slate-900">{t("services")}</a>
+            <a href="#services" className="nav-link text-slate-600 hover:text-slate-900 font-bold">{t("services")}</a>
           ) : (
             <button
               type="button"
-              className="relative py-1.5 text-sm font-medium transition-colors cursor-pointer border-none bg-transparent nav-link text-slate-600 hover:text-slate-900"
+              className="relative py-1.5 text-sm font-bold transition-colors cursor-pointer border-none bg-transparent nav-link text-slate-600 hover:text-slate-900"
               onClick={() => {
                 navigate('/#services');
                 setTimeout(() => {
@@ -92,7 +92,7 @@ const Navbar: React.FC = () => {
           {currentPage !== 'doctors' && (
             <button
               type="button"
-              className="relative py-1.5 text-sm font-medium transition-colors cursor-pointer border-none bg-transparent nav-link text-slate-600 hover:text-slate-900"
+              className="relative py-1.5 text-sm font-bold transition-colors cursor-pointer border-none bg-transparent nav-link text-slate-600 hover:text-slate-900"
               onClick={() => navigate('/patient/search')}
             >
               {t('doctors')}
@@ -101,7 +101,7 @@ const Navbar: React.FC = () => {
           {currentPage !== 'about' && (
             <button
               type="button"
-              className="relative py-1.5 text-sm font-medium transition-colors cursor-pointer border-none bg-transparent nav-link text-slate-600 hover:text-slate-900"
+              className="relative py-1.5 text-sm font-bold transition-colors cursor-pointer border-none bg-transparent nav-link text-slate-600 hover:text-slate-900"
               onClick={() => navigate('/about')}
             >
               {tCommon('about')}

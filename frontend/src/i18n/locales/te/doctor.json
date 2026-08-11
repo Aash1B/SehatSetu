@@ -1,4 +1,4 @@
-{
+﻿{
   "priority": {
     "P1": "⚡ ప్రాధమిక సేవ వైద్యులు",
     "P2": "🌟 సూపర్ స్పెషలిస్ట్",
@@ -50,7 +50,7 @@
     "prescriptions": "ప్రిస్క్రిప్షన్లు",
     "prescriptionsDesc": "ప్రిస్క్రిప్షన్లు సృష్టించి నిర్వహించండి",
     "newPrescription": "కొత్త ప్రిస్క్రిప్షన్",
-    "availability": "నేడు మాత్రమే అందుబాటులో 🟢",
+    "availability": "నేడు మాత్రమే అందుబాటులో",
     "availabilityDesc": "మీ షెడ్యూల్ మరియు లభ్యతను నిర్వహించండి",
     "manageSchedule": "షెడ్యూల్ నిర్వహించండి",
     "todaysAppointments": "నేటి అపాయింట్‌మెంట్లు",
@@ -61,7 +61,7 @@
     "viewSchedule": "షెడ్యూల్ చూడండి",
     "loadingAppointments": "అపాయింట్‌మెంట్లు లోడ్ అవుతున్నాయి...",
     "unableToLoadProfile": "సైన్ ఇన్ చేసిన వైద్యుడి ప్రొఫైల్ లోడ్ చేయలేకపోయాము",
-    "availableTodaySlot": "నేడు అందుబాటులో ఉంది 🟢",
+    "availableTodaySlot": "నేడు అందుబాటులో ఉంది",
     "nextSlotTomorrow": "రేపటి తదుపరి స్లాట్"
   },
   "loadingAppointments": "అపాయింట్‌మెంట్లు లోడ్ అవుతున్నాయి...",

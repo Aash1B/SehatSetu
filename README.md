@@ -1,33 +1,56 @@
-<div style="display:flex;align-items:center;justify-content:center;gap:14px;flex-direction:row;flex-wrap:wrap;margin-bottom:6px;">
-	<img src="./frontend/public/logo.svg" alt="SehatSetu logo" style="width:56px;height:auto;display:block;" />
-	<div style="display:flex;flex-direction:column;align-items:flex-start;">
-		<div style="display:flex;align-items:center;gap:6px;">
-			<span style="font-family:Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;font-weight:800;font-size:28px;color:#ffffff;">Sehat</span>
-			<span style="font-family:Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;font-weight:800;font-size:28px;color:#ffffff;">Setu</span>
-		</div>
-		<div style="font-size:13px;color:#ffffff;margin-top:2px;">Modern Healthcare Portal</div>
-	</div>
-</div>
 <div align="center">
-
-
-
-
-
-> **🌐 AI & Machine Learning Powered Rural & Urban Healthcare Platform**
-
+  <table align="center" border="0" width="100%" background="./frontend/public/tech-med-bg.svg" style="border-radius:18px;">
+    <tr>
+      <td align="center" valign="middle">
+        <br />
+        <table align="center" border="0">
+          <tr>
+            <td valign="middle">
+              <img src="./frontend/public/logo.svg" alt="SehatSetu logo" width="58" />
+            </td>
+            <td valign="middle">
+              <font size="6"><b><font color="#ffffff">Sehat</font><font color="#2563EB">Setu</font></b></font>
+              <br />
+              <img src="./frontend/public/ecg-pulse.svg" alt="Animated Pulse" width="180" height="20" />
+            </td>
+          </tr>
+        </table>
+        <br />
+        <img src="./frontend/public/header-tagline-card.svg" alt="SehatSetu Tagline" width="100%" style="max-width:750px;" />
+        <br /><br />
+      </td>
+    </tr>
+  </table>
 </div>
-
+<br />
 
 **SehatSetu** is an **AI and Machine Learning-powered healthcare platform**, built as a **Progressive Web App**, that reimagines how patients across India connect with certified doctors — closing the gap of distance, fragmented records, and language barriers with a single, intelligent digital bridge. It brings together telemedicine, automated clinical documentation, electronic health records, multilingual interaction, and personalized health guidance into one continuous experience, so that healthcare feels less like a series of disconnected visits and more like an ongoing relationship between patient and provider.
 
-The platform is designed around a simple idea:
 
-> **Quality healthcare should not depend on where a person lives.** 🏥
 
----
+<br />
 
-## ⚠️ The Healthcare Problem
+<p align="center">
+  <img src="https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB" alt="React" />
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Redux_Toolkit-764ABC?style=flat&logo=redux&logoColor=white" alt="Redux Toolkit" />
+  <img src="https://img.shields.io/badge/Node.js-339933?style=flat&logo=nodedotjs&logoColor=white" alt="Node.js" />
+  <img src="https://img.shields.io/badge/NestJS-E0234E?style=flat&logo=nestjs&logoColor=white" alt="NestJS" />
+  <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=flat&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Prisma-2D3748?style=flat&logo=prisma&logoColor=white" alt="Prisma" />
+</p>
+<p align="center">
+  <img src="https://img.shields.io/badge/JWT-000000?style=flat&logo=jsonwebtokens&logoColor=white" alt="JWT" />
+  <img src="https://img.shields.io/badge/Redis-DC382D?style=flat&logo=redis&logoColor=white" alt="Redis" />
+  <img src="https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/Razorpay-0C2451?style=flat&logo=razorpay&logoColor=3395FF" alt="Razorpay" />
+  <img src="https://img.shields.io/badge/Cloudinary-3448C5?style=flat&logo=cloudinary&logoColor=white" alt="Cloudinary" />
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white" alt="Docker" />
+</p>
+
+<p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
+
+## <img src="./frontend/public/icon-warning-pulse.svg" width="28" height="28" valign="middle" /> The Healthcare Problem
 
 India has made significant progress in healthcare infrastructure and technology, but access to quality medical care remains a challenge for many people.Patients in rural and underserved regions may have to travel long distances to reach qualified doctors. At the same time, overcrowded hospitals, expensive private healthcare, limited infrastructure, fragmented medical records, and shortages of healthcare professionals can make timely treatment difficult.
 
@@ -54,7 +77,7 @@ These challenges can affect both:
 
 SehatSetu is designed to address these challenges through a combination of **telemedicine, AI, automation, and digital healthcare infrastructure**.
 
----
+<p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
 
 ## What is SehatSetu ?
 
@@ -62,9 +85,9 @@ SehatSetu is a digital healthcare platform that connects patients directly with 
 
 Beyond the consultation itself, SehatSetu functions as a continuous healthcare companion rather than a one-time service. Every prescription, medical report, and consultation record is stored in a centralized electronic health record, so a patient's medical history is available and organized for every future visit. The platform layers additional support on top of this — personalized diet recommendations based on the patient's condition, automated reminders for follow-ups and medication, and smart referrals to nearby hospitals when a case requires in-person or emergency attention. Together, these pieces make SehatSetu less of a video-calling app and more of a connected system that stays with the patient across their entire healthcare journey.
 
----
+<p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
 
-## 👤 Patient Experience
+## <img src="./frontend/public/icon-patient-glow.svg" width="32" height="32" valign="middle" /> Patient Experience
 
 The patient journey is designed to make healthcare simpler and more organized.
 
@@ -112,9 +135,9 @@ Healthcare does not end when a consultation ends. SehatSetu includes automated r
 
 This supports continuity of care and helps patients stay on track with their healthcare requirements.
 
----
+<p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
 
-## 👨‍⚕️ Doctor Experience
+## <img src="./frontend/public/icon-doctor-glow.svg" width="32" height="32" valign="middle" /> Doctor Experience
 
 SehatSetu is designed not only for patients but also to support doctors during digital consultations.
 
@@ -122,17 +145,17 @@ Doctors can manage their consultation workflow, access patient information, cond
 
 One of the important aspects is **AI-assisted prescription documentation**. Instead of requiring doctors to manually write down every piece of information from a consultation, the platform can use speech recognition and AI processing to assist with documentation.
 
+<br />
 <div align="center">
-
-**🎙️ Speech → 🧠 AI Processing → 📋 Structured Prescription**
-
+  <img src="./frontend/public/ai-workflow-anim.svg" alt="AI Prescription Workflow" width="100%" style="max-width:650px;" />
 </div>
+<br />
 
 The doctor remains responsible for reviewing and confirming the generated prescription information. This approach aims to reduce repetitive documentation work while keeping the healthcare professional involved in the final decision-making process.
 
----
+<p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
 
-## 🤖 Artificial Intelligence in SehatSetu
+## <img src="./frontend/public/icon-ai-glow.svg" width="32" height="32" valign="middle" /> Artificial Intelligence in SehatSetu
 
 AI is one of the core components of the platform. Rather than using AI as a single chatbot feature, Sehat Setu incorporates AI into several parts of the healthcare workflow.
 
@@ -162,9 +185,9 @@ AI can summarize relevant patient history, helping organize large amounts of pre
 **🌐 5. Multilingual AI Support**
 The platform is designed to support **Hindi, regional languages, and Hinglish**, helping reduce language-related barriers. Regional speech-to-text support can also use **Bhashini / Google Speech-to-Text** as a fallback.
 
----
+<p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
 
-## 📂 Electronic Health Records
+## <img src="./frontend/public/icon-ehr-glow.svg" width="32" height="32" valign="middle" /> Electronic Health Records
 
 A major part of SehatSetu is the **Electronic Health Record (EHR)** system.
 
@@ -177,9 +200,9 @@ Instead of keeping medical information scattered across physical documents, prev
 
 This allows healthcare information to remain available for future consultations and can help provide doctors with better context about a patient's previous healthcare journey.
 
----
+<p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
 
-## 🗣️ Multilingual Healthcare
+## <img src="./frontend/public/icon-speech-glow.svg" width="32" height="32" valign="middle" /> Multilingual Healthcare
 
 Language should not prevent someone from accessing healthcare. SehatSetu therefore includes multilingual support for:
 
@@ -189,17 +212,17 @@ Language should not prevent someone from accessing healthcare. SehatSetu therefo
 
 This is particularly relevant for users who may not be comfortable communicating exclusively in English. The platform combines multilingual interaction with speech recognition and AI-based processing to make digital healthcare more accessible.
 
----
+<p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
 
-## 🥗 Personalized Health & Nutrition
+## <img src="./frontend/public/icon-diet-glow.svg" width="32" height="32" valign="middle" /> Personalized Health & Nutrition
 
 Healthcare recommendations do not stop at diagnosis and medication.
 
 SehatSetu also includes **diet and nutrition recommendations** based on the patient's condition. The platform can provide condition-based food guidance alongside the prescription, helping patients understand dietary considerations related to their healthcare needs.
 
----
+<p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
 
-## 🚨 Emergency & Offline Care
+## <img src="./frontend/public/icon-emergency-glow.svg" width="32" height="32" valign="middle" /> Emergency & Offline Care
 
 SehatSetu is designed to recognize situations where online healthcare may not be enough.
 
@@ -207,9 +230,9 @@ The platform includes **emergency symptom detection**, which can flag potentiall
 
 > ⚠️ **Important:** SehatSetu is not intended to replace emergency medical services. The project documentation directs patients requiring emergency care to local emergency services.
 
----
+<p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
 
-## 📶 Healthcare for Low-Connectivity Areas
+## <img src="./frontend/public/icon-wifi-glow.svg" width="32" height="32" valign="middle" /> Healthcare for Low-Connectivity Areas
 
 Connectivity is an important consideration for rural healthcare.
 
@@ -221,9 +244,9 @@ This makes the platform particularly suitable for environments where:
 - 📱 Device storage is limited
 - 🌐 Network quality changes frequently
 
----
+<p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
 
-## 💳 Payments & Digital Services
+## <img src="./frontend/public/icon-card-glow.svg" width="32" height="32" valign="middle" /> Payments & Digital Services
 
 SehatSetu also integrates digital payment functionality for online consultations.
 
@@ -234,13 +257,13 @@ The platform uses **Razorpay** for consultation payments. Other integrations sup
 - 📱 **Twilio** — SMS reminders
 - 📧 **Nodemailer / SendGrid** — email reminders
 
----
+<p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
 
 ## 🏗️ System Architecture
 
 SehatSetu uses a **multi-service architecture** where different technologies handle different responsibilities.
 
-### 🎨 Frontend Layer
+### 💻 Frontend Layer
 - React + Vite + TypeScript + Tailwind CSS — user-facing application
 - Redux Toolkit + RTK Query — state management and API communication
 - Vite PWA Plugin — installability and offline capabilities
@@ -273,7 +296,7 @@ SehatSetu uses a **multi-service architecture** where different technologies han
 - 🔄 GitHub Actions — CI/CD (lint + build on push)
 - 🔗 API Contracts — shared API contract across all modules to maintain consistency between services
 
----
+<p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
 
 ## 🌍 The Vision
 
@@ -309,7 +332,7 @@ It aims to create a **connected healthcare ecosystem** where:
 
 This approach brings different stages of healthcare into one connected platform instead of treating every consultation as an isolated event.
 
----
+<p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
 
 ## 🎯 Project Objective
 
@@ -326,7 +349,7 @@ By combining:
 
 Sehat Setu aims to make healthcare **more accessible, efficient, intelligent, and patient-centric**, particularly for communities that face geographical, language, infrastructure, or connectivity barriers.
 
----
+<p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
 
 <div align="center">
 

@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import BrandLogo from '../../common/components/BrandLogo';
 
@@ -36,7 +36,7 @@ const Footer: React.FC = () => {
             </p>
           </div>
 
-          <div className="footer-right-links-wrapper" style={{ marginLeft: 'auto' }}>
+          <div className="footer-right-links-wrapper" style={{ marginLeft: '0', marginRight: '280px' }}>
             <div className="footer-links-col">
               <h4 className="footer-col-title">{t('connect')}</h4>
               <ul className="footer-links-list">

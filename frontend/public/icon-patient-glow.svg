@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" width="32" height="32" fill="none">
+  <defs>
+    <filter id="glow-pat" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#3b82f6" flood-opacity="0.9"/>
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <g transform="translate(2, 2)" filter="url(#glow-pat)">
+    <circle cx="16" cy="16" r="13" fill="#1e3a8a" stroke="#3b82f6" stroke-width="1.5">
+      <animate attributeName="stroke-opacity" values="0.6;1;0.6" dur="1.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="16" cy="12" r="4.5" fill="#60a5fa"/>
+    <path d="M9 24 C9 19.5 12.1 18 16 18 C19.9 18 23 19.5 23 24" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" fill="none"/>
+  </g>
+</svg>

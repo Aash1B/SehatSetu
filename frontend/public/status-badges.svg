@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 32" width="520" height="32" fill="none">
+  <style>
+    .badge-bg { fill: #0f172a; stroke: #1e293b; stroke-width: 1; rx: 12px; }
+    .badge-label {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      fill: #e2e8f0;
+    }
+  </style>
+
+  <defs>
+    <filter id="dot-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Badge 1: AI Telehealth -->
+  <g transform="translate(0, 0)">
+    <rect width="160" height="28" class="badge-bg"/>
+    <circle cx="16" cy="14" r="4" fill="#10b981" filter="url(#dot-glow)">
+      <animate attributeName="opacity" values="1;0.3;1" dur="1.8s" repeatCount="indefinite"/>
+    </circle>
+    <text x="28" y="18" class="badge-label">AI Telemedicine</text>
+  </g>
+
+  <!-- Badge 2: PWA Enabled -->
+  <g transform="translate(175, 0)">
+    <rect width="150" height="28" class="badge-bg"/>
+    <circle cx="16" cy="14" r="4" fill="#38bdf8" filter="url(#dot-glow)">
+      <animate attributeName="opacity" values="1;0.3;1" dur="2.2s" repeatCount="indefinite"/>
+    </circle>
+    <text x="28" y="18" class="badge-label">Progressive Web App</text>
+  </g>
+
+  <!-- Badge 3: DPDP Compliant -->
+  <g transform="translate(340, 0)">
+    <rect width="175" height="28" class="badge-bg"/>
+    <circle cx="16" cy="14" r="4" fill="#fd6b05" filter="url(#dot-glow)">
+      <animate attributeName="opacity" values="1;0.3;1" dur="2.6s" repeatCount="indefinite"/>
+    </circle>
+    <text x="28" y="18" class="badge-label">DPDP 2023 Compliant</text>
+  </g>
+</svg>

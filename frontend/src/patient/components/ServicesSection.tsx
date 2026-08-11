@@ -12,21 +12,21 @@ const ServicesSection: React.FC = () => {
       id: "lab_nearby",
       title: t("servicesSection.labTestsNearby.title"),
       description: t("servicesSection.labTestsNearby.description"),
-      icon: "/Lab Tests Nearby.png",
+      icon: "/Lab Tests Nearby-nobg.png",
       route: "google",
     },
     {
       id: "specialist",
       title: t("servicesSection.specialistReferral.title"),
       description: t("servicesSection.specialistReferral.description"),
-      icon: "/Specialist Referral.png",
+      icon: "/Specialist Referral-nobg.png",
       route: "/patient/book/new",
     },
     {
       id: "emergency",
       title: t("servicesSection.emergencyCare.title"),
       description: t("servicesSection.emergencyCare.description"),
-      icon: "/Emergency Care.png",
+      icon: "/Emergency Care-nobg.png",
       route: "/patient/search?emergency=true",
     },
   ];
@@ -67,7 +67,7 @@ const ServicesSection: React.FC = () => {
               onClick={() => handleCardClick(service.id, service.route)}
             >
               <div className="service-icon-box">
-                <img src={service.icon} alt={service.title} style={{ width: 52, height: 52, objectFit: 'contain', mixBlendMode: 'screen' }} />
+                <img src={service.icon} alt={service.title} style={{ width: 72, height: 72, objectFit: 'contain', display: 'block' }} />
               </div>
               <h3 className="service-card-title">{service.title}</h3>
               <p className="service-card-desc">{service.description}</p>

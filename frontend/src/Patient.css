@@ -63,11 +63,12 @@
 }
 
 .namaskar-animated-icon {
-  width: 44px;
-  height: 44px;
+  height: 1.65em;
+  width: auto;
   object-fit: contain;
   vertical-align: middle;
-  margin-left: 8px;
+  margin-left: 6px;
+  transform: translateY(-16px);
   display: inline-block;
   animation: namaskarBowGesture 3s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
   transform-origin: bottom center;
@@ -79,20 +80,7 @@
 
 .hero-headline-gradient {
   display: inline;
-  background-image: linear-gradient(
-    100deg,
-    #2563EB 0%,
-    #3B82F6 34%,
-    #93C5FD 50%,
-    #3B82F6 66%,
-    #2563EB 100%
-  );
-  background-size: 220% 100%;
-  background-position: 0% 50%;
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  animation: hero-headline-shimmer 4s ease-in-out infinite;
+  color: #111144;
 }
 
 @keyframes hero-headline-shimmer {
@@ -1423,6 +1411,10 @@
     color: var(--color-orange-primary);
   }
 
+  .brand-title-accent-royal {
+    color: #223382;
+  }
+
   .nav-links {
     display: flex;
     align-items: center;
@@ -1430,8 +1422,8 @@
   }
 
   .nav-link {
-    font-size: 0.95rem;
-    font-weight: 500;
+    font-size: 1.05rem;
+    font-weight: 700;
     color: var(--color-text-muted);
     transition: color 0.2s ease;
   }
@@ -1439,7 +1431,7 @@
   .nav-link:hover,
   .nav-link.active {
     color: var(--color-text-main);
-    font-weight: 600;
+    font-weight: 700;
   }
 
   .nav-actions {
@@ -1693,17 +1685,24 @@
     display: flex;
     align-items: center;
     background: #F8FAFC;
-    border: 1.5px solid var(--color-border);
+    border: 2px solid var(--color-border);
     border-radius: var(--radius-pill);
-    padding: 6px 8px 6px 18px;
+    padding: 12px 16px 12px 24px;
     margin-bottom: 20px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .search-input-group:focus-within {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
   }
 
   .search-magnifier-icon {
-    width: 20px;
-    height: 20px;
-    color: #94A3B8;
-    margin-right: 12px;
+    width: 24px;
+    height: 24px;
+    color: #6366f1;
+    margin-right: 14px;
+    flex-shrink: 0;
   }
 
   .main-search-input {
@@ -1711,9 +1710,15 @@
     border: none;
     background: transparent;
     font-family: inherit;
-    font-size: 1rem;
+    font-size: 1.1rem;
     color: var(--color-text-main);
     outline: none;
+    min-width: 0;
+  }
+
+  .main-search-input::placeholder {
+    color: #94A3B8;
+    font-size: 1.05rem;
   }
 
   .btn-voice-search {
@@ -1762,8 +1767,8 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    background: #9BACD8;
-    border: 1px solid #7B96C8;
+    background: #223382;
+    border: 1px solid #1a2868;
     border-radius: var(--radius-pill, 9999px);
     padding: 8px 16px;
     font-family: inherit;
@@ -1773,19 +1778,20 @@
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     user-select: none;
-    box-shadow: 0 2px 8px rgba(155, 172, 216, 0.35);
+    box-shadow: 0 2px 8px rgba(34, 51, 130, 0.35);
   }
 
   .custom-select-trigger:hover {
-    border-color: #6A88C0;
-    background: #8A9EC8;
-    box-shadow: 0 4px 14px rgba(155, 172, 216, 0.5);
+    border-color: #1a2868;
+    background: #1c2b70;
+    box-shadow: 0 8px 20px rgba(34, 51, 130, 0.45);
+    transform: translateY(-3px) scale(1.04);
   }
 
   .custom-select-trigger.is-open {
-    border-color: #6A88C0;
-    box-shadow: 0 0 0 3.5px rgba(155, 172, 216, 0.35), 0 4px 12px rgba(0, 0, 0, 0.06);
-    background: #8A9EC8;
+    border-color: #1a2868;
+    box-shadow: 0 0 0 3.5px rgba(34, 51, 130, 0.25), 0 4px 12px rgba(0, 0, 0, 0.06);
+    background: #1c2b70;
   }
 
   .custom-select-icon {
@@ -2156,15 +2162,15 @@
     border-radius: 9999px;
     cursor: pointer;
     box-shadow: 0 4px 14px rgba(249, 115, 22, 0.25);
-    transition: all 0.2s ease;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, background 0.3s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
   }
 
   .btn-book-doctor:hover {
-    box-shadow: 0 6px 18px rgba(249, 115, 22, 0.38);
-    transform: translateY(-1px);
+    box-shadow: 0 10px 24px rgba(249, 115, 22, 0.45);
+    transform: translateY(-5px) scale(1.04);
   }
 
   /* ==========================================================================
@@ -2215,25 +2221,32 @@
   }
 
   .service-card {
-    background: linear-gradient(135deg, var(--color-deep-space-royal) 0%, var(--color-aster-blue) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background-image: linear-gradient(rgba(255,255,255,0.40), rgba(255,255,255,0.40)), url('/gradient cards 2.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border: 1px solid rgba(34, 51, 130, 0.12);
     border-radius: var(--radius-lg);
     padding: 32px 24px;
-    color: #FFFFFF;
-    box-shadow: 0 10px 25px -5px rgba(34, 51, 130, 0.25);
+    color: #0F172A;
+    box-shadow: 0 10px 25px -5px rgba(34, 51, 130, 0.15);
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+    display: flex;
+    flex-direction: column;
   }
 
   .service-card:hover {
     transform: translateY(-14px) scale(1.03);
-    box-shadow: 0 0 0 2px rgba(255,255,255,0.25), 0 0 40px 12px rgba(34, 51, 130, 0.55);
-    border-color: rgba(255, 255, 255, 0.35);
+    box-shadow: 0 0 0 2px rgba(34, 51, 130, 0.15), 0 20px 40px rgba(34, 51, 130, 0.2);
+    border-color: rgba(34, 51, 130, 0.25);
   }
 
   .service-icon-box {
-    width: 48px;
-    height: 48px;
+    width: 72px;
+    height: 72px;
     background: transparent;
+    border: none;
+    box-shadow: none;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2241,31 +2254,32 @@
   }
 
   .service-card-title {
-    font-size: 1.25rem;
+    font-size: 1.65rem;
     font-weight: 800;
-    color: #FFFFFF;
+    color: #111144;
     margin-bottom: 10px;
   }
 
   .service-card-desc {
-    font-size: 0.92rem;
-    color: #E0E7FF;
+    font-size: 1.1rem;
+    color: #111144;
     line-height: 1.6;
     margin-bottom: 20px;
   }
 
   .service-learn-more {
-    font-size: 0.88rem;
+    font-size: 1.1rem;
     font-weight: 700;
-    color: #FFFFFF;
+    color: #111144;
     display: inline-flex;
     align-items: center;
     gap: 4px;
+    margin-top: auto;
     transition: transform 0.2s ease, color 0.2s ease;
   }
 
   .service-card:hover .service-learn-more {
-    color: #FFF7ED;
+    color: #f97316;
     transform: translateX(4px);
   }
 
@@ -3350,7 +3364,7 @@
     transform: rotate(90deg);
   }
 
-  /* Sidebar Main Scrollable Content */
+  /* Sidebar Main Scrollable Content (Aster Flower Blue #9BACD8) */
   .sidebar-content {
     flex: 1;
     overflow-y: auto;
@@ -3358,6 +3372,7 @@
     display: flex;
     flex-direction: column;
     gap: 24px;
+    background: #9BACD8;
   }
 
   .sidebar-group {
@@ -3371,9 +3386,10 @@
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.8px;
-    color: var(--color-text-light);
+    color: #1e293b;
     padding-left: 10px;
     margin-bottom: 4px;
+    opacity: 0.9;
   }
 
   .sidebar-menu {
@@ -3386,13 +3402,13 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 8px 10px;
+    padding: 9px 12px;
     background: transparent;
     border: none;
     outline: none;
-    color: #475569;
+    color: #0f172a;
     font-size: 0.92rem;
-    font-weight: 500;
+    font-weight: 600;
     text-decoration: none;
     transition: all 0.2s ease;
     position: relative;
@@ -3400,20 +3416,23 @@
     text-align: left;
     cursor: pointer;
     font-family: inherit;
+    border-radius: 10px;
     border-left: 3px solid transparent;
   }
 
   .sidebar-item:hover {
-    background: transparent;
-    color: var(--color-orange-primary);
+    background: rgba(255, 255, 255, 0.45);
+    color: #0f172a;
     transform: translateX(4px);
   }
 
   .sidebar-item.active {
-    background: transparent;
-    color: var(--color-orange-primary);
-    font-weight: 700;
-    border-left: 3px solid var(--color-orange-primary);
+    background: #ffffff;
+    color: #1e40af;
+    font-weight: 800;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.1);
+    border-left: 4px solid #2563eb;
   }
 
   .sidebar-icon {
@@ -4927,7 +4946,7 @@
     align-items: center;
     gap: 8px;
     margin-bottom: 20px;
-    font-size: 0.9rem;
+    font-size: 1.15rem;
   }
 
   .breadcrumb-back-btn {
@@ -4935,7 +4954,7 @@
     border: none;
     color: #F97316;
     font-family: inherit;
-    font-size: 0.9rem;
+    font-size: 1.15rem;
     font-weight: 700;
     cursor: pointer;
     padding: 0;
@@ -4962,7 +4981,7 @@
   }
 
   .doctor-card-priority-badge.gp-badge {
-    background: linear-gradient(135deg, #F97316, #EA580C);
+    background: #00C0A3;
     color: #FFFFFF;
   }
 
@@ -5191,8 +5210,8 @@
   .doctors-search-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 16px;
+    justify-content: flex-start;
+    gap: 24px;
     margin-bottom: 20px;
     flex-wrap: wrap;
   }
@@ -5200,6 +5219,7 @@
   .doctors-search-input-wrap {
     flex: 1;
     min-width: 280px;
+    max-width: 580px;
     position: relative;
     display: flex;
     align-items: center;
@@ -5216,7 +5236,7 @@
 
   .doctors-search-input {
     width: 100%;
-    padding: 12px 84px 12px 46px;
+    padding: 12px 36px 12px 46px;
     font-family: inherit;
     font-size: 0.95rem;
     border: 1.5px solid #CBD5E1;
@@ -5282,12 +5302,12 @@
   .checkbox-label {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     cursor: pointer;
     user-select: none;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #334155;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #1E293B;
   }
 
   .checkbox-label input {
@@ -5295,27 +5315,27 @@
   }
 
   .checkbox-custom {
-    width: 18px;
-    height: 18px;
-    border: 2px solid #CBD5E1;
-    border-radius: 4px;
+    width: 25px;
+    height: 25px;
+    border: 2px solid #94A3B8;
+    border-radius: 6px;
     display: inline-block;
     position: relative;
     transition: all 0.2s ease;
   }
 
   .checkbox-label input:checked+.checkbox-custom {
-    background: #16A34A;
-    border-color: #16A34A;
+    background: #223382;
+    border-color: #223382;
   }
 
   .checkbox-label input:checked+.checkbox-custom::after {
     content: '✓';
     position: absolute;
-    top: -2px;
-    left: 3px;
+    top: 0px;
+    left: 5px;
     color: #FFFFFF;
-    font-size: 12px;
+    font-size: 16px;
     font-weight: 800;
   }
 
@@ -5407,7 +5427,7 @@
     top: 14px;
     right: 14px;
     font-size: 0.75rem;
-    font-weight: 800;
+    font-weight: 500;
     padding: 5px 12px;
     border-radius: 9999px;
     z-index: 2;
@@ -5415,7 +5435,7 @@
   }
 
   .doctor-card-priority-badge.priority-badge-p1 {
-    background: linear-gradient(135deg, #EF4444, #F97316);
+    background: #00C0A3;
     color: #FFFFFF;
   }
 
@@ -5459,14 +5479,7 @@
   }
 
   .status-online-dot {
-    position: absolute;
-    bottom: 2px;
-    right: 2px;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: #22C55E;
-    border: 2px solid #FFFFFF;
+    display: none !important;
   }
 
   .doctor-card-fav-btn {
@@ -5615,12 +5628,13 @@
   }
 
   .slot-badge {
-    font-size: 0.78rem;
+    font-size: 1rem;
     font-weight: 700;
     color: #15803D;
-    background: #DCFCE7;
-    padding: 4px 10px;
-    border-radius: 9999px;
+    background: none;
+    padding: 0;
+    border-radius: 0;
+    border: none;
   }
 
   .doctor-card-action-btns {
@@ -5638,13 +5652,14 @@
     padding: 12px;
     border-radius: 9999px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, background 0.3s ease;
     box-shadow: 0 4px 14px rgba(249, 115, 22, 0.25);
   }
 
   .btn-full-book-now:hover {
     background: #EA580C;
-    box-shadow: 0 6px 18px rgba(249, 115, 22, 0.35);
+    transform: translateY(-5px) scale(1.04);
+    box-shadow: 0 10px 24px rgba(249, 115, 22, 0.45);
   }
 
   .doctors-no-results-box {
@@ -8020,7 +8035,7 @@
   }
 
   .tab-subtitle {
-    font-size: 0.9rem;
+    font-size: 1.05rem;
     color: #64748B;
     margin: 4px 0 0 0;
   }
@@ -8731,6 +8746,7 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
+    background: #9BACD8;
   }
 
   /* 2. Main Wrapper & Top Bar (Full Page Width) */
@@ -9116,7 +9132,7 @@
   }
 
   .section-title {
-    font-size: 1.1rem;
+    font-size: 1.35rem;
     font-weight: 800;
     color: #0F172A;
     margin: 0;
@@ -9283,7 +9299,7 @@
     background: none;
     border: none;
     font-family: inherit;
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: #64748B;
     padding-bottom: 8px;
@@ -9340,14 +9356,14 @@
   }
 
   .row-doc-name {
-    font-size: 0.92rem;
+    font-size: 1.2rem;
     font-weight: 800;
     color: #0F172A;
     margin: 0;
   }
 
   .row-doc-spec {
-    font-size: 0.76rem;
+    font-size: 1.02rem;
     color: #64748B;
   }
 
@@ -9355,7 +9371,7 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
-    font-size: 0.8rem;
+    font-size: 1.08rem;
     font-weight: 600;
     color: #475569;
   }
@@ -9367,6 +9383,7 @@
   }
 
   .rx-tag {
+    font-size: 1.08rem;
     color: #16A34A;
     font-weight: 700;
   }
@@ -9381,7 +9398,7 @@
     border: 1px solid #2563EB;
     border-radius: 8px;
     font-family: inherit;
-    font-size: 0.82rem;
+    font-size: 1.05rem;
     font-weight: 700;
     color: #2563EB;
     cursor: pointer;
@@ -9402,7 +9419,7 @@
     background: none;
     border: none;
     font-family: inherit;
-    font-size: 0.9rem;
+    font-size: 1.05rem;
     font-weight: 700;
     color: #1E3A6E;
     cursor: pointer;
@@ -9571,11 +9588,12 @@
 .patient-portal {
 
   .namaskar-animated-icon {
-    width: 44px;
-    height: 44px;
+    height: 1.65em;
+    width: auto;
     object-fit: contain;
     vertical-align: middle;
-    margin-left: 8px;
+    margin-left: 6px;
+    transform: translateY(-16px);
     display: inline-block;
     animation: namaskarBowGesture 1.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     transform-origin: bottom center;
@@ -10308,7 +10326,7 @@
 /* ── Mid Row: Medical Summary + Recent EHR ── */
 .ehr-mid-row {
   display: grid;
-  grid-template-columns: 380px 1fr;
+  grid-template-columns: 480px 1fr;
   gap: 16px;
   align-items: start;
 }
@@ -10422,8 +10440,8 @@
 .ehr-consult-row {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 4px 0;
+  gap: 36px;
+  padding: 14px 0;
   border-bottom: 1px solid #f1f5f9;
 }
 
@@ -10435,84 +10453,92 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 44px;
-  padding-right: 8px;
-  border-right: 2px solid #e2e8f0;
+  min-width: 48px;
+  padding-right: 16px;
+  border-right: 1px solid #e2e8f0;
 }
 
 .ehr-date-day {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
-  color: #1e3a8a;
+  color: #1d4ed8;
   line-height: 1;
 }
 
 .ehr-date-month {
   font-size: 11px;
-  font-weight: 700;
-  color: #3b82f6;
+  font-weight: 800;
+  color: #1d4ed8;
   text-transform: uppercase;
+  margin-top: 2px;
 }
 
 .ehr-date-year {
-  font-size: 10px;
+  font-size: 11px;
   color: #94a3b8;
+  margin-top: 2px;
 }
 
 .ehr-consult-doctor-col {
-  min-width: 140px;
+  min-width: 170px;
+  max-width: 200px;
   flex-shrink: 0;
 }
 
 .ehr-doctor-name {
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 800;
   color: #0f172a;
 }
 
 .ehr-doctor-spec {
-  font-size: 11px;
+  font-size: 13px;
   color: #64748b;
-  margin-top: 2px;
+  margin-top: 3px;
 }
 
 .ehr-consult-detail-col {
-  flex: 1;
+  min-width: 180px;
+  max-width: 230px;
+  flex-shrink: 0;
 }
 
 .ehr-consult-rx-col {
-  min-width: 110px;
+  min-width: 140px;
+  max-width: 180px;
   flex-shrink: 0;
 }
 
 .ehr-detail-label {
-  font-size: 9px;
-  font-weight: 700;
-  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 800;
+  color: #64748b;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
-  margin-top: 4px;
+  letter-spacing: 0.04em;
+  margin-top: 0;
 }
 
 .ehr-detail-value {
-  font-size: 12px;
-  color: #374151;
-  margin-top: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-top: 2px;
   line-height: 1.3;
 }
 
 .ehr-view-full-btn {
+  margin-left: auto;
   flex-shrink: 0;
   background: #ffffff;
   border: 1.5px solid #2563eb;
   color: #2563eb;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
-  padding: 6px 12px;
-  border-radius: 8px;
+  padding: 9px 20px;
+  border-radius: 10px;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s, color 0.15s;
+  transition: all 0.15s ease;
 }
 
 .ehr-view-full-btn:hover {
@@ -10523,37 +10549,46 @@
 /* ── Bottom Row ── */
 .ehr-bottom-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  align-items: start;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  align-items: stretch;
+  width: 100%;
 }
 
 .ehr-bottom-card {
   background: #ffffff;
   border: 1px solid #e8edf2;
   border-radius: 16px;
-  padding: 18px;
+  padding: 22px 24px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.04);
   display: flex;
   flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Prescription History */
 .ehr-rx-list {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 4px;
   flex: 1;
+  margin-top: 8px;
 }
 
 .ehr-rx-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 0;
+  padding: 12px 14px;
   border-bottom: 1px solid #f1f5f9;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.1s;
+  transition: background 0.15s ease;
+}
+
+.ehr-rx-row:hover {
+  background: #f8fafc;
 }
 
 .ehr-rx-row:last-child {
@@ -10561,31 +10596,39 @@
 }
 
 .ehr-rx-date {
-  font-size: 12px;
-  font-weight: 600;
-  color: #1e293b;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
 }
 
 .ehr-rx-detail {
-  font-size: 11px;
+  font-size: 12.5px;
   color: #64748b;
-  margin-top: 2px;
+  margin-top: 3px;
+  line-height: 1.4;
 }
 
 /* Investigations */
 .ehr-investigations-list {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 4px;
   flex: 1;
+  margin-top: 8px;
 }
 
 .ehr-investigation-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 0;
+  padding: 12px 14px;
   border-bottom: 1px solid #f1f5f9;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+
+.ehr-investigation-row:hover {
+  background: #f8fafc;
 }
 
 .ehr-investigation-row:last-child {
@@ -10593,21 +10636,21 @@
 }
 
 .ehr-inv-name {
-  font-size: 12px;
-  font-weight: 600;
-  color: #1e293b;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
 }
 
 .ehr-inv-date {
-  font-size: 11px;
+  font-size: 12px;
   color: #94a3b8;
-  margin-top: 2px;
+  margin-top: 3px;
 }
 
 .ehr-inv-status {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
-  padding: 3px 10px;
+  padding: 4px 12px;
   border-radius: 20px;
   white-space: nowrap;
 }

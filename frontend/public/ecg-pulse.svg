@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 24" width="200" height="24" fill="none">
+  <style>
+    .ecg-line {
+      stroke: url(#ecg-grad);
+      stroke-width: 2.5;
+      fill: none;
+      stroke-dasharray: 200;
+      stroke-dashoffset: 200;
+      animation: dash 2.5s linear infinite;
+    }
+    @keyframes dash {
+      0% { stroke-dashoffset: 200; }
+      100% { stroke-dashoffset: 0; }
+    }
+  </style>
+
+  <defs>
+    <linearGradient id="ecg-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#fd6b05" stop-opacity="0.2"/>
+      <stop offset="40%" stop-color="#38bdf8"/>
+      <stop offset="70%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#fd6b05" stop-opacity="0.2"/>
+    </linearGradient>
+
+    <filter id="glow-effect" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Animated ECG Heartbeat Pulse Line -->
+  <path class="ecg-line" filter="url(#glow-effect)" d="M0,12 L60,12 L66,12 L72,3 L78,21 L84,0 L90,24 L96,8 L102,12 L200,12" />
+
+  <!-- Animated Pulse Node -->
+  <circle cx="84" cy="0" r="3" fill="#38bdf8" filter="url(#glow-effect)">
+    <animate attributeName="r" values="2;4.5;2" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+</svg>

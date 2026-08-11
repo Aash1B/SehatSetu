@@ -1,4 +1,4 @@
-﻿{
+{
   "videoConsultation": {
     "backToDashboard": "डैशबोर्ड पर वापस जाएँ",
     "endToEndEncrypted": "एंड-टू-एंड एन्क्रिप्टेड",
@@ -315,7 +315,7 @@
   "verifiedPatient": "सत्यापित रोगी",
   "goldMember": "गोल्ड सदस्य",
   "personalDetails": "व्यक्तिगत विवरण",
-  "medicalProfileVitals": "चिकित्सीय प्रोफ़ाइल और जीवन संकेत",
+  "medicalProfileVitals": "चिकित्सीय प्रोफ़ाइल",
   "notificationPrefs": "सूचना प्राथमिकताएँ",
   "billingPayments": "बिलिंग और भुगतान",
   "profileSaved": "प्रोफ़ाइल सफलतापूर्वक सहेजी गई।",

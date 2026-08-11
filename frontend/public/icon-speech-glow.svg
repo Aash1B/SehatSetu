@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" width="32" height="32" fill="none">
+  <defs>
+    <filter id="glow-spk" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#f97316" flood-opacity="0.9"/>
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <g transform="translate(2, 2)" filter="url(#glow-spk)">
+    <path d="M5 8 C5 6.3 6.3 5 8 5 L24 5 C25.7 5 27 6.3 27 8 L27 20 C27 21.7 25.7 23 24 23 L14 23 L9 27 L9 23 L8 23 C6.3 23 5 21.7 5 20 Z" fill="#7c2d12" stroke="#fb923c" stroke-width="1.5">
+      <animate attributeName="stroke-opacity" values="0.6;1;0.6" dur="1.8s" repeatCount="indefinite"/>
+    </path>
+    <path d="M10 14 L22 14 M14 18 L18 18" stroke="#fdba74" stroke-width="2" stroke-linecap="round"/>
+  </g>
+</svg>

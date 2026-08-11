@@ -1,4 +1,4 @@
-{
+﻿{
   "priority": {
     "P1": "⚡ प्राथमिक उपचार तज्ज्ञ",
     "P2": "🌟 अतिविशेषज्ञ",
@@ -50,7 +50,7 @@
     "prescriptions": "प्रिस्क्रिप्शन",
     "prescriptionsDesc": "प्रिस्क्रिप्शन तयार करा आणि व्यवस्थापित करा",
     "newPrescription": "नवीन प्रिस्क्रिप्शन",
-    "availability": "फक्त आज उपलब्ध 🟢",
+    "availability": "फक्त आज उपलब्ध",
     "availabilityDesc": "तुमचे वेळापत्रक आणि उपलब्धता व्यवस्थापित करा",
     "manageSchedule": "वेळापत्रक व्यवस्थापित करा",
     "todaysAppointments": "आजच्या अपॉइंटमेंट",
@@ -61,7 +61,7 @@
     "viewSchedule": "वेळापत्रक पहा",
     "loadingAppointments": "अपॉइंटमेंट लोड होत आहेत...",
     "unableToLoadProfile": "लॉगिन केलेल्या डॉक्टरची प्रोफाइल लोड करता आली नाही",
-    "availableTodaySlot": "आज उपलब्ध 🟢",
+    "availableTodaySlot": "आज उपलब्ध",
     "nextSlotTomorrow": "उद्याचा पुढील स्लॉट"
   },
   "loadingAppointments": "अपॉइंटमेंट लोड होत आहेत...",

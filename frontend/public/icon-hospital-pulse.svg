@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" width="36" height="36" fill="none">
+  <defs>
+    <filter id="glow-hosp" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#10b981" flood-opacity="0.8"/>
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <g transform="translate(2, 2)" filter="url(#glow-hosp)">
+    <rect x="4" y="4" width="24" height="24" rx="6" fill="#065f46" stroke="#10b981" stroke-width="1.5">
+      <animate attributeName="stroke-opacity" values="0.6;1;0.6" dur="1.8s" repeatCount="indefinite"/>
+    </rect>
+    <path d="M16 9 L16 23 M9 16 L23 16" stroke="#34d399" stroke-width="3.5" stroke-linecap="round">
+      <animate attributeName="stroke" values="#34d399;#a7f3d0;#34d399" dur="1.8s" repeatCount="indefinite"/>
+    </path>
+  </g>
+</svg>

@@ -1,0 +1,177 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 130" width="100%" height="130" fill="none">
+  <style>
+    .card-1 {
+      fill: #0c1527;
+      stroke: #3b82f6;
+      stroke-width: 2;
+      rx: 18px;
+    }
+    .card-2 {
+      fill: #160c28;
+      stroke: #a855f7;
+      stroke-width: 2;
+      rx: 18px;
+    }
+    .card-3 {
+      fill: #081a24;
+      stroke: #06b6d4;
+      stroke-width: 2;
+      rx: 18px;
+    }
+    .text-heading {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      fill: #ffffff;
+    }
+    .sub-blue {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-weight: 600;
+      font-size: 12px;
+      fill: #60a5fa;
+    }
+    .sub-purple {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-weight: 600;
+      font-size: 12px;
+      fill: #d8b4fe;
+    }
+    .sub-teal {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-weight: 600;
+      font-size: 12px;
+      fill: #67e8f9;
+    }
+    .wave-bar {
+      stroke: #93c5fd;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+    }
+  </style>
+
+  <defs>
+    <!-- Stronger, Brighter Neon Glow Filters -->
+    <filter id="bright-glow-blue" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="7" result="blur1"/>
+      <feGaussianBlur stdDeviation="3" result="blur2"/>
+      <feMerge>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <filter id="bright-glow-purple" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="7" result="blur1"/>
+      <feGaussianBlur stdDeviation="3" result="blur2"/>
+      <feMerge>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="bright-glow-teal" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="7" result="blur1"/>
+      <feGaussianBlur stdDeviation="3" result="blur2"/>
+      <feMerge>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Circle Radial Gradients -->
+    <radialGradient id="grad-blue" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2563eb" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#0284c7" stop-opacity="0.4"/>
+    </radialGradient>
+
+    <radialGradient id="grad-purple" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#7c3aed" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#c084fc" stop-opacity="0.4"/>
+    </radialGradient>
+
+    <radialGradient id="grad-teal" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#0d9488" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.4"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Connecting Line 1 (Card 1 -> Card 2) -->
+  <line x1="245" y1="65" x2="280" y2="65" stroke="#3b82f6" stroke-width="3" filter="url(#bright-glow-blue)"/>
+  <circle cx="262" cy="65" r="5" fill="#ffffff" filter="url(#bright-glow-blue)">
+    <animate attributeName="r" values="3.5;7;3.5" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Connecting Line 2 (Card 2 -> Card 3) -->
+  <line x1="515" y1="65" x2="555" y2="65" stroke="#a855f7" stroke-width="3" filter="url(#bright-glow-purple)"/>
+  <circle cx="537" cy="65" r="5" fill="#ffffff" filter="url(#bright-glow-purple)">
+    <animate attributeName="r" values="3.5;7;3.5" dur="1.5s" repeatCount="indefinite" begin="0.5s"/>
+  </circle>
+
+  <!-- Card 1: Doctor Voice -->
+  <g transform="translate(15, 10)">
+    <rect width="230" height="110" class="card-1" filter="url(#bright-glow-blue)"/>
+    
+    <!-- Microphone Circle Icon Wrapper -->
+    <g transform="translate(18, 25)">
+      <circle cx="30" cy="30" r="28" fill="url(#grad-blue)" stroke="#60a5fa" stroke-width="2"/>
+      
+      <!-- Animated Sound Wave Lines -->
+      <line x1="8" y1="26" x2="8" y2="34" class="wave-bar">
+        <animate attributeName="y1" values="28;20;28" dur="1s" repeatCount="indefinite"/>
+        <animate attributeName="y2" values="32;40;32" dur="1s" repeatCount="indefinite"/>
+      </line>
+      <line x1="52" y1="26" x2="52" y2="34" class="wave-bar">
+        <animate attributeName="y1" values="28;20;28" dur="1s" repeatCount="indefinite"/>
+        <animate attributeName="y2" values="32;40;32" dur="1s" repeatCount="indefinite"/>
+      </line>
+
+      <!-- Mic Vector Icon -->
+      <rect x="25" y="17" width="10" height="18" rx="5" fill="#ffffff"/>
+      <path d="M20,29 C20,34.5 24.5,39 30,39 C35.5,39 40,34.5 40,29 M30,39 L30,44 M24,44 L36,44" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+    </g>
+
+    <!-- Text -->
+    <text x="94" y="54" class="text-heading">Doctor Voice</text>
+    <text x="94" y="74" class="sub-blue">Speech-to-Text</text>
+  </g>
+
+  <!-- Card 2: AI Processing -->
+  <g transform="translate(285, 10)">
+    <rect width="230" height="110" class="card-2" filter="url(#bright-glow-purple)"/>
+    
+    <!-- Brain Circle Icon Wrapper -->
+    <g transform="translate(18, 25)">
+      <circle cx="30" cy="30" r="28" fill="url(#grad-purple)" stroke="#c084fc" stroke-width="2"/>
+      
+      <!-- Brain Vector Icon -->
+      <path d="M30,16 C25,16 21,20 21,25 C21,26.5 21.5,27.8 22.3,29 C20.9,30.2 20,32 20,34 C20,37.3 22.7,40 26,40 L28,40 M30,16 C35,16 39,20 39,25 C39,26.5 38.5,27.8 37.7,29 C39.1,30.2 40,32 40,34 C40,37.3 37.3,40 34,40 L32,40 M30,16 L30,44 M24,24 L36,24 M23,32 L37,32 M29,44 L29,40 M31,44 L31,40" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+    </g>
+
+    <!-- Text -->
+    <text x="94" y="54" class="text-heading">AI Processing</text>
+    <text x="94" y="74" class="sub-purple">NER Medical Extraction</text>
+  </g>
+
+  <!-- Card 3: E-Prescription -->
+  <g transform="translate(555, 10)">
+    <rect width="230" height="110" class="card-3" filter="url(#bright-glow-teal)"/>
+    
+    <!-- Document Circle Icon Wrapper -->
+    <g transform="translate(18, 25)">
+      <circle cx="30" cy="30" r="28" fill="url(#grad-teal)" stroke="#67e8f9" stroke-width="2"/>
+      
+      <!-- Document Check Icon -->
+      <path d="M22,16 L33,16 L39,22 L39,40 C39,41.7 37.7,43 36,43 L22,43 C20.3,43 19,41.7 19,40 L19,19 C19,17.3 20.3,16 22,16 Z" fill="#ffffff" fill-opacity="0.2" stroke="#ffffff" stroke-width="2.2"/>
+      <path d="M23,22 L31,22 M23,27 L35,27 M23,32 L29,32" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="34" cy="35" r="7.5" fill="#22d3ee"/>
+      <path d="M31.5,35 L33.5,37 L36.5,33.5" stroke="#030712" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </g>
+
+    <!-- Text -->
+    <text x="92" y="54" class="text-heading">E-Prescription</text>
+    <text x="92" y="74" class="sub-teal">Verified EHR Document</text>
+  </g>
+</svg>

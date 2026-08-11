@@ -263,7 +263,7 @@ const MCHPage: React.FC = () => {
 
 
   return (
-    <div className="mch-page" style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc', fontFamily: 'inherit' }}>
+    <div className="mch-page" style={{ display: 'flex', minHeight: '100vh', backgroundImage: "url('/MCH%20bg%203.png')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundAttachment: 'fixed', fontFamily: 'inherit' }}>
       {/* Sidebar */}
       <aside style={{ width: 220, background: '#fff', borderRight: '1px solid #e2e8f0', padding: '24px 0', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
         <div style={{ padding: '0 20px 20px', borderBottom: '1px solid #f1f5f9' }}>

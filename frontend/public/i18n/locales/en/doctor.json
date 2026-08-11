@@ -1,9 +1,9 @@
-{
+﻿{
   "priority": {
-    "P1": "⚡ Primary Care Specialist",
-    "P2": "🌟 Super Specialist",
-    "P3": "⭐ Top Rated Specialist",
-    "P4": "✔️ Verified Specialist"
+    "P1": "Primary Care Specialist",
+    "P2": "Super Specialist",
+    "P3": "Top Rated Specialist",
+    "P4": "Verified Specialist"
   },
   "searchDoctors": "Search doctors",
   "specialty": "Specialty",
@@ -50,7 +50,7 @@
     "prescriptions": "Prescriptions",
     "prescriptionsDesc": "Create and manage prescriptions",
     "newPrescription": "New Prescription",
-    "availability": "Available Today Only 🟢",
+    "availability": "Available Today Only",
     "availabilityDesc": "Manage your schedule and availability",
     "manageSchedule": "Manage Schedule",
     "todaysAppointments": "Today's Appointments",
@@ -61,7 +61,7 @@
     "viewSchedule": "View schedule",
     "loadingAppointments": "Loading appointments...",
     "unableToLoadProfile": "Unable to load signed-in doctor profile",
-    "availableTodaySlot": "Available Today 🟢",
+    "availableTodaySlot": "Available Today",
     "nextSlotTomorrow": "Next Slot Tomorrow"
   },
   "loadingAppointments": "Loading appointments...",

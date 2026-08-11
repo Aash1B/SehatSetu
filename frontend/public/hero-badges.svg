@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 70" width="100%" height="70" fill="none">
+  <style>
+    .badge-purple { fill: #0a0d18; stroke: #7c3aed; stroke-width: 1.5; rx: 18px; }
+    .badge-blue   { fill: #0a0d18; stroke: #2563eb; stroke-width: 1.5; rx: 18px; }
+    .badge-green  { fill: #0a0d18; stroke: #10b981; stroke-width: 1.5; rx: 18px; }
+
+    .text-title {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      fill: #ffffff;
+    }
+  </style>
+
+  <defs>
+    <filter id="glow-p" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="glow-b" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="glow-g" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Badge 1: Stethoscope (Purple) -->
+  <g transform="translate(40, 8)">
+    <rect width="220" height="52" class="badge-purple" filter="url(#glow-p)"/>
+    <circle cx="36" cy="26" r="16" fill="#7c3aed" fill-opacity="0.25"/>
+    <!-- Stethoscope Icon -->
+    <path d="M30,17 C30,22 32,24 36,24 C40,24 42,22 42,17 M30,17 L30,15 M42,17 L42,15 M36,24 L36,31 C36,34 33,36 30,36 C27,36 24,34 24,31 C24,28 27,26 30,26" stroke="#c084fc" stroke-width="2" stroke-linecap="round" fill="none"/>
+    <circle cx="30" cy="26" r="2.5" fill="#c084fc"/>
+    <text x="68" y="31" class="text-title">AI Telemedicine</text>
+  </g>
+
+  <!-- Badge 2: Globe (Blue) -->
+  <g transform="translate(290, 8)">
+    <rect width="220" height="52" class="badge-blue" filter="url(#glow-b)"/>
+    <circle cx="36" cy="26" r="16" fill="#2563eb" fill-opacity="0.25"/>
+    <!-- Globe Icon -->
+    <circle cx="36" cy="26" r="10" stroke="#60a5fa" stroke-width="2" fill="none"/>
+    <path d="M26,26 L46,26 M36,16 C33,19 33,33 36,36 M36,16 C39,19 39,33 36,36" stroke="#60a5fa" stroke-width="1.8" fill="none"/>
+    <text x="64" y="31" class="text-title">Progressive Web App</text>
+  </g>
+
+  <!-- Badge 3: Shield (Green) -->
+  <g transform="translate(540, 8)">
+    <rect width="220" height="52" class="badge-green" filter="url(#glow-g)"/>
+    <circle cx="36" cy="26" r="16" fill="#10b981" fill-opacity="0.25"/>
+    <!-- Shield Icon -->
+    <path d="M36,16 L44,19 C44,27 39,33 36,35 C33,33 28,27 28,19 Z" fill="#10b981" fill-opacity="0.3" stroke="#34d399" stroke-width="2"/>
+    <path d="M32,26 L35,29 L40,23" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <text x="64" y="31" class="text-title">DPDP 2023 Compliant</text>
+  </g>
+</svg>

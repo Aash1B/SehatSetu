@@ -1,4 +1,4 @@
-{
+﻿{
   "priority": {
     "P1": "⚡ প্রাথমিক দেখভাল বিশেষজ্ঞ",
     "P2": "🌟 সুপার স্পেশালিস্ট",
@@ -50,7 +50,7 @@
     "prescriptions": "প্রেসক্রিপশন",
     "prescriptionsDesc": "প্রেসক্রিপশন তৈরি ও পরিচালনা করুন",
     "newPrescription": "নতুন প্রেসক্রিপশন",
-    "availability": "শুধু আজ উপলব্ধ 🟢",
+    "availability": "শুধু আজ উপলব্ধ",
     "availabilityDesc": "আপনার সময়সূচি ও উপলব্ধতা পরিচালনা করুন",
     "manageSchedule": "সময়সূচি পরিচালনা করুন",
     "todaysAppointments": "আজকের অ্যাপয়েন্টমেন্ট",
@@ -61,7 +61,7 @@
     "viewSchedule": "সময়সূচি দেখুন",
     "loadingAppointments": "অ্যাপয়েন্টমেন্ট লোড হচ্ছে...",
     "unableToLoadProfile": "সাইন-ইন করা চিকিৎসকের প্রোফাইল লোড করা যাচ্ছে না",
-    "availableTodaySlot": "আজ উপলব্ধ 🟢",
+    "availableTodaySlot": "আজ উপলব্ধ",
     "nextSlotTomorrow": "পরবর্তী স্লট আগামীকাল"
   },
   "loadingAppointments": "অ্যাপয়েন্টমেন্ট লোড হচ্ছে...",

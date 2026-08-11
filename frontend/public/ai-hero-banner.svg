@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 64" width="100%" height="64" fill="none">
+  <style>
+    .banner-card {
+      fill: #080c18;
+      stroke: url(#banner-stroke-grad);
+      stroke-width: 1.8;
+      rx: 18px;
+    }
+    .txt-white {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-weight: 800;
+      font-size: 16px;
+      fill: #ffffff;
+    }
+    .txt-blue {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-weight: 800;
+      font-size: 16px;
+      fill: #3b82f6;
+    }
+    .txt-green {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-weight: 800;
+      font-size: 16px;
+      fill: #10b981;
+    }
+  </style>
+
+  <defs>
+    <linearGradient id="banner-stroke-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1d4ed8"/>
+      <stop offset="50%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+
+    <radialGradient id="brain-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#6d28d9" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.2"/>
+    </radialGradient>
+
+    <filter id="glow-banner" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Banner Container -->
+  <g transform="translate(10, 4)">
+    <rect width="780" height="54" class="banner-card" filter="url(#glow-banner)"/>
+
+    <!-- Left Brain Circle Icon -->
+    <g transform="translate(16, 8)">
+      <circle cx="19" cy="19" r="17" fill="url(#brain-glow)" stroke="#8b5cf6" stroke-width="1.2"/>
+      <path d="M19,10 C15,10 12,13 12,17 C12,18 12.4,18.9 13,19.7 C12,20.5 11.5,21.8 11.5,23 C11.5,25.5 13.5,27.5 16,27.5 L17.5,27.5 M19,10 C23,10 26,13 26,17 C26,18 25.6,18.9 25,19.7 C26,20.5 26.5,21.8 26.5,23 C26.5,25.5 24.5,27.5 22,27.5 L20.5,27.5 M19,10 L19,30 M14,16 L24,16 M13.5,22 L24.5,22" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+    </g>
+
+    <!-- Text Banner -->
+    <g transform="translate(68, 33)">
+      <text class="txt-white">AI &amp; Machine Learning Powered <tspan class="txt-blue">Rural &amp; Urban </tspan><tspan class="txt-green">Healthcare Platform</tspan></text>
+    </g>
+  </g>
+</svg>
