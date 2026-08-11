@@ -1,4 +1,5 @@
 import React from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import type { Doctor } from '../../types';
@@ -24,6 +25,13 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   className
 }) => {
   const navigate = useNavigate();
+  const [imageLoadFailed, setImageLoadFailed] = useState(false);
+  const showUploadedImage = Boolean(doctor.imageUrl) && !imageLoadFailed;
+
+  useEffect(() => {
+    setImageLoadFailed(false);
+  }, [doctor.imageUrl]);
+
   // Notification logic removed
 
   return (
@@ -56,10 +64,19 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           className="w-16 h-16 rounded-full bg-[#111144] p-0 flex items-end justify-center hover:opacity-90 transition-all cursor-pointer border-0 shadow-sm overflow-hidden shrink-0"
           title="View Doctor Profile"
         >
-          <svg viewBox="0 0 100 100" className="w-[75%] h-[75%]" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="50" cy="39" r="16" fill="#FFFFFF" />
-            <path d="M 10 100 C 10 74, 26 60, 50 60 C 74 60, 90 74, 90 100 Z" fill="#FFFFFF" />
-          </svg>
+          {showUploadedImage ? (
+            <img
+              src={doctor.imageUrl}
+              alt={`${doctor.name} profile`}
+              className="w-full h-full object-cover"
+              onError={() => setImageLoadFailed(true)}
+            />
+          ) : (
+            <svg viewBox="0 0 100 100" className="w-[75%] h-[75%]" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <circle cx="50" cy="39" r="16" fill="#FFFFFF" />
+              <path d="M 10 100 C 10 74, 26 60, 50 60 C 74 60, 90 74, 90 100 Z" fill="#FFFFFF" />
+            </svg>
+          )}
         </button>
       </div>
     </header>

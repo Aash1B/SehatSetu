@@ -19,10 +19,14 @@ def extract_entities(text:str,page:int,confidence:float)->list[OCRStructuredEnti
         ("date",r"\b(?:date\s*[:\-]?\s*)?(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})\b"),
         ("lab_test",r"\b(CBC|LFT|KFT|HbA1c|Hb|haemoglobin|creatinine)\s*[:\-]?\s*(\d+(?:\.\d+)?)?\s*([%A-Za-z/]+)?"),
         ("medicine",r"\b(Paracetamol|Amoxicillin|Metformin|Azithromycin|Pantoprazole|Atorvastatin|Levothyroxine|Telmisartan|Crocin|Dolo)\b(?:\s+(\d+(?:\.\d+)?\s*(?:mg|mcg|g|mL|IU)))?(?:\s+(one|two|\d+)\s+(tablets?|capsules?|mL))?(?:\s+(once daily|twice daily|three times a day|OD|BD|BID|TID))?(?:\s+(for\s+(?:\d+|one|two|three|four|five|seven|ten)\s+days?))?(?:\s+(after food|before food|before breakfast|at bedtime))?"),
+        ("medicine",r"\b(?:medicine|medication|prescription|drug)\s*[:\-]\s*([A-Za-z][A-Za-z0-9 .+/-]{2,80})"),
         ("blood_pressure",r"\b(?:BP|blood pressure)\s*[:\-]?\s*(\d{2,3}/\d{2,3})\b"),
         ("doctor",r"\b(Dr\.?\s+[A-Za-z][A-Za-z .]{1,50})"),
         ("hospital",r"\b([A-Za-z][A-Za-z &.-]{2,60}\s+(?:Hospital|Clinic|Medical Centre))\b"),
         ("patient",r"\bPatient(?:\s+Name)?\s*[:\-]\s*([A-Za-z][A-Za-z .]{1,60})"),
+        ("diagnosis",r"\b(?:diagnosis|clinical diagnosis|impression)\s*[:\-]\s*([^\n|;]{2,120})"),
+        ("allergy",r"\b(?:allerg(?:y|ies)|allergic to)\s*[:\-]?\s*(?!none\b|no known\b|n/?k/?a\b)([A-Za-z][A-Za-z ,./-]{1,80})"),
+        ("procedure",r"\b(?:past surgical history|surgery|procedure)\s*[:\-]\s*([^\n|;]{2,120})"),
     ]
     for kind,pattern in patterns:
         for match in re.finditer(pattern,text,re.I):

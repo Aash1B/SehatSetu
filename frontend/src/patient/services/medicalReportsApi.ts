@@ -9,7 +9,9 @@ const ALLOWED_TYPES = new Set([
   'image/png',
   'image/webp',
 ]);
-const MAX_FILE_SIZE = 20 * 1024 * 1024;
+// Keep the browser limit aligned with the AI service limit so OCR failures are
+// reported before an upload is sent to storage.
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 interface UploadIntent {
   reportId: string;

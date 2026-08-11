@@ -34,7 +34,7 @@ import { EhrService } from '../ehr/ehr.service';
 export class MedicalReportsService {
   private readonly maxFileSizeBytes = this.positiveInteger(
     process.env.MEDICAL_REPORT_MAX_FILE_SIZE_BYTES,
-    20 * 1024 * 1024,
+    10 * 1024 * 1024,
   );
   private readonly downloadTtlSeconds = this.positiveInteger(
     process.env.MEDICAL_REPORT_DOWNLOAD_URL_TTL_SECONDS,
@@ -251,6 +251,7 @@ export class MedicalReportsService {
       }
       let result = { extractedText: '', extractedData: {} };
       let ocrSucceeded = false;
+      let ocrErrorMessage: string | null = null;
       try {
         const ocrRes = await this.ocr.analyze(
           object.bytes,
@@ -258,19 +259,21 @@ export class MedicalReportsService {
           existing.mimeType,
         );
         result = { extractedText: ocrRes.extractedText, extractedData: ocrRes.extractedData };
-        ocrSucceeded = true;
+        ocrSucceeded = Boolean(ocrRes.extractedText?.trim());
+        if (!ocrSucceeded) ocrErrorMessage = 'OCR returned no readable text';
       } catch (ocrError: any) {
-        console.warn(`[OCR WARN] OCR processing failed or skipped for report ${existing.id}: ${ocrError?.message || ocrError}`);
+        ocrErrorMessage = ocrError?.message || 'OCR service unavailable';
+        console.warn(`[OCR WARN] OCR processing failed for report ${existing.id}: ${ocrErrorMessage}`);
       }
 
       const updated = await this.reports.update(existing.id, {
-        status: MedicalReportStatus.PROCESSED,
+        status: ocrSucceeded ? MedicalReportStatus.PROCESSED : MedicalReportStatus.OCR_FAILED,
         ocrStatus: ocrSucceeded ? MedicalReportOcrStatus.SUCCEEDED : MedicalReportOcrStatus.FAILED,
         extractedText: result.extractedText,
         extractedData: result.extractedData as object,
-        processedAt: new Date(),
-        processingErrorCode: ocrSucceeded ? null : 'OCR_SKIPPED',
-        processingErrorMessage: ocrSucceeded ? null : 'OCR service unavailable',
+        processedAt: ocrSucceeded ? new Date() : null,
+        processingErrorCode: ocrSucceeded ? null : 'OCR_FAILED',
+        processingErrorMessage: ocrSucceeded ? null : ocrErrorMessage,
       });
 
       // Best-effort EHR draft creation. OCR having succeeded with usable text
