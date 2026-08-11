@@ -22,6 +22,7 @@ export interface PrescriptionData {
   doctorSpecialty?: string;
   doctorRegNo?: string;
   doctorHospital?: string;
+  signatureUrl?: string;
   patientName?: string;
   patientAge?: string | number;
   patientGender?: string;
@@ -46,12 +47,13 @@ interface PrescriptionViewModalProps {
   isModal?: boolean;
 }
 
-const defaultPrescription: Required<Omit<PrescriptionData, 'notes'>> & { notes: string } = {
+const defaultPrescription: Required<Omit<PrescriptionData, 'notes' | 'signatureUrl'>> & { notes: string; signatureUrl: string } = {
   id: '',
   doctorName: 'Doctor',
   doctorSpecialty: '',
   doctorRegNo: '',
   doctorHospital: 'SehatSetu Digital Health Clinic',
+  signatureUrl: '',
   patientName: 'Patient',
   patientAge: '',
   patientGender: '',
@@ -193,8 +195,8 @@ const PrescriptionViewModal: React.FC<PrescriptionViewModalProps> = ({
         <div className="rx-symptoms-list">
           {rx.symptoms.length > 0
             ? rx.symptoms.map((symptom, index) => (
-                <span key={index} className="rx-symptom-text">• {symptom}</span>
-              ))
+              <span key={index} className="rx-symptom-text">• {symptom}</span>
+            ))
             : <span className="rx-symptom-text rx-muted">No symptoms recorded</span>}
         </div>
 
@@ -217,21 +219,21 @@ const PrescriptionViewModal: React.FC<PrescriptionViewModalProps> = ({
             <tbody>
               {rx.medications.length > 0
                 ? rx.medications.map((med, index) => (
-                    <tr key={index}>
-                      <td>{med.name}</td>
-                      <td>{med.dosage}</td>
-                      <td><span className="rx-freq-badge">{med.frequency}</span></td>
-                      <td>{med.duration}</td>
-                      <td><em>{med.timing || 'After Food'}</em></td>
-                    </tr>
-                  ))
+                  <tr key={index}>
+                    <td>{med.name}</td>
+                    <td>{med.dosage}</td>
+                    <td><span className="rx-freq-badge">{med.frequency}</span></td>
+                    <td>{med.duration}</td>
+                    <td><em>{med.timing || 'After Food'}</em></td>
+                  </tr>
+                ))
                 : (
-                    <tr>
-                      <td colSpan={5} style={{ textAlign: 'center', color: '#94a3b8', padding: '24px 10px', fontStyle: 'italic' }}>
-                        No medications prescribed
-                      </td>
-                    </tr>
-                  )}
+                  <tr>
+                    <td colSpan={5} style={{ textAlign: 'center', color: '#94a3b8', padding: '24px 10px', fontStyle: 'italic' }}>
+                      No medications prescribed
+                    </td>
+                  </tr>
+                )}
             </tbody>
           </table>
         </div>
@@ -243,9 +245,17 @@ const PrescriptionViewModal: React.FC<PrescriptionViewModalProps> = ({
             <span>Diet &amp; Lifestyle Instructions</span>
           </div>
           <div className="rx-diet-content">
-            {rx.dietAdvice
-              ? <p>{rx.dietAdvice}</p>
-              : <p className="rx-muted">No specific diet instructions provided.</p>}
+            {rx.dietAdvice ? (
+              rx.dietAdvice
+                .split(/[\n;]+|\s*•\s*/)
+                .map((item) => item.trim())
+                .filter(Boolean)
+                .map((item, idx) => (
+                  <p key={idx} className="rx-diet-bullet">• {item}</p>
+                ))
+            ) : (
+              <p className="rx-muted">No specific diet instructions provided.</p>
+            )}
           </div>
         </div>
 
@@ -262,7 +272,15 @@ const PrescriptionViewModal: React.FC<PrescriptionViewModalProps> = ({
         </div>
 
         <div className="rx-signature">
-          <span className="rx-sig-cursive">{rx.doctorName}</span>
+          {rx.signatureUrl || localStorage.getItem('sehatsetu_doctor_signature') || localStorage.getItem('doctor_signature_url') ? (
+            <img
+              src={rx.signatureUrl || localStorage.getItem('sehatsetu_doctor_signature') || localStorage.getItem('doctor_signature_url') || ''}
+              alt="Doctor Signature"
+              style={{ maxHeight: '42px', maxWidth: '150px', objectFit: 'contain', margin: '0 auto 4px auto', display: 'block' }}
+            />
+          ) : (
+            <span className="rx-sig-cursive">{rx.doctorName}</span>
+          )}
           <strong>{rx.doctorName}</strong>
           <small>DOCTOR SIGNATURE &amp; STAMP</small>
         </div>

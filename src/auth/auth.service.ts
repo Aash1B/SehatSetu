@@ -14,7 +14,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly prisma: PrismaService,
     private readonly mailService: MailService,
-  ) {}
+  ) { }
 
   private generateOtp(): string {
     return randomInt(100000, 1000000).toString();
@@ -181,7 +181,7 @@ export class AuthService {
     // Doctor Verification Status Gate
     if (user.role === 'DOCTOR' && user.doctor) {
       const isProfileCompleted = user.doctor.profileCompleted;
-      
+
       // If doctor hasn't submitted their onboarding & verification documents yet, allow them to log in to complete onboarding
       if (!isProfileCompleted) {
         return this.buildAuthResponse(user);
@@ -390,7 +390,7 @@ export class AuthService {
 
     // Check if user exists with this phone number
     let user = await this.prisma.user.findFirst({
-      where: { 
+      where: {
         phone: phoneNumber,
         role,
       },
@@ -431,7 +431,7 @@ export class AuthService {
 
   async verifyPhoneOtp(phoneNumber: string, otp: string, role: 'PATIENT' | 'DOCTOR') {
     const user = await this.prisma.user.findFirst({
-      where: { 
+      where: {
         phone: phoneNumber,
         role,
       },
@@ -487,7 +487,7 @@ export class AuthService {
 
     // Find temporary user or existing user
     let user = await this.prisma.user.findFirst({
-      where: { 
+      where: {
         phone: phoneNumber,
         role,
       },
@@ -631,4 +631,3 @@ export class AuthService {
     );
   }
 }
-  

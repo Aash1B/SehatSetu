@@ -102,6 +102,7 @@ export interface ConsultationSummary {
   id: string;
   patient: PatientProfile;
   time: string;
+  date?: string;
   chiefComplaint: string;
   status: ConsultationStatus;
   priority: Priority;

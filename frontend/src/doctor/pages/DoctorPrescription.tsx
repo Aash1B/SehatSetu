@@ -24,7 +24,7 @@ const DoctorPrescription: React.FC = () => {
             doctorName: appointment.doctor?.name || appointment.doctor?.user?.fullName || getUser()?.fullName || 'Doctor',
             doctorSpecialty: appointment.doctor?.specialty || '',
             doctorHospital: appointment.doctor?.hospital || 'SehatSetu Digital Health Clinic',
-            patientName: appointment.patient?.user?.fullName || appointment.patientName || 'Patient',
+            patientName: appointment.patientName || appointment.patient?.user?.fullName || 'Patient',
             patientAge: appointment.patientAge || appointment.patient?.age || '',
             patientGender: appointment.patientGender || appointment.patient?.gender || '',
             diagnosis: appointment.ehrRecord?.diagnosis || appointment.healthConcern || '',

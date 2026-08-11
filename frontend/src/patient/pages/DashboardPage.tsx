@@ -672,14 +672,15 @@ const DashboardPage: React.FC = () => {
               doctorName,
               doctorSpecialty: rx.doctor?.specialty,
               doctorHospital: rx.doctor?.hospital || 'SehatSetu Digital Health Clinic',
-              patientName: p.fullName,
-              patientAge: p.age,
-              patientGender: p.gender,
+              patientName: rx.appointment?.patientName || p.fullName || 'Patient',
+              patientAge: rx.appointment?.patientAge || p.age || '',
+              patientGender: rx.appointment?.patientGender || p.gender || '',
               date,
               diagnosis: rx.appointment?.ehrRecord?.diagnosis || rx.appointment?.healthConcern || '',
               symptoms: rx.appointment?.symptoms || [],
               notes: rx.appointment?.ehrRecord?.notes || rx.appointment?.notes || '',
               medications,
+              dietAdvice: rx.dietAdvice || '',
             },
           };
         }));

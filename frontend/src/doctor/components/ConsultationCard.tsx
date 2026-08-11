@@ -36,9 +36,14 @@ const ConsultationCard: React.FC<ConsultationCardProps> = ({
         </div>
       </div>
       <div className="flex items-center gap-5 shrink-0">
-        <div className="text-right flex items-center gap-1.5 text-slate-600 font-normal text-sm">
-          <Clock className="w-4.5 h-4.5" />
-          {time}
+        <div className="text-right flex flex-col items-end justify-center text-slate-600 font-normal text-xs sm:text-sm">
+          <div className="flex items-center gap-1.5 font-medium text-slate-800">
+            <Clock className="w-4 h-4 text-slate-500" />
+            {time}
+          </div>
+          {consultation.date && (
+            <span className="text-[11px] font-semibold text-slate-400 mt-0.5">{consultation.date}</span>
+          )}
         </div>
         <div className="flex gap-3">
           <button 
