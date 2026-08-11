@@ -18,10 +18,10 @@ type BrandLogoProps = {
  */
 const BrandLogo: React.FC<BrandLogoProps> = ({
   className = '',
-  markWrapperClassName = 'w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-orange-50 flex items-center justify-center p-1.5 shadow-xs',
+  markWrapperClassName = 'w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-transparent flex items-center justify-center p-1.5 shadow-none',
   markClassName = 'w-full h-full object-contain',
   wordmarkClassName = 'font-extrabold text-slate-900 text-lg sm:text-xl tracking-tight brand-title',
-  accentClassName = 'text-blue-600 brand-title-accent',
+  accentClassName = 'text-orange-500 brand-title-accent',
   showWordmark = true,
   showMark = true,
   alt,

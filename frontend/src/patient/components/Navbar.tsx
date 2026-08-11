@@ -54,9 +54,9 @@ const Navbar: React.FC = () => {
             onClick={() => navigate('/')}
           >
             <BrandLogo
-              markWrapperClassName="landing-brand-mark rounded-xl bg-orange-50 flex items-center justify-center p-1.5 shadow-xs transition group-hover:scale-105"
+              markWrapperClassName="landing-brand-mark rounded-xl bg-transparent flex items-center justify-center p-1.5 shadow-none transition group-hover:scale-105"
               wordmarkClassName="landing-brand-wordmark font-extrabold text-slate-900 tracking-tight"
-              accentClassName="text-blue-600 brand-title-accent"
+              accentClassName="text-orange-500 brand-title-accent"
             />
           </button>
         </div>

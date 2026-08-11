@@ -172,7 +172,7 @@
   line-height: 1.1;
 }
 .rx-brand-wordmark .brand-title-accent {
-  color: #1452ae;
+  color: var(--color-orange-primary, #F97316);
 }
 .rx-brand-text p {
   margin: 2px 0 0;

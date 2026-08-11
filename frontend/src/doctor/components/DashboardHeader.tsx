@@ -41,8 +41,8 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               fontWeight: 700,
             }}>Namaste,</span>
             {' '}{doctor.name}
-            <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#F4F1EC', borderRadius: '50%', width: '44px', height: '44px', marginLeft: '2px', transform: 'translateY(4px)' }}>
-              <img src="/P.jpeg" alt="Namaskar" style={{ width: '32px', height: '32px', objectFit: 'cover', borderRadius: '50%' }} />
+            <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', width: '64px', height: '64px', marginLeft: '4px', transform: 'translateY(6px)' }}>
+              <img src="/namaskar.png" alt="Namaskar" style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
             </span>
           </h1>
         </div>

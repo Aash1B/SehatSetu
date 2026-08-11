@@ -90,9 +90,9 @@ const DoctorSidebar: React.FC<DoctorSidebarProps> = ({ className }) => {
         <div className="p-6 flex items-center gap-3">
           <BrandLogo
             className="gap-3"
-            markWrapperClassName="w-10 h-10 rounded-md bg-habanero flex items-center justify-center p-1.5"
+            markWrapperClassName="w-10 h-10 rounded-md bg-transparent flex items-center justify-center p-1.5"
             wordmarkClassName="font-bold text-2xl text-white tracking-tight"
-            accentClassName="text-blue-400"
+            accentClassName="text-orange-400"
           />
         </div>
 

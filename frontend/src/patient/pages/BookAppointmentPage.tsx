@@ -549,7 +549,7 @@ const BookAppointmentPage: React.FC = () => {
                 markWrapperClassName="logo-badge"
                 markClassName="logo-icon"
                 wordmarkClassName="brand-title"
-                accentClassName="text-blue-600 brand-title-accent"
+                accentClassName="text-orange-500 brand-title-accent"
               />
             </button>
           </div>

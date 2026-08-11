@@ -779,7 +779,7 @@ const DoctorOnboarding: React.FC = () => {
         <div className="flex items-center gap-3">
           <BrandLogo
             showWordmark={false}
-            markWrapperClassName="w-9 h-9 rounded-lg bg-habanero flex items-center justify-center p-1.5"
+            markWrapperClassName="w-9 h-9 rounded-lg bg-transparent flex items-center justify-center p-1.5"
             markClassName="w-full h-full object-contain"
             alt=""
           />
@@ -787,7 +787,7 @@ const DoctorOnboarding: React.FC = () => {
             <BrandLogo
               showMark={false}
               wordmarkClassName="font-bold text-lg leading-tight tracking-tight text-white"
-              accentClassName="text-blue-400"
+              accentClassName="text-orange-400"
             />
             <p className="text-xs text-white/60">Doctor Partner Onboarding & Profile Setup</p>
           </div>

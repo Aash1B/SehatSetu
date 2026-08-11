@@ -1403,12 +1403,12 @@
 .logo-badge {
     width: 56px;
     height: 56px;
-    background: #FFF7ED;
+    background: transparent;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.15);
+    box-shadow: none;
     overflow: hidden;
   }
 
@@ -1420,7 +1420,7 @@
   }
 
   .brand-title-accent {
-    color: var(--color-blue-accent);
+    color: var(--color-orange-primary);
   }
 
   .nav-links {
@@ -3257,12 +3257,12 @@
     width: 48px;
     height: 48px;
     flex-shrink: 0;
-    background: #FFF7ED;
+    background: transparent;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.15);
+    box-shadow: none;
     overflow: hidden;
     padding: 3px;
     box-sizing: border-box;
