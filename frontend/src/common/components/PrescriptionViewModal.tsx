@@ -134,7 +134,6 @@ const PrescriptionViewModal: React.FC<PrescriptionViewModalProps> = ({
           </div>
           <div className="rx-brand-text">
             <BrandLogo showMark={false} wordmarkClassName="rx-brand-wordmark" />
-            <p>Digital Health Clinic</p>
           </div>
         </div>
 
@@ -147,12 +146,12 @@ const PrescriptionViewModal: React.FC<PrescriptionViewModalProps> = ({
         {/* Right: verified badge + QR */}
         <div className="rx-header-right">
           <div className="rx-verification">
-            <ShieldCheck />
-            <div>
+            <div className="rx-verification-title">
+              <ShieldCheck />
               <strong>Digitally Verified</strong>
-              <span>Verified Electronic Medical Record</span>
-              <span>Instant Consultation</span>
             </div>
+            <span>Verified Electronic Medical Record</span>
+            <span>Instant Consultation</span>
           </div>
           <div className="rx-qr" aria-label="Prescription verification QR code">
             {qrDataUrl
@@ -163,37 +162,23 @@ const PrescriptionViewModal: React.FC<PrescriptionViewModalProps> = ({
       </header>
 
       {/* ── PATIENT DETAILS ─────────────────────────────────────── */}
-      <div className="rx-patient-strip">
-        <div className="rx-patient-strip-header">
+      <div className="rx-patient-simple-row">
+        <div className="rx-patient-simple-item">
           <User />
-          <span>Patient Details</span>
+          <strong>Patient:</strong> <span>{rx.patientName}</span>
         </div>
-        <div className="rx-patient-strip-row">
-          <div className="rx-patient-cell">
-            <span className="rx-cell-label">Patient Name</span>
-            <span className="rx-cell-value">{rx.patientName}</span>
-          </div>
-          <div className="rx-patient-cell">
-            <span className="rx-cell-label">Age / Gender</span>
-            <span className="rx-cell-value">
-              {rx.patientAge} Yrs / {rx.patientGender}
-            </span>
-          </div>
-          <div className="rx-patient-cell">
-            <span className="rx-cell-label">Diagnosis</span>
-            <span className="rx-cell-value">
-              {rx.diagnosis || 'General Medical Consultation'}
-            </span>
-          </div>
-          <div className="rx-patient-cell">
-            <span className="rx-cell-label">Consultation</span>
-            <span className="rx-cell-value">
-              <span className="rx-completed-badge">
-                <CheckCircle2 />
-                {rx.date}
-              </span>
-            </span>
-          </div>
+        <span className="rx-patient-divider">•</span>
+        <div className="rx-patient-simple-item">
+          <strong>Age / Gender:</strong> <span>{rx.patientAge ? `${rx.patientAge} Yrs` : ''} {rx.patientGender ? `/ ${rx.patientGender}` : ''}</span>
+        </div>
+        <span className="rx-patient-divider">•</span>
+        <div className="rx-patient-simple-item">
+          <strong>Diagnosis:</strong> <span>{rx.diagnosis || 'General Medical Consultation'}</span>
+        </div>
+        <span className="rx-patient-divider">•</span>
+        <div className="rx-patient-simple-item">
+          <CheckCircle2 className="rx-icon-success" />
+          <strong>Consultation:</strong> <span>{rx.date}</span>
         </div>
       </div>
 
@@ -201,20 +186,20 @@ const PrescriptionViewModal: React.FC<PrescriptionViewModalProps> = ({
       <div className="rx-body-sections">
 
         {/* Reported Symptoms */}
-        <div className="rx-section-label" style={{ marginTop: 18 }}>
+        <div className="rx-section-label" style={{ marginTop: 14 }}>
           <ClipboardList />
           <span>Reported Symptoms</span>
         </div>
         <div className="rx-symptoms-list">
           {rx.symptoms.length > 0
             ? rx.symptoms.map((symptom, index) => (
-                <span key={index} className="rx-symptom-pill">• {symptom}</span>
+                <span key={index} className="rx-symptom-text">• {symptom}</span>
               ))
-            : <span className="rx-symptom-pill" style={{ color: '#94a3b8', borderColor: '#e2e8f0' }}>No symptoms recorded</span>}
+            : <span className="rx-symptom-text rx-muted">No symptoms recorded</span>}
         </div>
 
         {/* Rx Medications */}
-        <div className="rx-section-label" style={{ marginTop: 22 }}>
+        <div className="rx-section-label" style={{ marginTop: 18 }}>
           <FileText />
           <span>Rx Prescribed Medications</span>
         </div>
@@ -252,15 +237,15 @@ const PrescriptionViewModal: React.FC<PrescriptionViewModalProps> = ({
         </div>
 
         {/* Diet & Lifestyle */}
-        <div style={{ marginTop: 22 }}>
-          <div className="rx-diet-box">
-            <div className="rx-diet-box-header">
-              <Utensils />
-              <span>Diet &amp; Lifestyle Instructions</span>
-            </div>
+        <div style={{ marginTop: 18 }}>
+          <div className="rx-section-label rx-yellow-label">
+            <Utensils />
+            <span>Diet &amp; Lifestyle Instructions</span>
+          </div>
+          <div className="rx-diet-content">
             {rx.dietAdvice
               ? <p>{rx.dietAdvice}</p>
-              : <p style={{ color: '#94a3b8', fontStyle: 'italic' }}>No specific diet instructions provided.</p>}
+              : <p className="rx-muted">No specific diet instructions provided.</p>}
           </div>
         </div>
 
