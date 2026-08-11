@@ -11,7 +11,7 @@ import DietEditor from '../components/DietEditor';
 import EndConsultationDialog from '../components/EndConsultationDialog';
 import PrescriptionViewModal from '../../common/components/PrescriptionViewModal';
 import type { PatientProfile, TranscriptDTO, AIInsightDTO } from '../../types';
-import { Shield, Mic } from 'lucide-react';
+import { ArrowLeft, Mic } from 'lucide-react';
 import { useLiveAudioTranscription } from '../../common/hooks/useLiveAudioTranscription';
 import { getToken } from '../../auth/authStorage';
 import LowBandwidthMode from '../../common/components/LowBandwidthMode';
@@ -25,6 +25,7 @@ const VideoConsultation: React.FC = () => {
   const [serverUrl, setServerUrl] = useState("");
   const [connectionError, setConnectionError] = useState("");
   const [appointment, setAppointment] = useState<any>(null);
+  const [consultationCount, setConsultationCount] = useState(1);
   const [roomConnected, setRoomConnected] = useState(true);
   const [issuedPrescription, setIssuedPrescription] = useState<any>(null);
   const [consultationSymptoms, setConsultationSymptoms] = useState<string[]>([]);
@@ -60,36 +61,51 @@ const VideoConsultation: React.FC = () => {
     })();
   }, [consultationId]);
 
+  React.useEffect(() => {
+    const patientId = appointment?.patient?.id || appointment?.patientId;
+    if (!patientId) return;
+
+    let cancelled = false;
+    const loadConsultationCount = async () => {
+      try {
+        const response = await fetch('/api/appointments', {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        });
+        if (!response.ok) return;
+        const appointments = await response.json();
+        if (!cancelled && Array.isArray(appointments)) {
+          const patientVisits = appointments.filter(
+            (item: any) => item.patientId === patientId || item.patient?.id === patientId,
+          );
+          setConsultationCount(Math.max(1, patientVisits.length));
+        }
+      } catch (error) {
+        console.warn('Unable to load consultation history count:', error);
+      }
+    };
+
+    loadConsultationCount();
+    return () => {
+      cancelled = true;
+    };
+  }, [appointment?.patient?.id, appointment?.patientId]);
+
   return (
-    <div className="flex h-dvh overflow-hidden bg-luster-white font-sans text-deep-space">
+    <div className="flex h-dvh overflow-hidden bg-[#F8FAFC] font-sans text-deep-space">
 
       <main className="flex-1 flex flex-col h-full min-h-0 overflow-hidden">
         {/* Header Area */}
         <div className="shrink-0 px-6 py-4 flex items-center justify-between border-b border-gray-100 bg-white shadow-sm z-10">
           <div className="flex items-center gap-4">
             <button
+              type="button"
               onClick={() => navigate(appointment?.patient?.id ? `/doctor/patient/${appointment.patient.id}` : '/doctor/consultations')}
-              className="text-gray-500 hover:text-deep-space font-medium text-sm transition-colors cursor-pointer"
+              className="consultation-back-button doctor-consultation-back-button text-gray-500 hover:text-deep-space transition-colors"
             >
-              ← Back to Details
+              <ArrowLeft className="consultation-back-icon" aria-hidden="true" />
+              <span>Back</span>
             </button>
             {micError && <span className="text-xs font-semibold text-red-600">{micError} You can continue with manual entry.</span>}
-            <div className="h-6 w-px bg-gray-200"></div>
-            <div className="flex items-center gap-2 text-green-600 bg-green-50 px-3 py-1 rounded-full text-xs font-bold border border-green-200">
-              <Shield className="w-4 h-4" />
-              End-to-End Encrypted
-            </div>
-            <button
-              type="button"
-              onClick={isRecording ? stopRecording : startRecording}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${isRecording
-                  ? 'bg-red-500 text-white animate-pulse shadow-md'
-                  : 'bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-300'
-                }`}
-            >
-              <Mic className="w-3.5 h-3.5" />
-              {isRecording ? '🔴 Listening Live Speech...' : '🎙️ Start AI Mic Listening'}
-            </button>
           </div>
           <ConsultationTimer />
         </div>
@@ -128,20 +144,24 @@ const VideoConsultation: React.FC = () => {
 
             {/* Right Column: Tools */}
             <div className="lg:col-span-4 flex flex-col h-full gap-4 overflow-y-auto pr-2 pb-2 custom-scrollbar">
-              {appointment && <PatientMiniCard patient={{
-                id: appointment.patient?.id || '',
-                name: appointment.patient?.user?.fullName || appointment.patientName || 'Patient',
-                initials: (appointment.patient?.user?.fullName || appointment.patientName || 'Patient').split(/\s+/).filter(Boolean).slice(0, 2).map((part: string) => part[0]).join('').toUpperCase(),
-                age: Number(appointment.patient?.age || appointment.patientAge || 0),
-                gender: appointment.patient?.gender || appointment.patientGender || 'Other',
-                bloodGroup: appointment.patient?.bloodGroup || appointment.patientBloodGroup,
-                weight: appointment.patient?.weight || appointment.patientWeight,
-                height: appointment.patient?.height || appointment.patientHeight,
-              } as PatientProfile} />}
-
+              {appointment && <PatientMiniCard
+                patient={{
+                  id: appointment.patient?.id || '',
+                  name: appointment.patient?.user?.fullName || appointment.patientName || 'Patient',
+                  initials: (appointment.patient?.user?.fullName || appointment.patientName || 'Patient').split(/\s+/).filter(Boolean).slice(0, 2).map((part: string) => part[0]).join('').toUpperCase(),
+                  age: Number(appointment.patient?.age || appointment.patientAge || 0),
+                  gender: appointment.patient?.gender || appointment.patientGender || 'Other',
+                  bloodGroup: appointment.patient?.bloodGroup || appointment.patientBloodGroup,
+                  weight: appointment.patient?.weight || appointment.patientWeight,
+                  height: appointment.patient?.height || appointment.patientHeight,
+                } as PatientProfile}
+                consultationCount={consultationCount}
+                consultationSummary={appointment.ehrRecord?.aiSummary || appointment.ehrRecord?.notes || appointment.notes}
+                chiefComplaint={appointment.healthConcern || appointment.symptoms?.[0] || 'General medical consultation'}
+              />}
               <div className="flex-1 flex flex-col gap-4 min-h-0">
-                <section className="rounded-2xl bg-white p-3 shadow-sm border border-gray-200">
-                  <label htmlFor="doctor-clinical-notes" className="mb-2 block text-sm font-bold text-deep-space">
+                <section className="rounded-2xl bg-[#9bacd8] p-3 shadow-sm border border-gray-200">
+                  <label htmlFor="doctor-clinical-notes" className="mb-2 block text-base font-bold text-deep-space">
                     Doctor's Clinical Notes
                   </label>
                   <textarea
@@ -149,10 +169,9 @@ const VideoConsultation: React.FC = () => {
                     value={clinicalNotes}
                     onChange={(event) => setClinicalNotes(event.target.value)}
                     rows={3}
-                    placeholder="Type observations, diagnosis, advice, or anything missed by voice recognition..."
+                    placeholder="Type..."
                     className="w-full resize-y rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-deep-space outline-none transition focus:border-purple-400 focus:ring-2 focus:ring-purple-100"
                   />
-                  <p className="mt-1 text-[11px] text-gray-500">Manual notes are saved with the consultation.</p>
                 </section>
                 <SymptomsEditor
                   className="flex-1 min-h-[200px]"
@@ -186,7 +205,9 @@ const VideoConsultation: React.FC = () => {
           patientAge: appointment?.patientAge || appointment?.patient?.age || '',
           patientGender: appointment?.patientGender || appointment?.patient?.gender || '',
           diagnosis: appointment?.ehrRecord?.diagnosis || appointment?.healthConcern || '',
-          symptoms: consultationSymptoms.length ? consultationSymptoms : (appointment?.symptoms || []),
+          symptoms: consultationSymptoms.length
+            ? consultationSymptoms
+            : (symptoms.length ? symptoms : (appointment?.symptoms || [])),
           medications: consultationMedicines.length
             ? consultationMedicines.map((m) => ({
               name: m.name,

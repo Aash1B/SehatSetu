@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, CheckCircle, FileText } from 'lucide-react';
+import { X, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { PrescriptionData } from '../../common/components/PrescriptionViewModal';
 import { getToken } from '../../auth/authStorage';
@@ -21,18 +21,20 @@ const EndConsultationDialog: React.FC<EndConsultationDialogProps> = ({
 }) => {
   const navigate = useNavigate();
   const [isSending, setIsSending] = useState(false);
-  const [sendError, setSendError] = useState('');
 
   if (!isOpen) return null;
 
   const handleEndAndConfirmPrescription = async () => {
     setIsSending(true);
-    setSendError('');
     const confirmedPrescription = {
       id: `RX-2026-${Math.floor(1000 + Math.random() * 9000)}`,
       ...prescriptionData,
       date: new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
     };
+
+    const submittedSymptoms = Array.isArray(confirmedPrescription.symptoms)
+      ? confirmedPrescription.symptoms.filter((symptom): symptom is string => typeof symptom === 'string' && symptom.trim().length > 0)
+      : [];
 
     try {
       const response = await fetch('/api/livekit/end-consultation', {
@@ -41,7 +43,8 @@ const EndConsultationDialog: React.FC<EndConsultationDialogProps> = ({
         body: JSON.stringify({
           appointmentId: consultationId,
           notes: 'Consultation ended and prescription confirmed by doctor.',
-          prescription: confirmedPrescription,
+          symptoms: submittedSymptoms,
+          prescription: { ...confirmedPrescription, symptoms: submittedSymptoms },
         }),
       });
       const result = await response.json().catch(() => null);
@@ -53,7 +56,7 @@ const EndConsultationDialog: React.FC<EndConsultationDialogProps> = ({
       if (onConfirmRx) onConfirmRx(saved);
       else navigate('/doctor/dashboard');
     } catch (err) {
-      setSendError(err instanceof Error ? err.message : 'The prescription could not be saved.');
+      console.error('The prescription could not be saved.', err);
     } finally {
       setIsSending(false);
     }
@@ -76,18 +79,16 @@ const EndConsultationDialog: React.FC<EndConsultationDialogProps> = ({
         </div>
 
         <div className="p-6">
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-4 text-xs text-blue-900 flex items-start gap-2">
-            <FileText className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-            <div>
-              <span className="font-bold block text-blue-950">Prescription Sync</span>
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-4 text-lg !text-white !font-normal !text-left flex items-start">
+            <div className="flex-1 !text-white !font-normal !text-left">
+              <span className="!font-bold block !text-left !text-white">Prescription Sync</span>
               Ending the call will publish the official prescription directly to both doctor and patient screens.
             </div>
           </div>
 
-          <p className="text-gray-600 mb-6 text-sm">
+          <p className="text-gray-600 mb-6 text-lg">
             Are you sure you want to end this video call and generate the final prescription for <strong>{prescriptionData.patientName || 'this patient'}</strong>?
           </p>
-          {sendError && <p className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700">{sendError}</p>}
 
           <div className="flex gap-4">
             <button 

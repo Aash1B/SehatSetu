@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Stethoscope, X, Sparkles, Plus, Edit2, Check } from 'lucide-react';
+import { Stethoscope, X, Plus, Edit2, Check } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { searchCatalog } from '../data/prescriptionCatalog';
 
@@ -112,36 +112,13 @@ const SymptomsEditor: React.FC<SymptomsEditorProps> = ({ className, aiExtractedS
   };
 
   return (
-    <div className={cn("bg-deep-space rounded-2xl shadow-sm overflow-hidden flex flex-col", className)}>
-      <div className="p-3 border-b border-white/10 flex items-center justify-between text-white">
+    <div className={cn("bg-[#9bacd8] rounded-2xl shadow-sm overflow-hidden flex flex-col", className)}>
+      <div className="p-3 border-b border-[#7B96C8]/50 flex items-center justify-between text-[#223382]">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <Stethoscope className="w-4 h-4 text-white" />
+            <Stethoscope className="w-4 h-4 text-[#223382]" />
             <h3 className="font-bold text-sm">Symptoms</h3>
           </div>
-          {isListening && (
-            <div className="flex items-center gap-1.5 text-xs text-purple-200 bg-white/10 px-2.5 py-0.5 rounded-full font-medium">
-              <span className="flex h-1.5 w-1.5 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-300 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-purple-300"></span>
-              </span>
-              <span className="animate-pulse text-[11px] font-normal">Typing from live speech...</span>
-            </div>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              const aiItem = { id: Date.now().toString(), text: 'High grade fever (102°F) with fatigue', isAi: true };
-              setSymptoms(prev => [...prev, aiItem]);
-            }}
-            className="flex items-center gap-1.5 text-[10px] font-bold text-purple-300 uppercase tracking-wider hover:text-white transition-colors cursor-pointer bg-white/10 px-2 py-0.5 rounded-full"
-            title="Click to trigger AI auto-extraction"
-          >
-            <Sparkles className="w-3 h-3" />
-            AI Listening
-          </button>
         </div>
       </div>
       
@@ -150,9 +127,9 @@ const SymptomsEditor: React.FC<SymptomsEditorProps> = ({ className, aiExtractedS
           {symptoms.map((sym) => (
             <li key={sym.id} className="flex items-center gap-2 text-sm text-deep-space bg-gray-50 px-3 py-2 rounded-lg group animate-in fade-in slide-in-from-right-2">
               {sym.isAi ? (
-                <Sparkles className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                <Stethoscope className="w-3.5 h-3.5 text-[#223382] shrink-0" />
               ) : (
-                <span className="w-1.5 h-1.5 rounded-full bg-deep-space shrink-0 ml-1 mr-1" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[#9bacd8] shrink-0 ml-1 mr-1" />
               )}
               
               {sym.isEditing ? (
@@ -171,7 +148,7 @@ const SymptomsEditor: React.FC<SymptomsEditorProps> = ({ className, aiExtractedS
                 </div>
               ) : (
                 <>
-                  <span className={cn("flex-1", sym.isAi && "text-purple-900")}>{sym.text}</span>
+                  <span className={cn("flex-1", sym.isAi && "text-[#F98513]")}>{sym.text}</span>
                   <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
                     <button onClick={() => startEdit(sym)} className="text-gray-400 hover:text-blue-500 p-1">
                       <Edit2 className="w-3.5 h-3.5" />
@@ -223,7 +200,7 @@ const SymptomsEditor: React.FC<SymptomsEditorProps> = ({ className, aiExtractedS
             }}
             onFocus={() => setShowSuggestions(true)}
             onKeyDown={handleKeyDown}
-            placeholder="Add manually (e.g. Fever, Cough)..."
+            placeholder="Add symptom…"
             className="flex-1 text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-habanero"
           />
           <button 

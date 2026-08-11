@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { TestTube, X, Sparkles, Plus, Edit2, Check } from 'lucide-react';
+import { TestTube, X, Plus, Edit2, Check } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { searchCatalog } from '../data/prescriptionCatalog';
 
@@ -98,36 +98,13 @@ const LabTestEditor: React.FC<LabTestEditorProps> = ({ className }) => {
   };
 
   return (
-    <div className={cn("bg-deep-space rounded-2xl shadow-sm overflow-hidden flex flex-col", className)}>
-      <div className="p-3 border-b border-white/10 flex items-center justify-between text-white">
+    <div className={cn("bg-[#9bacd8] rounded-2xl shadow-sm overflow-hidden flex flex-col", className)}>
+      <div className="p-3 border-b border-[#7B96C8]/50 flex items-center justify-between text-[#223382]">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <TestTube className="w-4 h-4 text-white" />
+            <TestTube className="w-4 h-4 text-[#223382]" />
             <h3 className="font-bold text-sm">Lab Tests</h3>
           </div>
-          {isListening && (
-            <div className="flex items-center gap-1.5 text-xs text-orange-200 bg-white/10 px-2.5 py-0.5 rounded-full font-medium">
-              <span className="flex h-1.5 w-1.5 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-300 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-orange-300"></span>
-              </span>
-              <span className="animate-pulse text-[11px] font-normal">Analyzing symptoms for tests...</span>
-            </div>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              const aiItem = { id: Date.now().toString(), text: 'Dengue NS1 Antigen & CBC Test', isAi: true };
-              setTests(prev => [...prev, aiItem]);
-            }}
-            className="flex items-center gap-1.5 text-[10px] font-bold text-orange-300 uppercase tracking-wider hover:text-white transition-colors cursor-pointer bg-white/10 px-2 py-0.5 rounded-full"
-            title="Click to trigger AI auto-extraction"
-          >
-            <Sparkles className="w-3 h-3" />
-            AI Listening
-          </button>
         </div>
       </div>
       
@@ -136,7 +113,7 @@ const LabTestEditor: React.FC<LabTestEditorProps> = ({ className }) => {
           {tests.map((test) => (
             <li key={test.id} className="flex items-center gap-2 text-sm text-deep-space bg-gray-50 px-3 py-2 rounded-lg group animate-in fade-in slide-in-from-right-2">
               {test.isAi ? (
-                <Sparkles className="w-3.5 h-3.5 text-orange-400 shrink-0" />
+                <TestTube className="w-3.5 h-3.5 text-[#223382] shrink-0" />
               ) : (
                 <span className="w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0 ml-1 mr-1" />
               )}
@@ -157,7 +134,7 @@ const LabTestEditor: React.FC<LabTestEditorProps> = ({ className }) => {
                 </div>
               ) : (
                 <>
-                  <span className={cn("flex-1", test.isAi && "text-orange-900")}>{test.text}</span>
+                  <span className={cn("flex-1", test.isAi && "text-[#F98513]")}>{test.text}</span>
                   <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
                     <button onClick={() => startEdit(test)} className="text-gray-400 hover:text-blue-500 p-1">
                       <Edit2 className="w-3.5 h-3.5" />
@@ -209,7 +186,7 @@ const LabTestEditor: React.FC<LabTestEditorProps> = ({ className }) => {
             }}
             onFocus={() => setShowSuggestions(true)}
             onKeyDown={handleKeyDown}
-            placeholder="Add manually (e.g. CBC, Dengue)..."
+            placeholder="Add lab test…"
             className="flex-1 text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-habanero"
           />
           <button 

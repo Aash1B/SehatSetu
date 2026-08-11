@@ -1,88 +1,93 @@
 import React, { useState } from 'react';
-import { Sparkles, FileText, BadgeAlert } from 'lucide-react';
+import { BadgeAlert, FileText, History as HistoryIcon, UserRound } from 'lucide-react';
 import type { PatientProfile } from '../../types';
 
 interface PatientMiniCardProps {
   patient: PatientProfile;
-  isFirstConsultation?: boolean;
+  consultationCount?: number;
   consultationSummary?: string;
   chiefComplaint?: string;
 }
 
 const PatientMiniCard: React.FC<PatientMiniCardProps> = ({
   patient,
-  isFirstConsultation = true,
+  consultationCount = 1,
   consultationSummary,
-  chiefComplaint = "High fever (4 days) & muscle pain"
+  chiefComplaint = 'General medical consultation',
 }) => {
-  const [isFirst, setIsFirst] = useState(isFirstConsultation);
+  const [showOverview, setShowOverview] = useState(true);
+  const visitCount = Math.max(1, consultationCount);
+  const visitLabel = `${visitCount} ${visitCount === 1 ? 'Visit' : 'Visits'}`;
+  const genderLabel = patient.gender === 'F' ? 'Female' : patient.gender === 'M' ? 'Male' : 'Other';
 
   return (
-    <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-4 transition-all">
-      {/* Patient Header */}
-      <div className="flex items-start justify-between mb-3">
+    <div className="mb-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition-all">
+      <div className="mb-3 flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-full bg-gradient-to-br from-orange-400 to-habanero text-white flex items-center justify-center font-bold text-sm shadow-sm">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#223382]/10 text-lg font-bold text-[#223382]">
             {patient.initials}
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-bold text-deep-space text-base leading-tight">{patient.name}</h3>
+            <div className="flex items-center gap-6">
+              <h3 className="text-base font-bold leading-tight text-deep-space">{patient.name}</h3>
               <button
                 type="button"
-                onClick={() => setIsFirst(!isFirst)}
-                className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border transition-all cursor-pointer ${
-                  isFirst
-                    ? 'bg-amber-50 text-amber-700 border-amber-300 hover:bg-amber-100'
-                    : 'bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100'
+                onClick={() => setShowOverview(!showOverview)}
+                className={`cursor-pointer rounded-full border px-2 py-0.5 text-[10px] font-extrabold transition-all ${
+                  showOverview
+                    ? 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100'
+                    : 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100'
                 }`}
-                title="Click to toggle First / Follow-up view preview"
+                title="Click to toggle the patient history view"
               >
-                {isFirst ? '⭐ 1st Consultation' : '🔄 Follow-up #2'}
+                {showOverview ? 'History' : 'Consultation History'}
               </button>
             </div>
-            <p className="text-xs text-gray-500 mt-0.5">
-              {patient.age} Yrs • {patient.gender === 'F' ? 'Female' : patient.gender === 'M' ? 'Male' : 'Other'}
+            <p className="mt-0.5 text-xs text-gray-500">
+              {patient.age} Yrs <span aria-hidden="true">•</span> {genderLabel}
             </p>
           </div>
         </div>
+        <span className="text-sm font-normal text-purple-700">
+          {visitLabel}
+        </span>
       </div>
 
-      {/* Consultation Summary Block */}
-      <div>
-        {isFirst ? (
-          <div className="bg-amber-50/80 border border-amber-200/80 rounded-xl p-3 text-xs space-y-1.5 animate-in fade-in duration-200">
-            <div className="flex items-center justify-between font-bold text-amber-900">
-              <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
-                <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                First Consultation Summary
-              </span>
-              <span className="text-[10px] text-amber-700 font-normal bg-amber-200/60 px-1.5 py-0.5 rounded">New Patient</span>
-            </div>
-            <p className="text-amber-950 font-medium leading-relaxed">
+      {showOverview ? (
+        <div className="animate-in space-y-1.5 rounded-xl border border-amber-200/80 bg-amber-50/80 p-3 text-xs fade-in duration-200">
+          <div className="flex items-center justify-between font-bold text-amber-900">
+            <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
+              <HistoryIcon className="h-3.5 w-3.5 text-amber-600" />
+              History Summary
+            </span>
+          </div>
+          <div className="flex items-start gap-1.5 text-amber-950">
+            <UserRound className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-700" />
+            <p className="font-medium leading-relaxed">
               <span className="font-bold text-amber-900">Patient Overview: </span>
-              {patient.age}yr old {patient.gender === 'F' ? 'Female' : 'Male'}, Wt: {patient.weight || '58kg'}, Ht: {patient.height || '162cm'}, Blood Group: {patient.bloodGroup || 'B+'}. No prior consultation history logged.
-            </p>
-            <div className="pt-1 border-t border-amber-200/60 text-[11px] text-amber-900 flex items-center gap-1.5 font-medium">
-              <BadgeAlert className="w-3.5 h-3.5 text-amber-700 shrink-0" />
-              <span>Chief Complaint: <span className="font-semibold">{chiefComplaint}</span></span>
-            </div>
-          </div>
-        ) : (
-          <div className="bg-blue-50/80 border border-blue-200/80 rounded-xl p-3 text-xs space-y-1.5 animate-in fade-in duration-200">
-            <div className="flex items-center justify-between font-bold text-blue-900">
-              <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
-                <FileText className="w-3.5 h-3.5 text-blue-600" />
-                Consultation History Summary
-              </span>
-              <span className="text-[10px] text-blue-700 font-normal bg-blue-200/60 px-1.5 py-0.5 rounded">Visit #2</span>
-            </div>
-            <p className="text-blue-950 font-medium leading-relaxed">
-              {consultationSummary || `Previous Visit (12 days ago): Diagnosed with acute viral fever. Prescribed Paracetamol 650mg and Cetirizine. Patient reporting mild fever recurrence with fatigue.`}
+              {patient.age}yr old {genderLabel}, Wt: {patient.weight || 'Not recorded'}, Ht: {patient.height || 'Not recorded'}, Blood Group: {patient.bloodGroup || 'Not recorded'}. {visitLabel} recorded for this patient.
             </p>
           </div>
-        )}
-      </div>
+          <div className="flex items-center gap-1.5 border-t border-amber-200/60 pt-1 text-[11px] font-medium text-amber-900">
+            <BadgeAlert className="h-3.5 w-3.5 shrink-0 text-amber-700" />
+            <span>
+              Chief Complaint: <span className="font-semibold">{chiefComplaint}</span>
+            </span>
+          </div>
+        </div>
+      ) : (
+        <div className="animate-in space-y-1.5 rounded-xl border border-amber-200/80 bg-amber-50/80 p-3 text-xs fade-in duration-200">
+          <div className="flex items-center justify-between font-bold text-amber-900">
+            <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
+              <FileText className="h-3.5 w-3.5 text-amber-600" />
+              Consultation History
+            </span>
+          </div>
+          <p className="font-medium leading-relaxed text-amber-950">
+            {consultationSummary || `This patient has ${visitLabel.toLowerCase()} recorded. Review the consultation notes and current symptoms before continuing.`}
+          </p>
+        </div>
+      )}
     </div>
   );
 };

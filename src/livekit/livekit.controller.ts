@@ -33,10 +33,19 @@ export class LivekitController {
 
   @Post('end-consultation')
   @UseGuards(JwtAuthGuard)
-  async endConsultation(@Body() body: { appointmentId: string; notes?: string; durationSeconds?: number; prescription?: any }, @Req() req: any) {
+  async endConsultation(@Body() body: { appointmentId: string; notes?: string; durationSeconds?: number; symptoms?: unknown; prescription?: any }, @Req() req: any) {
     if (!body.appointmentId) {
       throw new BadRequestException('appointmentId is required');
     }
+
+    const prescription = body.prescription
+      ? {
+          ...body.prescription,
+          ...(Array.isArray(body.prescription.symptoms) && body.prescription.symptoms.length > 0
+            ? {}
+            : { symptoms: body.symptoms }),
+        }
+      : undefined;
 
     const result = await this.livekitService.endConsultation(
       body.appointmentId,
@@ -44,7 +53,7 @@ export class LivekitController {
       req.user.role,
       body.notes,
       body.durationSeconds,
-      body.prescription,
+      prescription,
     );
 
     return result;

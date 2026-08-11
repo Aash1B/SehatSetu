@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Clock } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 interface ConsultationTimerProps {
@@ -22,17 +21,15 @@ const ConsultationTimer: React.FC<ConsultationTimerProps> = ({ className }) => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const isLong = seconds > 60 * 15; // > 15 mins
-
   return (
     <div className={cn(
-      "flex items-center gap-2 px-3 py-1.5 rounded-lg border font-medium text-sm transition-colors",
-      isLong 
-        ? "bg-red-50 text-red-600 border-red-200"
-        : "bg-green-50 text-green-600 border-green-200",
+      "flex items-center gap-3 text-lg font-bold text-[#111b35] transition-colors",
       className
     )}>
-      <Clock className="w-4 h-4" />
+      <span
+        aria-hidden="true"
+        className="h-3 w-3 rounded-full bg-[#18b966] shadow-[0_0_0_4px_rgba(24,185,102,0.12)] animate-pulse"
+      />
       <span>{formatTime(seconds)}</span>
     </div>
   );

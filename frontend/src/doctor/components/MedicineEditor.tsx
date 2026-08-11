@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Pill, X, Sparkles, Plus, ChevronDown, ChevronUp } from 'lucide-react';
+import { Pill, X, Plus, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { searchCatalog } from '../data/prescriptionCatalog';
 
@@ -151,38 +151,18 @@ const MedicineEditor: React.FC<MedicineEditorProps> = ({ className, aiExtractedM
   };
 
   return (
-    <div className={cn('bg-deep-space rounded-2xl shadow-sm overflow-hidden flex flex-col', className)}>
+    <div className={cn('bg-[#9bacd8] rounded-2xl shadow-sm overflow-hidden flex flex-col', className)}>
       {/* Header */}
-      <div className="p-3 border-b border-white/10 flex items-center justify-between text-white shrink-0">
+      <div className="p-3 border-b border-[#7B96C8]/50 flex items-center justify-between text-[#223382] shrink-0">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <Pill className="w-4 h-4 text-white" />
+            <Pill className="w-4 h-4 text-[#223382]" />
             <h3 className="font-bold text-sm">Medicines</h3>
           </div>
-          <div className="text-[11px] text-blue-200 bg-white/10 px-2.5 py-0.5 rounded-full font-medium">
-            {medicines.length} added
+          <div className="text-sm text-green-800 font-semibold">
+            ({medicines.length} added)
           </div>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            const aiItem: StructuredMedicine = {
-              id: Date.now().toString(),
-              name: 'Tab. Paracetamol',
-              dosage: '650mg',
-              frequency: '1-0-1',
-              duration: '5 days',
-              timing: 'After Food',
-              isAi: true,
-            };
-            setMedicines(prev => [...prev, aiItem]);
-          }}
-          className="flex items-center gap-1.5 text-[10px] font-bold text-blue-300 uppercase tracking-wider hover:text-white transition-colors cursor-pointer bg-white/10 px-2 py-0.5 rounded-full"
-          title="Add AI suggested medicine"
-        >
-          <Sparkles className="w-3 h-3" />
-          AI
-        </button>
       </div>
 
       {/* Medicine List */}
@@ -198,21 +178,20 @@ const MedicineEditor: React.FC<MedicineEditorProps> = ({ className, aiExtractedM
             <li key={med.id} className="animate-in fade-in slide-in-from-right-2">
               {/* Medicine row summary */}
               <div
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 group"
+                className="relative flex items-center justify-start px-3 py-2 cursor-pointer hover:bg-gray-50 group"
                 onClick={() => setExpandedId(expandedId === med.id ? null : med.id)}
               >
-                {med.isAi ? (
-                  <Sparkles className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                ) : (
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 ml-1 mr-1" />
-                )}
-                <div className="flex-1 min-w-0">
-                  <span className="text-sm font-semibold text-deep-space truncate block">{med.name || <span className="italic text-gray-400">Unnamed</span>}</span>
-                  <span className="text-[11px] text-gray-500">
+                <Pill
+                  aria-hidden="true"
+                  className="absolute left-3 w-3.5 h-3.5 text-[#223382] shrink-0"
+                />
+                <div className="flex min-w-0 max-w-full items-center justify-start gap-2 whitespace-nowrap px-5">
+                  <span className={cn("text-sm font-semibold truncate", med.isAi ? "text-[#F98513]" : "text-deep-space")}>{med.name || <span className="italic text-gray-400">Unnamed</span>}</span>
+                  <span className="text-[11px] text-gray-500 truncate">
                     {[med.dosage, med.frequency, med.duration, med.timing].filter(Boolean).join(' · ') || 'Tap to fill details'}
                   </span>
                 </div>
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute right-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); removeMedicine(med.id); }}
@@ -231,41 +210,41 @@ const MedicineEditor: React.FC<MedicineEditorProps> = ({ className, aiExtractedM
 
               {/* Expanded detail fields */}
               {expandedId === med.id && (
-                <div className="bg-blue-50 border-t border-blue-100 px-3 py-2 grid grid-cols-2 gap-2 animate-in fade-in">
+                <div className="bg-[#EEF2FF] border-t border-[#BFDBFE] px-3 py-2 grid grid-cols-2 gap-2 animate-in fade-in">
                   <div className="col-span-2">
-                    <label className="block text-[10px] font-semibold text-blue-700 uppercase mb-0.5">Medicine Name</label>
+                    <label className="block text-[10px] font-semibold text-[#1E40AF] uppercase mb-0.5">Medicine Name</label>
                     <input
                       type="text"
                       value={med.name}
                       onChange={e => updateField(med.id, 'name', e.target.value)}
-                      className="w-full text-sm bg-white border border-blue-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      placeholder="e.g. Tab. Paracetamol"
+                      className="w-full text-sm bg-white border border-[#BFDBFE] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
+                      placeholder="Medicine name"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-semibold text-blue-700 uppercase mb-0.5">Dosage</label>
+                    <label className="block text-[10px] font-semibold text-[#1E40AF] uppercase mb-0.5">Dosage</label>
                     <input
                       type="text"
                       value={med.dosage}
                       onChange={e => updateField(med.id, 'dosage', e.target.value)}
-                      className="w-full text-sm bg-white border border-blue-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      placeholder="e.g. 650mg"
+                      className="w-full text-sm bg-white border border-[#BFDBFE] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
+                      placeholder="Dosage"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-semibold text-blue-700 uppercase mb-0.5">Frequency</label>
+                    <label className="block text-[10px] font-semibold text-[#1E40AF] uppercase mb-0.5">Frequency</label>
                     <div className="flex gap-1">
                       <input
                         type="text"
                         value={med.frequency}
                         onChange={e => updateField(med.id, 'frequency', e.target.value)}
-                        className="flex-1 text-sm bg-white border border-blue-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 min-w-0"
-                        placeholder="e.g. 1-0-1"
+                        className="flex-1 text-sm bg-white border border-[#BFDBFE] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#2563EB] min-w-0"
+                        placeholder="Frequency"
                       />
                       <select
                         value={FREQ_OPTIONS.includes(med.frequency) ? med.frequency : ''}
                         onChange={e => { if (e.target.value) updateField(med.id, 'frequency', e.target.value); }}
-                        className="text-xs bg-white border border-blue-200 rounded-lg px-1 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                        className="text-xs bg-white border border-[#BFDBFE] rounded-lg px-1 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#2563EB] cursor-pointer"
                       >
                         <option value="">...</option>
                         {FREQ_OPTIONS.map(f => <option key={f} value={f}>{f}</option>)}
@@ -273,21 +252,21 @@ const MedicineEditor: React.FC<MedicineEditorProps> = ({ className, aiExtractedM
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-semibold text-blue-700 uppercase mb-0.5">Duration</label>
+                    <label className="block text-[10px] font-semibold text-[#1E40AF] uppercase mb-0.5">Duration</label>
                     <input
                       type="text"
                       value={med.duration}
                       onChange={e => updateField(med.id, 'duration', e.target.value)}
-                      className="w-full text-sm bg-white border border-blue-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      placeholder="e.g. 5 days"
+                      className="w-full text-sm bg-white border border-[#BFDBFE] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
+                      placeholder="Duration"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-semibold text-blue-700 uppercase mb-0.5">Timing</label>
+                    <label className="block text-[10px] font-semibold text-[#1E40AF] uppercase mb-0.5">Timing</label>
                     <select
                       value={med.timing}
                       onChange={e => updateField(med.id, 'timing', e.target.value)}
-                      className="w-full text-sm bg-white border border-blue-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                      className="w-full text-sm bg-white border border-[#BFDBFE] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#2563EB] cursor-pointer"
                     >
                       {TIMING_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
@@ -303,9 +282,9 @@ const MedicineEditor: React.FC<MedicineEditorProps> = ({ className, aiExtractedM
       <div ref={containerRef} className="p-3 bg-white border-t border-gray-100 shrink-0 relative">
         {showSuggestions && filteredSuggestions.length > 0 && (
           <div className="absolute bottom-full mb-1 left-3 right-3 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden divide-y divide-gray-100 max-h-48 overflow-y-auto">
-            <div className="bg-blue-50 px-3 py-1.5 text-[11px] font-semibold text-blue-700 uppercase tracking-wider flex justify-between items-center">
+            <div className="bg-[#EEF2FF] px-3 py-1.5 text-[11px] font-semibold text-[#1E40AF] uppercase tracking-wider flex justify-between items-center">
               <span>Suggested Medicines</span>
-              <span className="text-[10px] text-blue-500 font-normal">Click or Tab to select</span>
+              <span className="text-[10px] text-[#2563EB] font-normal">Click or Tab to select</span>
             </div>
             {filteredSuggestions.map((suggestion, idx) => (
               <button
@@ -313,11 +292,11 @@ const MedicineEditor: React.FC<MedicineEditorProps> = ({ className, aiExtractedM
                 type="button"
                 onClick={() => selectSuggestion(suggestion)}
                 className={cn(
-                  'w-full text-left px-3 py-2 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-900 transition-colors flex items-center gap-2 cursor-pointer',
-                  selectedIndex === idx && 'bg-blue-100 text-blue-900 font-medium'
+                  'w-full text-left px-3 py-2 text-xs text-gray-700 hover:bg-[#EEF2FF] hover:text-[#1E3A8A] transition-colors flex items-center gap-2 cursor-pointer',
+                  selectedIndex === idx && 'bg-[#E0E7FF] text-[#1E3A8A] font-medium'
                 )}
               >
-                <Pill className="w-3 h-3 text-blue-500 shrink-0" />
+                <Pill className="w-3 h-3 text-[#2563EB] shrink-0" />
                 <span>{suggestion}</span>
               </button>
             ))}
@@ -335,7 +314,7 @@ const MedicineEditor: React.FC<MedicineEditorProps> = ({ className, aiExtractedM
             }}
             onFocus={() => setShowSuggestions(true)}
             onKeyDown={handleKeyDown}
-            placeholder="Add medicine (e.g. Amoxicillin 500mg BD 5 days)…"
+            placeholder="Add medicine…"
             className="flex-1 text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-habanero"
           />
           <button

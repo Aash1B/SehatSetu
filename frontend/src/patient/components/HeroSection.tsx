@@ -55,12 +55,12 @@ const HeroSection: React.FC = () => {
             {t('description')}
           </p>
 
-          {/* CTA Button - Popping Pill Style */}
+          {/* Primary CTA Button - Popping Pill Style */}
           <div className="mb-7 mt-7 flex justify-start">
             <button
               type="button"
               onClick={handlePrimaryAction}
-              className="inline-flex min-h-13 cursor-pointer select-none items-center justify-center gap-3 rounded-full bg-gradient-to-r from-orange-500 via-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 px-8 py-3.5 text-base font-bold text-white shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/40 hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 border-none group"
+              className="group inline-flex min-h-13 cursor-pointer select-none items-center justify-center gap-3 rounded-full border-none bg-gradient-to-r from-orange-500 via-orange-500 to-orange-600 px-8 py-3.5 text-base font-bold text-white shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-[1.03] hover:from-orange-600 hover:to-orange-700 hover:shadow-xl hover:shadow-orange-500/40 active:scale-[0.97]"
             >
               <span>{t('cta')}</span>
               <svg className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
