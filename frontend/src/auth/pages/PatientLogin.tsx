@@ -240,9 +240,9 @@ export default function PatientLogin() {
           <Link to="/" className="inline-flex items-center">
             <BrandLogo
               className="gap-2"
-              markWrapperClassName="w-8 h-8 rounded-xl bg-orange-50 flex items-center justify-center p-1.5"
+              markWrapperClassName="w-8 h-8 rounded-xl bg-transparent flex items-center justify-center p-1.5"
               wordmarkClassName="text-2xl font-extrabold tracking-tight"
-              accentClassName="text-blue-600 brand-title-accent"
+              accentClassName="text-orange-500 brand-title-accent"
             />
           </Link>
           <p className="text-slate-500 mt-2">{t('patientLogin.portalLabel')}</p>

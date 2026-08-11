@@ -17,6 +17,7 @@ const DoctorProfile: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<DoctorProfileData | null>(null);
+  const [pendingImage, setPendingImage] = useState<File | null>(null);
 
   const loadProfile = async () => {
     setIsLoading(true);
@@ -100,10 +101,32 @@ const DoctorProfile: React.FC = () => {
 
   const handleEdit = () => {
     setIsEditing(true);
+    setPendingImage(null);
     setFormData(profile);
   };
 
+  const handlePhotoChange = (file: File) => {
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      window.alert('Please choose a JPEG, PNG, or WebP image.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      window.alert('Profile image size must not exceed 5MB.');
+      return;
+    }
+
+    if (formData?.photoUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(formData.photoUrl);
+    }
+    setPendingImage(file);
+    setFormData(formData ? { ...formData, photoUrl: URL.createObjectURL(file) } : formData);
+  };
+
   const handleCancel = () => {
+    if (formData?.photoUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(formData.photoUrl);
+    }
+    setPendingImage(null);
     setIsEditing(false);
     setFormData(profile); // Revert changes
   };
@@ -112,22 +135,43 @@ const DoctorProfile: React.FC = () => {
     if (!formData) return;
     setIsLoading(true);
     try {
+      const profileToSave: DoctorProfileData = { ...formData };
+
+      if (pendingImage) {
+        const imageFormData = new FormData();
+        imageFormData.append('image', pendingImage);
+        const imageResponse = await fetch(`/api/doctor/${formData.id}/profile-image`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${getToken()}` },
+          body: imageFormData,
+        });
+        if (!imageResponse.ok) throw new Error('Unable to upload doctor profile image');
+        const uploadedImage = await imageResponse.json();
+        profileToSave.photoUrl = uploadedImage.imageUrl;
+      }
+
       const response = await fetch(`/api/doctor/${formData.id}/profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
         body: JSON.stringify({
-          ...formData,
+          ...profileToSave,
           availability: {
-            ...formData.availability,
-            aboutMe: formData.aboutMe,
-            medicalLicenseNumber: formData.medicalLicenseNumber,
-            phoneNumber: formData.phoneNumber,
-            documents: formData.documents,
+            ...profileToSave.availability,
+            aboutMe: profileToSave.aboutMe,
+            medicalLicenseNumber: profileToSave.medicalLicenseNumber,
+            phoneNumber: profileToSave.phoneNumber,
+            documents: profileToSave.documents,
           },
         }),
       });
       if (!response.ok) throw new Error('Unable to save doctor profile');
-      setProfile(formData);
+
+      if (formData.photoUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(formData.photoUrl);
+      }
+      setProfile(profileToSave);
+      setFormData(profileToSave);
+      setPendingImage(null);
       setIsEditing(false);
     } finally {
       setIsLoading(false);
@@ -152,7 +196,8 @@ const DoctorProfile: React.FC = () => {
     id: profile.id,
     name: profile.fullName,
     initials: profile.fullName.split(' ').map(n => n[0]).join('').substring(0, 2),
-    specialization: profile.specialization
+    specialization: profile.specialization,
+    imageUrl: profile.photoUrl,
   } : { id: '', name: '', initials: '' };
 
   return (
@@ -173,6 +218,7 @@ const DoctorProfile: React.FC = () => {
           onEdit={handleEdit}
           onCancel={handleCancel}
           onSave={handleSave}
+          onPhotoChange={handlePhotoChange}
         />
 
         <div className="mb-6">

@@ -113,6 +113,109 @@ const vitalValues = (value: unknown): Array<{ label: string; value: string }> =>
     .filter((vital): vital is { label: string; value: string } => Boolean(vital));
 };
 
+interface ExtractedInsights {
+  conditions: string[];
+  allergies: string[];
+  medications: string[];
+  procedures: string[];
+  points: string[];
+}
+
+const uniqueText = (values: unknown[]): string[] => [...new Set(
+  values
+    .map(textValue)
+    .filter((value): value is string => Boolean(value)),
+)];
+
+const extractTextMatches = (text: string, pattern: RegExp): string[] => {
+  const values: string[] = [];
+  for (const match of text.matchAll(pattern)) {
+    const value = match[1]?.trim();
+    if (value) values.push(value.replace(/\s+/g, ' '));
+  }
+  return values;
+};
+
+const getReportRawData = (item: PatientEhrModalItem): Record<string, unknown> => (
+  asRecord(item.extractedData) || {}
+);
+
+const getExtractedInsights = (
+  profileConditions: string[],
+  profileAllergies: string[],
+  reports: PatientEhrModalItem[],
+  prescriptions: any[],
+): ExtractedInsights => {
+  const conditions = [...profileConditions];
+  const allergies = [...profileAllergies];
+  const medications = prescriptions.flatMap((prescription) => medicationValues(
+    prescription.fullData?.medications || prescription.medicines,
+  ));
+  const procedures: string[] = [];
+  const points: string[] = [];
+
+  reports.forEach((report) => {
+    const raw = getReportRawData(report) as MedicalReportExtractedData;
+    const clinical = getClinicalData(report);
+    const text = [report.extractedText, textValue(raw.extracted_text)].filter(Boolean).join('\n');
+    const entities = Array.isArray(raw.structured_entities)
+      ? raw.structured_entities as OcrStructuredEntity[]
+      : [];
+
+    if (clinical.diagnosis) conditions.push(clinical.diagnosis);
+    medications.push(...clinical.medications);
+    allergies.push(
+      ...entities
+        .filter((entity) => /allerg/i.test(entity.kind || ''))
+        .map((entity) => entity.name || entity.value || ''),
+      ...extractTextMatches(text, /\b(?:allerg(?:y|ies)|allergic to)\s*[:\-]?\s*(?!none\b|no known\b|n\/?k\/?a\b)([^\n|;.]+)/gi),
+    );
+    procedures.push(
+      ...entities
+        .filter((entity) => /procedure|surgery|operation/i.test(entity.kind || ''))
+        .map((entity) => entity.name || entity.value || ''),
+      ...extractTextMatches(text, /\b(?:past surgical history|surgery|procedure|operation)\s*[:\-]\s*([^\n|;.]+)/gi),
+    );
+
+    if (clinical.diagnosis) points.push(`Diagnosis: ${clinical.diagnosis}`);
+    clinical.medications.forEach((medication) => points.push(`Medication: ${medication}`));
+    clinical.vitals.forEach((vital) => points.push(`${vital.label}: ${vital.value}`));
+    (Array.isArray(raw.key_findings) ? raw.key_findings : [])
+      .map(textValue)
+      .filter((finding): finding is string => Boolean(finding))
+      .forEach((finding) => points.push(`Finding: ${finding}`));
+    (Array.isArray(raw.abnormal_findings) ? raw.abnormal_findings : [])
+      .map((finding) => {
+        const record = asRecord(finding);
+        if (!record) return null;
+        const parameter = textValue(record.parameter);
+        const value = formatVitalValue(record.value, record.unit);
+        const state = textValue(record.status);
+        return parameter ? `Abnormal finding: ${parameter}${value ? ` ${value}` : ''}${state ? ` (${state})` : ''}` : null;
+      })
+      .filter((finding): finding is string => Boolean(finding))
+      .forEach((finding) => points.push(finding));
+    (Array.isArray(raw.recommendations) ? raw.recommendations : [])
+      .map(textValue)
+      .filter((recommendation): recommendation is string => Boolean(recommendation))
+      .forEach((recommendation) => points.push(`Recommendation: ${recommendation}`));
+    entities
+      .filter((entity) => /lab|test|measurement|blood_pressure/i.test(entity.kind || ''))
+      .forEach((entity) => {
+        const value = formatVitalValue(entity.value, entity.unit);
+        if (entity.name && value) points.push(`${formatClinicalLabel(entity.name)}: ${value}`);
+      });
+  });
+
+  return {
+    conditions: uniqueText(conditions),
+    allergies: uniqueText(allergies),
+    medications: uniqueText(medications),
+    procedures: uniqueText(procedures),
+    points: uniqueText(points).slice(0, 12),
+  };
+};
+
 const getClinicalData = (item: PatientEhrModalItem): ClinicalData => {
   const raw = asRecord(item.extractedData) as MedicalReportExtractedData | null;
   const structured = asRecord(item.structuredData);
@@ -684,8 +787,13 @@ const DashboardPage: React.FC = () => {
     setReportUploadMessage(`🔍 ${t('uploadingReport', { file: file.name })}`);
     try {
       const result: MedicalReportResponse = await uploadMedicalReport(file);
-      setReportUploadState('success');
-      setReportUploadMessage(`✨ ${t('uploadSuccess', { file: file.name })}`);
+      const ocrFailed = result.ocrStatus === 'FAILED';
+      setReportUploadState(ocrFailed ? 'error' : 'success');
+      setReportUploadMessage(
+        ocrFailed
+          ? `OCR could not read ${file.name}. ${result.processingErrorMessage || 'Please try another clear PDF or image.'}`
+          : `✨ ${t('uploadSuccess', { file: file.name })}`,
+      );
 
       const newEhrItem: PatientEhrModalItem = {
         id: result.id,
@@ -907,13 +1015,6 @@ const DashboardPage: React.FC = () => {
             </span>
           </div>
           <div className="top-bar-actions" style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '12px' }}>
-            <button type="button" className="btn-notification-bell" aria-label={t('notifications')}>
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#334155" strokeWidth="2" strokeLinecap="round">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-              </svg>
-              <span className="bell-badge">2</span>
-            </button>
             {/* User Profile Display */}
             <div className="top-user-pill">
               {profileImageUrl ? (
@@ -1638,10 +1739,9 @@ const DashboardPage: React.FC = () => {
           {activeTab === 'records' && (() => {
             const conditions: string[] = profileData.chronicConditions || [];
             const allergies: string[] = profileData.allergies || [];
-            const totalMeds = prescriptionsList.reduce((acc: number, rx: any) => {
-              const meds = Array.isArray(rx.fullData?.medications) ? rx.fullData.medications.length : 0;
-              return Math.max(acc, meds);
-            }, 0);
+            const uploadedReports = ehrReportsList.filter((report: PatientEhrModalItem) => report.source === 'Uploaded medical report');
+            const extractedInsights = getExtractedInsights(conditions, allergies, ehrReportsList, prescriptionsList);
+            const totalMeds = extractedInsights.medications.length;
 
             return (
               <div className="ehr-dashboard-root">
@@ -1678,8 +1778,8 @@ const DashboardPage: React.FC = () => {
                     </div>
                     <div className="ehr-stat-body">
                       <div className="ehr-stat-label">Known Conditions</div>
-                      <div className="ehr-stat-count">{conditions.length || 0}</div>
-                      <div className="ehr-stat-sub">Known conditions</div>
+                      <div className="ehr-stat-count">{extractedInsights.conditions.length}</div>
+                      <div className="ehr-stat-sub">Detected conditions</div>
                       <button type="button" className="ehr-stat-link">View Details</button>
                     </div>
                   </div>
@@ -1692,8 +1792,8 @@ const DashboardPage: React.FC = () => {
                     </div>
                     <div className="ehr-stat-body">
                       <div className="ehr-stat-label">Allergies</div>
-                      <div className="ehr-stat-count">{allergies.length || 0}</div>
-                      <div className="ehr-stat-sub">Known {allergies.length === 1 ? 'allergy' : 'allergies'}</div>
+                      <div className="ehr-stat-count">{extractedInsights.allergies.length}</div>
+                      <div className="ehr-stat-sub">Detected {extractedInsights.allergies.length === 1 ? 'allergy' : 'allergies'}</div>
                       <button type="button" className="ehr-stat-link">View Details</button>
                     </div>
                   </div>
@@ -1709,8 +1809,8 @@ const DashboardPage: React.FC = () => {
                     </div>
                     <div className="ehr-stat-body">
                       <div className="ehr-stat-label">Current Medications</div>
-                      <div className="ehr-stat-count">{totalMeds || prescriptionsList.length}</div>
-                      <div className="ehr-stat-sub">Active medications</div>
+                      <div className="ehr-stat-count">{totalMeds}</div>
+                      <div className="ehr-stat-sub">Extracted active medications</div>
                       <button type="button" className="ehr-stat-link" onClick={(e) => { e.stopPropagation(); handleTabClick('prescriptions'); }}>View Details</button>
                     </div>
                   </div>
@@ -1723,8 +1823,8 @@ const DashboardPage: React.FC = () => {
                     </div>
                     <div className="ehr-stat-body">
                       <div className="ehr-stat-label">Past Surgeries / Procedures</div>
-                      <div className="ehr-stat-count">{ehrReportsList.filter((r: any) => r.source === 'Uploaded medical report').length}</div>
-                      <div className="ehr-stat-sub">Surgery / Procedure</div>
+                      <div className="ehr-stat-count">{extractedInsights.procedures.length}</div>
+                      <div className="ehr-stat-sub">Detected procedures</div>
                       <button type="button" className="ehr-stat-link">View Details</button>
                     </div>
                   </div>
@@ -1743,7 +1843,7 @@ const DashboardPage: React.FC = () => {
                         </div>
                         <div>
                           <div className="ehr-summary-item-label">Known Conditions</div>
-                          <div className="ehr-summary-item-value">{conditions.length > 0 ? conditions.join(', ') : 'None recorded'}</div>
+                          <div className="ehr-summary-item-value">{extractedInsights.conditions.length > 0 ? extractedInsights.conditions.join(', ') : 'None recorded'}</div>
                         </div>
                       </div>
                       <div className="ehr-summary-item">
@@ -1752,7 +1852,7 @@ const DashboardPage: React.FC = () => {
                         </div>
                         <div>
                           <div className="ehr-summary-item-label">Allergies</div>
-                          <div className="ehr-summary-item-value">{allergies.length > 0 ? allergies.join(', ') : 'None recorded'}</div>
+                          <div className="ehr-summary-item-value">{extractedInsights.allergies.length > 0 ? extractedInsights.allergies.join(', ') : 'None recorded'}</div>
                         </div>
                       </div>
                       <div className="ehr-summary-item">
@@ -1761,7 +1861,7 @@ const DashboardPage: React.FC = () => {
                         </div>
                         <div>
                           <div className="ehr-summary-item-label">Past Surgeries / Procedures</div>
-                          <div className="ehr-summary-item-value">{ehrReportsList.length > 0 ? `${ehrReportsList.length} record(s) on file` : 'None recorded'}</div>
+                          <div className="ehr-summary-item-value">{extractedInsights.procedures.length > 0 ? extractedInsights.procedures.join(', ') : 'None recorded'}</div>
                         </div>
                       </div>
                       <div className="ehr-summary-item">
@@ -1770,7 +1870,7 @@ const DashboardPage: React.FC = () => {
                         </div>
                         <div>
                           <div className="ehr-summary-item-label">Current Medications</div>
-                          <div className="ehr-summary-item-value">{prescriptionsList.length > 0 ? `${prescriptionsList.length} active prescription(s)` : 'None recorded'}</div>
+                          <div className="ehr-summary-item-value">{extractedInsights.medications.length > 0 ? `${extractedInsights.medications.length} active medication(s)` : 'None recorded'}</div>
                         </div>
                       </div>
                       <div className="ehr-summary-item">
@@ -1786,6 +1886,15 @@ const DashboardPage: React.FC = () => {
                         </div>
                       </div>
                     </div>
+                    {extractedInsights.points.length > 0 && (
+                      <div className="mt-4 rounded-xl border border-blue-100 bg-blue-50 p-3">
+                        <div className="text-xs font-bold uppercase tracking-wide text-blue-700">OCR extracted points</div>
+                        <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-slate-700">
+                          {extractedInsights.points.map((point) => <li key={point}>{point}</li>)}
+                        </ul>
+                        <div className="mt-2 text-[10px] text-slate-500">Automatically read from uploaded reports. Doctor review is required.</div>
+                      </div>
+                    )}
                     <button type="button" className="ehr-summary-full-btn" onClick={() => handleTabClick('prescriptions')}>
                       View Full Medical Summary →
                     </button>
@@ -1903,23 +2012,26 @@ const DashboardPage: React.FC = () => {
                       <button type="button" className="ehr-view-all-btn">View All</button>
                     </div>
                     <div className="ehr-investigations-list">
-                      {ehrReportsList.length === 0 ? (
+                      {uploadedReports.length === 0 ? (
                         <div style={{ color: '#94a3b8', fontSize: '13px', padding: '12px 0' }}>No investigations on file.</div>
                       ) : (
-                        ehrReportsList.slice(0, 3).map((report: any) => (
-                          <div key={report.id} className="ehr-investigation-row">
-                            <div>
-                              <div className="ehr-inv-name">{report.title}</div>
-                              <div className="ehr-inv-date">Ordered on {report.date}</div>
+                        uploadedReports.slice(0, 3).map((report: any) => {
+                          const completed = report.status === 'SUCCEEDED' || report.status === 'PROCESSED';
+                          return (
+                            <div key={report.id} className="ehr-investigation-row">
+                              <div>
+                                <div className="ehr-inv-name">{report.title}</div>
+                                <div className="ehr-inv-date">Uploaded on {report.date}</div>
+                              </div>
+                              <span className="ehr-inv-status" style={{
+                                color: completed ? '#22c55e' : '#f59e0b',
+                                background: completed ? '#f0fdf4' : '#fffbeb'
+                              }}>
+                                {completed ? 'Scanned' : report.status === 'FAILED' ? 'OCR failed' : 'Processing'}
+                              </span>
                             </div>
-                            <span className="ehr-inv-status" style={{
-                              color: report.status === 'SUCCEEDED' || report.status?.includes('OCR') ? '#22c55e' : '#f59e0b',
-                              background: report.status === 'SUCCEEDED' || report.status?.includes('OCR') ? '#f0fdf4' : '#fffbeb'
-                            }}>
-                              {report.status === 'SUCCEEDED' || report.status?.includes('OCR') ? 'Completed' : 'Recommended'}
-                            </span>
-                          </div>
-                        ))
+                          );
+                        })
                       )}
                     </div>
                     <button type="button" className="ehr-summary-full-btn">View All Investigations →</button>
@@ -2721,10 +2833,15 @@ const DashboardPage: React.FC = () => {
                                       id: result?.id || `EHR-2026-${Math.floor(1000 + Math.random() * 9000)}`,
                                       title: `[${cat.label}] ${file.name.replace(/\.[^/.]+$/, '')}`,
                                       date: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
-                                      status: 'Processed via OCR',
-                                      summary: result?.extractedText ? `${result.extractedText.slice(0, 80)}…` : 'AI-extracted health data available',
-                                      source: cat.label,
-                                      extractedData: result?.extractedText || 'Extracted parameters available',
+                                      status: result?.ocrStatus || result?.status || 'PROCESSING',
+                                      summary: result?.extractedText ? `${result.extractedText.slice(0, 80)}…` : 'OCR is processing this report.',
+                                      source: 'Uploaded medical report',
+                                      extractedText: result?.extractedText,
+                                      extractedData: result?.extractedData,
+                                      diagnosis: result?.ehrDraft?.diagnosis,
+                                      notes: result?.ehrDraft?.notes,
+                                      structuredData: result?.ehrDraft?.structuredData,
+                                      isVerified: result?.ehrDraft?.status === 'VERIFIED',
                                     };
                                     setEhrReportsList(prev => [newEhrItem, ...prev]);
                                   } catch (err) {

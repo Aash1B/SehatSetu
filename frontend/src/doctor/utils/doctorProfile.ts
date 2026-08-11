@@ -7,6 +7,7 @@ export interface DoctorProfile {
   name: string;
   specialization: string;
   initials: string;
+  imageUrl?: string;
 }
 
 export const DOCTORS_LIST: DoctorProfile[] = [

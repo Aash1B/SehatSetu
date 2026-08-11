@@ -28,7 +28,7 @@ const Footer: React.FC = () => {
                 markWrapperClassName="shrink-0 footer-logo-img"
                 markClassName="w-full h-full object-contain"
                 wordmarkClassName="brand-title text-white text-3xl sm:text-4xl font-extrabold tracking-tight"
-                accentClassName="text-blue-600 brand-title-accent"
+                accentClassName="text-orange-500 brand-title-accent"
               />
             </a>
             <p className="mt-3 text-base sm:text-lg text-slate-300 font-medium">

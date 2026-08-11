@@ -34,6 +34,7 @@ const Dashboard = () => {
     name: authName,
     specialization: '',
     initials: getInitials(authName),
+    imageUrl: '',
   });
   const [consultations, setConsultations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -75,6 +76,7 @@ const Dashboard = () => {
           name: doctorName,
           initials: getInitials(doctorName),
           specialization: profile.specialty || 'General Physician',
+          imageUrl: profile.imageUrl || '',
         });
 
         const res = await fetch('/api/appointments', { headers });
@@ -143,6 +145,7 @@ const Dashboard = () => {
             name: activeDoctor.name,
             initials: activeDoctor.initials,
             specialization: activeDoctor.specialization as any,
+            imageUrl: activeDoctor.imageUrl,
           }}
           date={new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
           notificationCount={3}

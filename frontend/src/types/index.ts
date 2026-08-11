@@ -45,6 +45,7 @@ export interface Doctor {
   name: string;
   initials: string;
   specialization: Specialization;
+  imageUrl?: string;
 }
 
 export interface DashboardStats {

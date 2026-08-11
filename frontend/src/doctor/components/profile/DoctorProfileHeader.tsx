@@ -1,6 +1,5 @@
-import React from 'react';
-import { CheckCircle2, Edit2 } from 'lucide-react';
-import SectionCard from '../SectionCard';
+import React, { useRef } from 'react';
+import { Camera, CheckCircle2, Edit2 } from 'lucide-react';
 import { DoctorProfileData } from '../../types/profile.types';
 
 interface Props {
@@ -9,9 +8,18 @@ interface Props {
   onEdit?: () => void;
   onCancel?: () => void;
   onSave?: () => void;
+  onPhotoChange?: (file: File) => void;
 }
 
-const DoctorProfileHeader: React.FC<Props> = ({ profile, isEditing, onEdit, onCancel, onSave }) => {
+const DoctorProfileHeader: React.FC<Props> = ({ profile, isEditing, onEdit, onCancel, onSave, onPhotoChange }) => {
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageSelected = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (file) onPhotoChange?.(file);
+  };
+
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-jodhpur-tan/30 mb-8 flex flex-col md:flex-row items-start md:items-center gap-6">
       <div className="relative shrink-0">
@@ -25,6 +33,25 @@ const DoctorProfileHeader: React.FC<Props> = ({ profile, isEditing, onEdit, onCa
         {profile.isVerified && (
           <div className="absolute bottom-0 right-0 bg-white rounded-full p-0.5 shadow-sm border border-gray-100">
             <CheckCircle2 className="w-5 h-5 text-green-500 fill-green-50" />
+          </div>
+        )}
+        {isEditing && (
+          <div className="mt-3 flex justify-center">
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={handleImageSelected}
+            />
+            <button
+              type="button"
+              onClick={() => imageInputRef.current?.click()}
+              className="text-sm font-medium text-aster-blue hover:text-aster-blue/80 flex items-center gap-1.5"
+            >
+              <Camera className="w-4 h-4" />
+              Change photo
+            </button>
           </div>
         )}
       </div>

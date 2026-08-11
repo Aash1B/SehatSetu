@@ -105,12 +105,12 @@ class OCRService:
         gemini: GeminiService | None = None,
     ) -> None:
         self.settings = settings
-        injected_gemini = gemini is not None
+        self._gemini_injected = gemini is not None
         self.gemini = gemini or GeminiService(settings)
         self.provider = GeminiVisionOCRService(self.gemini)
         self.local_provider = TesseractProvider(settings.tesseract_path,settings.tesseract_language,settings.ocr_request_timeout_seconds)
         gemini_configured=bool(settings.gemini_api_key and settings.gemini_api_key.get_secret_value().strip())
-        self.fallback_provider = GeminiVisionProvider(self.gemini,OCR_PROMPT,injected_gemini or gemini_configured)
+        self.fallback_provider = GeminiVisionProvider(self.gemini,OCR_PROMPT,self._gemini_injected or gemini_configured)
         self.manager = OCRManager(self.local_provider,self.fallback_provider,settings.ocr_fallback_threshold,0.85,settings.ocr_max_concurrent_requests,settings.ocr_cache_ttl_seconds)
         self.preprocessor = ImagePreprocessor(settings.ocr_preprocess_enabled,settings.ocr_preprocess_adaptive_threshold,settings.ocr_preprocess_deskew)
 
@@ -309,7 +309,17 @@ class OCRService:
         text: str,
         output_language: str,
     ) -> OCRMedicalAnalysis:
-        """Ask Gemini for grounded structured analysis of extracted text."""
+        """Add optional medical analysis without blocking raw OCR extraction."""
+        has_gemini_key = bool(
+            self.settings.gemini_api_key
+            and self.settings.gemini_api_key.get_secret_value().strip()
+        )
+        if not self._gemini_injected and not has_gemini_key:
+            logger.warning(
+                "Skipping optional Gemini medical analysis; raw OCR remains available"
+            )
+            return OCRMedicalAnalysis()
+
         try:
             return self.gemini.generate_gemini_response(
                 prompt=json.dumps(
@@ -327,15 +337,10 @@ class OCRService:
             )
         except AppException as exc:
             logger.warning(
-                "Gemini OCR medical analysis failed provider_code=%s",
+                "Gemini OCR medical analysis failed; returning raw OCR provider_code=%s",
                 exc.code,
             )
-            raise AppException(
-                "The OCR provider could not analyze the document.",
-                status_code=status.HTTP_502_BAD_GATEWAY,
-                code="GEMINI_OCR_FAILED",
-                details={"provider": "gemini-vision"},
-            ) from exc
+            return OCRMedicalAnalysis()
 
 
 @lru_cache

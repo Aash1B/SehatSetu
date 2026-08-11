@@ -66,9 +66,9 @@ navigate('/verify-otp', { state: { email, role: 'DOCTOR' } });
           <Link to="/" className="inline-flex items-center">
             <BrandLogo
               className="gap-2"
-              markWrapperClassName="w-9 h-9 rounded-lg bg-orange-50 flex items-center justify-center p-1.5"
+              markWrapperClassName="w-9 h-9 rounded-lg bg-transparent flex items-center justify-center p-1.5"
               wordmarkClassName="text-3xl font-extrabold tracking-tight"
-              accentClassName="text-blue-600 brand-title-accent"
+              accentClassName="text-orange-500 brand-title-accent"
             />
           </Link>
           <p className="text-slate-800 font-bold text-lg mt-2">Create your Doctor account</p>

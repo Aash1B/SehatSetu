@@ -1403,12 +1403,12 @@
 .logo-badge {
     width: 56px;
     height: 56px;
-    background: #FFF7ED;
+    background: transparent;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.15);
+    box-shadow: none;
     overflow: hidden;
   }
 
@@ -1420,7 +1420,7 @@
   }
 
   .brand-title-accent {
-    color: var(--color-blue-accent);
+    color: var(--color-orange-primary);
   }
 
   .nav-links {
@@ -2760,51 +2760,6 @@
   /* ==========================================================================
    Floating Emergency Button & SOS Modal
    ========================================================================== */
-  .floating-emergency-btn {
-    position: fixed;
-    bottom: 18px;
-    right: 18px;
-    z-index: 1000;
-    width: 136px;
-    height: 136px;
-    padding: 0;
-    border-radius: 50%;
-    background: none;
-    border: 4px solid #FFFFFF;
-    box-shadow: 0 10px 24px rgba(220, 38, 38, 0.5);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-
-  .floating-emergency-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 12px 28px rgba(220, 38, 38, 0.58);
-  }
-
-  .siren-pulse-ring {
-    position: absolute;
-    top: -5px;
-    left: -5px;
-    right: -5px;
-    bottom: -5px;
-    border-radius: 50%;
-    border: 2px solid rgba(239, 68, 68, 0.6);
-    animation: emergencyPulse 2s infinite;
-    pointer-events: none;
-  }
-
-  .emergency-icon-wrap {
-    width: 100%;
-    height: 100%;
-  }
-
-  .emergency-img {
-    border-radius: 50%;
-  }
 
 }
 @keyframes modalSlideUp {
@@ -3257,12 +3212,12 @@
     width: 48px;
     height: 48px;
     flex-shrink: 0;
-    background: #FFF7ED;
+    background: transparent;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.15);
+    box-shadow: none;
     overflow: hidden;
     padding: 3px;
     box-sizing: border-box;
