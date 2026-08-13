@@ -1345,7 +1345,7 @@ const DashboardPage: React.FC = () => {
                     Namaste
                   </span>
                   <span style={{ color: '#111144', fontWeight: 800 }}>, {patientFirstName}</span>
-                  <img src="/namaskar-clean.png" alt="Namaste" className="namaskar-animated-icon" style={{ marginLeft: 6, transform: 'translateY(-16px)', verticalAlign: 'middle' }} />
+                  <img src="/namaskar-clean.png" alt="Namaste" className="namaskar-animated-icon" />
                 </h1>
               </div>
 

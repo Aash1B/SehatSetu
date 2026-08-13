@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, UnauthorizedException, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, ConflictException, UnauthorizedException, BadRequestException, NotFoundException, Logger, InternalServerErrorException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
@@ -10,6 +10,8 @@ const OTP_EXPIRY_MINUTES = 10;
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly jwtService: JwtService,
     private readonly prisma: PrismaService,
@@ -341,16 +343,33 @@ export class AuthService {
         data: { resetTokenHash: tokenHash, resetTokenExpiresAt },
       });
 
-      const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${rawToken}`;
+      const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/+$/, '');
+      const resetLink = `${frontendUrl}/reset-password?token=${rawToken}`;
 
-      await this.mailService.sendMail(
-        email,
-        'Reset your SehatSetu password',
-        `<p>Hi ${user.fullName},</p>
-         <p>We received a request to reset your SehatSetu password. Click the link below to choose a new one:</p>
-         <p><a href="${resetLink}">${resetLink}</a></p>
-         <p>This link expires in 30 minutes. If you didn't request this, you can ignore this email.</p>`,
-      );
+      try {
+        await this.mailService.sendMail(
+          email,
+          'Reset your SehatSetu password',
+          `<p>Hi ${user.fullName},</p>
+           <p>We received a request to reset your SehatSetu password. Click the link below to choose a new one:</p>
+           <p><a href="${resetLink}">${resetLink}</a></p>
+           <p>This link expires in 30 minutes. If you didn't request this, you can ignore this email.</p>`,
+        );
+      } catch (error) {
+        const details = error instanceof Error ? error.message : String(error);
+        this.logger.error(`Password reset email failed for user ${user.id}: ${details}`);
+
+        // Do not leave a usable token behind when delivery failed. The hash
+        // condition prevents this cleanup from clearing a newer request.
+        await this.prisma.user.updateMany({
+          where: { id: user.id, resetTokenHash: tokenHash },
+          data: { resetTokenHash: null, resetTokenExpiresAt: null },
+        });
+
+        throw new InternalServerErrorException(
+          'Password reset email could not be sent. Please try again later.',
+        );
+      }
     }
 
     return { message: 'If an account with that email exists, a password reset link has been sent.' };

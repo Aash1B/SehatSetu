@@ -183,7 +183,7 @@ export class PatientService {
     await prisma.appointment.updateMany({
       where: {
         patientId: profile.id,
-        status: { in: ['SCHEDULED', 'WAITING'] },
+        status: { in: ['PAYMENT_PENDING', 'SCHEDULED', 'WAITING'] },
         scheduledAt: { lt: new Date(Date.now() - 45 * 60 * 1000) },
       },
       data: { status: 'CANCELLED' },

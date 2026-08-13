@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import type { Doctor } from '../data/doctorsData';
 import { doctorsData } from '../data/doctorsData';
@@ -8,6 +8,8 @@ import { getPatientDashboard } from '../services/patientApi';
 import { getToken } from '../../auth/authStorage';
 import { useTranslation } from 'react-i18next';
 import BrandLogo from '../../common/components/BrandLogo';
+import PayButton from '../../payments/PayButton';
+import type { PaymentReceipt } from '../../payments/api';
 
 interface BookingFormData {
   // Step 1
@@ -85,6 +87,68 @@ interface DoctorAvailabilityData {
   bookedSlots?: Record<string, string[]>;
 }
 
+interface CreatedAppointment {
+  id: string;
+  scheduledAt?: string;
+  date?: string;
+  timeSlot?: string;
+}
+
+function formatBookingDate(appointment: CreatedAppointment | null, fallbackDate: string, fallbackTime: string) {
+  if (appointment?.scheduledAt) {
+    const date = new Date(appointment.scheduledAt);
+    if (!Number.isNaN(date.getTime())) {
+      return date.toLocaleString(undefined, {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      });
+    }
+  }
+  return [appointment?.date || fallbackDate, appointment?.timeSlot || fallbackTime].filter(Boolean).join(', ');
+}
+
+function formatFeeAmount(fee?: string) {
+  const amount = Number.parseFloat((fee || '').replace(/,/g, '').replace(/[^\d.]/g, ''));
+  return Number.isFinite(amount)
+    ? amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    : '0.00';
+}
+
+const BOOKING_MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+
+function parseBookingDateTime(dateLabel: string, timeSlot: string) {
+  const dateMatch = dateLabel.match(/\b(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+(\d{1,2})(?:,?\s+(\d{4}))?/i);
+  const timeMatch = timeSlot.match(/^(\d{1,2}):?(\d{2})\s*(AM|PM)$/i);
+  if (!dateMatch || !timeMatch) return null;
+
+  const monthIndex = BOOKING_MONTHS.findIndex((month) => dateMatch[1].toLowerCase().startsWith(month));
+  if (monthIndex < 0) return null;
+
+  let hours = Number(timeMatch[1]);
+  const minutes = Number(timeMatch[2]);
+  if (hours > 12 || minutes > 59) return null;
+  if (timeMatch[3].toUpperCase() === 'PM' && hours < 12) hours += 12;
+  if (timeMatch[3].toUpperCase() === 'AM' && hours === 12) hours = 0;
+
+  const hasExplicitYear = Boolean(dateMatch[3]);
+  const year = Number(dateMatch[3] || new Date().getFullYear());
+  const result = new Date(year, monthIndex, Number(dateMatch[2]), hours, minutes, 0, 0);
+  if (
+    result.getFullYear() !== year ||
+    result.getMonth() !== monthIndex ||
+    result.getDate() !== Number(dateMatch[2])
+  ) {
+    return null;
+  }
+
+  // The picker shows only month/day, so move a date into next year when the
+  // seven-day picker crosses December/January.
+  if (!hasExplicitYear && result.getTime() < Date.now()) {
+    result.setFullYear(result.getFullYear() + 1);
+  }
+  return result;
+}
+
 function getSlotsForDoctorAndDay(availability: DoctorAvailabilityData | null, dayFullName: string) {
   if (!availability) {
     return ['09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '02:00 PM', '02:30 PM', '03:00 PM', '04:00 PM', '04:30 PM'];
@@ -152,7 +216,8 @@ const BookAppointmentPage: React.FC = () => {
   const [showAllSpecialties, setShowAllSpecialties] = useState<boolean>(false);
   const [showHelpModal, setShowHelpModal] = useState<boolean>(false);
   const [bookingConfirmed, setBookingConfirmed] = useState<boolean>(false);
-  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'card' | 'netbanking' | 'wallets'>('upi');
+  const [createdAppointment, setCreatedAppointment] = useState<CreatedAppointment | null>(null);
+  const [paymentReceipt, setPaymentReceipt] = useState<PaymentReceipt | null>(null);
   const [step4Error, setStep4Error] = useState<string>('');
   const [slotError, setSlotError] = useState<string>('');
   const [heightUnit, setHeightUnit] = useState<'cm' | 'ft'>('cm');
@@ -160,7 +225,8 @@ const BookAppointmentPage: React.FC = () => {
   const [heightFt, setHeightFt] = useState('');
   const [heightIn, setHeightIn] = useState('');
   const [weightLbs, setWeightLbs] = useState('');
-  const [, setIsSubmitting] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const submittingRef = useRef(false);
   const [doctorAvailability, setDoctorAvailability] = useState<DoctorAvailabilityData | null>(null);
   const [loadingAvailability, setLoadingAvailability] = useState<boolean>(false);
   const [aiRecommendation, setAiRecommendation] = useState<RecommendationResult | null>(null);
@@ -405,6 +471,8 @@ const BookAppointmentPage: React.FC = () => {
   const consultModeDisplay = (mode: string) => t(CONSULT_MODE_LABEL[mode] || 'forms:consultMode.chat', { defaultValue: mode });
 
   const handleNextStep = async () => {
+    if (currentStep === 4 && submittingRef.current) return;
+
     if (currentStep === 3 && (!formData.selectedDate || !formData.selectedTimeSlot)) {
       setSlotError(t('appointment:selectSlot'));
       return;
@@ -461,6 +529,8 @@ const BookAppointmentPage: React.FC = () => {
       setCurrentStep(currentStep === 1 && hasPreselectedDoctor && formData.selectedDoctor ? 3 : currentStep + 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (currentStep === 4) {
+      if (submittingRef.current) return;
+      submittingRef.current = true;
       setIsSubmitting(true);
       try {
         const payload = {
@@ -500,13 +570,20 @@ const BookAppointmentPage: React.FC = () => {
           throw new Error(body?.message || t('errors:unableToBook'));
         }
 
-        setBookingConfirmed(true);
-        setCurrentStep(5);
+        const created = await response.json() as CreatedAppointment;
+        setCreatedAppointment(created);
+        // Rescheduling does not create a new payment. New appointments proceed to Razorpay.
+        if (rescheduleId) {
+          setBookingConfirmed(true);
+        } else {
+          setCurrentStep(5);
+        }
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } catch (err) {
         console.error(err);
         setStep4Error(err instanceof Error ? err.message : t(rescheduleId ? 'errors:unableToReschedule' : 'errors:unableToBook'));
       } finally {
+        submittingRef.current = false;
         setIsSubmitting(false);
       }
     }
@@ -518,6 +595,36 @@ const BookAppointmentPage: React.FC = () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       navigate('/');
+    }
+  };
+
+  const getCalendarUrl = () => {
+    const serverStart = createdAppointment?.scheduledAt
+      ? new Date(createdAppointment.scheduledAt)
+      : null;
+    const start = serverStart && !Number.isNaN(serverStart.getTime())
+      ? serverStart
+      : parseBookingDateTime(formData.selectedDate, formData.selectedTimeSlot);
+
+    if (!start) return null;
+
+    const end = new Date(start.getTime() + 30 * 60 * 1000);
+    const formatCalendarDate = (date: Date) => date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+    const doctorName = formData.selectedDoctor?.name || 'SehatSetu appointment';
+    const calendarParams = new URLSearchParams({
+      action: 'TEMPLATE',
+      text: `SehatSetu consultation with ${doctorName}`,
+      dates: `${formatCalendarDate(start)}/${formatCalendarDate(end)}`,
+      details: `Consultation type: ${formData.consultMode}${createdAppointment?.id ? `\nAppointment ID: ${createdAppointment.id}` : ''}`,
+      location: 'SehatSetu online consultation',
+    });
+    return `https://calendar.google.com/calendar/render?${calendarParams.toString()}`;
+  };
+
+  const handleAddToCalendar = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!getCalendarUrl()) {
+      event.preventDefault();
+      window.alert('Unable to prepare the calendar event. Please check the appointment date and time.');
     }
   };
 
@@ -567,6 +674,15 @@ const BookAppointmentPage: React.FC = () => {
           </nav>
 
           <div className="booking-nav-actions">
+            {currentStep === 5 && (
+              <div className="checkout-header-security">
+                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="4" y="10" width="16" height="11" rx="2" />
+                  <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                </svg>
+                <span>Secure &amp; Encrypted</span>
+              </div>
+            )}
             <button type="button" className="btn-booking-get-started" onClick={() => navigate('/')}>
               {t('common:home')}
             </button>
@@ -575,7 +691,7 @@ const BookAppointmentPage: React.FC = () => {
       </header>
 
       {/* Step Tracker Header */}
-      <div className="booking-step-tracker-bar">
+      <div className={`booking-step-tracker-bar ${currentStep === 5 ? 'checkout-step-tracker-hidden' : ''}`}>
         <div className="step-tracker-container">
           <div className="step-track-line"></div>
           
@@ -609,7 +725,7 @@ const BookAppointmentPage: React.FC = () => {
       {/* Main Booking Content Body */}
       <main className="booking-main-container">
         {/* Top Back Action Bar - Easy navigation at the top */}
-        {!bookingConfirmed && (
+        {!bookingConfirmed && currentStep !== 5 && (
           <div className="booking-top-back-bar">
             {currentStep > 1 && (
               <button 
@@ -643,7 +759,7 @@ const BookAppointmentPage: React.FC = () => {
             <div className="confirmation-ticket">
               <div className="ticket-header">
                 <div>
-                  <span className="ticket-id">{t('bookingFlow:ticketBookingId')}SS-BOOK-94281</span>
+                  <span className="ticket-id">{t('bookingFlow:ticketBookingId')}{createdAppointment?.id || '—'}</span>
                   <h3 className="ticket-doctor-name">{formData.selectedDoctor?.name}</h3>
                   <span className="ticket-specialty">{formData.selectedDoctor?.specialty}</span>
                 </div>
@@ -653,7 +769,7 @@ const BookAppointmentPage: React.FC = () => {
               <div className="ticket-details-grid">
                 <div>
                   <span className="detail-label">{t('appointment:date')}</span>
-                  <span className="detail-val">{t('patient:relativeDate.tomorrow')}, 10:30 AM</span>
+                  <span className="detail-val">{formatBookingDate(createdAppointment, formData.selectedDate, formData.selectedTimeSlot)}</span>
                 </div>
                 <div>
                   <span className="detail-label">{t('appointment:detailTicket.patientName')}</span>
@@ -672,11 +788,44 @@ const BookAppointmentPage: React.FC = () => {
                   <span className="detail-val">{consultModeDisplay(formData.consultMode)}</span>
                 </div>
                 <div>
-                  <span className="detail-label">{t('appointment:detailTicket.feePaid')}</span>
-                  <span className="detail-val">₹{formData.selectedDoctor?.fee || '800'}</span>
+                  <span className="detail-label">{paymentReceipt ? t('appointment:detailTicket.feePaid') : 'Consultation fee'}</span>
+                  <span className="detail-val">₹{paymentReceipt ? (paymentReceipt.amount / 100).toLocaleString('en-IN') : formData.selectedDoctor?.fee?.replace(/\D/g, '') || '0'}</span>
                 </div>
               </div>
             </div>
+
+            {paymentReceipt && (
+              <div className="confirmation-ticket payment-receipt-card">
+                <div className="ticket-header">
+                  <div>
+                    <span className="ticket-id">Payment receipt</span>
+                    <h3 className="ticket-doctor-name">{paymentReceipt.receiptNumber}</h3>
+                  </div>
+                  <div className="ticket-badge">PAID</div>
+                </div>
+                <div className="ticket-details-grid">
+                  <div>
+                    <span className="detail-label">Amount paid</span>
+                    <span className="detail-val">₹{(paymentReceipt.amount / 100).toLocaleString('en-IN')}</span>
+                  </div>
+                  <div>
+                    <span className="detail-label">Paid on</span>
+                    <span className="detail-val">{new Date(paymentReceipt.paidAt).toLocaleString()}</span>
+                  </div>
+                  <div>
+                    <span className="detail-label">Payment ID</span>
+                    <span className="detail-val">{paymentReceipt.razorpayPaymentId}</span>
+                  </div>
+                  <div>
+                    <span className="detail-label">Order ID</span>
+                    <span className="detail-val">{paymentReceipt.razorpayOrderId}</span>
+                  </div>
+                </div>
+                <button type="button" className="btn-secondary-outline" onClick={() => window.print()}>
+                  Print receipt
+                </button>
+              </div>
+            )}
 
             <div className="confirmation-actions">
               <button 
@@ -689,9 +838,9 @@ const BookAppointmentPage: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="booking-grid-wrapper">
+          <div className={`booking-grid-wrapper ${currentStep === 5 ? 'checkout-grid' : ''}`}>
             {/* Left Column: Form Questionnaire Card */}
-            <div className="booking-form-card">
+            <div className={`booking-form-card ${currentStep === 5 ? 'checkout-form-card' : ''}`}>
               {currentStep === 1 && (
                 <>
                   {/* Title Header with Date Badge */}
@@ -1588,164 +1737,208 @@ const BookAppointmentPage: React.FC = () => {
 
               {/* Step 5: Confirm & Pay */}
               {currentStep === 5 && (
-                <div className="step-5-wrapper">
-                  <div className="step5-header">
-                    <h1 className="form-main-title">{t('bookingFlow:stepConfirmPay')}</h1>
-                    <p className="form-main-subtitle">{t('patient:appointmentDetails')}</p>
+                <div className="step-5-wrapper checkout-content">
+                  <div className="checkout-heading">
+                    <span className="checkout-eyebrow">{t('bookingFlow:breadcrumbTitle')}</span>
+                    <h1>{t('bookingFlow:stepConfirmPay')}</h1>
+                    <p>Please review the details below before proceeding to payment.</p>
                   </div>
 
-                  {/* Main Appointment Details Card */}
-                  <div className="appointment-details-card">
-                    <div className="app-details-header">
-                      <h2 className="app-details-title">{t('patient:appointmentDetails')}</h2>
-                      <button 
-                        type="button" 
-                        className="btn-edit-appointment" 
-                        onClick={() => setCurrentStep(1)}
-                      >
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                        </svg>
-                        {t('patient:edit')}
-                      </button>
+                  <div className="checkout-section-heading">
+                    <div>
+                      <h2>{t('patient:appointmentDetails')}</h2>
+                      <p>Make sure everything looks right before you continue.</p>
                     </div>
-
-                    <div className="app-details-list">
-                      {/* Row 1: Health Concern */}
-                      <div className="app-detail-item">
-                        <div className="item-icon-box blue-box">🩺</div>
-                        <div className="item-content">
-                          <span className="item-label">{t('patient:healthConcern')}</span>
-                          <span className="item-value">{formData.healthConcern === 'specific-symptoms' ? t('patient:specificSymptoms') : t('patient:other')}</span>
-                          <span className="item-sub">
-                            {formData.symptoms.length > 0 ? formData.symptoms.join(', ') : t('patient:generalHealthQuery')}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Row 2: Doctor */}
-                      <div className="app-detail-item">
-                        <div className="item-icon-box green-box">👨‍⚕️</div>
-                        <div className="item-content">
-                          <span className="item-label">{t('patient:doctor')}</span>
-                          <span className="item-value">{formData.selectedDoctor?.name || t('patient:noDoctorSelected')}</span>
-                          <span className="item-sub">
-                            {formData.selectedDoctor?.specialty || t('patient:defaultSpecialty')} • {formData.selectedDoctor?.experience || t('patient:defaultExperience')}
-                          </span>
-                        </div>
-                        {formData.selectedDoctor?.imageUrl && (
-                          <img 
-                            src={formData.selectedDoctor.imageUrl} 
-                            alt={formData.selectedDoctor.name} 
-                            className="item-doc-avatar" 
-                            loading="lazy"
-                            onError={handleImageError}
-                          />
-                        )}
-                      </div>
-
-                      {/* Row 3: Date & Time */}
-                      <div className="app-detail-item">
-                        <div className="item-icon-box purple-box">📅</div>
-                        <div className="item-content">
-                          <span className="item-label">{t('appointment:date')}</span>
-                          <span className="item-value">{formData.selectedDate || t('patient:defaultDate')}</span>
-                          <span className="item-sub time-bold">{formData.selectedTimeSlot || t('patient:defaultTime')}</span>
-                        </div>
-                        <button type="button" className="btn-add-calendar">
-                          {t('patient:addToCalendar')}
-                        </button>
-                      </div>
-
-                      {/* Row 4: Consultation Type */}
-                      <div className="app-detail-item">
-                        <div className="item-icon-box orange-box">📹</div>
-                        <div className="item-content">
-                          <span className="item-label">{t('appointment:consultationType')}</span>
-                          <span className="item-value">{consultModeDisplay(formData.consultMode)}</span>
-                          <span className="item-sub">{t('forms:consultMode.chat')}</span>
-                        </div>
-                      </div>
-
-                      {/* Row 5: Patient & Vitals */}
-                      <div className="app-detail-item">
-                        <div className="item-icon-box pink-box">👤</div>
-                        <div className="item-content">
-                          <span className="item-label">{t('patient:patientAndVitalsTitle')}</span>
-                          <span className="item-value">{formData.patientName}, {formData.patientAge} {t('appointment:detailTicket.yrs')}, {formData.patientGender}</span>
-                          <span className="item-sub">
-                            {t('patient:height')}: {formData.patientHeight || '--'} cm • {t('patient:weight')}: {formData.patientWeight || '--'} kg
-                            {formData.patientBloodGroup ? ` • ${t('patient:bloodGroup')} ${formData.patientBloodGroup}` : ''}
-                          </span>
-                          <span className="item-sub">{formData.patientPhone}{formData.patientEmail ? ` • ${formData.patientEmail}` : ''}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Security Blue Banner */}
-                    <div className="security-blue-banner">
-                      <svg viewBox="0 0 24 24" fill="#2563EB" width="18" height="18">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    <button type="button" className="btn-edit-appointment" onClick={() => setCurrentStep(1)}>
+                      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                       </svg>
-                      <span>{t('auth:privacyNotice.title')}</span>
+                      {t('patient:edit')}
+                    </button>
+                  </div>
+
+                  <div className="checkout-details-list">
+                    <div className="checkout-detail-row">
+                      <div className="checkout-detail-icon checkout-icon-blue">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                          <path d="M8 3v4M16 3v4M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" />
+                          <path d="M8 13h3M8 17h5" />
+                        </svg>
+                      </div>
+                      <div className="checkout-detail-content">
+                        <span className="checkout-detail-label">{t('patient:healthConcern')}</span>
+                        <strong>{formData.healthConcern === 'specific-symptoms' ? t('patient:specificSymptoms') : t('patient:other')}</strong>
+                        <span>{formData.symptoms.length > 0 ? formData.symptoms.join(', ') : t('patient:generalHealthQuery')}</span>
+                      </div>
+                    </div>
+
+                    <div className="checkout-detail-row">
+                      <div className="checkout-detail-icon checkout-icon-green">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                          <path d="M16 20v-1.5a4.5 4.5 0 0 0-9 0V20M11.5 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM16 4.5a3 3 0 0 1 0 5.8M19 20v-1.5a4.5 4.5 0 0 0-2.4-4" />
+                        </svg>
+                      </div>
+                      <div className="checkout-detail-content">
+                        <span className="checkout-detail-label">{t('patient:doctor')}</span>
+                        <strong>{formData.selectedDoctor?.name || t('patient:noDoctorSelected')}</strong>
+                        <span>{formData.selectedDoctor?.specialty || t('patient:defaultSpecialty')} • {formData.selectedDoctor?.experience || t('patient:defaultExperience')}</span>
+                      </div>
+                      {formData.selectedDoctor?.imageUrl && (
+                        <img
+                          src={formData.selectedDoctor.imageUrl}
+                          alt={formData.selectedDoctor.name}
+                          className="checkout-doctor-avatar"
+                          loading="lazy"
+                          onError={handleImageError}
+                        />
+                      )}
+                    </div>
+
+                    <div className="checkout-detail-row checkout-date-row">
+                      <div className="checkout-detail-icon checkout-icon-purple">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                          <rect x="3" y="4.5" width="18" height="17" rx="2" />
+                          <path d="M16 2.5v4M8 2.5v4M3 9.5h18" />
+                        </svg>
+                      </div>
+                      <div className="checkout-detail-content">
+                        <span className="checkout-detail-label">{t('appointment:date')}</span>
+                        <strong>{formatBookingDate(createdAppointment, formData.selectedDate, formData.selectedTimeSlot) || t('patient:defaultDate')}</strong>
+                        <span className="checkout-time-value">{formData.selectedTimeSlot || t('patient:defaultTime')}</span>
+                      </div>
+                      <a
+                        href={getCalendarUrl() || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-add-calendar"
+                        onClick={handleAddToCalendar}
+                      >
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                          <path d="M12 5v14M5 12h14" />
+                        </svg>
+                        {t('patient:addToCalendar')}
+                      </a>
+                    </div>
+
+                    <div className="checkout-detail-row">
+                      <div className="checkout-detail-icon checkout-icon-orange">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                          <rect x="3" y="5" width="18" height="14" rx="2" />
+                          <path d="m10 9 5 3-5 3V9Z" />
+                        </svg>
+                      </div>
+                      <div className="checkout-detail-content">
+                        <span className="checkout-detail-label">{t('appointment:consultationType')}</span>
+                        <strong>{consultModeDisplay(formData.consultMode)}</strong>
+                        <span>{formData.consultMode === 'Video Consultation' ? 'Live video consultation' : formData.consultMode === 'In-Person Visit' ? 'In-person consultation' : 'Secure chat consultation'}</span>
+                      </div>
+                    </div>
+
+                    <div className="checkout-detail-row">
+                      <div className="checkout-detail-icon checkout-icon-pink">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                          <circle cx="12" cy="8" r="3.5" />
+                          <path d="M5 21a7 7 0 0 1 14 0M18 5.5a3 3 0 0 1 0 5.2" />
+                        </svg>
+                      </div>
+                      <div className="checkout-detail-content">
+                        <span className="checkout-detail-label">{t('patient:patientAndVitalsTitle')}</span>
+                        <strong>{formData.patientName}, {formData.patientAge} {t('appointment:detailTicket.yrs')}, {formData.patientGender}</strong>
+                        <span>{t('patient:height')}: {formData.patientHeight || '--'} cm • {t('patient:weight')}: {formData.patientWeight || '--'} kg{formData.patientBloodGroup ? ` • ${t('patient:bloodGroup')} ${formData.patientBloodGroup}` : ''}</span>
+                        <span>{formData.patientPhone}{formData.patientEmail ? ` • ${formData.patientEmail}` : ''}</span>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Bottom Footer Row under Appointment Details Card */}
-                  <div className="step5-bottom-bar">
-                    <div className="secure-checkout-tag">
-                      <span className="lock-icon">🔒</span>
+                  <div className="checkout-payment-summary">
+                    <div className="checkout-payment-heading">
                       <div>
-                      <span className="secure-title">{t('patient:secureCheckout')}</span>
-                      <span className="secure-sub">{t('patient:sslEncrypted')}</span>
+                        <span className="checkout-eyebrow">Secure checkout</span>
+                        <h2>{t('patient:paymentSummary')}</h2>
                       </div>
+                      <svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                        <rect x="4" y="10" width="16" height="11" rx="2" />
+                        <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                      </svg>
                     </div>
+                    <div className="checkout-payment-row">
+                      <span>{t('patient:consultationFeeLabel')}</span>
+                      <strong>₹{formatFeeAmount(formData.selectedDoctor?.fee)}</strong>
+                    </div>
+                    <div className="checkout-payment-divider" />
+                    <div className="checkout-payment-row checkout-total-row">
+                      <strong>{t('patient:totalPayable')}</strong>
+                      <strong>₹{formatFeeAmount(formData.selectedDoctor?.fee)}</strong>
+                    </div>
+                  </div>
 
-                    <div className="need-help-chat-box">
-                      <span className="headset-icon">🎧</span>
-                      <div>
-                        <span className="help-title">{t('patient:needHelp')}</span>
-                        <span className="help-sub">{t('patient:supportOnline')}</span>
-                      </div>
-                      <button 
-                        type="button" 
-                        className="btn-chat-with-us" 
-                        onClick={() => setShowHelpModal(true)}
-                      >
-                        {t('patient:chatWithUs')}
-                      </button>
-                    </div>
+                  <div className="checkout-legal-notice">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                      <path d="M12 3 5 6v5c0 4.5 2.9 8.2 7 10 4.1-1.8 7-5.5 7-10V6l-7-3Z" />
+                      <path d="m9 12 2 2 4-4" />
+                    </svg>
+                    <p>By proceeding, you agree to our <a href="/about">Terms &amp; Conditions</a> and <a href="/about">Privacy Policy</a>.</p>
+                  </div>
+
+                  <div className="checkout-support-row">
+                    <span>{t('patient:secureCheckout')} · {t('patient:sslEncrypted')}</span>
+                    <button type="button" onClick={() => setShowHelpModal(true)}>{t('patient:chatWithUs')}</button>
+                  </div>
+
+                  <div className="checkout-action-row">
+                    <button type="button" className="checkout-back-button" onClick={handlePrevStep}>
+                      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                        <path d="M19 12H5M12 19l-7-7 7-7" />
+                      </svg>
+                      {t('common:back')}
+                    </button>
+                    <PayButton
+                      appointmentId={createdAppointment?.id || ''}
+                      patientName={formData.patientName}
+                      patientEmail={formData.patientEmail}
+                      amountLabel={formatFeeAmount(formData.selectedDoctor?.fee)}
+                      buttonLabel={`🔒 Proceed to Pay ₹${formatFeeAmount(formData.selectedDoctor?.fee)}`}
+                      buttonClassName="checkout-pay-button"
+                      onSuccess={(receipt) => {
+                        setPaymentReceipt(receipt);
+                        setBookingConfirmed(true);
+                      }}
+                    />
                   </div>
                 </div>
               )}
 
-              {/* Card Footer Actions */}
-              <div className="form-card-footer">
-                <button 
-                  type="button" 
-                  className="btn-form-back"
-                  onClick={handlePrevStep}
-                >
-                  ← {t('common:back')}
-                </button>
+              {currentStep !== 5 && (
+                <>
+                  {/* Card Footer Actions */}
+                  <div className="form-card-footer">
+                    <button 
+                      type="button" 
+                      className="btn-form-back"
+                      onClick={handlePrevStep}
+                    >
+                      ← {t('common:back')}
+                    </button>
 
-                <div className="privacy-badge">
-                  🔒 {t('auth:privacyNotice.title')}
-                </div>
+                    <div className="privacy-badge">
+                      🔒 {t('auth:privacyNotice.title')}
+                    </div>
 
-                <button 
-                  type="button" 
-                  className="btn-form-next-orange"
-                  onClick={handleNextStep}
-                >
-                  {currentStep === 1 && (hasPreselectedDoctor && formData.selectedDoctor ? t('patient:nextStepChooseSlot') : t('patient:nextStep'))}
-                  {currentStep === 2 && t('patient:nextStepChooseSlot')}
-                  {currentStep === 3 && t('patient:nextStepPatientInfo')}
-                  {currentStep === 4 && t('patient:nextStepConfirm')}
-                  {currentStep === 5 && t('patient:confirmPayNow')}
-                </button>
-              </div>
+                    <button
+                      type="button"
+                      className="btn-form-next-orange"
+                      onClick={handleNextStep}
+                      disabled={isSubmitting}
+                    >
+                      {currentStep === 1 && (hasPreselectedDoctor && formData.selectedDoctor ? t('patient:nextStepChooseSlot') : t('patient:nextStep'))}
+                      {currentStep === 2 && t('patient:nextStepChooseSlot')}
+                      {currentStep === 3 && t('patient:nextStepPatientInfo')}
+                      {currentStep === 4 && t('patient:nextStepConfirm')}
+                    </button>
+                  </div>
+                </>
+              )}
 
               {/* Collapsed Accordion for Next Step preview */}
               {currentStep === 1 && (
@@ -1758,175 +1951,45 @@ const BookAppointmentPage: React.FC = () => {
               )}
             </div>
 
-            {/* Right Column: Sticky Summary Card */}
-            <div className="booking-summary-sidebar">
-              {currentStep === 5 ? (
-                <div className="payment-sidebar-card">
-                  {/* Section 1: Payment Summary */}
-                  <div className="payment-summary-section">
-                    <h3 className="payment-section-title">{t('patient:paymentSummary')}</h3>
-                    
-                    <div className="pay-row">
-                      <span>{t('patient:consultationFeeLabel')}</span>
-                      <strong className="pay-amt">₹{formData.selectedDoctor?.fee.replace(/\D/g, '') || '600'}</strong>
-                    </div>
-
-                    <div className="pay-row discount-row">
-                      <span>{t('patient:discount')}</span>
-                      <span className="discount-amt">-₹0</span>
-                    </div>
-
-                    <div className="pay-divider"></div>
-
-                    <div className="pay-row total-payable-row">
-                      <span className="total-label">{t('patient:totalPayable')}</span>
-                      <span className="total-amt">₹{formData.selectedDoctor?.fee.replace(/\D/g, '') || '600'}</span>
-                    </div>
-
-                    <div className="no-hidden-charges-badge">
-                      <span className="check-icon-green">✓</span>
-                      <div>
-                        <span className="badge-title">{t('patient:noHiddenCharges')}</span>
-                        <span className="badge-sub">{t('patient:allTaxesIncluded')}</span>
+            {currentStep !== 5 && (
+              <div className="booking-summary-sidebar">
+                {/* Card 2: Selected Doctor Card Preview */}
+                {formData.selectedDoctor && (
+                  <div className="summary-card doc-preview-sidebar-card">
+                    <div className="sidebar-doc-preview-content">
+                      <img 
+                        src={formData.selectedDoctor.imageUrl} 
+                        alt={formData.selectedDoctor.name} 
+                        className="sidebar-doc-avatar" 
+                        loading="lazy"
+                        onError={handleImageError}
+                      />
+                      <div className="sidebar-doc-info">
+                        <div className="doc-name-badge-row">
+                          <h4 className="sidebar-doc-name">{formData.selectedDoctor.name}</h4>
+                          <svg className="verified-blue-badge" viewBox="0 0 24 24" fill="#2563EB" width="14" height="14">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                          </svg>
+                        </div>
+                        <p className="sidebar-doc-spec">{formData.selectedDoctor.specialty}</p>
+                        <p className="sidebar-doc-exp">{formData.selectedDoctor.experience}</p>
                       </div>
                     </div>
                   </div>
+                )}
 
-                  {/* Section 2: Pay Securely (Payment Methods) */}
-                  <div className="pay-methods-section">
-                    <div className="pay-methods-header">
-                        <h3 className="payment-section-title">{t('patient:paySecurely')}</h3>
-                      <div className="pay-logos-row">
-                        <span className="pay-logo-badge visa">VISA</span>
-                        <span className="pay-logo-badge mc">MC</span>
-                        <span className="pay-logo-badge upi">UPI</span>
-                        <span className="pay-logo-badge paytm">Paytm</span>
-                      </div>
-                    </div>
-
-                    <div className="pay-options-group">
-                      {/* Option 1: UPI */}
-                      <label className={`pay-option-card ${paymentMethod === 'upi' ? 'selected' : ''}`}>
-                        <input 
-                          type="radio" 
-                          name="paymentMethod" 
-                          checked={paymentMethod === 'upi'}
-                          onChange={() => setPaymentMethod('upi')}
-                        />
-                        <div className="pay-option-content">
-                          <div className="pay-option-top">
-                            <span className="method-name">UPI</span>
-                            <div className="upi-icons-row">
-                              <span className="mini-pay-badge gpay">GPay</span>
-                              <span className="mini-pay-badge phonepe">Pe</span>
-                              <span className="mini-pay-badge paytm-m">Paytm</span>
-                            </div>
-                          </div>
-                          <span className="method-sub">{t('patient:upiPay')}</span>
-                        </div>
-                      </label>
-
-                      {/* Option 2: Credit / Debit Card */}
-                      <label className={`pay-option-card ${paymentMethod === 'card' ? 'selected' : ''}`}>
-                        <input 
-                          type="radio" 
-                          name="paymentMethod" 
-                          checked={paymentMethod === 'card'}
-                          onChange={() => setPaymentMethod('card')}
-                        />
-                        <div className="pay-option-content">
-                          <span className="method-name">{t('patient:cardPay')}</span>
-                          <span className="method-sub">Visa, Mastercard, Rupay</span>
-                        </div>
-                      </label>
-
-                      {/* Option 3: Net Banking */}
-                      <label className={`pay-option-card ${paymentMethod === 'netbanking' ? 'selected' : ''}`}>
-                        <input 
-                          type="radio" 
-                          name="paymentMethod" 
-                          checked={paymentMethod === 'netbanking'}
-                          onChange={() => setPaymentMethod('netbanking')}
-                        />
-                        <div className="pay-option-content">
-                          <span className="method-name">{t('patient:netBanking')}</span>
-                          <span className="method-sub">{t('patient:netBankingSub')}</span>
-                        </div>
-                      </label>
-
-                      {/* Option 4: Wallets */}
-                      <label className={`pay-option-card ${paymentMethod === 'wallets' ? 'selected' : ''}`}>
-                        <input 
-                          type="radio" 
-                          name="paymentMethod" 
-                          checked={paymentMethod === 'wallets'}
-                          onChange={() => setPaymentMethod('wallets')}
-                        />
-                        <div className="pay-option-content">
-                          <span className="method-name">{t('patient:wallet')}</span>
-                          <span className="method-sub">Paytm, PhonePe, Amazon Pay</span>
-                        </div>
-                      </label>
-                    </div>
-
-                    {/* Pay Button */}
-                    <button 
-                      type="button" 
-                      className="btn-pay-now-primary"
-                      onClick={() => setBookingConfirmed(true)}
-                    >
-                      <span className="lock-icon">🔒</span>
-                      <span>{t('patient:payNow', { amount: formData.selectedDoctor?.fee.replace(/\D/g, '') || '600' })}</span>
-                    </button>
-
-                    <div className="secure-payments-note">
-                      <span className="check-icon-blue">✓</span>
-                      <span>{t('patient:securePayments')}</span>
+                {/* Card 3: Need Help Box */}
+                <div className="summary-card help-sidebar-card">
+                  <div className="help-sidebar-content" onClick={() => setShowHelpModal(false)}>
+                    <span className="headset-icon">🎧</span>
+                    <div>
+                      <h5 className="help-sidebar-title">{t('patient:needHelp')}</h5>
+                      <p className="help-sidebar-sub">{t('patient:supportOnline')}</p>
                     </div>
                   </div>
                 </div>
-              ) : (
-                <>
-
-                  {/* Card 2: Selected Doctor Card Preview */}
-                  {formData.selectedDoctor && (
-                    <div className="summary-card doc-preview-sidebar-card">
-                      <div className="sidebar-doc-preview-content">
-                        <img 
-                          src={formData.selectedDoctor.imageUrl} 
-                          alt={formData.selectedDoctor.name} 
-                          className="sidebar-doc-avatar" 
-                          loading="lazy"
-                          onError={handleImageError}
-                        />
-                        <div className="sidebar-doc-info">
-                          <div className="doc-name-badge-row">
-                            <h4 className="sidebar-doc-name">{formData.selectedDoctor.name}</h4>
-                            <svg className="verified-blue-badge" viewBox="0 0 24 24" fill="#2563EB" width="14" height="14">
-                              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                            </svg>
-                          </div>
-                          <p className="sidebar-doc-spec">{formData.selectedDoctor.specialty}</p>
-                          <p className="sidebar-doc-exp">{formData.selectedDoctor.experience}</p>
-
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Card 3: Need Help Box */}
-                  <div className="summary-card help-sidebar-card">
-                    <div className="help-sidebar-content" onClick={() => setShowHelpModal(false)}>
-                      <span className="headset-icon">🎧</span>
-                      <div>
-                        <h5 className="help-sidebar-title">{t('patient:needHelp')}</h5>
-                        <p className="help-sidebar-sub">{t('patient:supportOnline')}</p>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         )}
       </main>

@@ -265,7 +265,7 @@ const MCHPage: React.FC = () => {
   return (
     <div className="mch-page" style={{ display: 'flex', minHeight: '100vh', backgroundImage: "url('/MCH%20bg%203.png')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundAttachment: 'fixed', fontFamily: 'inherit' }}>
       {/* Sidebar */}
-      <aside style={{ width: 220, background: '#fff', borderRight: '1px solid #e2e8f0', padding: '24px 0', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <aside className="mch-sidebar" style={{ width: 220, background: '#fff', borderRight: '1px solid #e2e8f0', padding: '24px 0', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
         <div style={{ padding: '0 20px 20px', borderBottom: '1px solid #f1f5f9' }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 12 }}>
             <img src="/MCH Tracking.png?v=2" alt="MCH Tracking" style={{ width: 104, height: 104, objectFit: 'contain' }} />
@@ -298,7 +298,7 @@ const MCHPage: React.FC = () => {
       </aside>
 
       {/* Main content */}
-      <main style={{ flex: 1, padding: '28px 32px', overflowY: 'auto', maxWidth: 'calc(100vw - 220px)' }}>
+      <main className="mch-main" style={{ flex: 1, padding: '28px 32px', overflowY: 'auto', maxWidth: 'calc(100vw - 220px)' }}>
         {error && <div style={{ background: '#fee2e2', color: '#991b1b', padding: '12px 16px', borderRadius: 8, marginBottom: 16, fontSize: 14 }}>{error}</div>}
 
         {tab === 'overview' && <OverviewTab overview={overview} t={t} setTab={setTab} setSelectedPregnancy={setSelectedPregnancy} setSelectedChild={setSelectedChild} pregnancies={pregnancies} children={children} />}

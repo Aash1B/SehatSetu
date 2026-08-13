@@ -16,11 +16,12 @@ export class PaymentsController {
 
   @Post('verify')
   @UseGuards(JwtAuthGuard)
-  verifyPayment(@Body() dto: VerifyPaymentDto) {
+  verifyPayment(@Body() dto: VerifyPaymentDto, @Req() req: any) {
     return this.paymentsService.verifyPayment(
       dto.razorpay_order_id,
       dto.razorpay_payment_id,
       dto.razorpay_signature,
+      req.user.userId,
     );
   }
 }

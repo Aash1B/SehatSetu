@@ -91,11 +91,11 @@ const VideoConsultation: React.FC = () => {
   }, [appointment?.patient?.id, appointment?.patientId]);
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-[#F8FAFC] font-sans text-deep-space">
+    <div className="doctor-video-consultation flex h-dvh overflow-hidden bg-[#F8FAFC] font-sans text-deep-space">
 
       <main className="flex-1 flex flex-col h-full min-h-0 overflow-hidden">
         {/* Header Area */}
-        <div className="shrink-0 px-6 py-4 flex items-center justify-between border-b border-gray-100 bg-white shadow-sm z-10">
+        <div className="doctor-video-header shrink-0 px-6 py-4 flex items-center justify-between border-b border-gray-100 bg-white shadow-sm z-10">
           <div className="flex items-center gap-4">
             <button
               type="button"
@@ -111,8 +111,8 @@ const VideoConsultation: React.FC = () => {
         </div>
 
         {/* Main Consultation Area */}
-        <div className="flex-1 min-h-0 overflow-hidden p-6">
-          <div className="grid h-full min-h-0 grid-cols-1 grid-rows-[minmax(0,1fr)] lg:grid-cols-12 gap-6">
+        <div className="doctor-video-main-area flex-1 min-h-0 overflow-hidden p-6">
+          <div className="doctor-video-grid grid h-full min-h-0 grid-cols-1 grid-rows-[minmax(0,1fr)] lg:grid-cols-12 gap-6">
 
             {/* Left Column: Video & Controls */}
             <div className="lg:col-span-8 flex flex-col h-full gap-4">
@@ -143,7 +143,7 @@ const VideoConsultation: React.FC = () => {
             </div>
 
             {/* Right Column: Tools */}
-            <div className="lg:col-span-4 flex flex-col h-full gap-4 overflow-y-auto pr-2 pb-2 custom-scrollbar">
+            <div className="doctor-video-tools lg:col-span-4 flex flex-col h-full gap-4 overflow-y-auto pr-2 pb-2 custom-scrollbar">
               {appointment && <PatientMiniCard
                 patient={{
                   id: appointment.patient?.id || '',

@@ -27,7 +27,7 @@ const Navbar: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full pointer-events-none transition-all duration-300 px-2 sm:px-4 lg:px-6 flex justify-center py-2 sm:py-3">
-      <div className="pointer-events-auto w-full max-w-[98%] sm:max-w-[96%] lg:max-w-[95%] xl:max-w-[96%] bg-white/96 backdrop-blur-md px-4 sm:px-6 lg:px-8 py-3 sm:py-3.5 lg:py-4 flex items-center justify-between gap-3 sm:gap-4 rounded-[22px] shadow-[0_10px_30px_rgba(0,0,0,0.07)] border border-slate-100/90 transition-all duration-300">
+      <div className="landing-navbar-shell pointer-events-auto w-full max-w-[98%] sm:max-w-[96%] lg:max-w-[95%] xl:max-w-[96%] bg-white/96 backdrop-blur-md px-4 sm:px-6 lg:px-8 py-3 sm:py-3.5 lg:py-4 flex items-center justify-between gap-3 sm:gap-4 rounded-[22px] shadow-[0_10px_30px_rgba(0,0,0,0.07)] border border-slate-100/90 transition-all duration-300">
         
         {/* Left: Brand Logo (Sidebar Toggle Button hidden on Landing Page) */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
@@ -96,7 +96,7 @@ const Navbar: React.FC = () => {
         </nav>
 
         {/* Right: Language Selector & Actions */}
-        <div className="flex items-center gap-6 sm:gap-10 shrink-0">
+        <div className="landing-navbar-actions flex items-center gap-6 sm:gap-10 shrink-0">
           {/* Language Toggle */}          <div className="language-toggle flex items-center bg-slate-100/80 p-1 rounded-full border border-slate-200/60" role="radiogroup" aria-label={t("selectLanguage")}>
               {supportedLanguages.map((lang) => (
                 <button

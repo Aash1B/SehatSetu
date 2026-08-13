@@ -17,7 +17,7 @@ export interface ConsultationEndJobData {
 @Injectable()
 export class ConsultationProcessor extends WorkerHost {
   private readonly logger = new Logger(ConsultationProcessor.name);
-  constructor(private readonly reportsService?: MedicalReportsService) { super(); }
+  constructor(private readonly reportsService: MedicalReportsService) { super(); }
 
   async process(job: Job<ConsultationEndJobData>): Promise<any> {
     this.logger.log(`Processing consultation post-call queue job [${job.name}] (ID: ${job.id})`);
