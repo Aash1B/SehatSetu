@@ -163,6 +163,7 @@ const ChatWidget: React.FC = () => {
           markClassName="chat-toggle-logo"
           alt=""
         />
+        <span className="chat-toggle-label">{t('help')}</span>
       </button>
     );
   }

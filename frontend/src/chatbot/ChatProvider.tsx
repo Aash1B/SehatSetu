@@ -8,6 +8,7 @@ import './chatbot.css';
 /** Routes where the chatbot should NOT appear */
 const CHATBOT_HIDDEN_PREFIXES = [
   '/doctor/',
+  '/patient/consultation/',
   '/doctor/login',
   '/doctor/signup',
   '/patient/login',

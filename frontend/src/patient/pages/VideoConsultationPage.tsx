@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { LiveKitRoom, VideoConference } from '@livekit/components-react';
+import { LiveKitRoom, VideoConference, useRemoteParticipants } from '@livekit/components-react';
 import '@livekit/components-styles';
-import { Shield, User, MessageSquare, BadgeCheck, Clock3, Send } from 'lucide-react';
+import { ArrowLeft, Briefcase, Check, Globe, Shield, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import ConsultationTimer from '../../doctor/components/ConsultationTimer';
 
@@ -19,7 +19,7 @@ interface ConsultationPrescription {
 
 interface ConsultationAppointment {
   prescription?: ConsultationPrescription | null;
-  doctor?: { name?: string; specialty?: string; hospital?: string; experience?: string; user?: { fullName?: string } };
+  doctor?: { name?: string; specialty?: string; hospital?: string; experience?: string; imageUrl?: string; photoUrl?: string; user?: { fullName?: string } };
   patient?: { age?: string | number; gender?: string; user?: { fullName?: string } };
   ehrRecord?: { diagnosis?: string; notes?: string };
   patientName?: string;
@@ -28,6 +28,17 @@ interface ConsultationAppointment {
   healthConcern?: string;
   symptoms?: string[];
 }
+
+const DoctorPresenceWatcher: React.FC<{ onPresenceChange: (isPresent: boolean) => void }> = ({ onPresenceChange }) => {
+  const remoteParticipants = useRemoteParticipants();
+
+  useEffect(() => {
+    const doctorPresent = remoteParticipants.some((participant) => participant.identity.startsWith('doctor_'));
+    onPresenceChange(doctorPresent);
+  }, [onPresenceChange, remoteParticipants]);
+
+  return null;
+};
 
 const VideoConsultationPage: React.FC = () => {
   const { id = '1' } = useParams<{ id: string }>();
@@ -46,6 +57,7 @@ const VideoConsultationPage: React.FC = () => {
   const [token, setToken] = useState("");
   const [serverUrl, setServerUrl] = useState("");
   const [connectionError, setConnectionError] = useState("");
+  const [isDoctorPresent, setIsDoctorPresent] = useState(false);
   const consultationId = id;
 
   useEffect(() => {
@@ -169,23 +181,24 @@ const VideoConsultationPage: React.FC = () => {
     await handleEndCall();
   };
 
+  const doctorName = appointment?.doctor?.name || appointment?.doctor?.user?.fullName || tPatient('doctor');
+  const doctorImageUrl = appointment?.doctor?.imageUrl || appointment?.doctor?.photoUrl;
+  const doctorInitials = doctorName.split(/\s+/).filter(Boolean).slice(-2).map((part: string) => part[0]).join('').toUpperCase();
+
   return (
-    <div className="consultation-page flex h-dvh bg-luster-white font-sans text-deep-space">
+    <div className="consultation-page flex h-dvh bg-[#F8FAFC] font-sans text-deep-space">
       <main className="consultation-page-main flex-1 flex flex-col h-full min-h-0">
         {/* Header Area */}
         <div className="consultation-page-header shrink-0 px-6 py-4 flex items-center justify-between border-b border-gray-100 bg-white shadow-sm z-10">
           <div className="flex items-center gap-4">
-            <button 
+            <button
+              type="button"
               onClick={() => navigate('/patient/dashboard')}
-              className="text-gray-500 hover:text-deep-space font-medium text-sm transition-colors"
+              className="consultation-back-button text-gray-500 hover:text-deep-space transition-colors"
             >
-              ← {tPatient('videoConsultation.backToDashboard')}
+              <ArrowLeft className="consultation-back-icon" aria-hidden="true" />
+              <span>{tPatient('videoConsultation.backToDashboard')}</span>
             </button>
-            <div className="h-6 w-px bg-gray-200"></div>
-            <div className="flex items-center gap-2 text-green-600 bg-green-50 px-3 py-1 rounded-full text-xs font-bold border border-green-200">
-              <Shield className="w-4 h-4" />
-              {tPatient('videoConsultation.endToEndEncrypted')}
-            </div>
           </div>
           <ConsultationTimer />
         </div>
@@ -209,6 +222,7 @@ const VideoConsultationPage: React.FC = () => {
                     onDisconnected={handleEndCallTrigger}
                     onError={(error) => setConnectionError(error.message)}
                   >
+                    <DoctorPresenceWatcher onPresenceChange={setIsDoctorPresent} />
                     <LowBandwidthMode />
                     <VideoConference />
                   </LiveKitRoom>
@@ -228,55 +242,57 @@ const VideoConsultationPage: React.FC = () => {
             <aside className="consultation-side-panel">
               <section className="consultation-doctor-card">
                 <div className="consultation-doctor-topline">
-                  <span className="consultation-live-dot"><i /> {tPatient('videoConsultation.doctorOnline')}</span>
+                  <span className={`consultation-live-dot${isDoctorPresent ? '' : ' waiting'}`}>
+                    {isDoctorPresent ? (
+                      <i />
+                    ) : (
+                      <span className="consultation-waiting-indicator" aria-hidden="true">
+                        {Array.from({ length: 8 }, (_, index) => <i key={index} />)}
+                      </span>
+                    )}
+                    {tPatient(isDoctorPresent ? 'videoConsultation.doctorOnline' : 'videoConsultation.waitingForDoctor')}
+                  </span>
                   <span className="consultation-secure-chip"><Shield /> {tPatient('videoConsultation.secure')}</span>
                 </div>
                 <div className="consultation-doctor-identity">
                   <div className="consultation-doctor-avatar">
-                    {(appointment?.doctor?.name || appointment?.doctor?.user?.fullName || tPatient('doctor')).split(/\s+/).filter(Boolean).slice(-2).map((part: string) => part[0]).join('').toUpperCase()}
+                    {doctorImageUrl && (
+                      <img
+                        src={doctorImageUrl}
+                        alt={doctorName}
+                        onError={(event) => {
+                          event.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    )}
+                    <span aria-hidden="true">{doctorInitials}</span>
+                    <span className="consultation-doctor-check" aria-label="Verified doctor">
+                      <Check />
+                    </span>
                   </div>
                   <div>
-                    <span className="consultation-verified-label"><BadgeCheck /> {tPatient('videoConsultation.verifiedDoctor')}</span>
                     <h3>{appointment?.doctor?.name || appointment?.doctor?.user?.fullName || tPatient('doctor')}</h3>
                     <p>{appointment?.doctor?.specialty || ''}</p>
                     <span className="consultation-clinic-label">{appointment?.doctor?.hospital || tPatient('videoConsultation.clinic')}</span>
                   </div>
                 </div>
                 <div className="consultation-doctor-facts">
-                  <div>
-                    <span>{tPatient('videoConsultation.experience')}</span>
+                  <div className="consultation-doctor-fact">
+                    <Briefcase className="consultation-doctor-fact-icon" aria-hidden="true" />
                     <strong>{appointment?.doctor?.experience || tPatient('videoConsultation.notProvided')}</strong>
                   </div>
-                  <div>
-                    <span>{tPatient('videoConsultation.languages')}</span>
+                  <div className="consultation-doctor-fact">
+                    <Globe className="consultation-doctor-fact-icon" aria-hidden="true" />
                     <strong>{tPatient('videoConsultation.engHindi')}</strong>
                   </div>
                 </div>
                 <div className="consultation-session-strip">
-                  <span><Clock3 /> {tPatient('videoConsultation.consultationInProgress')}</span>
-                  <strong>{tPatient('videoConsultation.availableNow')}</strong>
-                </div>
-              </section>
-
-              <section className="consultation-chat-card">
-                <header className="consultation-chat-header">
-                  <span className="consultation-chat-icon"><MessageSquare /></span>
-                  <div><h4>{tPatient('videoConsultation.consultationChat')}</h4><p>{tPatient('videoConsultation.privateEncrypted')}</p></div>
-                </header>
-                <div className="consultation-chat-body">
-                  <div className="consultation-chat-empty">
-                    <span><MessageSquare /></span>
-                    <strong>{tPatient('videoConsultation.yourChat')}</strong>
-                    <p>{tPatient('videoConsultation.shareSymptoms')}</p>
-                    <div className="consultation-quick-notes" aria-hidden="true">
-                      <small>{tPatient('videoConsultation.askQuestion')}</small>
-                      <small>{tPatient('videoConsultation.shareSymptom')}</small>
-                    </div>
-                  </div>
-                </div>
-                <div className="consultation-chat-composer">
-                  <input type="text" placeholder={tPatient('videoConsultation.typeMessage')} aria-label={tPatient('videoConsultation.messageLabel')} />
-                  <button type="button" aria-label={tPatient('videoConsultation.send')}><Send /><span>{tPatient('videoConsultation.send')}</span></button>
+                  <span>
+                    <span className="consultation-progress-indicator" aria-hidden="true">
+                      {Array.from({ length: 8 }, (_, index) => <i key={index} />)}
+                    </span>
+                    {tPatient('videoConsultation.consultationInProgress')}
+                  </span>
                 </div>
               </section>
             </aside>

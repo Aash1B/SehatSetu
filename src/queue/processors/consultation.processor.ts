@@ -56,7 +56,6 @@ export class ConsultationProcessor extends WorkerHost {
         update: {
           notes,
           aiSummary,
-          diagnosis: appointment?.healthConcern || 'General Medical Consultation',
         },
         create: {
           appointmentId: data.appointmentId,

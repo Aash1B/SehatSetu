@@ -5,10 +5,8 @@ import {
   FileText,
   Printer,
   ShieldCheck,
-  Utensils,
   X,
   User,
-  ClipboardList,
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -64,6 +62,12 @@ const defaultPrescription: Required<Omit<PrescriptionData, 'notes' | 'signatureU
   dietAdvice: '',
   notes: '',
 };
+
+const splitDietAdvice = (advice: string): string[] => advice
+  .split(/\r?\n|[;,]|\.\s+/)
+  .flatMap((item) => item.split(/\s+(?=(?:avoid|do not|take|increase|drink|eat|limit|maintain|continue|follow|rest|stay|use|apply|monitor|ensure|keep)\b)/i))
+  .map((item) => item.trim().replace(/[.!?]+$/, ''))
+  .filter(Boolean);
 
 const PrescriptionViewModal: React.FC<PrescriptionViewModalProps> = ({
   isOpen = true,
@@ -142,7 +146,6 @@ const PrescriptionViewModal: React.FC<PrescriptionViewModalProps> = ({
         {/* Centre: title */}
         <div className="rx-title-center">
           <h2>MEDICAL PRESCRIPTION</h2>
-          <p>Verified Electronic Medical Record</p>
         </div>
 
         {/* Right: verified badge + QR */}
@@ -164,100 +167,105 @@ const PrescriptionViewModal: React.FC<PrescriptionViewModalProps> = ({
       </header>
 
       {/* ── PATIENT DETAILS ─────────────────────────────────────── */}
-      <div className="rx-patient-simple-row">
-        <div className="rx-patient-simple-item">
-          <User />
-          <strong>Patient:</strong> <span>{rx.patientName}</span>
-        </div>
-        <span className="rx-patient-divider">•</span>
-        <div className="rx-patient-simple-item">
-          <strong>Age / Gender:</strong> <span>{rx.patientAge ? `${rx.patientAge} Yrs` : ''} {rx.patientGender ? `/ ${rx.patientGender}` : ''}</span>
-        </div>
-        <span className="rx-patient-divider">•</span>
-        <div className="rx-patient-simple-item">
-          <strong>Diagnosis:</strong> <span>{rx.diagnosis || 'General Medical Consultation'}</span>
-        </div>
-        <span className="rx-patient-divider">•</span>
-        <div className="rx-patient-simple-item">
-          <CheckCircle2 className="rx-icon-success" />
-          <strong>Consultation:</strong> <span>{rx.date}</span>
+      <div className="rx-patient-strip">
+        <div className="rx-patient-strip-row">
+          <div className="rx-patient-cell">
+            <User />
+            <span className="rx-cell-label">Patient:</span>
+            <span className="rx-cell-value">{rx.patientName}</span>
+          </div>
+          <div className="rx-patient-cell">
+            <span className="rx-cell-label">Age / Gender:</span>
+            <span className="rx-cell-value">
+              {rx.patientAge} Yrs / {rx.patientGender}
+            </span>
+          </div>
+          <div className="rx-patient-cell">
+            <span className="rx-cell-label">Diagnosis:</span>
+            <span className="rx-cell-value">
+              {rx.diagnosis || 'General Medical Consultation'}
+            </span>
+          </div>
+          <div className="rx-patient-cell">
+            <CheckCircle2 />
+            <span className="rx-cell-label">Consultation:</span>
+            <span className="rx-cell-value">{new Date(rx.date).toLocaleDateString('en-GB', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+            })}</span>
+          </div>
         </div>
       </div>
 
       {/* ── BODY SECTIONS ───────────────────────────────────────── */}
       <div className="rx-body-sections">
 
-        {/* Reported Symptoms */}
-        <div className="rx-section-label" style={{ marginTop: 14 }}>
-          <ClipboardList />
-          <span>Reported Symptoms</span>
-        </div>
-        <div className="rx-symptoms-list">
-          {rx.symptoms.length > 0
-            ? rx.symptoms.map((symptom, index) => (
-              <span key={index} className="rx-symptom-text">• {symptom}</span>
-            ))
-            : <span className="rx-symptom-text rx-muted">No symptoms recorded</span>}
-        </div>
-
-        {/* Rx Medications */}
-        <div className="rx-section-label" style={{ marginTop: 18 }}>
-          <FileText />
-          <span>Rx Prescribed Medications</span>
-        </div>
-        <div className="rx-table-wrap">
-          <table className="rx-med-table">
-            <thead>
-              <tr>
-                <th>Medicine Name</th>
-                <th>Dosage</th>
-                <th>Frequency</th>
-                <th>Duration</th>
-                <th>Instruction</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rx.medications.length > 0
-                ? rx.medications.map((med, index) => (
-                  <tr key={index}>
-                    <td>{med.name}</td>
-                    <td>{med.dosage}</td>
-                    <td><span className="rx-freq-badge">{med.frequency}</span></td>
-                    <td>{med.duration}</td>
-                    <td><em>{med.timing || 'After Food'}</em></td>
-                  </tr>
-                ))
-                : (
-                  <tr>
-                    <td colSpan={5} style={{ textAlign: 'center', color: '#94a3b8', padding: '24px 10px', fontStyle: 'italic' }}>
-                      No medications prescribed
-                    </td>
-                  </tr>
-                )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Diet & Lifestyle */}
-        <div style={{ marginTop: 18 }}>
-          <div className="rx-section-label rx-yellow-label">
-            <Utensils />
-            <span>Diet &amp; Lifestyle Instructions</span>
+        <section className="rx-prescription-section">
+          <div className="rx-section-label">
+            <span>Reported Symptoms</span>
           </div>
-          <div className="rx-diet-content">
-            {rx.dietAdvice ? (
-              rx.dietAdvice
-                .split(/[\n;]+|\s*•\s*/)
-                .map((item) => item.trim())
-                .filter(Boolean)
-                .map((item, idx) => (
-                  <p key={idx} className="rx-diet-bullet">• {item}</p>
+          <div className="rx-symptoms-list">
+            {rx.symptoms.length > 0
+              ? rx.symptoms.map((symptom, index) => (
+                  <span key={index} className="rx-symptom-pill">• {symptom}</span>
                 ))
-            ) : (
-              <p className="rx-muted">No specific diet instructions provided.</p>
-            )}
+              : <span className="rx-symptom-pill" style={{ color: '#94a3b8', borderColor: '#e2e8f0' }}>No symptoms recorded</span>}
           </div>
-        </div>
+        </section>
+
+        <section className="rx-prescription-section">
+          <div className="rx-section-label">
+            <span>Rx Prescribed Medications</span>
+          </div>
+          <div className="rx-table-wrap">
+            <table className="rx-med-table">
+              <thead>
+                <tr>
+                  <th>Medicine Name</th>
+                  <th>Dosage</th>
+                  <th>Frequency</th>
+                  <th>Duration</th>
+                  <th>Instruction</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rx.medications.length > 0
+                  ? rx.medications.map((med, index) => (
+                      <tr key={index}>
+                        <td>{med.name}</td>
+                        <td>{med.dosage}</td>
+                        <td><span className="rx-freq-badge">{med.frequency}</span></td>
+                        <td>{med.duration}</td>
+                        <td><em>{med.timing || 'After Food'}</em></td>
+                      </tr>
+                    ))
+                  : (
+                      <tr>
+                        <td colSpan={5} style={{ textAlign: 'center', color: '#94a3b8', padding: '24px 10px', fontStyle: 'italic' }}>
+                          No medications prescribed
+                        </td>
+                      </tr>
+                    )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="rx-prescription-section">
+          <div className="rx-diet-box">
+            <div className="rx-diet-box-header">
+              <span>Diet &amp; Lifestyle Instructions</span>
+            </div>
+            {rx.dietAdvice
+              ? <ul className="rx-diet-list">
+                  {splitDietAdvice(rx.dietAdvice).map((instruction, index) => (
+                    <li key={`${instruction}-${index}`}>{instruction}</li>
+                  ))}
+                </ul>
+              : <p style={{ color: '#94a3b8', fontStyle: 'italic' }}>No specific diet instructions provided.</p>}
+          </div>
+        </section>
 
       </div>{/* end rx-body-sections */}
 

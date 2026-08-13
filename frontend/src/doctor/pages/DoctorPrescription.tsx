@@ -4,6 +4,13 @@ import PrescriptionViewModal from '../../common/components/PrescriptionViewModal
 import { generatePrescriptionDraft } from '../../common/services/aiApi';
 import { getToken, getUser } from '../../auth/authStorage';
 
+const extractSymptomsFromNotes = (notes: string): string[] => {
+  const match = notes.match(/(?:^|\n)Symptoms:\s*(.+)/i);
+  return match
+    ? match[1].split(',').map((symptom) => symptom.trim()).filter(Boolean)
+    : [];
+};
+
 const DoctorPrescription: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -20,6 +27,9 @@ const DoctorPrescription: React.FC = () => {
       fetch(`/api/appointments/${encodeURIComponent(id)}`, { headers: { Authorization: `Bearer ${getToken()}` } })
         .then(async (response) => response.ok ? response.json() : Promise.reject())
         .then((appointment) => {
+          const notes = appointment.ehrRecord?.notes || appointment.notes || '';
+          const appointmentSymptoms = Array.isArray(appointment.symptoms) ? appointment.symptoms : [];
+          const symptomsFromNotes = extractSymptomsFromNotes(notes);
           const context = {
             doctorName: appointment.doctor?.name || appointment.doctor?.user?.fullName || getUser()?.fullName || 'Doctor',
             doctorSpecialty: appointment.doctor?.specialty || '',
@@ -28,8 +38,8 @@ const DoctorPrescription: React.FC = () => {
             patientAge: appointment.patientAge || appointment.patient?.age || '',
             patientGender: appointment.patientGender || appointment.patient?.gender || '',
             diagnosis: appointment.ehrRecord?.diagnosis || appointment.healthConcern || '',
-            symptoms: appointment.symptoms || [],
-            notes: appointment.ehrRecord?.notes || appointment.notes || '',
+            symptoms: appointmentSymptoms.length > 0 ? appointmentSymptoms : symptomsFromNotes,
+            notes,
           };
           setPrescriptionContext(context);
           setTranscription(context.notes || context.diagnosis || '');
@@ -65,6 +75,16 @@ const DoctorPrescription: React.FC = () => {
     updated[index] = { ...updated[index], [field]: value };
     setMedications(updated);
   };
+
+  const previewSymptoms = (() => {
+    const draftSymptoms = Array.isArray(loadedPrescription?.symptoms) ? loadedPrescription.symptoms : [];
+    const contextSymptoms = Array.isArray(prescriptionContext?.symptoms) ? prescriptionContext.symptoms : [];
+    return draftSymptoms.length > 0
+      ? draftSymptoms
+      : contextSymptoms.length > 0
+        ? contextSymptoms
+        : draftSymptoms;
+  })();
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -203,10 +223,14 @@ const DoctorPrescription: React.FC = () => {
         isOpen={showPreviewModal}
         isModal={true}
         onClose={() => setShowPreviewModal(false)}
-        data={loadedPrescription || {
+        data={{
           ...prescriptionContext,
-          doctorName: prescriptionContext?.doctorName || getUser()?.fullName || 'Doctor',
-          patientName: prescriptionContext?.patientName || 'Patient',
+          ...loadedPrescription,
+          doctorName: loadedPrescription?.doctorName || prescriptionContext?.doctorName || getUser()?.fullName || 'Doctor',
+          patientName: loadedPrescription?.patientName || prescriptionContext?.patientName || 'Patient',
+          patientAge: loadedPrescription?.patientAge ?? prescriptionContext?.patientAge ?? '',
+          patientGender: loadedPrescription?.patientGender || prescriptionContext?.patientGender || '',
+          symptoms: previewSymptoms,
           medications: medications.filter(m => m.name.trim() !== ''),
           dietAdvice: dietRecommendations,
         }}

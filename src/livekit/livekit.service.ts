@@ -140,10 +140,22 @@ export class LivekitService {
     if (!isDoctor && !isPatient) throw new ForbiddenException('You cannot end this consultation');
 
     let savedPrescription: any = null;
+    const normalizedPrescriptionSymptoms: string[] = Array.isArray(prescription?.symptoms)
+      ? Array.from(new Set(
+        (prescription.symptoms as unknown[])
+          .filter((symptom): symptom is string => typeof symptom === 'string')
+          .map((symptom) => symptom.trim())
+          .filter((symptom) => symptom.length > 0),
+      ))
+      : [];
     if (prescription) {
       if (!isDoctor || !appointment.patientId) {
         throw new ForbiddenException('Only the assigned doctor can issue a prescription');
       }
+      const prescriptionDiagnosis = typeof prescription.diagnosis === 'string'
+        ? prescription.diagnosis.trim()
+        : '';
+      const diagnosis = prescriptionDiagnosis || appointment.healthConcern || null;
       savedPrescription = await prisma.prescription.upsert({
         where: { appointmentId },
         create: {
@@ -151,10 +163,12 @@ export class LivekitService {
           patientId: appointment.patientId,
           doctorId: appointment.doctorId,
           medicines: Array.isArray(prescription.medications) ? prescription.medications : [],
+          diagnosis,
           dietAdvice: prescription.dietAdvice || null,
         },
         update: {
           medicines: Array.isArray(prescription.medications) ? prescription.medications : [],
+          diagnosis,
           dietAdvice: prescription.dietAdvice || null,
         },
       });
@@ -164,7 +178,13 @@ export class LivekitService {
         update: { diagnosis: prescription.diagnosis || appointment.healthConcern, notes: prescription.notes || notes },
       });
     }
-    await prisma.appointment.update({ where: { id: appointmentId }, data: { status: 'COMPLETED' } });
+    await prisma.appointment.update({
+      where: { id: appointmentId },
+      data: {
+        status: 'COMPLETED',
+        ...(prescription ? { symptoms: normalizedPrescriptionSymptoms } : {}),
+      },
+    });
     const queueResult = await this.enqueueConsultationEnd(appointmentId, notes, durationSeconds);
     return { ...queueResult, prescription: savedPrescription };
   }

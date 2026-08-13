@@ -76,33 +76,33 @@ model StorageCleanupJob {
 }
 
 model Patient {
-  id                String          @id @default(uuid())
-  userId            String          @unique
-  gender            String?
-  maritalStatus     String?
-  occupation        String?
+  id                 String          @id @default(uuid())
+  userId             String          @unique
+  gender             String?
+  maritalStatus      String?
+  occupation         String?
   preferredLanguages String[]        @default([])
-  dateOfBirth       DateTime?
-  allergies         String[]
-  chronicConditions String[]
-  age               String?
-  bloodGroup        String?
-  emergencyContact  String?
-  height            String?
-  phone             String?
-  weight            String?
-  profileImagePath  String?
-  abhaId            String?         @unique
-  appointments      Appointment[]
-  children          Child[]
-  ehrRecords        EhrRecord[]
-  mchDocuments      MchDocument[]
-  mchReminders      MchReminder[]
-  medicalReports    MedicalReport[]
-  user              User            @relation(fields: [userId], references: [id])
-  payments          Payment[]
-  pregnancies       Pregnancy[]
-  prescriptions     Prescription[]
+  dateOfBirth        DateTime?
+  allergies          String[]
+  chronicConditions  String[]
+  age                String?
+  bloodGroup         String?
+  emergencyContact   String?
+  height             String?
+  phone              String?
+  weight             String?
+  profileImagePath   String?
+  abhaId             String?         @unique
+  appointments       Appointment[]
+  children           Child[]
+  ehrRecords         EhrRecord[]
+  mchDocuments       MchDocument[]
+  mchReminders       MchReminder[]
+  medicalReports     MedicalReport[]
+  user               User            @relation(fields: [userId], references: [id])
+  payments           Payment[]
+  pregnancies        Pregnancy[]
+  prescriptions      Prescription[]
 }
 
 model Pregnancy {
@@ -357,36 +357,36 @@ enum VerificationStatus {
 }
 
 model Doctor {
-  id                  String             @id @default(uuid())
-  userId              String?            @unique
+  id                  String               @id @default(uuid())
+  userId              String?              @unique
   name                String?
   gender              Gender?
   specialty           String
-  consultationFee     Int?               @default(500)
-  availableToday      Boolean?           @default(true)
+  consultationFee     Int?                 @default(500)
+  availableToday      Boolean?             @default(true)
   degrees             String?
   experience          String?
   fee                 String?
   hospital            String?
   imageUrl            String?
   imageStoragePath    String?
-  imagePosition       String?            @default("50% 20%")
+  imagePosition       String?              @default("50% 20%")
   location            String?
-  priorityLevel       String?            @default("P1")
-  priorityScore       Int?               @default(90)
-  rating              Float?             @default(4.8)
-  reviewsCount        Int?               @default(0)
+  priorityLevel       String?              @default("P1")
+  priorityScore       Int?                 @default(90)
+  rating              Float?               @default(4.8)
+  reviewsCount        Int?                 @default(0)
   tags                String[]
   availability        Json?
-  profileCompleted    Boolean            @default(false)
-  isVerified          Boolean            @default(false)
-  isActive            Boolean            @default(true)
-  verificationStatus  VerificationStatus @default(PENDING)
-  approvalToken       String?            @unique
+  profileCompleted    Boolean              @default(false)
+  isVerified          Boolean              @default(false)
+  isActive            Boolean              @default(true)
+  verificationStatus  VerificationStatus   @default(PENDING)
+  approvalToken       String?              @unique
   approvalTokenExpiry DateTime?
   rejectionReason     String?
   appointments        Appointment[]
-  user                User?              @relation(fields: [userId], references: [id])
+  user                User?                @relation(fields: [userId], references: [id])
   verifiedEhrRecords  EhrRecord[]
   prescriptions       Prescription[]
   availabilities      DoctorAvailability[]
@@ -410,7 +410,7 @@ model DoctorAvailability {
   slotMinutes Int      @default(15)
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
 
   @@unique([doctorId, dayOfWeek])
 }
@@ -528,6 +528,7 @@ model Prescription {
   doctorId      String
   appointmentId String      @unique
   medicines     Json
+  diagnosis     String?
   dietAdvice    String?
   createdAt     DateTime    @default(now())
   appointment   Appointment @relation(fields: [appointmentId], references: [id])

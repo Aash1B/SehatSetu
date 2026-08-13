@@ -1,9 +1,9 @@
-﻿{
+{
   "priority": {
-    "P1": "Primary Care Specialist",
-    "P2": "Super Specialist",
-    "P3": "Top Rated Specialist",
-    "P4": "Verified Specialist"
+    "P1": "⚡ Primary Care Specialist",
+    "P2": "🌟 Super Specialist",
+    "P3": "⭐ Top Rated Specialist",
+    "P4": "✔️ Verified Specialist"
   },
   "searchDoctors": "Search doctors",
   "specialty": "Specialty",

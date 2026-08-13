@@ -27,6 +27,13 @@ interface ConsultationItem {
   status?: string;
   scheduledAt?: string;
   doctorId?: string;
+  healthConcern?: string | null;
+  symptoms?: string[];
+  duration?: string | null;
+  severity?: string | null;
+  urgency?: string | null;
+  notes?: string | null;
+  consultMode?: string | null;
   prescription?: any;
 }
 
@@ -37,12 +44,21 @@ interface PatientEhrModalItem {
   status: string;
   summary: string;
   source: string;
+  appointmentId?: string | null;
   extractedText?: string | null;
   extractedData?: MedicalReportExtractedData | string | null;
   diagnosis?: string | null;
   notes?: string | null;
+  aiSummary?: string | null;
   structuredData?: EhrDraftStructuredData | null;
   isVerified?: boolean;
+}
+
+interface ClinicalListItem {
+  label: string;
+  value: string;
+  detail?: string;
+  status?: string;
 }
 
 interface ClinicalData {
@@ -50,6 +66,15 @@ interface ClinicalData {
   medications: string[];
   vitals: Array<{ label: string; value: string }>;
   notes: string | null;
+  summary: string | null;
+  keyFindings: string[];
+  abnormalFindings: ClinicalListItem[];
+  recommendations: string[];
+  followUpQuestions: string[];
+  structuredEntities: ClinicalListItem[];
+  additionalFields: ClinicalListItem[];
+  documentType: string | null;
+  confidence: string | null;
 }
 
 const asRecord = (value: unknown): Record<string, unknown> | null => (
@@ -115,6 +140,7 @@ const vitalValues = (value: unknown): Array<{ label: string; value: string }> =>
 
 interface ExtractedInsights {
   conditions: string[];
+  symptoms: string[];
   allergies: string[];
   medications: string[];
   procedures: string[];
@@ -140,13 +166,46 @@ const getReportRawData = (item: PatientEhrModalItem): Record<string, unknown> =>
   asRecord(item.extractedData) || {}
 );
 
+const getPrescriptionConditions = (prescription: Record<string, unknown>): string[] => {
+  const fullData = asRecord(prescription.fullData);
+  const appointment = asRecord(fullData?.appointment) || asRecord(prescription.appointment);
+  const ehrRecord = asRecord(appointment?.ehrRecord);
+  const conditionLists = [fullData?.conditions, fullData?.knownConditions, prescription.conditions, prescription.knownConditions]
+    .filter((value): value is unknown[] => Array.isArray(value));
+
+  return [
+    ...conditionLists.flatMap((conditions) => conditions.map(textValue)),
+    textValue(fullData?.diagnosis),
+    textValue(prescription.diagnosis),
+    textValue(ehrRecord?.diagnosis),
+    textValue(appointment?.healthConcern),
+  ].filter((condition): condition is string => {
+    if (!condition) return false;
+    return !/^general medical consultation$/i.test(condition);
+  });
+};
+
+const getPrescriptionSymptoms = (prescription: Record<string, unknown>): string[] => {
+  const fullData = asRecord(prescription.fullData);
+  const appointment = asRecord(fullData?.appointment) || asRecord(prescription.appointment);
+  const symptomLists = [fullData?.symptoms, prescription.symptoms, appointment?.symptoms]
+    .filter((value): value is unknown[] => Array.isArray(value));
+
+  return symptomLists.flatMap((symptoms) => symptoms.map(textValue))
+    .filter((symptom): symptom is string => Boolean(symptom));
+};
+
 const getExtractedInsights = (
   profileConditions: string[],
   profileAllergies: string[],
   reports: PatientEhrModalItem[],
   prescriptions: any[],
 ): ExtractedInsights => {
-  const conditions = [...profileConditions];
+  const conditions = [
+    ...profileConditions,
+    ...prescriptions.flatMap(getPrescriptionConditions),
+  ];
+  const symptoms = uniqueText(prescriptions.flatMap(getPrescriptionSymptoms));
   const allergies = [...profileAllergies];
   const medications = prescriptions.flatMap((prescription) => medicationValues(
     prescription.fullData?.medications || prescription.medicines,
@@ -209,6 +268,7 @@ const getExtractedInsights = (
 
   return {
     conditions: uniqueText(conditions),
+    symptoms,
     allergies: uniqueText(allergies),
     medications: uniqueText(medications),
     procedures: uniqueText(procedures),
@@ -216,40 +276,139 @@ const getExtractedInsights = (
   };
 };
 
+const formatExtractedValue = (value: unknown): string | null => {
+  const directText = textValue(value);
+  if (directText) return directText;
+  if (Array.isArray(value)) {
+    const values = value.map(formatExtractedValue).filter((entry): entry is string => Boolean(entry));
+    return values.length ? values.join(', ') : null;
+  }
+  const record = asRecord(value);
+  if (!record) return null;
+  const values = Object.entries(record)
+    .map(([key, entry]) => {
+      const formatted = formatExtractedValue(entry);
+      return formatted ? `${formatClinicalLabel(key)}: ${formatted}` : null;
+    })
+    .filter((entry): entry is string => Boolean(entry));
+  return values.length ? values.join('; ') : null;
+};
+
+const stringValues = (value: unknown): string[] => (
+  Array.isArray(value)
+    ? value.map(formatExtractedValue).filter((entry): entry is string => Boolean(entry))
+    : []
+);
+
+const abnormalFindingValues = (value: unknown): ClinicalListItem[] => {
+  if (!Array.isArray(value)) return [];
+  return value.map((finding, index) => {
+    const record = asRecord(finding);
+    if (!record) {
+      const text = formatExtractedValue(finding);
+      return text ? { label: `Finding ${index + 1}`, value: text } : null;
+    }
+    const label = textValue(record.parameter) || textValue(record.name) || `Finding ${index + 1}`;
+    const findingValue = formatVitalValue(record.value, record.unit) || formatExtractedValue(record) || 'Detected';
+    const referenceRange = textValue(record.reference_range);
+    const explanation = textValue(record.explanation);
+    return {
+      label,
+      value: findingValue,
+      status: textValue(record.status) || undefined,
+      detail: [referenceRange ? `Reference: ${referenceRange}` : null, explanation]
+        .filter((part): part is string => Boolean(part))
+        .join(' · ') || undefined,
+    };
+  }).filter((finding): finding is ClinicalListItem => Boolean(finding));
+};
+
+const structuredEntityValues = (value: unknown): ClinicalListItem[] => {
+  if (!Array.isArray(value)) return [];
+  return value.map((entity, index) => {
+    const record = asRecord(entity);
+    if (!record) {
+      const text = formatExtractedValue(entity);
+      return text ? { label: `Entity ${index + 1}`, value: text } : null;
+    }
+    const label = textValue(record.name) || textValue(record.kind) || `Entity ${index + 1}`;
+    const entityValue = formatVitalValue(record.value, record.unit)
+      || textValue(record.strength)
+      || formatExtractedValue(record)
+      || 'Detected';
+    const details = [record.strength, record.dosage, record.frequency, record.duration, record.instructions]
+      .map(textValue)
+      .filter((part): part is string => Boolean(part));
+    return { label, value: entityValue, detail: details.length ? details.join(' · ') : undefined };
+  }).filter((entity): entity is ClinicalListItem => Boolean(entity));
+};
+
+const hiddenRawKeys = new Set([
+  'diagnosis', 'medications', 'vitals', 'notes', 'summary', 'key_findings', 'abnormal_findings',
+  'recommendations', 'follow_up_questions', 'structured_entities', 'document_type', 'confidence',
+  'extracted_text', 'raw_ocr_text', 'cleaned_ocr_text', 'local_ocr_text', 'fallback_ocr_text',
+  'engine', 'cache_hit', 'fallback_used', 'processing_time_seconds', 'corrections', 'pages',
+  'warnings', 'detected_language', 'output_language', 'requires_doctor_review', 'disclaimer',
+]);
+
 const getClinicalData = (item: PatientEhrModalItem): ClinicalData => {
   const raw = asRecord(item.extractedData) as MedicalReportExtractedData | null;
   const structured = asRecord(item.structuredData);
   const diagnosis = textValue(item.diagnosis) || textValue(raw?.diagnosis);
   const rawNotes = textValue(raw?.notes)
-    || textValue(raw?.summary)
     || (Array.isArray(raw?.key_findings) ? raw.key_findings.map(textValue).filter(Boolean).join(' ') : null);
   let medications = medicationValues(structured?.medications || raw?.medications);
   let vitals = vitalValues(structured?.vitals || raw?.vitals);
-  const entities = Array.isArray(raw?.structured_entities) ? raw.structured_entities as OcrStructuredEntity[] : [];
+  const entities = structuredEntityValues(raw?.structured_entities);
 
   if (!medications.length) {
     medications = entities
-      .filter((entity) => /medic|drug|prescription/i.test(entity.kind || ''))
-      .map((entity) => medicationValues([entity])[0])
-      .filter((medication): medication is string => Boolean(medication));
+      .filter((entity) => /medic|drug|prescription/i.test(entity.label))
+      .map((entity) => entity.value)
+      .filter(Boolean);
   }
   if (!vitals.length) {
     vitals = entities
-      .filter((entity) => /vital|measurement/i.test(entity.kind || ''))
-      .map((entity) => {
-        const value = formatVitalValue(entity.value, entity.unit);
-        return value ? { label: formatClinicalLabel(entity.name || entity.kind || 'Vital'), value } : null;
-      })
-      .filter((vital): vital is { label: string; value: string } => Boolean(vital));
+      .filter((entity) => /vital|measurement|pressure|temperature|heart|oxygen|weight|height|sugar/i.test(entity.label))
+      .map((entity) => ({ label: entity.label, value: entity.value }));
   }
+
+  const additionalFields = raw
+    ? Object.entries(raw)
+      .filter(([key, value]) => !hiddenRawKeys.has(key) && formatExtractedValue(value))
+      .map(([key, value]) => ({ label: formatClinicalLabel(key), value: formatExtractedValue(value) as string }))
+    : [];
 
   return {
     diagnosis,
     medications: [...new Set(medications)],
     vitals,
     notes: textValue(item.notes) || rawNotes,
+    summary: textValue(item.aiSummary) || textValue(raw?.summary),
+    keyFindings: stringValues(raw?.key_findings),
+    abnormalFindings: abnormalFindingValues(raw?.abnormal_findings),
+    recommendations: stringValues(raw?.recommendations),
+    followUpQuestions: stringValues(raw?.follow_up_questions),
+    structuredEntities: entities,
+    additionalFields,
+    documentType: textValue(raw?.document_type),
+    confidence: raw?.confidence !== undefined && raw?.confidence !== null
+      ? `${Math.round(Number(raw.confidence) * 100)}%`
+      : null,
   };
 };
+
+const ClinicalList: React.FC<{ items: ClinicalListItem[] }> = ({ items }) => (
+  <ul className="list-disc pl-5 space-y-1">
+    {items.map((item, index) => (
+      <li key={`${item.label}-${item.value}-${index}`}>
+        <span className="font-semibold">{item.label}:</span> {item.value}
+        {item.status && <span className="ml-1 text-xs font-semibold uppercase text-amber-700">({item.status})</span>}
+        {item.detail && <span className="block text-xs text-slate-500">{item.detail}</span>}
+      </li>
+    ))}
+  </ul>
+);
 
 const PatientClinicalDataPanel: React.FC<{ item: PatientEhrModalItem }> = ({ item }) => {
   const { t } = useTranslation('patient');
@@ -258,7 +417,22 @@ const PatientClinicalDataPanel: React.FC<{ item: PatientEhrModalItem }> = ({ ite
     clinicalData.diagnosis
       || clinicalData.medications.length
       || clinicalData.vitals.length
-      || clinicalData.notes,
+      || clinicalData.notes
+      || clinicalData.summary
+      || clinicalData.keyFindings.length
+      || clinicalData.abnormalFindings.length
+      || clinicalData.recommendations.length
+      || clinicalData.followUpQuestions.length
+      || clinicalData.structuredEntities.length
+      || clinicalData.additionalFields.length
+      || clinicalData.documentType
+      || clinicalData.confidence,
+  );
+  const renderListSection = (title: string, items: string[]) => items.length > 0 && (
+    <div>
+      <h4 className="font-bold text-slate-900">{title}</h4>
+      <ul className="list-disc pl-5 space-y-1">{items.map((value, index) => <li key={`${value}-${index}`}>{value}</li>)}</ul>
+    </div>
   );
 
   return (
@@ -266,34 +440,19 @@ const PatientClinicalDataPanel: React.FC<{ item: PatientEhrModalItem }> = ({ ite
       <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">{t('aiExtractedData')}</span>
       {hasClinicalData ? (
         <div className="space-y-3 text-sm text-slate-700">
-          {clinicalData.diagnosis && (
-            <div>
-              <h4 className="font-bold text-slate-900">{t('clinicalData.diagnosis')}</h4>
-              <p>{clinicalData.diagnosis}</p>
-            </div>
-          )}
-          {clinicalData.medications.length > 0 && (
-            <div>
-              <h4 className="font-bold text-slate-900">{t('clinicalData.medications')}</h4>
-              <ul className="list-disc pl-5 space-y-1">
-                {clinicalData.medications.map((medication) => <li key={medication}>{medication}</li>)}
-              </ul>
-            </div>
-          )}
-          {clinicalData.vitals.length > 0 && (
-            <div>
-              <h4 className="font-bold text-slate-900">{t('clinicalData.vitals')}</h4>
-              <ul className="list-disc pl-5 space-y-1">
-                {clinicalData.vitals.map((vital) => <li key={vital.label}>{vital.label}: {vital.value}</li>)}
-              </ul>
-            </div>
-          )}
-          {clinicalData.notes && (
-            <div>
-              <h4 className="font-bold text-slate-900">{t('clinicalData.notes')}</h4>
-              <p className="whitespace-pre-wrap">{clinicalData.notes}</p>
-            </div>
-          )}
+          {clinicalData.documentType && <div><h4 className="font-bold text-slate-900">Document Type</h4><p>{clinicalData.documentType}</p></div>}
+          {clinicalData.confidence && <div><h4 className="font-bold text-slate-900">AI Confidence</h4><p>{clinicalData.confidence}</p></div>}
+          {clinicalData.summary && <div><h4 className="font-bold text-slate-900">AI Summary</h4><p className="whitespace-pre-wrap">{clinicalData.summary}</p></div>}
+          {clinicalData.diagnosis && <div><h4 className="font-bold text-slate-900">{t('clinicalData.diagnosis')}</h4><p>{clinicalData.diagnosis}</p></div>}
+          {clinicalData.medications.length > 0 && <div><h4 className="font-bold text-slate-900">{t('clinicalData.medications')}</h4><ul className="list-disc pl-5 space-y-1">{clinicalData.medications.map((medication) => <li key={medication}>{medication}</li>)}</ul></div>}
+          {clinicalData.vitals.length > 0 && <div><h4 className="font-bold text-slate-900">{t('clinicalData.vitals')}</h4><ul className="list-disc pl-5 space-y-1">{clinicalData.vitals.map((vital) => <li key={vital.label}>{vital.label}: {vital.value}</li>)}</ul></div>}
+          {clinicalData.notes && <div><h4 className="font-bold text-slate-900">{t('clinicalData.notes')}</h4><p className="whitespace-pre-wrap">{clinicalData.notes}</p></div>}
+          {renderListSection('Key Findings', clinicalData.keyFindings)}
+          {clinicalData.abnormalFindings.length > 0 && <div><h4 className="font-bold text-slate-900">Abnormal Findings</h4><ClinicalList items={clinicalData.abnormalFindings} /></div>}
+          {renderListSection('Recommendations', clinicalData.recommendations)}
+          {renderListSection('Follow-up Questions', clinicalData.followUpQuestions)}
+          {clinicalData.structuredEntities.length > 0 && <div><h4 className="font-bold text-slate-900">Extracted Clinical Entities</h4><ClinicalList items={clinicalData.structuredEntities} /></div>}
+          {clinicalData.additionalFields.length > 0 && <div><h4 className="font-bold text-slate-900">Additional Extracted Data</h4><ClinicalList items={clinicalData.additionalFields} /></div>}
         </div>
       ) : (
         <p className="text-sm text-slate-500">{t('clinicalData.notAvailable')}</p>
@@ -691,6 +850,13 @@ const DashboardPage: React.FC = () => {
           status: app.status || 'SCHEDULED',
           scheduledAt: app.scheduledAt,
           doctorId: app.doctorId,
+          healthConcern: app.healthConcern,
+          symptoms: Array.isArray(app.symptoms) ? app.symptoms : [],
+          duration: app.duration,
+          severity: app.severity,
+          urgency: app.urgency || app.priority,
+          notes: app.notes,
+          consultMode: app.consultMode,
           prescription: app.prescription || null,
         })));
 
@@ -716,7 +882,7 @@ const DashboardPage: React.FC = () => {
               patientAge: rx.appointment?.patientAge || p.age || '',
               patientGender: rx.appointment?.patientGender || p.gender || '',
               date,
-              diagnosis: rx.appointment?.ehrRecord?.diagnosis || rx.appointment?.healthConcern || '',
+              diagnosis: rx.diagnosis || rx.appointment?.ehrRecord?.diagnosis || rx.appointment?.healthConcern || '',
               symptoms: rx.appointment?.symptoms || [],
               notes: rx.appointment?.ehrRecord?.notes || rx.appointment?.notes || '',
               medications,
@@ -725,23 +891,33 @@ const DashboardPage: React.FC = () => {
           };
         }));
 
+        const reportById = new Map(
+          (data.medicalReports || []).map((report) => [report.id, report]),
+        );
         const verifiedEhrByReportId = new Map(
           (data.ehrRecords || [])
             .filter((record) => record.status === 'VERIFIED' && record.medicalReportId)
             .map((record) => [record.medicalReportId as string, record]),
         );
-        const clinicalRecords: PatientEhrModalItem[] = (data.ehrRecords || []).map((record) => ({
-          id: record.id,
-          title: record.diagnosis || 'Consultation health record',
-          date: new Date(record.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
-          status: 'VERIFIED Clinical Record',
-          summary: record.aiSummary || record.notes || t('noClinicalSummary'),
-          source: 'SehatSetu consultation',
-          diagnosis: record.diagnosis,
-          notes: record.notes,
-          structuredData: record.structuredData,
-          isVerified: record.status === 'VERIFIED',
-        }));
+        const clinicalRecords: PatientEhrModalItem[] = (data.ehrRecords || []).map((record) => {
+          const linkedReport = record.medicalReportId ? reportById.get(record.medicalReportId) : undefined;
+          return {
+            id: record.id,
+            title: record.diagnosis || linkedReport?.originalFileName || 'Consultation health record',
+            date: new Date(record.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+            status: 'VERIFIED Clinical Record',
+            summary: record.aiSummary || record.notes || t('noClinicalSummary'),
+            source: linkedReport ? 'SehatSetu consultation · Uploaded medical report' : 'SehatSetu consultation',
+            appointmentId: record.appointmentId || linkedReport?.appointmentId,
+            extractedText: linkedReport?.extractedText,
+            extractedData: linkedReport?.extractedData,
+            diagnosis: record.diagnosis,
+            notes: record.notes,
+            aiSummary: record.aiSummary,
+            structuredData: record.structuredData,
+            isVerified: record.status === 'VERIFIED',
+          };
+        });
         const reports: PatientEhrModalItem[] = (data.medicalReports || []).map((report) => {
           const verifiedRecord = verifiedEhrByReportId.get(report.id);
           return {
@@ -751,10 +927,12 @@ const DashboardPage: React.FC = () => {
             status: report.ocrStatus,
             summary: report.extractedText || 'Report uploaded; processing may still be in progress.',
             source: 'Uploaded medical report',
+            appointmentId: report.appointmentId,
             extractedText: report.extractedText,
             extractedData: report.extractedData,
             diagnosis: verifiedRecord?.diagnosis,
             notes: verifiedRecord?.notes,
+            aiSummary: verifiedRecord?.aiSummary,
             structuredData: verifiedRecord?.structuredData,
             isVerified: Boolean(verifiedRecord),
           };
@@ -1782,6 +1960,26 @@ const DashboardPage: React.FC = () => {
             const uploadedReports = ehrReportsList.filter((report: PatientEhrModalItem) => report.source === 'Uploaded medical report');
             const extractedInsights = getExtractedInsights(conditions, allergies, ehrReportsList, prescriptionsList);
             const totalMeds = extractedInsights.medications.length;
+            const knownConditionDetails = [
+              ...extractedInsights.conditions,
+              ...extractedInsights.symptoms.map((symptom) => `Symptom: ${symptom}`),
+            ];
+            const statDetails = [
+              { title: 'Known Conditions & Symptoms', items: knownConditionDetails, empty: 'No conditions or symptoms recorded.' },
+              { title: 'Allergies', items: extractedInsights.allergies, empty: 'No allergies recorded.' },
+              { title: 'Current Medications', items: extractedInsights.medications, empty: 'No medications recorded.' },
+              { title: 'Past Surgeries / Procedures', items: extractedInsights.procedures, empty: 'No procedures recorded.' },
+            ];
+            const activeStatDetails = activeStatCard === null ? null : statDetails[activeStatCard];
+            const toggleStatCard = (cardIndex: number) => {
+              setActiveStatCard((current) => (current === cardIndex ? null : cardIndex));
+            };
+            const handleStatCardKeyDown = (event: React.KeyboardEvent<HTMLDivElement>, cardIndex: number) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                toggleStatCard(cardIndex);
+              }
+            };
 
             return (
               <div className="ehr-dashboard-root">
@@ -1810,21 +2008,29 @@ const DashboardPage: React.FC = () => {
                 <div className="ehr-stat-cards-row">
                   <div
                     className={`ehr-stat-card ${activeStatCard === 0 ? 'ehr-stat-card-active' : ''}`}
-                    onClick={() => setActiveStatCard(activeStatCard === 0 ? null : 0)}
+                    role="button"
+                    tabIndex={0}
+                    aria-pressed={activeStatCard === 0}
+                    onClick={() => toggleStatCard(0)}
+                    onKeyDown={(event) => handleStatCardKeyDown(event, 0)}
                   >
                     <div className="ehr-stat-icon">
                       <img src="/Known Conditions.png" alt="Known Conditions" style={{ width: 44, height: 44, objectFit: 'contain' }} />
                     </div>
                     <div className="ehr-stat-body">
-                      <div className="ehr-stat-label">Known Conditions</div>
-                      <div className="ehr-stat-count">{extractedInsights.conditions.length}</div>
-                      <div className="ehr-stat-sub">Detected conditions</div>
-                      <button type="button" className="ehr-stat-link">View Details</button>
+                      <div className="ehr-stat-label">Known Conditions &amp; Symptoms</div>
+                      <div className="ehr-stat-count">{knownConditionDetails.length}</div>
+                      <div className="ehr-stat-sub">Detected conditions and symptoms</div>
+                      <button type="button" className="ehr-stat-link" onClick={(event) => { event.stopPropagation(); toggleStatCard(0); }}>View Details</button>
                     </div>
                   </div>
                   <div
                     className={`ehr-stat-card ${activeStatCard === 1 ? 'ehr-stat-card-active' : ''}`}
-                    onClick={() => setActiveStatCard(activeStatCard === 1 ? null : 1)}
+                    role="button"
+                    tabIndex={0}
+                    aria-pressed={activeStatCard === 1}
+                    onClick={() => toggleStatCard(1)}
+                    onKeyDown={(event) => handleStatCardKeyDown(event, 1)}
                   >
                     <div className="ehr-stat-icon">
                       <img src="/Allergies.png" alt="Allergies" style={{ width: 44, height: 44, objectFit: 'contain' }} />
@@ -1833,14 +2039,23 @@ const DashboardPage: React.FC = () => {
                       <div className="ehr-stat-label">Allergies</div>
                       <div className="ehr-stat-count">{extractedInsights.allergies.length}</div>
                       <div className="ehr-stat-sub">Detected {extractedInsights.allergies.length === 1 ? 'allergy' : 'allergies'}</div>
-                      <button type="button" className="ehr-stat-link">View Details</button>
+                      <button type="button" className="ehr-stat-link" onClick={(event) => { event.stopPropagation(); toggleStatCard(1); }}>View Details</button>
                     </div>
                   </div>
                   <div
                     className={`ehr-stat-card ${activeStatCard === 2 ? 'ehr-stat-card-active' : ''}`}
+                    role="button"
+                    tabIndex={0}
+                    aria-pressed={activeStatCard === 2}
                     onClick={() => {
-                      setActiveStatCard(activeStatCard === 2 ? null : 2);
+                      toggleStatCard(2);
                       handleTabClick('prescriptions');
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        handleTabClick('prescriptions');
+                      }
                     }}
                   >
                     <div className="ehr-stat-icon">
@@ -1850,12 +2065,16 @@ const DashboardPage: React.FC = () => {
                       <div className="ehr-stat-label">Current Medications</div>
                       <div className="ehr-stat-count">{totalMeds}</div>
                       <div className="ehr-stat-sub">Extracted active medications</div>
-                      <button type="button" className="ehr-stat-link" onClick={(e) => { e.stopPropagation(); handleTabClick('prescriptions'); }}>View Details</button>
+                      <button type="button" className="ehr-stat-link" onClick={(event) => { event.stopPropagation(); handleTabClick('prescriptions'); }}>View Details</button>
                     </div>
                   </div>
                   <div
                     className={`ehr-stat-card ${activeStatCard === 3 ? 'ehr-stat-card-active' : ''}`}
-                    onClick={() => setActiveStatCard(activeStatCard === 3 ? null : 3)}
+                    role="button"
+                    tabIndex={0}
+                    aria-pressed={activeStatCard === 3}
+                    onClick={() => toggleStatCard(3)}
+                    onKeyDown={(event) => handleStatCardKeyDown(event, 3)}
                   >
                     <div className="ehr-stat-icon">
                       <img src="/Past Surgeries/Procedures.png" alt="Past Surgeries" style={{ width: 44, height: 44, objectFit: 'contain' }} />
@@ -1864,10 +2083,25 @@ const DashboardPage: React.FC = () => {
                       <div className="ehr-stat-label">Past Surgeries / Procedures</div>
                       <div className="ehr-stat-count">{extractedInsights.procedures.length}</div>
                       <div className="ehr-stat-sub">Detected procedures</div>
-                      <button type="button" className="ehr-stat-link">View Details</button>
+                      <button type="button" className="ehr-stat-link" onClick={(event) => { event.stopPropagation(); toggleStatCard(3); }}>View Details</button>
                     </div>
                   </div>
                 </div>
+                {activeStatDetails && activeStatCard !== 2 && (
+                  <div className="ehr-stat-details-panel" role="region" aria-live="polite">
+                    <div className="ehr-stat-details-header">
+                      <span>{activeStatDetails.title}</span>
+                      <button type="button" className="ehr-stat-details-close" onClick={() => setActiveStatCard(null)} aria-label="Close details">×</button>
+                    </div>
+                    {activeStatDetails.items.length > 0 ? (
+                      <div className="ehr-stat-details-list">
+                        {activeStatDetails.items.map((item) => <span key={item} className="ehr-stat-detail-chip">{item}</span>)}
+                      </div>
+                    ) : (
+                      <p className="ehr-stat-details-empty">{activeStatDetails.empty}</p>
+                    )}
+                  </div>
+                )}
 
                 {/* ── Row 2: Medical Summary + Recent EHR Records ── */}
                 <div className="ehr-mid-row">
@@ -1926,12 +2160,12 @@ const DashboardPage: React.FC = () => {
                       </div>
                     </div>
                     {extractedInsights.points.length > 0 && (
-                      <div className="mt-4 rounded-xl border border-blue-100 bg-blue-50 p-3">
-                        <div className="text-xs font-bold uppercase tracking-wide text-blue-700">OCR extracted points</div>
-                        <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-slate-700">
+                      <div className="ehr-ocr-points-panel mt-4 rounded-xl border border-blue-100 bg-blue-50 p-3">
+                        <div className="ehr-ocr-points-title text-xs font-bold uppercase tracking-wide text-white">OCR extracted points</div>
+                        <ul className="ehr-ocr-points-list mt-2 list-disc space-y-1 pl-5 text-xs text-white">
                           {extractedInsights.points.map((point) => <li key={point}>{point}</li>)}
                         </ul>
-                        <div className="mt-2 text-[10px] text-slate-500">Automatically read from uploaded reports. Doctor review is required.</div>
+                        <div className="ehr-ocr-points-note mt-2 text-[10px] text-white">Automatically read from uploaded reports. Doctor review is required.</div>
                       </div>
                     )}
                     <button type="button" className="ehr-summary-full-btn" onClick={() => handleTabClick('prescriptions')}>
@@ -1959,7 +2193,41 @@ const DashboardPage: React.FC = () => {
                           const day = dateParts[1]?.replace(',', '') || '--';
                           const month = dateParts[0]?.toUpperCase().slice(0, 3) || '---';
                           const year = dateParts[2] || '';
-                          const matchedEhr = ehrReportsList.find((e: any) => e.source === 'SehatSetu consultation');
+                          const matchedEhr = ehrReportsList.find((e: any) => e.appointmentId === consult.id);
+                          const consultationExtractedData: MedicalReportExtractedData = {
+                            ...(asRecord(matchedEhr?.extractedData) || {}),
+                            chief_complaint: consult.healthConcern || matchedRx?.fullData?.diagnosis || null,
+                            symptoms: consult.symptoms?.length ? consult.symptoms : (matchedRx?.fullData?.symptoms || []),
+                            severity: consult.severity || null,
+                            duration: consult.duration || null,
+                            urgency: consult.urgency || null,
+                            consultation_mode: consult.consultMode || consult.mode,
+                            consultation_status: consult.status || null,
+                            follow_up: consult.status === 'COMPLETED' ? 'As advised' : 'As needed',
+                            medications: matchedRx?.fullData?.medications || matchedRx?.fullData?.medicines || undefined,
+                          };
+                          const consultationModalItem: PatientEhrModalItem = matchedEhr
+                            ? {
+                                ...matchedEhr,
+                                appointmentId: consult.id,
+                                extractedData: consultationExtractedData,
+                                diagnosis: matchedEhr.diagnosis || consult.healthConcern || matchedRx?.fullData?.diagnosis,
+                                notes: matchedEhr.notes || consult.notes,
+                              }
+                            : {
+                                id: consult.id,
+                                title: `${consult.doctorName} - ${consult.date}`,
+                                date: consult.date,
+                                status: consult.status || 'COMPLETED',
+                                summary: consult.notes || consult.healthConcern || 'Consultation record',
+                                source: 'SehatSetu consultation',
+                                appointmentId: consult.id,
+                                extractedData: consultationExtractedData,
+                                diagnosis: consult.healthConcern || matchedRx?.fullData?.diagnosis,
+                                notes: consult.notes,
+                                structuredData: null,
+                                isVerified: false,
+                              };
                           return (
                             <div key={consult.id} className="ehr-consult-row">
                               <div className="ehr-consult-date-col">
@@ -1986,7 +2254,7 @@ const DashboardPage: React.FC = () => {
                               <button
                                 type="button"
                                 className="ehr-view-full-btn"
-                                onClick={() => setSelectedEhrModalData(matchedEhr || { id: consult.id, title: `${consult.doctorName} - ${consult.date}`, extractedData: matchedRx?.fullData?.diagnosis || 'No data', source: 'SehatSetu', date: consult.date })}
+                                onClick={() => setSelectedEhrModalData(consultationModalItem)}
                               >
                                 View Full EHR
                               </button>
@@ -3293,7 +3561,7 @@ const DashboardPage: React.FC = () => {
       {/* AI OCR Data Inspection Modal */}
       {selectedEhrModalData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4">
             <div className="flex justify-between items-center border-b border-gray-100 pb-4">
               <div>
                 <span className="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-0.5 rounded-full">
