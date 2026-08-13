@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import DoctorSidebar from '../components/DoctorSidebar';
+import DoctorNavbar from '../components/DoctorNavbar';
 import PageHeader from '../components/PageHeader';
 import PatientInfoCard from '../components/PatientInfoCard';
 import ChiefComplaintsCard from '../components/ChiefComplaintsCard';
@@ -79,9 +80,9 @@ const PatientDetails: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex h-screen bg-luster-white font-sans text-deadly-depths">
+      <div className="flex h-screen bg-[#F8FAFC] font-sans text-deadly-depths">
         <DoctorSidebar />
-        <main className="flex-1 flex items-center justify-center p-8">
+        <main className="flex-1 flex items-center justify-center p-8 bg-[#F8FAFC]">
           <LiquidLoader text="Loading patient details" />
         </main>
       </div>
@@ -90,9 +91,9 @@ const PatientDetails: React.FC = () => {
 
   if (error || !appointment) {
     return (
-      <div className="flex h-screen bg-luster-white font-sans text-deadly-depths">
+      <div className="flex h-screen bg-[#F8FAFC] font-sans text-deadly-depths">
         <DoctorSidebar />
-        <main className="flex-1 p-8">
+        <main className="flex-1 p-8 bg-[#F8FAFC]">
           <PageHeader title="Patient Details" onBack={handleBack} />
           <div className="bg-white rounded-2xl border border-red-200 p-8 text-center mt-6 shadow-sm max-w-xl mx-auto">
             <h3 className="text-xl font-bold text-red-600 mb-2">Record Not Found</h3>
@@ -165,10 +166,13 @@ const PatientDetails: React.FC = () => {
     || `Patient ${patientName} (${patientAge} years, ${genderFull}) has scheduled a ${appointment.consultMode || 'video'} consultation for "${appointment.healthConcern || 'general symptoms'}". Please review symptoms and current medical history before starting.`;
 
   return (
-    <div className="flex h-screen bg-luster-white font-sans text-deadly-depths">
+    <div className="flex h-screen bg-[#F8FAFC] font-sans text-deadly-depths overflow-hidden">
       <DoctorSidebar />
 
-      <main className="flex-1 overflow-y-auto p-4 md:p-8 relative">
+      <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#F8FAFC]">
+        <DoctorNavbar />
+
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 relative bg-[#F8FAFC]">
         <PageHeader 
           title="Patient Details" 
           onBack={handleBack} 
@@ -206,12 +210,6 @@ const PatientDetails: React.FC = () => {
               Start Consultation 
               <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
-            <button 
-              onClick={() => setIsReferralOpen(true)}
-              className="w-full bg-white border border-gray-300 hover:bg-gray-50 text-deep-space py-3 rounded-xl font-bold transition-colors shadow-sm flex items-center justify-center gap-2 text-base cursor-pointer"
-            >
-              Refer to Specialist
-            </button>
           </div>
         </div>
 
@@ -229,7 +227,8 @@ const PatientDetails: React.FC = () => {
         />
       </main>
     </div>
-  );
+  </div>
+);
 };
 
 export default PatientDetails;

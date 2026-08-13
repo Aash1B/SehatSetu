@@ -1,3 +1,5 @@
+import { getToken } from './authStorage';
+
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
 
 export interface AuthResponse {
@@ -140,6 +142,54 @@ export async function resetPassword(payload: ResetPasswordPayload): Promise<Mess
   const res = await fetch(`${API_BASE_URL}/auth/reset-password`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  return handleResponse<MessageResponse>(res);
+}
+
+export interface ChangePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export async function changePassword(payload: ChangePasswordPayload): Promise<MessageResponse> {
+  const token = getToken();
+  const res = await fetch(`${API_BASE_URL}/auth/change-password`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  return handleResponse<MessageResponse>(res);
+}
+
+export interface ResetPasswordOtpPayload {
+  otp: string;
+  newPassword: string;
+}
+
+export async function sendResetOtp(): Promise<MessageResponse> {
+  const token = getToken();
+  const res = await fetch(`${API_BASE_URL}/auth/send-reset-otp`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return handleResponse<MessageResponse>(res);
+}
+
+export async function resetPasswordWithOtp(payload: ResetPasswordOtpPayload): Promise<MessageResponse> {
+  const token = getToken();
+  const res = await fetch(`${API_BASE_URL}/auth/reset-password-otp`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
     body: JSON.stringify(payload),
   });
   return handleResponse<MessageResponse>(res);

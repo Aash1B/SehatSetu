@@ -1,6 +1,5 @@
 import React from 'react';
 import SectionCard from './SectionCard';
-import StatusBadge from './StatusBadge';
 import TimelineItem from './TimelineItem';
 
 export interface HistoryEvent {
@@ -9,20 +8,14 @@ export interface HistoryEvent {
 }
 
 export interface MedicalHistoryCardProps {
-  conditions: string[];
+  conditions?: string[];
   history: HistoryEvent[];
 }
 
-const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({ conditions, history }) => {
+const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({ history }) => {
   return (
     <SectionCard title="Medical History" className="mb-6">
-      <div className="flex flex-wrap gap-2 mb-6">
-        {conditions.map((condition, index) => (
-          <StatusBadge key={index} label={condition} variant="default" className="bg-blue-50 text-blue-700 font-medium" />
-        ))}
-      </div>
-      
-      <div className="ml-1">
+      <div className="ml-1 pt-2">
         {history.map((event, index) => (
           <TimelineItem 
             key={index} 

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileWarning } from 'lucide-react';
 import DoctorSidebar from '../components/DoctorSidebar';
+import DoctorNavbar from '../components/DoctorNavbar';
 import PageHeader from '../components/PageHeader';
 import EhrDraftCard from '../components/EhrDraftCard';
 import { listPendingEhrDrafts, EhrSessionError } from '../services/ehrApi';
@@ -40,21 +41,23 @@ const EhrDrafts: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen w-screen bg-luster-white">
+      <div className="flex items-center justify-center h-screen w-screen bg-[#F8FAFC]">
         <LiquidLoader text="Loading pending drafts" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-luster-white font-sans text-deep-space">
+    <div className="flex h-screen bg-[#F8FAFC] font-sans text-deep-space overflow-hidden">
       <DoctorSidebar />
-      <main className="flex-1 flex flex-col h-screen overflow-hidden p-4 md:p-8">
-        <PageHeader title="EHR Drafts — Pending Review" onBack={() => navigate('/doctor/dashboard')} />
+      <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#F8FAFC]">
+        <DoctorNavbar />
+        <main className="flex-1 flex flex-col overflow-hidden px-8 md:px-10 pt-12 pb-10 bg-[#F8FAFC]">
+        <PageHeader title="EHR Drafts — Pending Review" />
 
         <div className="flex-1 overflow-y-auto custom-scrollbar">
-          <div className="max-w-4xl mx-auto space-y-4 pb-12">
-            <p className="text-sm text-slate-600 mb-2">
+          <div className="w-full space-y-4 pb-12">
+            <p className="text-lg md:text-xl font-extrabold text-[#223382] mb-4 leading-relaxed">
               AI-drafted EHR records extracted from uploaded medical reports. Review
               each draft and approve or reject before it becomes part of a
               patient's verified record.
@@ -90,7 +93,8 @@ const EhrDrafts: React.FC = () => {
             )}
           </div>
         </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 };

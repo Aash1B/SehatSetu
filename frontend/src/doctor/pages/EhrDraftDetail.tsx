@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AlertTriangle, CheckCircle, FileText, Pill, Activity, StickyNote, XCircle } from 'lucide-react';
 import DoctorSidebar from '../components/DoctorSidebar';
+import DoctorNavbar from '../components/DoctorNavbar';
 import PageHeader from '../components/PageHeader';
 import SectionCard from '../components/SectionCard';
 import StatusBadge from '../components/StatusBadge';
@@ -106,9 +107,11 @@ const EhrDraftDetail: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen bg-luster-white font-sans text-deep-space">
+    <div className="flex h-screen bg-luster-white font-sans text-deep-space overflow-hidden">
       <DoctorSidebar />
-      <main className="flex-1 flex flex-col h-screen overflow-hidden p-4 md:p-8">
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        <DoctorNavbar />
+        <main className="flex-1 flex flex-col overflow-hidden p-4 md:p-8">
         <PageHeader title="Review EHR Draft" onBack={handleBack} />
 
         <div className="flex-1 overflow-y-auto custom-scrollbar">
@@ -251,9 +254,9 @@ const EhrDraftDetail: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setIsApproveOpen(true)}
-                  className="flex-1 py-3 rounded-xl bg-habanero text-white font-bold hover:bg-[#e0750e] transition-colors shadow-md cursor-pointer flex items-center justify-center gap-2"
+                  className="flex-1 py-3 rounded-xl bg-[#9BACD8] text-slate-900 font-bold hover:bg-[#8ba0d2] transition-colors shadow-md cursor-pointer flex items-center justify-center gap-2"
                 >
-                  <CheckCircle className="w-4 h-4" />
+                  <CheckCircle className="w-4 h-4 text-slate-900" />
                   Approve
                 </button>
               </div>
@@ -274,6 +277,7 @@ const EhrDraftDetail: React.FC = () => {
         patientName={patientName}
         onConfirm={handleReject}
       />
+      </div>
     </div>
   );
 };

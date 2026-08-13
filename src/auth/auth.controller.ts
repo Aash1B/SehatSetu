@@ -8,6 +8,8 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { GoogleAuthDto } from './dto/google-auth.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { ResetPasswordOtpDto } from './dto/reset-password-otp.dto';
 
 
 @Controller('auth')
@@ -40,14 +42,32 @@ export class AuthController {
   }
 
   @Post('forgot-password')
-forgotPassword(@Body() dto: ForgotPasswordDto) {
-  return this.authService.forgotPassword(dto.email);
-}
+  forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto.email);
+  }
 
-@Post('reset-password')
-resetPassword(@Body() dto: ResetPasswordDto) {
-  return this.authService.resetPassword(dto.token, dto.newPassword);
-}
+  @Post('reset-password')
+  resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto.token, dto.newPassword);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('change-password')
+  changePassword(@Req() req: any, @Body() dto: ChangePasswordDto) {
+    return this.authService.changePassword(req.user.userId, dto.currentPassword, dto.newPassword);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('send-reset-otp')
+  sendResetOtp(@Req() req: any) {
+    return this.authService.sendResetOtp(req.user.userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('reset-password-otp')
+  resetPasswordOtp(@Req() req: any, @Body() dto: ResetPasswordOtpDto) {
+    return this.authService.resetPasswordWithOtp(req.user.userId, dto.otp, dto.newPassword);
+  }
 
   @Post('send-phone-otp')
   sendPhoneOtp(@Body() dto: any) {

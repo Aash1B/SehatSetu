@@ -2,6 +2,8 @@ import { BadRequestException, Controller, Get, Put, Post, Param, Body, UseInterc
 import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { DoctorService } from './doctor.service';
+import * as fs from 'fs';
+import * as path from 'path';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -102,5 +104,35 @@ export class DoctorController {
     }
 
     return this.doctorService.uploadDocumentToSupabase(file, docType, req.user.userId);
+  }
+
+  @Get('documents/file/:filename')
+  async serveDocumentFile(@Param('filename') filename: string, @Res() res: Response) {
+    const safeFilename = path.basename(filename);
+    const filePath = path.join(process.cwd(), 'uploads', 'doctor-documents', safeFilename);
+
+    if (fs.existsSync(filePath)) {
+      const ext = safeFilename.split('.').pop()?.toLowerCase();
+      let contentType = 'application/pdf';
+      if (['jpg', 'jpeg'].includes(ext || '')) contentType = 'image/jpeg';
+      else if (ext === 'png') contentType = 'image/png';
+      else if (ext === 'webp') contentType = 'image/webp';
+
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Content-Disposition', `inline; filename="${safeFilename}"`);
+      return res.sendFile(filePath);
+    }
+
+    return res.status(404).send(`
+      <!DOCTYPE html>
+      <html>
+        <head><title>SehatSetu Document Preview</title></head>
+        <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px; color: #0f172a;">
+          <h2 style="color: #223382;">📄 SehatSetu Medical Document</h2>
+          <p>Document filename: <strong>${safeFilename}</strong></p>
+          <p style="color: #64748b;">This verification document was registered during doctor onboarding.</p>
+        </body>
+      </html>
+    `);
   }
 }
