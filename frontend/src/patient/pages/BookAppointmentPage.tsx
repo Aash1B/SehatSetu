@@ -697,12 +697,6 @@ const BookAppointmentPage: React.FC = () => {
                   {/* Title Header with Date Badge */}
                   <div className="form-card-header-v2">
                     <div className="header-left-group">
-                      <div className="header-icon-badge-pink">
-                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#EF4444" strokeWidth="2">
-                          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                          <path d="M12 7v6m-3-3h6" stroke="#EF4444" strokeWidth="2" strokeLinecap="round"/>
-                        </svg>
-                      </div>
                       <div>
                         <h1 className="form-main-title">{t('patient:whatBringsYou')}</h1>
                         <p className="form-main-subtitle">{t('patient:matchYouWith')}</p>
@@ -778,11 +772,11 @@ const BookAppointmentPage: React.FC = () => {
                       <span className="subsection-label">{t('patient:popularSymptoms')}</span>
                       <div className="popular-symptoms-grid">
                         {[
-                          { name: 'Fever', icon: '🌡️' },
-                          { name: 'Cough', icon: '🫁' },
-                          { name: 'Headache', icon: '🧠' },
-                          { name: 'Fatigue', icon: '🔋' },
-                          { name: 'Sore Throat', icon: '🗣️' },
+                          { name: 'Fever' },
+                          { name: 'Cough' },
+                          { name: 'Headache' },
+                          { name: 'Fatigue' },
+                          { name: 'Sore Throat' },
                         ].map(item => {
                           const isSelected = formData.symptoms.includes(item.name);
                           return (
@@ -792,7 +786,6 @@ const BookAppointmentPage: React.FC = () => {
                               className={`popular-symptom-card ${isSelected ? 'selected' : ''}`}
                               onClick={() => toggleSymptom(item.name)}
                             >
-                              <span className="popular-icon">{item.icon}</span>
                               <span className="popular-name">{item.name}</span>
                             </button>
                           );
@@ -859,7 +852,6 @@ const BookAppointmentPage: React.FC = () => {
                         onClick={() => setIsDurationDropdownOpen(!isDurationDropdownOpen)}
                       >
                         <div className="trigger-left">
-                          <div className="trigger-icon-box">📅</div>
                           <span className="trigger-label-val">{formData.duration}</span>
                         </div>
                         <svg 
@@ -878,11 +870,11 @@ const BookAppointmentPage: React.FC = () => {
                       {isDurationDropdownOpen && (
                         <div className="custom-dropdown-menu">
                            {[
-                             { key: 'lessThanDay', labelKey: 'lessThanDay', subKey: 'recentOnset', icon: '⚡' },
-                             { key: 'days1to3', labelKey: '1to3Days', subKey: 'aboutAWeek', icon: '🗓️' },
-                             { key: 'days4to7', labelKey: '4to7Days', subKey: 'aboutAWeek', icon: '⏱️' },
-                             { key: 'weeks1to3', labelKey: '1to3Weeks', subKey: 'ongoing', icon: '📅' },
-                             { key: 'moreThanMonth', labelKey: 'moreThanMonth', subKey: 'persistent', icon: '⏳' },
+                             { key: 'lessThanDay', labelKey: 'lessThanDay', subKey: 'recentOnset' },
+                             { key: 'days1to3', labelKey: '1to3Days', subKey: 'aboutAWeek' },
+                             { key: 'days4to7', labelKey: '4to7Days', subKey: 'aboutAWeek' },
+                             { key: 'weeks1to3', labelKey: '1to3Weeks', subKey: 'ongoing' },
+                             { key: 'moreThanMonth', labelKey: 'moreThanMonth', subKey: 'persistent' },
                            ].map(opt => {
                              const isSelected = formData.duration === opt.key;
                              return (
@@ -894,7 +886,6 @@ const BookAppointmentPage: React.FC = () => {
                                    setIsDurationDropdownOpen(false);
                                  }}
                                >
-                                 <div className="item-icon-circle">{opt.icon}</div>
                                  <div className="item-text-group">
                                    <span className="item-main-label">{t(`patient:durationOptions.${opt.labelKey}`)}</span>
                                    <span className="item-sub-label">{t(`patient:durationOptions.${opt.subKey}`)}</span>
@@ -998,13 +989,6 @@ const BookAppointmentPage: React.FC = () => {
                           onChange={(e) => setStep2SearchTerm(e.target.value)}
                           className="step2-search-input"
                         />
-                        <button type="button" className="step2-mic-btn" title={t('common:voiceSearch')}>
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
-                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
-                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                            <line x1="12" y1="19" x2="12" y2="22"/>
-                          </svg>
-                        </button>
                       </div>
                     </div>
 
@@ -1113,18 +1097,6 @@ const BookAppointmentPage: React.FC = () => {
                         onClick={() => setShowAllDoctors(true)}
                       >
                         <span>🔍 {t('patient:viewOther')} ({filteredStep2Doctors.length - 1} {t('patient:moreSpecialists')})</span>
-                      </button>
-                    </div>
-                  )}
-
-                  {showAllDoctors && (
-                    <div className="text-center mt-4 mb-2">
-                      <button
-                        type="button"
-                        className="py-2 px-5 bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium text-xs rounded-lg transition-all"
-                        onClick={() => setShowAllDoctors(false)}
-                      >
-                        ▲ {t('patient:showOnlyAi')}
                       </button>
                     </div>
                   )}
@@ -1311,12 +1283,6 @@ const BookAppointmentPage: React.FC = () => {
                           })}
                         </div>
                       )}
-
-                      {/* Timezone Info Alert Banner */}
-                      <div className="timezone-info-banner">
-                        <span className="info-circle-icon">ⓘ</span>
-                        <span>{t('patient:timezoneInfo', { doctor: formData.selectedDoctor?.name })}</span>
-                      </div>
                     </div>
                   </div>
                 );
@@ -1554,7 +1520,7 @@ const BookAppointmentPage: React.FC = () => {
                     <div className="input-field-group full-width-field">
                        <label className="field-label">{t('forms:gender')} <span className="helper-note">{t('forms:genderHelper')}</span></label>
                       <div className="gender-selector-row">
-                           {[{ id: 'Female', icon: '👩' }, { id: 'Male', icon: '👨' }, { id: 'Other', icon: '🧑' }].map((g) => {
+                           {[{ id: 'Female' }, { id: 'Male' }, { id: 'Other' }].map((g) => {
                            const isSelected = formData.patientGender === g.id;
                            return (
                              <button
@@ -1563,7 +1529,6 @@ const BookAppointmentPage: React.FC = () => {
                                className={`gender-option-card ${isSelected ? 'selected' : ''}`}
                                onClick={() => setFormData({ ...formData, patientGender: g.id })}
                              >
-                               <span className="gender-card-icon">{g.icon}</span>
                                <span className="gender-card-label">{t(`patient:${g.id.toLowerCase()}`)}</span>
                                {isSelected && <span className="gender-card-check">✓</span>}
                              </button>
@@ -1730,10 +1695,6 @@ const BookAppointmentPage: React.FC = () => {
                   ← {t('common:back')}
                 </button>
 
-                <div className="privacy-badge">
-                  🔒 {t('auth:privacyNotice.title')}
-                </div>
-
                 <button 
                   type="button" 
                   className="btn-form-next-orange"
@@ -1746,16 +1707,6 @@ const BookAppointmentPage: React.FC = () => {
                   {currentStep === 5 && t('patient:confirmPayNow')}
                 </button>
               </div>
-
-              {/* Collapsed Accordion for Next Step preview */}
-              {currentStep === 1 && (
-                <div className="collapsed-step-accordion">
-                <div className="accordion-header">
-                      <span>🔒 {t('bookingFlow:stepSelectDoctor')}</span>
-                      <span className="accordion-sub">{t('patient:step2Title')}</span>
-                    </div>
-                </div>
-              )}
             </div>
 
             {/* Right Column: Sticky Summary Card */}

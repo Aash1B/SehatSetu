@@ -91,26 +91,6 @@
 
   <!-- Whole Background Cover Group Falling Down on Load -->
   <g class="main-canvas">
-    <!-- Background Base Canvas -->
-    <rect width="1000" height="320" rx="16" fill="url(#bg-grad)" stroke="#1d4ed8" stroke-width="1.5"/>
-
-    <!-- Pulsing Lens Flares -->
-    <rect width="1000" height="320" rx="16" fill="url(#flare-left)">
-      <animate attributeName="opacity" values="0.6;1;0.6" dur="3s" repeatCount="indefinite"/>
-    </rect>
-    <rect width="1000" height="320" rx="16" fill="url(#flare-right)">
-      <animate attributeName="opacity" values="0.7;1;0.7" dur="2.5s" repeatCount="indefinite"/>
-    </rect>
-
-    <!-- Top Right Hexagon Mesh Overlay -->
-    <rect x="550" y="0" width="450" height="220" fill="url(#hexagons)"/>
-
-    <!-- Top Left Dot Matrix Overlay -->
-    <rect x="20" y="20" width="180" height="140" fill="url(#dot-matrix)"/>
-
-    <!-- Bottom Right Dot Matrix Overlay -->
-    <rect x="800" y="220" width="180" height="90" fill="url(#dot-matrix)"/>
-
     <!-- Floating Medical Crosses -->
     <g transform="translate(930, 60)">
       <path d="M-10,0 L10,0 M0,-10 L0,10" stroke="#38bdf8" stroke-width="2.2" stroke-opacity="0.6" filter="url(#glow-heavy)"/>

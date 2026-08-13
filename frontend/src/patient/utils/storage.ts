@@ -1,14 +1,16 @@
 // localStorage helper functions for token management
 
-const TOKEN_KEY = 'sehat_setu_access_token';
+const TOKEN_KEY = 'sehatsetu_token';
+const ALT_TOKEN_KEY = 'sehat_setu_access_token';
 const REFRESH_TOKEN_KEY = 'sehat_setu_refresh_token';
 
 export const getToken = (): string | null => {
-  return localStorage.getItem(TOKEN_KEY);
+  return localStorage.getItem(TOKEN_KEY) || localStorage.getItem(ALT_TOKEN_KEY);
 };
 
 export const setToken = (token: string): void => {
   localStorage.setItem(TOKEN_KEY, token);
+  localStorage.setItem(ALT_TOKEN_KEY, token);
 };
 
 export const getRefreshToken = (): string | null => {
@@ -21,6 +23,7 @@ export const setRefreshToken = (token: string): void => {
 
 export const clearTokens = (): void => {
   localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(ALT_TOKEN_KEY);
   localStorage.removeItem(REFRESH_TOKEN_KEY);
 };
 

@@ -268,7 +268,7 @@ const MCHPage: React.FC = () => {
       <aside style={{ width: 220, background: '#fff', borderRight: '1px solid #e2e8f0', padding: '24px 0', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
         <div style={{ padding: '0 20px 20px', borderBottom: '1px solid #f1f5f9' }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 12 }}>
-            <img src="/MCH Tracking.png?v=2" alt="MCH Tracking" style={{ width: 104, height: 104, objectFit: 'contain' }} />
+            <img src="/MCH Tracking-clean.png?v=6" alt="MCH Tracking" style={{ width: 160, height: 160, objectFit: 'contain', borderRadius: '20px' }} />
             <div>
               <div style={{ fontWeight: 800, fontSize: 22, color: '#0f172a', letterSpacing: '-0.01em', lineHeight: 1.2 }}>{t('mchTitle')}</div>
               <div style={{ fontSize: 14.5, color: '#64748b', fontWeight: 500, marginTop: 4 }}>{t('mchSubtitle')}</div>

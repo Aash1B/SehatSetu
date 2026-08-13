@@ -1152,7 +1152,7 @@ const DashboardPage: React.FC = () => {
                 className="sidebar-item"
                 onClick={() => navigate('/patient/mch')}
               >
-                <img src="/MCH Tracking.png?v=2" alt="MCH Tracking" style={{ width: 52, height: 52, objectFit: 'cover', borderRadius: '50%' }} />
+                <img src="/MCH Tracking-clean.png?v=6" alt="MCH Tracking" className="sidebar-icon" style={{ width: 48, height: 48, objectFit: 'contain', borderRadius: '10px' }} />
                 <span> MCH Tracking </span>
               </button>
             </nav>
@@ -1186,7 +1186,7 @@ const DashboardPage: React.FC = () => {
             onClick={() => { clearAuth(); navigate('/patient/login'); }}
             style={{
               width: '100%',
-              padding: '14px',
+              padding: '14px 20px',
               background: 'transparent',
               border: 'none',
               color: '#64748b',
@@ -1195,12 +1195,11 @@ const DashboardPage: React.FC = () => {
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
+              justifyContent: 'space-between',
               transition: 'all 0.2s ease'
             }}
           >
-            Sign out
+            <span>Sign out</span>
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
               <polyline points="16 17 21 12 16 7"></polyline>
@@ -1345,7 +1344,9 @@ const DashboardPage: React.FC = () => {
                     Namaste
                   </span>
                   <span style={{ color: '#111144', fontWeight: 800 }}>, {patientFirstName}</span>
-                  <img src="/namaskar-clean.png" alt="Namaste" className="namaskar-animated-icon" style={{ marginLeft: 6, transform: 'translateY(-16px)', verticalAlign: 'middle' }} />
+                  <span style={{ display: 'inline-flex', alignItems: 'center', transform: 'translateY(-10px)', verticalAlign: 'middle', marginLeft: 6 }}>
+                    <img src="/namaskar-clean.png" alt="Namaste" className="namaskar-animated-icon" style={{ marginLeft: 0 }} />
+                  </span>
                 </h1>
               </div>
 
@@ -1524,7 +1525,7 @@ const DashboardPage: React.FC = () => {
                                   {timeStatus.isJoinable ? (
                                     <button
                                       type="button"
-                                      className="btn-join-consultation animate-pulse bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                                      className="btn-join-consultation bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
                                       onClick={() => navigate(`/patient/consultation/${apptId}`)}
                                     >
                                       {t('joinConsultation')}
@@ -1915,7 +1916,7 @@ const DashboardPage: React.FC = () => {
                           {cardTimeStatus.isJoinable ? (
                             <button
                               type="button"
-                              className="btn-join-video-sm animate-pulse bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                              className="btn-join-video-sm bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
                               onClick={() => navigate(`/patient/consultation/${item.id}`)}
                             >
                               {t('joinConsultation')}
@@ -2161,11 +2162,11 @@ const DashboardPage: React.FC = () => {
                     </div>
                     {extractedInsights.points.length > 0 && (
                       <div className="ehr-ocr-points-panel mt-4 rounded-xl border border-blue-100 bg-blue-50 p-3">
-                        <div className="ehr-ocr-points-title text-xs font-bold uppercase tracking-wide text-white">OCR extracted points</div>
-                        <ul className="ehr-ocr-points-list mt-2 list-disc space-y-1 pl-5 text-xs text-white">
+                        <div className="ehr-ocr-points-title text-xs font-bold uppercase tracking-wide text-blue-950">OCR extracted points</div>
+                        <ul className="ehr-ocr-points-list mt-2 list-disc space-y-1 pl-5 text-xs text-slate-800">
                           {extractedInsights.points.map((point) => <li key={point}>{point}</li>)}
                         </ul>
-                        <div className="ehr-ocr-points-note mt-2 text-[10px] text-white">Automatically read from uploaded reports. Doctor review is required.</div>
+                        <div className="ehr-ocr-points-note mt-2 text-[10px] text-slate-600">Automatically read from uploaded reports. Doctor review is required.</div>
                       </div>
                     )}
                     <button type="button" className="ehr-summary-full-btn" onClick={() => handleTabClick('prescriptions')}>
