@@ -35,7 +35,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   // Notification logic removed
 
   return (
-    <header className={cn("flex justify-between items-start mb-7", className)}>
+    <header className={cn("doctor-dashboard-header flex justify-between items-start mb-7", className)}>
       <div>
         <p className="text-sm font-normal text-slate-500 mb-1">{date}</p>
         <div className="mb-1.5">
@@ -50,7 +50,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             }}>Namaste,</span>
             {' '}{doctor.name}
             <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', width: '64px', height: '64px', marginLeft: '4px', transform: 'translateY(-8px)' }}>
-              <img src="/namaskar-clean.png" alt="Namaskar" style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
+              <img src="/namaskar-clean.png" alt="Namaskar" className="namaskar-animated-icon" style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
             </span>
           </h1>
         </div>

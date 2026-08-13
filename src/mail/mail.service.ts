@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 
 export interface AdminVerificationEmailData {
@@ -17,36 +17,56 @@ export interface AdminVerificationEmailData {
 
 @Injectable()
 export class MailService {
-  private getTransporter() {
-    const user = process.env.SMTP_USER || process.env.SMTP_EMAIL || 'sehatsetu26@gmail.com';
-    const pass = process.env.SMTP_PASS || 'scescjetvdlirvma';
-    const host = process.env.SMTP_HOST;
-    const port = Number(process.env.SMTP_PORT) || 587;
+  private readonly logger = new Logger(MailService.name);
+  private transporter?: nodemailer.Transporter;
 
-    if (host) {
-      return nodemailer.createTransport({
-        host,
-        port,
-        secure: port === 465,
-        auth: { user, pass },
-      });
+  private getTransporter(): nodemailer.Transporter {
+    if (this.transporter) {
+      return this.transporter;
     }
 
-    return nodemailer.createTransport({
-      service: 'gmail',
-      auth: { user, pass },
-    });
+    const user = (process.env.SMTP_USER || process.env.SMTP_EMAIL || '').trim();
+    const pass = process.env.SMTP_PASS || '';
+    if (!user || !pass) {
+      throw new ServiceUnavailableException(
+        'Email service is not configured. Set SMTP_USER (or SMTP_EMAIL) and SMTP_PASS.',
+      );
+    }
+
+    const host = process.env.SMTP_HOST?.trim();
+    const service = process.env.SMTP_SERVICE?.trim() || (host ? undefined : 'gmail');
+    const port = Number(process.env.SMTP_PORT || 587);
+    if (!Number.isInteger(port) || port < 1 || port > 65535) {
+      throw new ServiceUnavailableException('SMTP_PORT must be a valid port number.');
+    }
+
+    const secure = process.env.SMTP_SECURE
+      ? process.env.SMTP_SECURE.toLowerCase() === 'true'
+      : port === 465;
+    const auth = { user, pass };
+
+    this.transporter = host
+      ? nodemailer.createTransport({ host, port, secure, auth })
+      : nodemailer.createTransport({ service, auth });
+
+    return this.transporter;
   }
 
   async sendMail(to: string, subject: string, html: string) {
-    const fromUser = process.env.SMTP_USER || process.env.SMTP_EMAIL || 'sehatsetu26@gmail.com';
-    const transporter = this.getTransporter();
-    await transporter.sendMail({
-      from: `"SehatSetu Medical Board" <${fromUser}>`,
-      to,
-      subject,
-      html,
-    });
+    const fromAddress = (process.env.SMTP_FROM || process.env.SMTP_USER || process.env.SMTP_EMAIL || '').trim();
+
+    try {
+      await this.getTransporter().sendMail({
+        from: `"SehatSetu Medical Board" <${fromAddress}>`,
+        to,
+        subject,
+        html,
+      });
+    } catch (error) {
+      const details = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Failed to send email to ${to}: ${details}`);
+      throw new ServiceUnavailableException('Email service is unavailable. Please try again later.');
+    }
   }
 
   async sendAdminVerificationEmail(data: AdminVerificationEmailData) {

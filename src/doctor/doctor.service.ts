@@ -184,7 +184,7 @@ export class DoctorService {
     const appointments = await prisma.appointment.findMany({
       where: {
         doctorId: { in: queryDoctorIds },
-        status: { in: ['SCHEDULED', 'WAITING', 'PENDING', 'ACCEPTED', 'CONFIRMED', 'IN_PROGRESS'] },
+        status: { in: ['PAYMENT_PENDING', 'SCHEDULED', 'WAITING', 'PENDING', 'ACCEPTED', 'CONFIRMED', 'IN_PROGRESS'] },
       },
       select: { scheduledAt: true, timeSlot: true, date: true },
     });

@@ -163,9 +163,29 @@ export class AppointmentsService {
           scheduledAt,
           status: { notIn: ['CANCELLED', 'REJECTED', 'EXPIRED'] },
         },
-        select: { id: true },
+        include: {
+          payment: { select: { status: true } },
+        },
       });
-      if (occupiedSlot) throw new ConflictException('This appointment slot is already booked. Please choose another time.');
+      if (occupiedSlot) {
+        const resumableStatuses = ['PAYMENT_PENDING', 'SCHEDULED', 'WAITING', 'PENDING', 'ACCEPTED', 'CONFIRMED'];
+        const canResumeUnpaidBooking =
+          occupiedSlot.patientId === patient.id &&
+          resumableStatuses.includes(occupiedSlot.status) &&
+          occupiedSlot.payment?.status !== 'PAID';
+
+        if (canResumeUnpaidBooking) {
+          // Checkout can be abandoned after the appointment is created. Reuse
+          // the patient's unpaid reservation so a retry can reach Razorpay,
+          // but keep it hidden from doctors until payment is verified.
+          return tx.appointment.update({
+            where: { id: occupiedSlot.id },
+            data: { status: 'PAYMENT_PENDING' },
+          });
+        }
+
+        throw new ConflictException('This appointment slot is already booked. Please choose another time.');
+      }
 
       // 5. Create Appointment in DB
       const appointment = await tx.appointment.create({
@@ -173,8 +193,7 @@ export class AppointmentsService {
           patientId: patient.id,
           doctorId: doctor.id,
           scheduledAt: scheduledAt,
-          status: 'SCHEDULED',
-          patientName: data.patientName || user.fullName || 'Patient',
+          status: 'PAYMENT_PENDING',
           patientAge: data.patientAge ? String(data.patientAge) : null,
           patientGender: data.patientGender || null,
           patientHeight: data.patientHeight ? String(data.patientHeight) : null,
@@ -217,12 +236,16 @@ export class AppointmentsService {
       }
 
       return appointment;
-    }, { isolationLevel: 'Serializable' }).then(async (createdAppt) => {
-      try {
-        await this.scheduleStandardReminders(createdAppt);
-        if (createdAppt.isFollowUp && createdAppt.emailRemindersEnabled) await this.scheduleFollowUpReminders(createdAppt);
-      } catch (err: any) {
-        console.warn('[BullMQ Warning] Could not enqueue reminder jobs:', err?.message || err);
+    }, { isolationLevel: 'Serializable' }).then((createdAppt) => {
+      if (createdAppt.status === 'SCHEDULED') {
+        void this.scheduleStandardReminders(createdAppt).catch((err: any) => {
+          console.warn('[BullMQ Warning] Could not enqueue reminder jobs:', err?.message || err);
+        });
+        if (createdAppt.isFollowUp && createdAppt.emailRemindersEnabled) {
+          void this.scheduleFollowUpReminders(createdAppt).catch((err: any) => {
+            console.warn('[BullMQ Warning] Could not enqueue follow-up reminders:', err?.message || err);
+          });
+        }
       }
 
       return createdAppt;
@@ -338,7 +361,10 @@ export class AppointmentsService {
     }
     if (role === Role.DOCTOR) {
       return prisma.appointment.findMany({
-        where: { doctor: { is: { userId } } },
+        where: {
+          doctor: { is: { userId } },
+          payment: { is: { status: 'PAID' } },
+        },
         orderBy: { createdAt: 'desc' },
         include: { patient: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } }, prescription: true, ehrRecord: true },
       });
@@ -356,7 +382,10 @@ export class AppointmentsService {
         ...(role === Role.PATIENT
           ? { patient: { is: { userId } } }
           : role === Role.DOCTOR
-            ? { doctor: { is: { userId } } }
+            ? {
+                doctor: { is: { userId } },
+                payment: { is: { status: 'PAID' } },
+              }
             : { id: '__unauthorized__' }),
       },
       orderBy: { createdAt: 'desc' },
@@ -507,7 +536,10 @@ export class AppointmentsService {
 
   async getAppointmentsForDoctor(doctorId: string) {
     const appointments = await prisma.appointment.findMany({
-      where: { doctorId },
+      where: {
+        doctorId,
+        payment: { is: { status: 'PAID' } },
+      },
       orderBy: { createdAt: 'desc' },
       include: {
         patient: {
