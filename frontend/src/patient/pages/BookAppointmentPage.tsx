@@ -1491,8 +1491,8 @@ const BookAppointmentPage: React.FC = () => {
                     </div>
 
                     <div className="input-field-group">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                        <label className="field-label" style={{ margin: 0 }}>{t('patient:height')} <span style={{ color: '#64748B', fontWeight: 400, fontSize: '0.82rem' }}>{t('forms:optional')}</span></label>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '4px' }}>
+                        <label className="field-label" style={{ margin: 0, width: 'auto', textAlign: 'left' }}>{t('patient:height')} <span style={{ color: '#64748B', fontWeight: 400, fontSize: '0.82rem' }}>{t('forms:optional')}</span></label>
                         <div style={{ display: 'flex', gap: '4px', background: '#E2E8F0', padding: '2px', borderRadius: '6px' }}>
                           <button 
                             type="button" 
@@ -1569,8 +1569,8 @@ const BookAppointmentPage: React.FC = () => {
                     </div>
 
                     <div className="input-field-group">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                         <label className="field-label" style={{ margin: 0 }}>{t('forms:weight')} <span style={{ color: '#64748B', fontWeight: 400, fontSize: '0.82rem' }}>{t('forms:optional')}</span></label>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '4px' }}>
+                         <label className="field-label" style={{ margin: 0, width: 'auto', textAlign: 'left' }}>{t('forms:weight')} <span style={{ color: '#64748B', fontWeight: 400, fontSize: '0.82rem' }}>{t('forms:optional')}</span></label>
                         <div style={{ display: 'flex', gap: '4px', background: '#E2E8F0', padding: '2px', borderRadius: '6px' }}>
                           <button 
                             type="button" 
@@ -1703,173 +1703,148 @@ const BookAppointmentPage: React.FC = () => {
               {/* Step 5: Confirm & Pay */}
               {currentStep === 5 && (
                 <div className="step-5-wrapper checkout-content">
-                  <div className="checkout-heading">
-                    <span className="checkout-eyebrow">{t('bookingFlow:breadcrumbTitle')}</span>
-                    <h1>{t('bookingFlow:stepConfirmPay')}</h1>
-                    <p>Please review the details below before proceeding to payment.</p>
-                  </div>
-
-                  <div className="checkout-section-heading">
-                    <div>
-                      <h2>{t('patient:appointmentDetails')}</h2>
-                      <p>Make sure everything looks right before you continue.</p>
-                    </div>
-                    <button type="button" className="btn-edit-appointment" onClick={() => setCurrentStep(1)}>
-                      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                      </svg>
-                      {t('patient:edit')}
-                    </button>
-                  </div>
-
-                  <div className="checkout-details-list">
-                    <div className="checkout-detail-row">
-                      <div className="checkout-detail-icon checkout-icon-blue">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                          <path d="M8 3v4M16 3v4M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" />
-                          <path d="M8 13h3M8 17h5" />
-                        </svg>
-                      </div>
-                      <div className="checkout-detail-content">
-                        <span className="checkout-detail-label">{t('patient:healthConcern')}</span>
-                        <strong>{formData.healthConcern === 'specific-symptoms' ? t('patient:specificSymptoms') : t('patient:other')}</strong>
-                        <span>{formData.symptoms.length > 0 ? formData.symptoms.join(', ') : t('patient:generalHealthQuery')}</span>
-                      </div>
+                  <div className="checkout-main-col">
+                    <div className="checkout-heading">
+                      <span className="checkout-eyebrow">{t('bookingFlow:breadcrumbTitle')}</span>
+                      <h1>{t('bookingFlow:stepConfirmPay')}</h1>
+                      <p>Please review the details below before proceeding to payment.</p>
                     </div>
 
-                    <div className="checkout-detail-row">
-                      <div className="checkout-detail-icon checkout-icon-green">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                          <path d="M16 20v-1.5a4.5 4.5 0 0 0-9 0V20M11.5 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM16 4.5a3 3 0 0 1 0 5.8M19 20v-1.5a4.5 4.5 0 0 0-2.4-4" />
-                        </svg>
-                      </div>
-                      <div className="checkout-detail-content">
-                        <span className="checkout-detail-label">{t('patient:doctor')}</span>
-                        <strong>{formData.selectedDoctor?.name || t('patient:noDoctorSelected')}</strong>
-                        <span>{formData.selectedDoctor?.specialty || t('patient:defaultSpecialty')} • {formData.selectedDoctor?.experience || t('patient:defaultExperience')}</span>
-                      </div>
-                      {formData.selectedDoctor?.imageUrl && (
-                        <img
-                          src={formData.selectedDoctor.imageUrl}
-                          alt={formData.selectedDoctor.name}
-                          className="checkout-doctor-avatar"
-                          loading="lazy"
-                          onError={handleImageError}
-                        />
-                      )}
-                    </div>
-
-                    <div className="checkout-detail-row checkout-date-row">
-                      <div className="checkout-detail-icon checkout-icon-purple">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                          <rect x="3" y="4.5" width="18" height="17" rx="2" />
-                          <path d="M16 2.5v4M8 2.5v4M3 9.5h18" />
-                        </svg>
-                      </div>
-                      <div className="checkout-detail-content">
-                        <span className="checkout-detail-label">{t('appointment:date')}</span>
-                        <strong>{formatBookingDate(createdAppointment, formData.selectedDate, formData.selectedTimeSlot) || t('patient:defaultDate')}</strong>
-                        <span className="checkout-time-value">{formData.selectedTimeSlot || t('patient:defaultTime')}</span>
-                      </div>
-                      <a
-                        href={getCalendarUrl() || '#'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn-add-calendar"
-                        onClick={handleAddToCalendar}
-                      >
-                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                          <path d="M12 5v14M5 12h14" />
-                        </svg>
-                        {t('patient:addToCalendar')}
-                      </a>
-                    </div>
-
-                    <div className="checkout-detail-row">
-                      <div className="checkout-detail-icon checkout-icon-orange">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                          <rect x="3" y="5" width="18" height="14" rx="2" />
-                          <path d="m10 9 5 3-5 3V9Z" />
-                        </svg>
-                      </div>
-                      <div className="checkout-detail-content">
-                        <span className="checkout-detail-label">{t('appointment:consultationType')}</span>
-                        <strong>{consultModeDisplay(formData.consultMode)}</strong>
-                        <span>{formData.consultMode === 'Video Consultation' ? 'Live video consultation' : formData.consultMode === 'In-Person Visit' ? 'In-person consultation' : 'Secure chat consultation'}</span>
-                      </div>
-                    </div>
-
-                    <div className="checkout-detail-row">
-                      <div className="checkout-detail-icon checkout-icon-pink">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                          <circle cx="12" cy="8" r="3.5" />
-                          <path d="M5 21a7 7 0 0 1 14 0M18 5.5a3 3 0 0 1 0 5.2" />
-                        </svg>
-                      </div>
-                      <div className="checkout-detail-content">
-                        <span className="checkout-detail-label">{t('patient:patientAndVitalsTitle')}</span>
-                        <strong>{formData.patientName}, {formData.patientAge} {t('appointment:detailTicket.yrs')}, {formData.patientGender}</strong>
-                        <span>{t('patient:height')}: {formData.patientHeight || '--'} cm • {t('patient:weight')}: {formData.patientWeight || '--'} kg{formData.patientBloodGroup ? ` • ${t('patient:bloodGroup')} ${formData.patientBloodGroup}` : ''}</span>
-                        <span>{formData.patientPhone}{formData.patientEmail ? ` • ${formData.patientEmail}` : ''}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="checkout-payment-summary">
-                    <div className="checkout-payment-heading">
+                    <div className="checkout-section-heading">
                       <div>
-                        <span className="checkout-eyebrow">Secure checkout</span>
-                        <h2>{t('patient:paymentSummary')}</h2>
+                        <h2>{t('patient:appointmentDetails')}</h2>
+                        <p>Make sure everything looks right before you continue.</p>
                       </div>
-                      <svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                        <rect x="4" y="10" width="16" height="11" rx="2" />
-                        <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                      <button type="button" className="btn-edit-appointment" onClick={() => setCurrentStep(1)}>
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </svg>
+                        {t('patient:edit')}
+                      </button>
+                    </div>
+
+                    <div className="checkout-details-list">
+                      <div className="checkout-detail-row">
+                        <div className="checkout-detail-content">
+                          <span className="checkout-detail-label">{t('patient:healthConcern')}</span>
+                          <strong>{formData.healthConcern === 'specific-symptoms' ? t('patient:specificSymptoms') : t('patient:other')}</strong>
+                          <span>{formData.symptoms.length > 0 ? formData.symptoms.join(', ') : t('patient:generalHealthQuery')}</span>
+                        </div>
+                      </div>
+
+                      <div className="checkout-detail-row">
+                        <div className="checkout-detail-content">
+                          <span className="checkout-detail-label">{t('patient:doctor')}</span>
+                          <strong>{formData.selectedDoctor?.name || t('patient:noDoctorSelected')}</strong>
+                          <span>{formData.selectedDoctor?.specialty || t('patient:defaultSpecialty')} • {formData.selectedDoctor?.experience || t('patient:defaultExperience')}</span>
+                        </div>
+                        {formData.selectedDoctor?.imageUrl && (
+                          <img
+                            src={formData.selectedDoctor.imageUrl}
+                            alt={formData.selectedDoctor.name}
+                            className="checkout-doctor-avatar"
+                            loading="lazy"
+                            onError={handleImageError}
+                          />
+                        )}
+                      </div>
+
+                      <div className="checkout-detail-row checkout-date-row">
+                        <div className="checkout-detail-content">
+                          <span className="checkout-detail-label">{t('appointment:date')}</span>
+                          <strong>{formatBookingDate(createdAppointment, formData.selectedDate, formData.selectedTimeSlot) || t('patient:defaultDate')}</strong>
+                          <span className="checkout-time-value">{formData.selectedTimeSlot || t('patient:defaultTime')}</span>
+                        </div>
+                        <a
+                          href={getCalendarUrl() || '#'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn-add-calendar"
+                          onClick={handleAddToCalendar}
+                        >
+                          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                            <path d="M12 5v14M5 12h14" />
+                          </svg>
+                          {t('patient:addToCalendar')}
+                        </a>
+                      </div>
+
+                      <div className="checkout-detail-row">
+                        <div className="checkout-detail-content">
+                          <span className="checkout-detail-label">{t('appointment:consultationType')}</span>
+                          <strong>{consultModeDisplay(formData.consultMode)}</strong>
+                          <span>{formData.consultMode === 'Video Consultation' ? 'Live video consultation' : formData.consultMode === 'In-Person Visit' ? 'In-person consultation' : 'Secure chat consultation'}</span>
+                        </div>
+                      </div>
+
+                      <div className="checkout-detail-row">
+                        <div className="checkout-detail-content">
+                          <span className="checkout-detail-label">{t('patient:patientAndVitalsTitle')}</span>
+                          <strong>{formData.patientName}, {formData.patientAge} {t('appointment:detailTicket.yrs')}, {formData.patientGender}</strong>
+                          <span>{t('patient:height')}: {formData.patientHeight || '--'} cm • {t('patient:weight')}: {formData.patientWeight || '--'} kg{formData.patientBloodGroup ? ` • ${t('patient:bloodGroup')} ${formData.patientBloodGroup}` : ''}</span>
+                          <span>{formData.patientPhone}{formData.patientEmail ? ` • ${formData.patientEmail}` : ''}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="checkout-sidebar-col">
+                    <div className="checkout-payment-summary">
+                      <div className="checkout-payment-heading">
+                        <div>
+                          <span className="checkout-eyebrow">Secure checkout</span>
+                          <h2>{t('patient:paymentSummary')}</h2>
+                        </div>
+                        <svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                          <rect x="4" y="10" width="16" height="11" rx="2" />
+                          <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                        </svg>
+                      </div>
+                      <div className="checkout-payment-row">
+                        <span>{t('patient:consultationFeeLabel')}</span>
+                        <strong>₹{formatFeeAmount(formData.selectedDoctor?.fee)}</strong>
+                      </div>
+                      <div className="checkout-payment-divider" />
+                      <div className="checkout-payment-row checkout-total-row">
+                        <strong>{t('patient:totalPayable')}</strong>
+                        <strong>₹{formatFeeAmount(formData.selectedDoctor?.fee)}</strong>
+                      </div>
+                    </div>
+
+                    <div className="checkout-legal-notice">
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                        <path d="M12 3 5 6v5c0 4.5 2.9 8.2 7 10 4.1-1.8 7-5.5 7-10V6l-7-3Z" />
+                        <path d="m9 12 2 2 4-4" />
                       </svg>
+                      <p>By proceeding, you agree to our <a href="/about">Terms &amp; Conditions</a> and <a href="/about">Privacy Policy</a>.</p>
                     </div>
-                    <div className="checkout-payment-row">
-                      <span>{t('patient:consultationFeeLabel')}</span>
-                      <strong>₹{formatFeeAmount(formData.selectedDoctor?.fee)}</strong>
+
+                    <div className="checkout-support-row">
+                      <span>{t('patient:secureCheckout')} · {t('patient:sslEncrypted')}</span>
+                      <button type="button" onClick={() => setShowHelpModal(true)}>{t('patient:chatWithUs')}</button>
                     </div>
-                    <div className="checkout-payment-divider" />
-                    <div className="checkout-payment-row checkout-total-row">
-                      <strong>{t('patient:totalPayable')}</strong>
-                      <strong>₹{formatFeeAmount(formData.selectedDoctor?.fee)}</strong>
+
+                    <div className="checkout-action-row">
+                      <button type="button" className="checkout-back-button" onClick={handlePrevStep}>
+                        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                          <path d="M19 12H5M12 19l-7-7 7-7" />
+                        </svg>
+                        {t('common:back')}
+                      </button>
+                      <PayButton
+                        appointmentId={createdAppointment?.id || ''}
+                        patientName={formData.patientName}
+                        patientEmail={formData.patientEmail}
+                        amountLabel={formatFeeAmount(formData.selectedDoctor?.fee)}
+                        buttonLabel={`🔒 Proceed to Pay ₹${formatFeeAmount(formData.selectedDoctor?.fee)}`}
+                        buttonClassName="checkout-pay-button"
+                        onSuccess={(receipt) => {
+                          setPaymentReceipt(receipt);
+                          setBookingConfirmed(true);
+                        }}
+                      />
                     </div>
-                  </div>
-
-                  <div className="checkout-legal-notice">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                      <path d="M12 3 5 6v5c0 4.5 2.9 8.2 7 10 4.1-1.8 7-5.5 7-10V6l-7-3Z" />
-                      <path d="m9 12 2 2 4-4" />
-                    </svg>
-                    <p>By proceeding, you agree to our <a href="/about">Terms &amp; Conditions</a> and <a href="/about">Privacy Policy</a>.</p>
-                  </div>
-
-                  <div className="checkout-support-row">
-                    <span>{t('patient:secureCheckout')} · {t('patient:sslEncrypted')}</span>
-                    <button type="button" onClick={() => setShowHelpModal(true)}>{t('patient:chatWithUs')}</button>
-                  </div>
-
-                  <div className="checkout-action-row">
-                    <button type="button" className="checkout-back-button" onClick={handlePrevStep}>
-                      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                        <path d="M19 12H5M12 19l-7-7 7-7" />
-                      </svg>
-                      {t('common:back')}
-                    </button>
-                    <PayButton
-                      appointmentId={createdAppointment?.id || ''}
-                      patientName={formData.patientName}
-                      patientEmail={formData.patientEmail}
-                      amountLabel={formatFeeAmount(formData.selectedDoctor?.fee)}
-                      buttonLabel={`🔒 Proceed to Pay ₹${formatFeeAmount(formData.selectedDoctor?.fee)}`}
-                      buttonClassName="checkout-pay-button"
-                      onSuccess={(receipt) => {
-                        setPaymentReceipt(receipt);
-                        setBookingConfirmed(true);
-                      }}
-                    />
                   </div>
                 </div>
               )}
@@ -1886,10 +1861,6 @@ const BookAppointmentPage: React.FC = () => {
                       ← {t('common:back')}
                     </button>
 
-                    <div className="privacy-badge">
-                      🔒 {t('auth:privacyNotice.title')}
-                    </div>
-
                     <button
                       type="button"
                       className="btn-form-next-orange"
@@ -1905,15 +1876,7 @@ const BookAppointmentPage: React.FC = () => {
                 </>
               )}
 
-              {/* Collapsed Accordion for Next Step preview */}
-              {currentStep === 1 && (
-                <div className="collapsed-step-accordion">
-                <div className="accordion-header">
-                      <span>🔒 {t('bookingFlow:stepSelectDoctor')}</span>
-                      <span className="accordion-sub">{t('patient:step2Title')}</span>
-                    </div>
-                </div>
-              )}
+
             </div>
 
             {currentStep !== 5 && (

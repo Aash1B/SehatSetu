@@ -86,6 +86,79 @@ SehatSetu is a digital healthcare platform that connects patients directly with 
 Beyond the consultation itself, SehatSetu functions as a continuous healthcare companion rather than a one-time service. Every prescription, medical report, and consultation record is stored in a centralized electronic health record, so a patient's medical history is available and organized for every future visit. The platform layers additional support on top of this — personalized diet recommendations based on the patient's condition, automated reminders for follow-ups and medication, and smart referrals to nearby hospitals when a case requires in-person or emergency attention. Together, these pieces make SehatSetu less of a video-calling app and more of a connected system that stays with the patient across their entire healthcare journey.
 
 <p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
+## Inside the SehatSetu
+
+
+<table align="center">
+  <tr>
+    <td align="center"><b>Home</b></td>
+    <td align="center"><b>Account</b></td>
+  </tr>
+  <tr>
+    <td><img src="src/assets/Screenshots/home.png" width="450"/></td>
+    <td><img src="src/assets/Screenshots/account.png" width="450"/></td>
+  </tr>
+
+  <tr>
+    <td align="center"><b>Profile</b></td>
+    <td align="center"><b>Authentication</b></td>
+  </tr>
+  <tr>
+    <td><img src="src/assets/Screenshots/profile.png" width="450"/></td>
+    <td><img src="src/assets/Screenshots/authentication.png" width="450"/></td>
+  </tr>
+
+   <tr>
+  <td colspan="2" align="center"><b>Creator Dashboard</b></td>
+</tr>
+<tr>
+  <td colspan="2" align="center">
+    <img src="src/assets/Screenshots/creat <img src="src/assets/Screenshots/creator dashboard.png" width="430"/>
+  </td>
+</tr>
+</table>
+<p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
+
+## 🏗️ System Architecture
+
+SehatSetu uses a **multi-service architecture** where different technologies handle different responsibilities.
+
+### 💻 Frontend Layer
+- React + Vite + TypeScript + Tailwind CSS — user-facing application
+- Redux Toolkit + RTK Query — state management and API communication
+- Vite PWA Plugin — installability and offline capabilities
+
+### ⚙️ Backend Layer
+- NestJS + Node.js — core backend framework
+- PostgreSQL + Prisma ORM — data management
+- JWT + refresh tokens + role-based access control — authentication
+- BullMQ + Redis — background operations (reminders, notifications)
+
+### 🤖 AI/ML Layer
+- Python + FastAPI — dedicated AI service layer, kept separate from the core application
+- 🎙️ Speech recognition
+- 🧠 Medical information extraction
+- 💬 AI chatbot functionality
+- 📚 History summarization
+- 🌐 Multilingual processing
+
+### 🔐 Security & Privacy
+- JWT-based authentication
+- Role-based access control
+- Password hashing using bcrypt
+- Encrypted data at rest
+- Explicit user consent
+- Account deletion support
+- Compliance considerations for India's Digital Personal Data Protection (DPDP) Act
+
+### 🚀 DevOps & Development
+- 🐳 Docker Compose — local multi-service development and orchestration
+- 🔄 GitHub Actions — CI/CD (lint + build on push)
+- 🔗 API Contracts — shared API contract across all modules to maintain consistency between services
+
+<p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
+
+
 
 ## <img src="./frontend/public/icon-patient-glow.svg" width="32" height="32" valign="middle" /> Patient Experience
 
@@ -259,99 +332,6 @@ The platform uses **Razorpay** for consultation payments. Other integrations sup
 
 <p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
 
-## 🏗️ System Architecture
-
-SehatSetu uses a **multi-service architecture** where different technologies handle different responsibilities.
-
-### 💻 Frontend Layer
-- React + Vite + TypeScript + Tailwind CSS — user-facing application
-- Redux Toolkit + RTK Query — state management and API communication
-- Vite PWA Plugin — installability and offline capabilities
-
-### ⚙️ Backend Layer
-- NestJS + Node.js — core backend framework
-- PostgreSQL + Prisma ORM — data management
-- JWT + refresh tokens + role-based access control — authentication
-- BullMQ + Redis — background operations (reminders, notifications)
-
-### 🤖 AI/ML Layer
-- Python + FastAPI — dedicated AI service layer, kept separate from the core application
-- 🎙️ Speech recognition
-- 🧠 Medical information extraction
-- 💬 AI chatbot functionality
-- 📚 History summarization
-- 🌐 Multilingual processing
-
-### 🔐 Security & Privacy
-- JWT-based authentication
-- Role-based access control
-- Password hashing using bcrypt
-- Encrypted data at rest
-- Explicit user consent
-- Account deletion support
-- Compliance considerations for India's Digital Personal Data Protection (DPDP) Act
-
-### 🚀 DevOps & Development
-- 🐳 Docker Compose — local multi-service development and orchestration
-- 🔄 GitHub Actions — CI/CD (lint + build on push)
-- 🔗 API Contracts — shared API contract across all modules to maintain consistency between services
-
-<p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
-
-## 🌍 The Vision
-
-SehatSetu is more than an online doctor consultation platform.
-
-It aims to create a **connected healthcare ecosystem** where:
-
-<div align="center">
-
-**Patient 👤**
-↓
-**Symptoms & Health Information 📝**
-↓
-**AI-Assisted Analysis 🤖**
-↓
-**Appropriate Doctor 👨‍⚕️**
-↓
-**Online Consultation 🎥**
-↓
-**AI-Assisted Documentation 📋**
-↓
-**Digital Prescription 💊**
-↓
-**Electronic Health Record 📂**
-↓
-**Personalized Recommendations 🥗**
-↓
-**Follow-Up & Continuous Care 🔔**
-↓
-**Offline Referral when Required 🏥**
-
-</div>
-
-This approach brings different stages of healthcare into one connected platform instead of treating every consultation as an isolated event.
-
-<p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
-
-## 🎯 Project Objective
-
-The ultimate objective of **SehatSetu — Swasth AI** is to use technology to reduce the barriers between people and quality healthcare.
-
-By combining:
-
-- 🩺 Telemedicine
-- 🤖 Artificial Intelligence
-- 📂 Digital Health Records
-- 🗣️ Multilingual Support
-- 📱 Progressive Web Technology
-- 🔔 Automated Healthcare Support
-
-Sehat Setu aims to make healthcare **more accessible, efficient, intelligent, and patient-centric**, particularly for communities that face geographical, language, infrastructure, or connectivity barriers.
-
-<p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
-
-<div align="center">
 
 ## SehatSetu
 
