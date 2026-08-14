@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DoctorSidebar from '../components/DoctorSidebar';
+import DoctorNavbar from '../components/DoctorNavbar';
 import PageHeader from '../components/PageHeader';
 import ConsultationCard from '../components/ConsultationCard';
 import type { ConsultationSummary } from '../../types';
@@ -162,39 +163,37 @@ const ConsultationsList: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen w-screen bg-luster-white">
+      <div className="flex items-center justify-center h-screen w-screen bg-[#F8FAFC]">
         <LiquidLoader text="Loading appointments" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-luster-white font-sans text-deep-space">
+    <div className="flex h-screen bg-[#F8FAFC] font-sans text-deep-space overflow-hidden">
       <DoctorSidebar />
-      <main className="flex-1 flex flex-col h-screen overflow-hidden p-8">
+      <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#F8FAFC]">
+        <DoctorNavbar />
+        <main className="flex-1 flex flex-col overflow-hidden px-8 md:px-10 pt-12 pb-10 bg-[#F8FAFC]">
         <PageHeader 
           title="Patient Appointments" 
           onBack={() => navigate('/doctor/dashboard')}
         />
         
         <div className="flex-1 overflow-y-auto custom-scrollbar">
-          <div className="max-w-4xl mx-auto space-y-4 pb-12">
+          <div className="w-full space-y-4 pb-12">
               <>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-bold text-deep-space/80">Upcoming Appointments</h2>
+                  <h2 className="text-xl font-extrabold text-slate-900">Upcoming Appointments</h2>
 
                   {/* Filter Icon + Popup */}
                   <div className="relative" ref={filterRef}>
                     <button
                       onClick={() => setFilterOpen(o => !o)}
                       title="Filter by status"
-                      className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-sm font-semibold transition-all duration-200 cursor-pointer ${
-                        statusFilter !== 'ALL'
-                          ? 'bg-[#223382] text-white border-[#223382] shadow-sm'
-                          : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
-                      }`}
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-[#9BACD8] bg-[#9BACD8] text-slate-900 hover:bg-[#8ba0d2] text-base font-extrabold transition-all duration-200 cursor-pointer shadow-2xs"
                     >
-                      <SlidersHorizontal className="w-4 h-4" />
+                      <SlidersHorizontal className="w-5 h-5 text-slate-900" />
                       <span>Filter{statusFilter !== 'ALL' ? `: ${statusFilter.charAt(0) + statusFilter.slice(1).toLowerCase()}` : ''}</span>
                     </button>
 
@@ -206,7 +205,7 @@ const ConsultationsList: React.FC = () => {
                         <div className="py-1.5">
                           {([
                             { key: 'ALL',       label: 'All Consultations', dot: 'bg-slate-400' },
-                            { key: 'SCHEDULED', label: 'Scheduled',         dot: 'bg-emerald-500' },
+                            { key: 'SCHEDULED', label: 'Scheduled',         dot: 'bg-yellow-500' },
                             { key: 'COMPLETED', label: 'Completed',         dot: 'bg-slate-500' },
                             { key: 'CANCELLED', label: 'Cancelled',         dot: 'bg-red-500' },
                           ] as const).map(({ key, label, dot }) => {
@@ -260,7 +259,8 @@ const ConsultationsList: React.FC = () => {
               </>
           </div>
         </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 };

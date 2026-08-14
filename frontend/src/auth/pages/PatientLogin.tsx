@@ -7,6 +7,7 @@ import { saveAuth } from '../authStorage';
 import GoogleSignInButton from '../components/GoogleSignInButton';
 import { useTranslation } from 'react-i18next';
 import BrandLogo from '../../common/components/BrandLogo';
+import PasswordInput from '../../common/components/PasswordInput';
 
 type LoginMethod = 'email' | 'phone';
 
@@ -63,8 +64,12 @@ export default function PatientLogin() {
       const requestedPath = (location.state as { from?: string } | null)?.from;
       navigate(requestedPath?.startsWith('/patient/') ? requestedPath : '/patient/dashboard', { replace: true });
     } catch (err: any) {
-      setError(err.message);
-      if (err.message.toLowerCase().includes('verify your email')) {
+      const raw = err?.message || '';
+      const msg = (raw === 'Failed to fetch' || raw.includes('Failed to fetch'))
+        ? 'Unable to connect to SehatSetu backend server. Please make sure the backend server is running.'
+        : raw;
+      setError(msg || 'An error occurred during sign in');
+      if (raw.toLowerCase().includes('verify your email')) {
         navigate('/verify-otp', { state: { email, role: 'PATIENT' } });
       }
     } finally {
@@ -264,8 +269,7 @@ export default function PatientLogin() {
                   <label className="block text-sm font-medium text-slate-700">{t('patientLogin.passwordLabel')}</label>
                   <Link to="/forgot-password" className="text-xs text-orange-500 hover:underline">{t('patientLogin.forgotPassword')}</Link>
                 </div>
-                <input
-                  type="password"
+                <PasswordInput
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

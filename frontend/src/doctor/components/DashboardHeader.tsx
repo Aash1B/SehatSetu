@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import type { Doctor } from '../../types';
-import { getToken } from '../../auth/authStorage';
 
 export interface DashboardHeaderProps {
   doctor: Doctor;
@@ -12,14 +11,7 @@ export interface DashboardHeaderProps {
   className?: string;
 }
 
-export interface NotificationItem {
-  id: string;
-  text: string;
-  time: string;
-  route: string;
-}
-
-const DashboardHeader: React.FC<DashboardHeaderProps> = ({
+export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   doctor,
   date,
   className
@@ -32,53 +24,22 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     setImageLoadFailed(false);
   }, [doctor.imageUrl]);
 
-  // Notification logic removed
-
   return (
-    <header className={cn("doctor-dashboard-header flex justify-between items-start mb-7", className)}>
+    <header className={cn("flex justify-between items-start mb-2", className)}>
       <div>
-        <p className="text-sm font-normal text-slate-500 mb-1">{date}</p>
-        <div className="mb-1.5">
-          <h1 className="text-4xl font-semibold text-slate-900 tracking-tight flex items-center gap-2">
-            <span style={{
-              display: 'inline-block',
-              background: 'linear-gradient(to right, #FF9933 0%, #138808 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              fontWeight: 700,
-            }}>Namaste,</span>
-            {' '}{doctor.name}
-            <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', width: '64px', height: '64px', marginLeft: '4px', transform: 'translateY(-8px)' }}>
-              <img src="/namaskar-clean.png" alt="Namaskar" className="namaskar-animated-icon" style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
-            </span>
-          </h1>
-        </div>
-        <p className="text-base font-normal text-slate-600"></p>
+        <h1 className="text-5xl md:text-6xl lg:text-[58px] font-black tracking-tight flex items-center gap-2.5">
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#FF9933] via-[#D4AC0D] to-[#138808] font-black inline-block">
+            Namaste
+          </span>
+          <span className="text-[#0f172a] font-extrabold">, {doctor.name}</span>
+          <img
+            src="/Nam.png"
+            alt="Namaste"
+            className="w-28 h-28 md:w-32 md:h-32 lg:w-[130px] lg:h-[130px] object-contain inline-block -ml-6 align-middle transition-transform hover:scale-105"
+          />
+        </h1>
       </div>
 
-      <div className="flex items-center gap-4 relative">
-        <button
-          type="button"
-          onClick={() => navigate('/doctor/profile')}
-          className="w-16 h-16 rounded-full bg-[#111144] p-0 flex items-end justify-center hover:opacity-90 transition-all cursor-pointer border-0 shadow-sm overflow-hidden shrink-0"
-          title="View Doctor Profile"
-        >
-          {showUploadedImage ? (
-            <img
-              src={doctor.imageUrl}
-              alt={`${doctor.name} profile`}
-              className="w-full h-full object-cover"
-              onError={() => setImageLoadFailed(true)}
-            />
-          ) : (
-            <svg viewBox="0 0 100 100" className="w-[75%] h-[75%]" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <circle cx="50" cy="39" r="16" fill="#FFFFFF" />
-              <path d="M 10 100 C 10 74, 26 60, 50 60 C 74 60, 90 74, 90 100 Z" fill="#FFFFFF" />
-            </svg>
-          )}
-        </button>
-      </div>
     </header>
   );
 };

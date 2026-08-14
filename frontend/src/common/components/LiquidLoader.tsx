@@ -27,7 +27,7 @@ export const LiquidLoader: React.FC<LiquidLoaderProps> = ({
 
   if (fullScreen) {
     return (
-      <div className="flex items-center justify-center h-screen w-screen bg-white fixed inset-0 z-50">
+      <div className="flex items-center justify-center h-screen w-screen bg-[#F8FAFC] fixed inset-0 z-50">
         {content}
       </div>
     );

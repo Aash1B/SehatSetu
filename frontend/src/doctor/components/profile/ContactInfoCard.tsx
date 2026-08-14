@@ -13,7 +13,7 @@ const ContactInfoCard: React.FC<Props> = ({ profile, isEditing, onChange }) => {
   const inputClassName = "w-full mt-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-deep-space focus:outline-none focus:ring-2 focus:ring-aster-blue/50 focus:border-aster-blue transition-colors";
 
   return (
-    <SectionCard title="Contact Information" className="h-full">
+    <SectionCard>
       <div className="space-y-4">
         <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
           <div className="p-2 bg-white rounded shadow-sm text-aster-blue">

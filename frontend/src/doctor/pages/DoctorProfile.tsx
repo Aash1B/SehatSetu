@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import DoctorSidebar from '../components/DoctorSidebar';
-import DashboardHeader from '../components/DashboardHeader';
+import DoctorNavbar from '../components/DoctorNavbar';
 import DoctorProfileHeader from '../components/profile/DoctorProfileHeader';
 import ProfessionalInfoCard from '../components/profile/ProfessionalInfoCard';
 import ContactInfoCard from '../components/profile/ContactInfoCard';
@@ -186,7 +186,7 @@ const DoctorProfile: React.FC = () => {
 
   if (isLoading || !profile) {
     return (
-      <div className="flex items-center justify-center h-screen bg-luster-white">
+      <div className="flex items-center justify-center h-screen bg-[#F8FAFC]">
         <LiquidLoader text="Loading Profile" />
       </div>
     );
@@ -201,35 +201,30 @@ const DoctorProfile: React.FC = () => {
   } : { id: '', name: '', initials: '' };
 
   return (
-    <div className="flex h-screen bg-luster-white font-sans text-deadly-depths">
+    <div className="flex h-screen bg-[#F8FAFC] font-sans text-deadly-depths overflow-hidden">
       <DoctorSidebar />
 
-      <main className="flex-1 overflow-y-auto p-8 relative">
-        <DashboardHeader 
-          doctor={dashboardDoctor as any}
-          date={new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-          notificationCount={3}
-          className="mb-8"
-        />
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        <DoctorNavbar doctor={dashboardDoctor as any} />
 
-        <DoctorProfileHeader 
-          profile={formData || profile} 
-          isEditing={isEditing}
-          onEdit={handleEdit}
-          onCancel={handleCancel}
-          onSave={handleSave}
-          onPhotoChange={handlePhotoChange}
-        />
+        <main className="flex-1 overflow-y-auto p-8 relative bg-[#F8FAFC]">
+          <DoctorProfileHeader 
+            profile={formData || profile} 
+            isEditing={isEditing}
+            onEdit={handleEdit}
+            onCancel={handleCancel}
+            onSave={handleSave}
+            onPhotoChange={handlePhotoChange}
+          />
 
-        <div className="mb-6">
-          <p className="text-base font-bold text-aster-blue uppercase tracking-wider mb-2">Performance & Activity</p>
+        <div className="mb-8">
           <StatisticsGrid stats={profile.stats} />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
           <div className="lg:col-span-2 space-y-8">
             <div>
-              <p className="text-base font-bold text-aster-blue uppercase tracking-wider mb-2">Professional Details</p>
+              <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-4">Professional Information</h3>
               <ProfessionalInfoCard 
                 profile={formData || profile} 
                 isEditing={isEditing}
@@ -237,14 +232,14 @@ const DoctorProfile: React.FC = () => {
               />
             </div>
             <div>
-              <p className="text-base font-bold text-aster-blue uppercase tracking-wider mb-2">Verification & Documents</p>
+              <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-4">Professional Documents</h3>
               <DocumentCard documents={profile.documents} doctorId={profile.id} onRefresh={loadProfile} />
             </div>
           </div>
           
           <div className="space-y-8">
             <div>
-              <p className="text-base font-bold text-aster-blue uppercase tracking-wider mb-2">Contact Info</p>
+              <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-4">Contact Information</h3>
               <ContactInfoCard 
                 profile={formData || profile}
                 isEditing={isEditing}
@@ -252,14 +247,15 @@ const DoctorProfile: React.FC = () => {
               />
             </div>
             <div>
-              <p className="text-xs font-bold text-aster-blue uppercase tracking-wider mb-2">Preferences</p>
+              <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-4">Account Settings</h3>
               <SettingsCard />
             </div>
           </div>
         </div>
       </main>
     </div>
-  );
+  </div>
+);
 };
 
 export default DoctorProfile;

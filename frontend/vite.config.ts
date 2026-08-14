@@ -9,7 +9,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: 'prompt',
+      registerType: 'autoUpdate',
       includeAssets: [
         'logo.svg',
         'favicon.ico',
@@ -19,7 +19,7 @@ export default defineConfig({
         'offline.html',
       ],
       manifest: {
-        name: 'SehatSetu - Healthcare Portal',
+        name: 'SehatSetu',
         short_name: 'SehatSetu',
         description: 'Connect with verified doctors, book online consultations, manage prescriptions, and access medical records on SehatSetu.',
         theme_color: '#863bff',
@@ -63,9 +63,22 @@ export default defineConfig({
         ],
       },
       workbox: {
+        skipWaiting: true,
+        clientsClaim: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest,woff,woff2}'],
-        navigateFallback: '/offline.html',
-        navigateFallbackDenylist: [/^\/api\//, /^\/auth\//],
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [
+          /^\/api\//,
+          /^\/auth\//,
+          /^\/ehr\//,
+          /^\/chatbot\//,
+          /^\/payments\//,
+          /^\/account\//,
+          /^\/hospitals\//,
+          /^\/sagas\//,
+          /^\/slots\//,
+          /\.[a-z0-9]+$/i,
+        ],
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
@@ -76,6 +89,13 @@ export default defineConfig({
               return (
                 pathname.startsWith('/api') ||
                 pathname.startsWith('/auth') ||
+                pathname.startsWith('/ehr') ||
+                pathname.startsWith('/chatbot') ||
+                pathname.startsWith('/payments') ||
+                pathname.startsWith('/account') ||
+                pathname.startsWith('/hospitals') ||
+                pathname.startsWith('/sagas') ||
+                pathname.startsWith('/slots') ||
                 href.includes('supabase.co') ||
                 href.includes('livekit') ||
                 href.includes('razorpay') ||

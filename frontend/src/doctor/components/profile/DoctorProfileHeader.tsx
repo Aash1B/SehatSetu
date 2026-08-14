@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Camera, CheckCircle2, Edit2 } from 'lucide-react';
+import { CheckCircle2, Edit2 } from 'lucide-react';
 import { DoctorProfileData } from '../../types/profile.types';
 
 interface Props {
@@ -21,56 +21,54 @@ const DoctorProfileHeader: React.FC<Props> = ({ profile, isEditing, onEdit, onCa
   };
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-jodhpur-tan/30 mb-8 flex flex-col md:flex-row items-start md:items-center gap-6">
+    <div className="bg-gradient-to-r from-[#223382]/60 via-[#223382]/30 to-white p-4 rounded-2xl shadow-sm border border-[#223382]/10 mb-8 flex flex-col md:flex-row items-start md:items-center gap-4">
       <div className="relative shrink-0">
+        {/* Hidden file input always present */}
+        <input
+          ref={imageInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          className="hidden"
+          onChange={handleImageSelected}
+        />
+
+        {/* Photo */}
         {profile.photoUrl ? (
-          <img src={profile.photoUrl} alt={profile.fullName} className="w-24 h-24 rounded-full object-cover border border-jodhpur-tan/30 shadow-sm" />
+          <img src={profile.photoUrl} alt={profile.fullName} className="w-14 h-14 rounded-full object-cover border border-jodhpur-tan/30 shadow-sm" />
         ) : (
-          <div className="w-24 h-24 rounded-full bg-indigo-100 text-indigo-800 flex items-center justify-center text-2xl font-bold border border-indigo-200">
+          <div className="w-14 h-14 rounded-full bg-indigo-100 text-indigo-800 flex items-center justify-center text-lg font-bold border border-indigo-200">
             {profile.fullName.replace(/^Dr\.\s*/i, '').split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase()}
           </div>
         )}
-        {profile.isVerified && (
+
+        {/* Verified badge (non-edit mode) */}
+        {!isEditing && profile.isVerified && (
           <div className="absolute bottom-0 right-0 bg-white rounded-full p-0.5 shadow-sm border border-gray-100">
             <CheckCircle2 className="w-5 h-5 text-green-500 fill-green-50" />
           </div>
         )}
+
+        {/* Pencil overlay (edit mode) */}
         {isEditing && (
-          <div className="mt-3 flex justify-center">
-            <input
-              ref={imageInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              className="hidden"
-              onChange={handleImageSelected}
-            />
-            <button
-              type="button"
-              onClick={() => imageInputRef.current?.click()}
-              className="text-sm font-medium text-aster-blue hover:text-aster-blue/80 flex items-center gap-1.5"
-            >
-              <Camera className="w-4 h-4" />
-              Change photo
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => imageInputRef.current?.click()}
+            className="absolute inset-0 w-14 h-14 rounded-full bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
+            title="Change photo"
+          >
+            <Edit2 className="w-4 h-4 text-white" />
+          </button>
         )}
       </div>
       
       <div className="flex-1 w-full">
-        <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-deep-space flex items-center gap-2 mb-2">
+            <h2 className="text-2xl font-bold text-white flex items-center gap-2 mb-2">
               {profile.fullName}
             </h2>
-            <div className="mb-3">
-              <span className="text-sm font-medium bg-habanero/10 text-habanero px-3 py-1 rounded-full">
-                {profile.specialization}
-              </span>
-            </div>
-            <div className="text-base text-gray-600 flex flex-wrap gap-x-4 gap-y-2 font-medium">
-              <p>Qualification: <span className="text-deep-space">{profile.qualification}</span></p>
-              <p>Experience: <span className="text-deep-space">{profile.yearsOfExperience} Years</span></p>
-            </div>
+
+
           </div>
           
           {isEditing ? (
@@ -91,12 +89,6 @@ const DoctorProfileHeader: React.FC<Props> = ({ profile, isEditing, onEdit, onCa
             </div>
           ) : (
             <div className="flex items-center gap-3 shrink-0">
-              <a
-                href="/doctor/onboarding"
-                className="bg-aster-blue hover:bg-aster-blue/90 text-white px-5 py-2 rounded-xl font-medium transition-colors shadow-sm flex items-center gap-2"
-              >
-                Onboarding Setup
-              </a>
               <button 
                 onClick={onEdit}
                 className="bg-habanero hover:bg-[#e0750e] text-white px-5 py-2 rounded-xl font-medium transition-colors shadow-sm flex items-center gap-2"

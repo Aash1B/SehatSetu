@@ -9,10 +9,10 @@ export interface ChiefComplaintsCardProps {
 
 const ChiefComplaintsCard: React.FC<ChiefComplaintsCardProps> = ({ complaints, since }) => {
   return (
-    <SectionCard title="Chief Complaints" subtitle={`Since ${since}`} className="mb-6">
-      <div className="flex flex-wrap gap-2">
+    <SectionCard title="Symptoms" className="mb-6">
+      <div className="flex flex-wrap gap-2 -mt-2 -ml-1">
         {complaints.map((complaint, index) => (
-          <StatusBadge key={index} label={complaint} variant="warning" className="bg-orange-50 text-orange-700" />
+          <StatusBadge key={index} label={complaint} variant="warning" className="bg-orange-50 text-orange-700 text-base md:text-lg px-4 py-1.5 font-bold" />
         ))}
       </div>
     </SectionCard>

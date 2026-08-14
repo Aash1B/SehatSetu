@@ -1,11 +1,73 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, Component, type ReactNode } from 'react';
 import { Provider } from 'react-redux';
 import { store } from './patient/store';
 import { useTranslation } from 'react-i18next';
 import './Patient.css';
 import ChatProvider from './chatbot/ChatProvider';
 import './chatbot/chatbot.css';
+
+interface ChunkErrorBoundaryProps {
+  children: ReactNode;
+}
+
+interface ChunkErrorBoundaryState {
+  hasError: boolean;
+}
+
+class ChunkErrorBoundary extends Component<ChunkErrorBoundaryProps, ChunkErrorBoundaryState> {
+  constructor(props: ChunkErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(): ChunkErrorBoundaryState {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error('SehatSetu ChunkErrorBoundary caught an unhandled render error:', error, errorInfo);
+    const isChunkError =
+      error?.name === 'ChunkLoadError' ||
+      error?.message?.includes('Failed to fetch dynamically imported module') ||
+      error?.message?.includes('Loading chunk') ||
+      error?.message?.includes('import');
+
+    if (isChunkError && typeof window !== 'undefined') {
+      const chunkRetry = sessionStorage.getItem('sehatsetu_chunk_retry');
+      if (!chunkRetry) {
+        sessionStorage.setItem('sehatsetu_chunk_retry', 'true');
+        window.location.reload();
+      }
+    }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6 text-center">
+          <div className="max-w-md bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+            <h2 className="text-xl font-bold text-slate-900 mb-2">Connecting to SehatSetu...</h2>
+            <p className="text-sm text-slate-600 mb-6">Updating application to the latest version. Please tap below to continue.</p>
+            <button
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  sessionStorage.removeItem('sehatsetu_chunk_retry');
+                  window.location.reload();
+                }
+              }}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2.5 rounded-xl font-semibold transition-colors cursor-pointer"
+            >
+              Refresh Application
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 // Auth Pages (new)
 const PatientLogin = lazy(() => import('./auth/pages/PatientLogin'));
 const PatientSignup = lazy(() => import('./auth/pages/PatientSignup'));
@@ -83,60 +145,59 @@ function App() {
           <PWAUpdatePrompt />
           <PWAInstallPrompt />
           <ChatProvider />
-          <Suspense fallback={<LiquidLoader fullScreen text="Loading SehatSetu..." />}>
-          <Routes>
+          <ChunkErrorBoundary>
+            <Suspense fallback={<LiquidLoader fullScreen text="Loading SehatSetu..." />}>
+              <Routes>
+                {/* Auth Routes (new) */}
+                <Route path="/patient/login" element={<PatientLogin />} />
+                <Route path="/patient/signup" element={<PatientSignup />} />
+                <Route path="/doctor/login" element={<DoctorLogin />} />
+                <Route path="/doctor/signup" element={<DoctorSignup />} />
+                <Route path="/verify-otp" element={<VerifyOtp />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
 
-          {/* Auth Routes (new) */}
-           <Route path="/patient/login" element={<PatientLogin />} />
-           <Route path="/patient/signup" element={<PatientSignup />} />
-           <Route path="/doctor/login" element={<DoctorLogin />} />
-           <Route path="/doctor/signup" element={<DoctorSignup />} />
-           <Route path="/verify-otp" element={<VerifyOtp />} />
-           <Route path="/forgot-password" element={<ForgotPassword />} />
-           <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/payment-test" element={<PaymentTestPage />} />
 
-            <Route path="/payment-test" element={<PaymentTestPage />} />
+                {/* About Page (public standalone) */}
+                <Route path="/about" element={<AboutPage />} />
 
-           {/* About Page (public standalone) */}
-          <Route path="/about" element={<AboutPage />} />
+                {/* Patient Portal Layout */}
+                <Route element={<PatientLayout />}>
+                  {/* Landing Page */}
+                  <Route path="/" element={<LandingPage />} />
 
-           {/* Patient Portal Layout */}
-          <Route element={<PatientLayout />}>
-            {/* Landing Page */}
-            <Route path="/" element={<LandingPage />} />
+                  {/* Patient Routes */}
+                  <Route element={<RoleProtectedRoute role="PATIENT" />}>
+                    <Route path="/patient/search" element={<DoctorSearchPage />} />
+                    <Route path="/patient/dashboard" element={<DashboardPage />} />
+                    <Route path="/patient/book/:id" element={<BookAppointmentPage />} />
+                    <Route path="/patient/questionnaire/:id" element={<HealthQuestionnairePage />} />
+                    <Route path="/patient/appointments" element={<AppointmentsPage />} />
+                    <Route path="/patient/consultation/:id" element={<VideoConsultationPage />} />
+                    <Route path="/patient/mch" element={<MCHPage />} />
+                    <Route path="/patient/medical" element={<MedicalPage />} />
+                    <Route path="/patient/vitals" element={<VitalsPage />} />
+                  </Route>
+                </Route>
 
-            {/* Patient Routes */}
-           
-            <Route element={<RoleProtectedRoute role="PATIENT" />}>
-              <Route path="/patient/search" element={<DoctorSearchPage />} />
-              <Route path="/patient/dashboard" element={<DashboardPage />} />
-              <Route path="/patient/book/:id" element={<BookAppointmentPage />} />
-              <Route path="/patient/questionnaire/:id" element={<HealthQuestionnairePage />} />
-              <Route path="/patient/appointments" element={<AppointmentsPage />} />
-              <Route path="/patient/consultation/:id" element={<VideoConsultationPage />} />
-              <Route path="/patient/mch" element={<MCHPage />} />
-              <Route path="/patient/medical" element={<MedicalPage />} />
-              <Route path="/patient/vitals" element={<VitalsPage />} />
-            </Route>
-          </Route>
-
-          {/* Doctor Routes */}
-          
-          <Route element={<RoleProtectedRoute role="DOCTOR" />}>
-            <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
-            <Route path="/doctor/consultations" element={<ConsultationsList />} />
-            <Route path="/doctor/patient/:id" element={<PatientDetails />} />
-            <Route path="/doctor/prescription/:id" element={<DoctorPrescription />} />
-            <Route path="/doctor/consultation/:id" element={<VideoConsultation />} />
-            <Route path="/doctor/profile" element={<DoctorProfile />} />
-            <Route path="/doctor/availability" element={<DoctorAvailability />} />
-            <Route path="/doctor/onboarding" element={<DoctorOnboarding />} />
-            <Route path="/doctor/setup-profile" element={<DoctorOnboarding />} />
-            <Route path="/doctor/ehr-drafts" element={<EhrDrafts />} />
-            <Route path="/doctor/ehr-drafts/:id" element={<EhrDraftDetail />} />
-          </Route>
-        </Routes>
-        </Suspense>
+                {/* Doctor Routes */}
+                <Route element={<RoleProtectedRoute role="DOCTOR" />}>
+                  <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
+                  <Route path="/doctor/consultations" element={<ConsultationsList />} />
+                  <Route path="/doctor/patient/:id" element={<PatientDetails />} />
+                  <Route path="/doctor/prescription/:id" element={<DoctorPrescription />} />
+                  <Route path="/doctor/consultation/:id" element={<VideoConsultation />} />
+                  <Route path="/doctor/profile" element={<DoctorProfile />} />
+                  <Route path="/doctor/availability" element={<DoctorAvailability />} />
+                  <Route path="/doctor/onboarding" element={<DoctorOnboarding />} />
+                  <Route path="/doctor/setup-profile" element={<DoctorOnboarding />} />
+                  <Route path="/doctor/ehr-drafts" element={<EhrDrafts />} />
+                  <Route path="/doctor/ehr-drafts/:id" element={<EhrDraftDetail />} />
+                </Route>
+              </Routes>
+            </Suspense>
+          </ChunkErrorBoundary>
         </Router>
       </ErrorBoundary>
     </Provider>

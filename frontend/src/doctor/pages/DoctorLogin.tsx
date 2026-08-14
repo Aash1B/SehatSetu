@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PasswordInput from '../../common/components/PasswordInput';
 
 const DoctorLogin: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -30,8 +31,7 @@ const DoctorLogin: React.FC = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-            <input
-              type="password"
+            <PasswordInput
               className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               placeholder="••••••••"
               value={password}

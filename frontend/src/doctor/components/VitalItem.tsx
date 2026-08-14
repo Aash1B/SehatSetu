@@ -3,20 +3,25 @@ import type { LucideIcon } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 export interface VitalItemProps {
-  icon: LucideIcon;
+  icon?: LucideIcon;
+  emoji?: string;
   value: string;
   label: string;
   iconColorClass?: string;
 }
 
-const VitalItem: React.FC<VitalItemProps> = ({ icon: Icon, value, label, iconColorClass = "text-habanero bg-habanero/10" }) => {
+const VitalItem: React.FC<VitalItemProps> = ({ icon: Icon, emoji, value, label, iconColorClass = "text-[#0000EE] bg-[#E2E8FF]" }) => {
   return (
-    <div className="flex flex-col items-center justify-center">
-      <div className={cn("w-8 h-8 rounded-full flex items-center justify-center mb-1", iconColorClass)}>
-        <Icon className="w-4 h-4" />
+    <div className="flex flex-col items-center justify-center min-w-[75px]">
+      <div className={cn("w-12 h-12 rounded-full flex items-center justify-center mb-1.5 text-base md:text-lg shrink-0", iconColorClass)}>
+        {emoji ? (
+          <span className="text-xl">{emoji}</span>
+        ) : Icon ? (
+          <Icon className="w-6 h-6 stroke-[2.5]" />
+        ) : null}
       </div>
-      <span className="font-bold text-deep-space text-sm">{value}</span>
-      <span className="text-[10px] text-aster-blue uppercase tracking-wider">{label}</span>
+      <span className="font-black text-slate-900 text-base md:text-lg leading-tight">{value}</span>
+      <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider mt-0.5">{label}</span>
     </div>
   );
 };

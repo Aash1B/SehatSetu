@@ -141,14 +141,20 @@ export class EhrService {
 
   /**
    * Lists EHR drafts (status = DRAFT) awaiting doctor review.
-   * Any authenticated doctor may review pending drafts; this mirrors how
-   * AI-drafted records are not yet tied to a specific reviewing doctor.
+   * Filtered by requesting doctor: a doctor only sees pending EHR drafts for patients
+   * who have booked appointments/consultations with this doctor.
    */
   async listPendingDrafts(requestingUserId: string, requestingRole: string) {
-    await this.assertDoctorRole(requestingUserId, requestingRole);
+    const doctorId = await this.assertDoctorRole(requestingUserId, requestingRole);
 
     const records = await this.prisma.ehrRecord.findMany({
-      where: { status: 'DRAFT' },
+      where: {
+        status: 'DRAFT',
+        OR: [
+          { appointment: { doctorId } },
+          { patient: { appointments: { some: { doctorId } } } },
+        ],
+      },
       orderBy: { createdAt: 'desc' },
       include: this.draftReviewInclude,
     });
@@ -160,14 +166,20 @@ export class EhrService {
    * Returns a single EHR draft's details for doctor review.
    */
   async getDraftForReview(recordId: string, requestingUserId: string, requestingRole: string) {
-    await this.assertDoctorRole(requestingUserId, requestingRole);
+    const doctorId = await this.assertDoctorRole(requestingUserId, requestingRole);
 
-    const record = await this.prisma.ehrRecord.findUnique({
-      where: { id: recordId },
+    const record = await this.prisma.ehrRecord.findFirst({
+      where: {
+        id: recordId,
+        OR: [
+          { appointment: { doctorId } },
+          { patient: { appointments: { some: { doctorId } } } },
+        ],
+      },
       include: this.draftReviewInclude,
     });
     if (!record) {
-      throw new NotFoundException('EHR record not found');
+      throw new NotFoundException('EHR record not found or access denied');
     }
 
     return this.decryptRecord(record);
@@ -180,9 +192,17 @@ export class EhrService {
   async approveDraft(recordId: string, requestingUserId: string, requestingRole: string) {
     const doctorId = await this.assertDoctorRole(requestingUserId, requestingRole);
 
-    const record = await this.prisma.ehrRecord.findUnique({ where: { id: recordId } });
+    const record = await this.prisma.ehrRecord.findFirst({
+      where: {
+        id: recordId,
+        OR: [
+          { appointment: { doctorId } },
+          { patient: { appointments: { some: { doctorId } } } },
+        ],
+      },
+    });
     if (!record) {
-      throw new NotFoundException('EHR record not found');
+      throw new NotFoundException('EHR record not found or access denied');
     }
     if (record.status !== 'DRAFT') {
       throw new ConflictException(`Only DRAFT records can be approved (current status: ${record.status})`);
@@ -201,17 +221,22 @@ export class EhrService {
   }
 
   /**
-   * Rejects a DRAFT EHR record. Sets status=REJECTED. The schema has no
-   * dedicated rejection-reason column, so an optional reason is appended to
-   * the existing (encrypted) notes field rather than adding new schema
-   * complexity. Only records currently in DRAFT status may be rejected.
+   * Rejects a DRAFT EHR record. Sets status=REJECTED.
    */
   async rejectDraft(recordId: string, reason: string | undefined, requestingUserId: string, requestingRole: string) {
-    await this.assertDoctorRole(requestingUserId, requestingRole);
+    const doctorId = await this.assertDoctorRole(requestingUserId, requestingRole);
 
-    const record = await this.prisma.ehrRecord.findUnique({ where: { id: recordId } });
+    const record = await this.prisma.ehrRecord.findFirst({
+      where: {
+        id: recordId,
+        OR: [
+          { appointment: { doctorId } },
+          { patient: { appointments: { some: { doctorId } } } },
+        ],
+      },
+    });
     if (!record) {
-      throw new NotFoundException('EHR record not found');
+      throw new NotFoundException('EHR record not found or access denied');
     }
     if (record.status !== 'DRAFT') {
       throw new ConflictException(`Only DRAFT records can be rejected (current status: ${record.status})`);

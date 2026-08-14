@@ -81,7 +81,7 @@ const ApproveDraftDialog: React.FC<ApproveDraftDialogProps> = ({
             <button
               onClick={handleConfirm}
               disabled={isSubmitting}
-              className="flex-1 py-3 rounded-xl bg-habanero text-white font-bold hover:bg-[#e0750e] transition-colors shadow-md flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
+              className="flex-1 py-3 rounded-xl bg-[#9BACD8] text-slate-900 font-bold hover:bg-[#8ba0d2] transition-colors shadow-md flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
             >
               {isSubmitting ? 'Approving…' : 'Confirm Approval'}
             </button>

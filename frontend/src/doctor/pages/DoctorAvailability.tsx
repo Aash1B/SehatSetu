@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import DoctorSidebar from '../components/DoctorSidebar';
+import DoctorNavbar from '../components/DoctorNavbar';
 import DashboardHeader from '../components/DashboardHeader';
 import AvailabilityCard from '../components/profile/AvailabilityCard';
 import { DoctorProfileData, Availability } from '../types/profile.types';
@@ -82,7 +83,7 @@ const DoctorAvailability: React.FC = () => {
 
   if (isLoading || !profile) {
     return (
-      <div className="flex items-center justify-center h-screen bg-luster-white">
+      <div className="flex items-center justify-center h-screen bg-[#F8FAFC]">
         <LiquidLoader text="Loading Availability" />
       </div>
     );
@@ -96,26 +97,22 @@ const DoctorAvailability: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-luster-white font-sans text-deadly-depths">
+    <div className="flex h-screen bg-[#F8FAFC] font-sans text-deadly-depths overflow-hidden">
       <DoctorSidebar />
 
-      <main className="flex-1 overflow-y-auto p-8 relative">
-        <DashboardHeader 
-          doctor={dashboardDoctor as any}
-          date={new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-          notificationCount={3}
-          className="mb-8"
-        />
+      <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#F8FAFC]">
+        <DoctorNavbar doctor={dashboardDoctor as any} />
 
-        <div className="max-w-4xl mx-auto">
-          <p className="text-xs font-bold text-aster-blue uppercase tracking-wider mb-2">Schedule Overview</p>
-          <AvailabilityCard 
-            availability={profile.availability} 
-            onSave={handleSaveAvailability}
-            isSaving={isSaving}
-          />
-        </div>
-      </main>
+        <main className="flex-1 overflow-y-auto px-8 md:px-10 pt-10 pb-10 relative bg-[#F8FAFC]">
+          <div className="w-full pb-10">
+            <AvailabilityCard 
+              availability={profile.availability} 
+              onSave={handleSaveAvailability}
+              isSaving={isSaving}
+            />
+          </div>
+        </main>
+      </div>
     </div>
   );
 };

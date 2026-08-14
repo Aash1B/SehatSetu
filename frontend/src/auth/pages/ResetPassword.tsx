@@ -5,6 +5,7 @@ import { resetPassword } from '../api';
 import { validatePassword } from '../validatePassword';
 import { useTranslation } from 'react-i18next';
 import BrandLogo from '../../common/components/BrandLogo';
+import PasswordInput from '../../common/components/PasswordInput';
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -84,8 +85,7 @@ export default function ResetPassword() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">{resetT('newPasswordLabel')}</label>
-              <input
-                type="password"
+              <PasswordInput
                 required
                 value={newPassword}
                 onChange={(e) => {
@@ -104,8 +104,7 @@ export default function ResetPassword() {
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">{resetT('confirmLabel')}</label>
-              <input
-                type="password"
+              <PasswordInput
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}

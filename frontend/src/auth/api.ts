@@ -1,4 +1,28 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
+import { getToken } from './authStorage';
+
+const getAuthBaseUrl = (): string => {
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  if (envUrl && envUrl !== 'http://localhost:8000') {
+    return envUrl.replace(/\/+$/, '');
+  }
+  if (typeof window !== 'undefined' && window.location && window.location.origin) {
+    return '';
+  }
+  return 'http://127.0.0.1:8000';
+};
+
+const API_BASE_URL = getAuthBaseUrl();
+
+async function safeFetch(url: string, init?: RequestInit): Promise<Response> {
+  try {
+    return await fetch(url, init);
+  } catch (err: any) {
+    if (err instanceof TypeError && (err.message === 'Failed to fetch' || err.message.includes('fetch'))) {
+      throw new Error('Unable to connect to SehatSetu backend server. Please make sure the backend server is running.');
+    }
+    throw err;
+  }
+}
 
 export interface AuthResponse {
   id: string;
@@ -74,7 +98,7 @@ async function handleResponse<T>(res: Response): Promise<T> {
 }
 
 export async function signup(payload: SignupPayload): Promise<SignupResponse> {
-  const res = await fetch(`${API_BASE_URL}/auth/signup`, {
+  const res = await safeFetch(`${API_BASE_URL}/auth/signup`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -83,7 +107,7 @@ export async function signup(payload: SignupPayload): Promise<SignupResponse> {
 }
 
 export async function login(payload: LoginPayload): Promise<AuthResponse> {
-  const res = await fetch(`${API_BASE_URL}/auth/login`, {
+  const res = await safeFetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -92,7 +116,7 @@ export async function login(payload: LoginPayload): Promise<AuthResponse> {
 }
 
 export async function googleLogin(payload: GoogleAuthPayload): Promise<AuthResponse> {
-  const res = await fetch(`${API_BASE_URL}/auth/google`, {
+  const res = await safeFetch(`${API_BASE_URL}/auth/google`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -101,7 +125,7 @@ export async function googleLogin(payload: GoogleAuthPayload): Promise<AuthRespo
 }
 
 export async function verifyOtp(payload: VerifyOtpPayload): Promise<MessageResponse & Partial<AuthResponse>> {
-  const res = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
+  const res = await safeFetch(`${API_BASE_URL}/auth/verify-otp`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -110,7 +134,7 @@ export async function verifyOtp(payload: VerifyOtpPayload): Promise<MessageRespo
 }
 
 export async function resendOtp(payload: ResendOtpPayload): Promise<MessageResponse> {
-  const res = await fetch(`${API_BASE_URL}/auth/resend-otp`, {
+  const res = await safeFetch(`${API_BASE_URL}/auth/resend-otp`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -128,7 +152,7 @@ export interface ResetPasswordPayload {
 }
 
 export async function forgotPassword(payload: ForgotPasswordPayload): Promise<MessageResponse> {
-  const res = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+  const res = await safeFetch(`${API_BASE_URL}/auth/forgot-password`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -137,9 +161,57 @@ export async function forgotPassword(payload: ForgotPasswordPayload): Promise<Me
 }
 
 export async function resetPassword(payload: ResetPasswordPayload): Promise<MessageResponse> {
-  const res = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+  const res = await safeFetch(`${API_BASE_URL}/auth/reset-password`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  return handleResponse<MessageResponse>(res);
+}
+
+export interface ChangePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export async function changePassword(payload: ChangePasswordPayload): Promise<MessageResponse> {
+  const token = getToken();
+  const res = await safeFetch(`${API_BASE_URL}/auth/change-password`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  return handleResponse<MessageResponse>(res);
+}
+
+export interface ResetPasswordOtpPayload {
+  otp: string;
+  newPassword: string;
+}
+
+export async function sendResetOtp(): Promise<MessageResponse> {
+  const token = getToken();
+  const res = await safeFetch(`${API_BASE_URL}/auth/send-reset-otp`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return handleResponse<MessageResponse>(res);
+}
+
+export async function resetPasswordWithOtp(payload: ResetPasswordOtpPayload): Promise<MessageResponse> {
+  const token = getToken();
+  const res = await safeFetch(`${API_BASE_URL}/auth/reset-password-otp`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
     body: JSON.stringify(payload),
   });
   return handleResponse<MessageResponse>(res);
@@ -171,7 +243,7 @@ export interface PhoneLoginPayload {
 }
 
 export async function sendPhoneOtp(payload: SendPhoneOtpPayload): Promise<MessageResponse & { devOtp?: string }> {
-  const res = await fetch(`${API_BASE_URL}/auth/send-phone-otp`, {
+  const res = await safeFetch(`${API_BASE_URL}/auth/send-phone-otp`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -180,7 +252,7 @@ export async function sendPhoneOtp(payload: SendPhoneOtpPayload): Promise<Messag
 }
 
 export async function verifyPhoneOtp(payload: VerifyPhoneOtpPayload): Promise<AuthResponse> {
-  const res = await fetch(`${API_BASE_URL}/auth/verify-phone-otp`, {
+  const res = await safeFetch(`${API_BASE_URL}/auth/verify-phone-otp`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -189,7 +261,7 @@ export async function verifyPhoneOtp(payload: VerifyPhoneOtpPayload): Promise<Au
 }
 
 export async function phoneSignup(payload: PhoneSignupPayload): Promise<AuthResponse> {
-  const res = await fetch(`${API_BASE_URL}/auth/phone-signup`, {
+  const res = await safeFetch(`${API_BASE_URL}/auth/phone-signup`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -198,7 +270,7 @@ export async function phoneSignup(payload: PhoneSignupPayload): Promise<AuthResp
 }
 
 export async function phoneLogin(payload: PhoneLoginPayload): Promise<AuthResponse> {
-  const res = await fetch(`${API_BASE_URL}/auth/phone-login`, {
+  const res = await safeFetch(`${API_BASE_URL}/auth/phone-login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),

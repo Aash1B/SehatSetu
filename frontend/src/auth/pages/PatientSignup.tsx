@@ -8,6 +8,7 @@ import GoogleSignInButton from '../components/GoogleSignInButton';
 import { saveAuth } from '../authStorage';
 import { useTranslation } from 'react-i18next';
 import BrandLogo from '../../common/components/BrandLogo';
+import PasswordInput from '../../common/components/PasswordInput';
 
 type SignupMethod = 'email' | 'phone';
 
@@ -273,8 +274,7 @@ export default function PatientSignup() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">{formsT('password')}</label>
-                <input
-                  type="password"
+                <PasswordInput
                   required
                   value={password}
                   onChange={(e) => {

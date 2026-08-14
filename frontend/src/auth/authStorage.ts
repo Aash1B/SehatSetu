@@ -10,22 +10,40 @@ export interface StoredUser {
 }
 
 export function saveAuth(accessToken: string, user: StoredUser) {
-  localStorage.setItem(TOKEN_KEY, accessToken);
-  localStorage.setItem(ALT_TOKEN_KEY, accessToken);
-  localStorage.setItem(USER_KEY, JSON.stringify(user));
+  try {
+    localStorage.setItem(TOKEN_KEY, accessToken);
+    localStorage.setItem(ALT_TOKEN_KEY, accessToken);
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+  } catch (err) {
+    console.error('Failed to save auth to localStorage:', err);
+  }
 }
 
 export function getToken(): string | null {
-  return localStorage.getItem(TOKEN_KEY) || localStorage.getItem(ALT_TOKEN_KEY);
+  try {
+    return typeof window !== 'undefined' ? (localStorage.getItem(TOKEN_KEY) || localStorage.getItem(ALT_TOKEN_KEY)) : null;
+  } catch (err) {
+    console.error('Failed to read token from localStorage:', err);
+    return null;
+  }
 }
 
 export function getUser(): StoredUser | null {
-  const raw = localStorage.getItem(USER_KEY);
-  return raw ? JSON.parse(raw) : null;
+  try {
+    const raw = typeof window !== 'undefined' ? localStorage.getItem(USER_KEY) : null;
+    return raw ? JSON.parse(raw) : null;
+  } catch (err) {
+    console.error('Failed to read user from localStorage:', err);
+    return null;
+  }
 }
 
 export function clearAuth() {
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(ALT_TOKEN_KEY);
-  localStorage.removeItem(USER_KEY);
+  try {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(ALT_TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+  } catch (err) {
+    console.error('Failed to clear auth from localStorage:', err);
+  }
 }
