@@ -4,6 +4,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { login } from '../api';
 import { saveAuth } from '../authStorage';
 import BrandLogo from '../../common/components/BrandLogo';
+import PasswordInput from '../../common/components/PasswordInput';
 
 export default function DoctorLogin() {
   const navigate = useNavigate();
@@ -110,8 +111,7 @@ export default function DoctorLogin() {
                 <label className="block text-sm font-semibold text-slate-700">Password</label>
                 <Link to="/forgot-password" className="text-xs text-indigo-700 hover:underline">Forgot password?</Link>
               </div>
-              <input
-                type="password"
+              <PasswordInput
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

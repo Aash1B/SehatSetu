@@ -14,6 +14,7 @@ import BrandLogo from '../../common/components/BrandLogo';
 import { useTranslation } from 'react-i18next';
 import { KnownConditionsIcon, AllergiesIcon, PastSurgeriesIcon, CurrentMedicationsIcon, LastUpdatedIcon, MedicalSummaryIcon } from '../components/Ehr3dIcons';
 import { LiquidLoader } from '../../common/components/LiquidLoader';
+import PasswordInput from '../../common/components/PasswordInput';
 import type { EhrDraftStructuredData } from '../../types';
 
 interface ConsultationItem {
@@ -3353,8 +3354,7 @@ const DashboardPage: React.FC = () => {
                   <div style={{ maxWidth: '440px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div className="profile-field-group">
                       <label className="profile-label"> {t('currentPassword')} </label>
-                      <input
-                        type="password"
+                      <PasswordInput
                         placeholder="••••••••"
                         value={securitySettings.currentPassword}
                         onChange={(e) => setSecuritySettings({ ...securitySettings, currentPassword: e.target.value })}
@@ -3363,8 +3363,7 @@ const DashboardPage: React.FC = () => {
                     </div>
                     <div className="profile-field-group">
                       <label className="profile-label"> {t('newPassword')} </label>
-                      <input
-                        type="password"
+                      <PasswordInput
                         placeholder="••••••••"
                         value={securitySettings.newPassword}
                         onChange={(e) => setSecuritySettings({ ...securitySettings, newPassword: e.target.value })}
@@ -3374,8 +3373,7 @@ const DashboardPage: React.FC = () => {
 
                     <div className="profile-field-group">
                       <label className="profile-label"> {t('confirmNewPassword')} </label>
-                      <input
-                        type="password"
+                      <PasswordInput
                         placeholder="••••••••"
                         value={securitySettings.confirmPassword}
                         onChange={(e) => setSecuritySettings({ ...securitySettings, confirmPassword: e.target.value })}

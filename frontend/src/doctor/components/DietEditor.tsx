@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
 import { Apple, X, Plus, Edit2, Check } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
 import { cn } from '../../lib/utils';
 import { searchCatalog } from '../data/prescriptionCatalog';
 
