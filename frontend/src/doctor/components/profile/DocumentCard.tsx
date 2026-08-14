@@ -124,7 +124,7 @@ const DocumentCard: React.FC<Props> = ({ documents, doctorId, onRefresh }) => {
   };
 
   return (
-    <SectionCard title="Professional Documents" subtitle="Certificates & Signature Verification">
+    <SectionCard>
       <div className="space-y-3">
         {ONBOARDING_DOCS.map(({ key, label, description, icon: Icon }) => {
           const doc = findDoc(key);
@@ -213,7 +213,7 @@ const DocumentCard: React.FC<Props> = ({ documents, doctorId, onRefresh }) => {
                         href={doc.publicUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-xs font-semibold text-[#223382] bg-[#223382]/8 hover:bg-[#223382]/15 border border-[#223382]/20 px-2.5 py-1 rounded-full transition-colors"
+                        className="flex items-center gap-1 text-xs font-semibold text-[#223382] bg-[#223382]/8 hover:bg-[#223382]/15 border border-[#223382]/20 px-4 py-2 rounded-full transition-colors"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
                         View
@@ -225,7 +225,7 @@ const DocumentCard: React.FC<Props> = ({ documents, doctorId, onRefresh }) => {
                       onClick={() => fileInputRefs.current[key]?.click()}
                       disabled={isUploading}
                       title="Upload new document or signature"
-                      className="flex items-center gap-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 px-2.5 py-1 rounded-full transition-colors cursor-pointer"
+                      className="flex items-center gap-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 px-4 py-2 rounded-full transition-colors cursor-pointer"
                     >
                       {isUploading ? (
                         <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-500" />
@@ -239,7 +239,7 @@ const DocumentCard: React.FC<Props> = ({ documents, doctorId, onRefresh }) => {
                   <button
                     onClick={() => fileInputRefs.current[key]?.click()}
                     disabled={isUploading}
-                    className="flex items-center gap-1.5 text-xs font-semibold text-white bg-[#223382] hover:bg-[#1a286b] px-3 py-1.5 rounded-full shadow-sm transition-colors cursor-pointer"
+                    className="flex items-center gap-1.5 text-xs font-semibold text-white bg-[#223382] hover:bg-[#1a286b] px-5 py-2.5 rounded-full shadow-sm transition-colors cursor-pointer"
                   >
                     {isUploading ? (
                       <>

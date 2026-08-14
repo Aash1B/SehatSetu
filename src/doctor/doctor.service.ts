@@ -2,6 +2,8 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { prisma } from '../prisma';
 import { MailService } from '../mail/mail.service';
 import { randomBytes } from 'crypto';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export interface DocumentUploadResult {
   id: string;
@@ -83,7 +85,7 @@ export class DoctorService {
   }
 
   /**
-   * Uploads doctor verification document to Supabase Storage Bucket
+   * Uploads doctor verification document to local storage and Supabase Storage Bucket
    */
   async uploadDocumentToSupabase(
     file: { buffer: Buffer; originalname?: string; mimetype?: string; size?: number } | any,
@@ -97,8 +99,24 @@ export class DoctorService {
     const cleanDocType = documentType.toLowerCase().replace(/[^a-z0-9]/g, '-');
     const fileExt = file.originalname?.split('.').pop() || 'pdf';
     const safeDocId = (doctorId || 'd1').replace(/[^a-zA-Z0-9_-]/g, '');
-    const storagePath = `doctor-documents/${safeDocId}/${cleanDocType}-${Date.now()}.${fileExt}`;
-    const publicUrl = `${projectUrl}/storage/v1/object/public/${bucket}/${storagePath}`;
+    const filename = `${safeDocId}-${cleanDocType}-${Date.now()}.${fileExt}`;
+    const storagePath = `doctor-documents/${safeDocId}/${filename}`;
+    
+    const backendUrl = (process.env.BACKEND_URL || 'http://localhost:8000').replace(/\/+$/, '');
+    const localDocUrl = `${backendUrl}/api/doctor/documents/file/${filename}`;
+    let publicUrl = localDocUrl;
+
+    // Save copy of document buffer to local filesystem as bulletproof fallback
+    try {
+      const uploadDir = path.join(process.cwd(), 'uploads', 'doctor-documents');
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      fs.writeFileSync(path.join(uploadDir, filename), file.buffer);
+      console.log(`Saved doctor verification document locally: uploads/doctor-documents/${filename}`);
+    } catch (fsErr) {
+      console.error('Failed to save document locally:', fsErr);
+    }
 
     // Attempt direct upload to Supabase Storage REST API
     if (secretKey && !secretKey.includes('placeholder')) {
@@ -115,22 +133,21 @@ export class DoctorService {
           body: file.buffer as unknown as BodyInit,
         });
 
-        if (!response.ok) {
-          const errText = await response.text();
-          console.warn(`Supabase storage response non-200 (${response.status}):`, errText);
-        } else {
+        if (response.ok) {
+          publicUrl = `${projectUrl}/storage/v1/object/public/${bucket}/${storagePath}`;
           console.log(`Successfully stored document in Supabase bucket [${bucket}]: ${storagePath}`);
+        } else {
+          const errText = await response.text();
+          console.warn(`Supabase storage response non-200 (${response.status}): ${errText}. Using local backend document URL.`);
         }
       } catch (error) {
         console.error('Error during Supabase document upload:', error);
       }
-    } else {
-      console.log(`Simulated storage upload for bucket [${bucket}]: ${storagePath}`);
     }
 
     return {
       id: `doc-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-      name: file.originalname || `${documentType}.pdf`,
+      name: file.originalname || `${documentType}.${fileExt}`,
       documentType,
       type: (file.mimetype || 'application/pdf').includes('pdf') ? 'PDF' : 'IMAGE',
       status: 'Verified',
@@ -410,11 +427,20 @@ export class DoctorService {
     const clinicName = onboardingPayload.clinicName || 'N/A';
     const hospital = updated.hospital || onboardingPayload.clinicName || 'N/A';
     const city = updated.location || onboardingPayload.address || 'India';
-    const docs = (onboardingPayload.documents || []).map((d: any) => ({
-      name: d.name || 'Document',
-      type: d.type || 'PDF',
-      url: d.publicUrl || d.url || '#'
-    }));
+    const docLabels: Record<string, string> = {
+      'medical-license': 'Medical Registration License',
+      'degree-certificate': 'Medical Degree Certificate',
+      'id-proof': 'Government Photo ID Document',
+    };
+
+    const docs = (onboardingPayload.documents || []).map((d: any) => {
+      const label = docLabels[d.documentType] || docLabels[d.name] || d.name || 'Verification Document';
+      return {
+        name: label,
+        type: d.type || (d.publicUrl?.endsWith('.pdf') ? 'PDF' : 'Document'),
+        url: d.publicUrl || d.url || '#'
+      };
+    });
 
     try {
       await this.mailService.sendAdminVerificationEmail({

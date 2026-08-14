@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { CalendarCheck, CheckCircle2, SlidersHorizontal, Check } from 'lucide-react';
 
 import DoctorSidebar from '../components/DoctorSidebar';
+import DoctorNavbar from '../components/DoctorNavbar';
 import DashboardHeader from '../components/DashboardHeader';
 import StatCard from '../components/StatCard';
 import ConsultationCard from '../components/ConsultationCard';
@@ -141,137 +142,133 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen w-screen bg-luster-white">
+      <div className="flex items-center justify-center h-screen w-screen bg-[#F8FAFC]">
         <LiquidLoader text="Loading appointments" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-luster-white font-sans text-deadly-depths">
+    <div className="flex h-screen bg-[#F8FAFC] font-sans text-deadly-depths overflow-hidden">
       <DoctorSidebar />
 
-      <main className="flex-1 overflow-y-auto p-8 relative">
-        <DashboardHeader
-          doctor={{
-            id: activeDoctor.id,
-            name: activeDoctor.name,
-            initials: activeDoctor.initials,
-            specialization: activeDoctor.specialization as any,
-            imageUrl: activeDoctor.imageUrl,
-          }}
-          date={new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-          notificationCount={3}
-        />
+      <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#F8FAFC]">
+        <DoctorNavbar doctor={activeDoctor} />
 
-        {/* Stats Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <StatCard
-            title="Today's Appointments"
-            value={<span className="text-black">{consultations.filter(c => c.status !== ConsultationStatus.COMPLETED && c.status !== ConsultationStatus.NO_SHOW).length}</span>}
-            subtitle="Scheduled today"
-            icon={CalendarCheck}
+        <main className="flex-1 overflow-y-auto px-8 md:px-10 pt-2 pb-10 relative bg-[#F8FAFC]">
+          <DashboardHeader
+            doctor={{
+              id: activeDoctor.id,
+              name: activeDoctor.name,
+              initials: activeDoctor.initials,
+              specialization: activeDoctor.specialization as any,
+              imageUrl: activeDoctor.imageUrl,
+            }}
+            date={new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            notificationCount={3}
           />
-          <StatCard
-            title="Completed"
-            value={<span className="text-black">{consultations.filter(c => c.status === ConsultationStatus.COMPLETED).length}</span>}
-            subtitle="Done so far"
-            icon={CheckCircle2}
-            iconColorClass="text-green-500"
-          />
-        </div>
 
-        {/* Main Area: Consultations */}
-        <div className="w-full">
-          <div className="flex justify-between items-center mb-5">
-            <div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Your Schedule</p>
-              <h2 className="text-2xl font-semibold text-slate-900">Consultations</h2>
-            </div>
-                <div className="flex items-center gap-3">
-                  {/* Date Filter */}
-                  <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-2xs">
-                    <span className="text-xs font-semibold text-slate-500">Date:</span>
-                    <input
-                      type="date"
-                      value={dateFilter}
-                      onChange={(e) => setDateFilter(e.target.value)}
-                      className="text-xs font-semibold text-slate-700 outline-none bg-transparent cursor-pointer"
-                    />
-                    {dateFilter && (
-                      <button
-                        type="button"
-                        onClick={() => setDateFilter('')}
-                        className="text-xs text-slate-400 hover:text-slate-600 font-bold ml-1 cursor-pointer"
-                        title="Clear date filter"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
+          {/* Stats Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <StatCard
+              title="Today's Appointments"
+              value={<span className="text-[#F98513]">{consultations.filter(c => c.status !== ConsultationStatus.COMPLETED && c.status !== ConsultationStatus.NO_SHOW).length}</span>}
+              subtitle="Scheduled for Today"
+              imageSrc="/Today.png"
+            />
+            <StatCard
+              title="Completed"
+              value={<span className="text-[#15803d]">{consultations.filter(c => c.status === ConsultationStatus.COMPLETED).length}</span>}
+              subtitle="Total Appointments Attended"
+              imageSrc="/Completed.png"
+            />
+          </div>
 
-                  {/* Filter Icon + Popup */}
-                  <div className="relative" ref={filterRef}>
+          {/* Main Area: Consultations */}
+          <div className="w-full">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">Consultations</h2>
+              </div>
+              <div className="flex items-center gap-4">
+                {/* Date Filter */}
+                <div className="flex items-center gap-3 bg-[#9BACD8] px-5 md:px-6 py-3 md:py-3.5 rounded-2xl border border-[#9BACD8] shadow-2xs">
+                  <span className="text-base md:text-lg font-bold text-slate-900">Date:</span>
+                  <input
+                    type="date"
+                    value={dateFilter}
+                    onChange={(e) => setDateFilter(e.target.value)}
+                    className="text-base md:text-lg font-bold text-slate-900 outline-none bg-transparent cursor-pointer"
+                  />
+                  {dateFilter && (
                     <button
-                      onClick={() => setFilterOpen(o => !o)}
-                      title="Filter by status"
-                      className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-sm font-semibold transition-all duration-200 cursor-pointer ${
-                        statusFilter !== 'ALL'
-                          ? 'bg-[#223382] text-white border-[#223382] shadow-sm'
-                          : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
-                      }`}
+                      type="button"
+                      onClick={() => setDateFilter('')}
+                      className="text-base text-slate-800 hover:text-slate-950 font-bold ml-1 cursor-pointer"
+                      title="Clear date filter"
                     >
-                      <SlidersHorizontal className="w-4 h-4" />
-                      <span>Filter{statusFilter !== 'ALL' ? `: ${statusFilter.charAt(0) + statusFilter.slice(1).toLowerCase()}` : ''}</span>
+                      ✕
                     </button>
+                  )}
+                </div>
 
-                    {filterOpen && (
-                      <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl shadow-xl border border-slate-100 z-30 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-                        <div className="px-4 py-2.5 border-b border-slate-100">
-                          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Filter by Status</p>
-                        </div>
-                        <div className="py-1.5">
-                          {([
-                            { key: 'ALL',       label: 'All Consultations', dot: 'bg-slate-400' },
-                            { key: 'SCHEDULED', label: 'Scheduled',         dot: 'bg-emerald-500' },
-                            { key: 'COMPLETED', label: 'Completed',         dot: 'bg-slate-500' },
-                            { key: 'CANCELLED', label: 'Cancelled',         dot: 'bg-red-500' },
-                          ] as const).map(({ key, label, dot }) => {
-                            const count = key === 'ALL'
-                              ? consultations.length
-                              : consultations.filter(c => c.tags?.[1]?.label?.toUpperCase() === key).length;
-                            return (
-                              <button
-                                key={key}
-                                onClick={() => { setStatusFilter(key); setFilterOpen(false); }}
-                                className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors cursor-pointer ${
-                                  statusFilter === key
-                                    ? 'bg-slate-50 text-slate-900 font-semibold'
-                                    : 'text-slate-600 hover:bg-slate-50 font-medium'
-                                }`}
-                              >
-                                <span className="flex items-center gap-2.5">
-                                  <span className={`w-2 h-2 rounded-full ${dot}`} />
-                                  {label}
-                                </span>
-                                <span className="flex items-center gap-1.5">
-                                  <span className="text-xs text-slate-400 font-medium">{count}</span>
-                                  {statusFilter === key && <Check className="w-3.5 h-3.5 text-[#223382]" />}
-                                </span>
-                              </button>
-                            );
-                          })}
-                        </div>
+                {/* Filter Icon + Popup */}
+                <div className="relative" ref={filterRef}>
+                  <button
+                    onClick={() => setFilterOpen(o => !o)}
+                    title="Filter by status"
+                    className="flex items-center gap-2.5 px-5 md:px-6 py-3 md:py-3.5 rounded-2xl border border-[#9BACD8] bg-[#9BACD8] text-slate-900 text-base md:text-lg font-extrabold shadow-2xs transition-all duration-200 hover:bg-[#8ba0d2] cursor-pointer"
+                  >
+                    <SlidersHorizontal className="w-6 h-6 text-slate-900" />
+                    <span>Filter{statusFilter !== 'ALL' ? `: ${statusFilter.charAt(0) + statusFilter.slice(1).toLowerCase()}` : ''}</span>
+                  </button>
+
+                  {filterOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl shadow-xl border border-slate-100 z-30 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                      <div className="px-4 py-2.5 border-b border-slate-100">
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Filter by Status</p>
                       </div>
-                    )}
-                  </div>
+                      <div className="py-1.5">
+                        {([
+                          { key: 'ALL', label: 'All Consultations', dot: 'bg-slate-400' },
+                          { key: 'SCHEDULED', label: 'Scheduled', dot: 'bg-yellow-500' },
+                          { key: 'COMPLETED', label: 'Completed', dot: 'bg-slate-500' },
+                          { key: 'CANCELLED', label: 'Cancelled', dot: 'bg-red-500' },
+                        ] as const).map(({ key, label, dot }) => {
+                          const count = key === 'ALL'
+                            ? consultations.length
+                            : consultations.filter(c => c.tags?.[1]?.label?.toUpperCase() === key).length;
+                          return (
+                            <button
+                              key={key}
+                              onClick={() => { setStatusFilter(key); setFilterOpen(false); }}
+                              className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors cursor-pointer ${statusFilter === key
+                                ? 'bg-slate-50 text-slate-900 font-semibold'
+                                : 'text-slate-600 hover:bg-slate-50 font-medium'
+                                }`}
+                            >
+                              <span className="flex items-center gap-2.5">
+                                <span className={`w-2 h-2 rounded-full ${dot}`} />
+                                {label}
+                              </span>
+                              <span className="flex items-center gap-1.5">
+                                <span className="text-xs text-slate-400 font-medium">{count}</span>
+                                {statusFilter === key && <Check className="w-3.5 h-3.5 text-[#223382]" />}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
+            </div>
 
-              <div className="space-y-4">
-                {consultations
-                  .filter(c => (statusFilter === 'ALL' || c.tags?.[1]?.label?.toUpperCase() === statusFilter) && (!dateFilter || c.date === dateFilter))
-                  .map((consultation) => (
+            <div className="space-y-4">
+              {consultations
+                .filter(c => (statusFilter === 'ALL' || c.tags?.[1]?.label?.toUpperCase() === statusFilter) && (!dateFilter || c.date === dateFilter))
+                .map((consultation) => (
                   <ConsultationCard
                     key={consultation.id}
                     consultation={consultation}
@@ -320,83 +317,84 @@ const Dashboard = () => {
                     }}
                   />
                 ))}
-              </div>
-        </div>
-
-        {/* AI Consultation Summary Modal */}
-        {summaryModalData && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 animate-in zoom-in-95">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-sm">
-                    ✨
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-lg text-slate-900">AI Clinical Summary</h3>
-                    <p className="text-xs text-slate-500">{summaryModalData.patientName}</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setSummaryModalData(null)}
-                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 font-bold transition-colors"
-                >
-                  ✕
-                </button>
-              </div>
-
-              {summaryModalData.loading ? (
-                <div className="py-12 flex justify-center">
-                  <LiquidLoader text="Generating AI Consultation Summary" />
-                </div>
-              ) : (
-                <div className="space-y-4 text-sm">
-                  <div className="bg-purple-50/60 p-3.5 rounded-2xl border border-purple-100">
-                    <span className="font-bold text-purple-900 block text-xs uppercase tracking-wider mb-1">Chief Complaint</span>
-                    <p className="text-slate-800 font-medium">{summaryModalData.summary?.chief_complaint || 'General Checkup'}</p>
-                  </div>
-
-                  <div>
-                    <span className="font-bold text-slate-700 block text-xs uppercase tracking-wider mb-1.5">Key Symptoms Identified</span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {summaryModalData.summary?.symptoms?.map((sym: string, i: number) => (
-                        <span key={i} className="bg-slate-100 text-slate-800 px-2.5 py-1 rounded-lg text-xs font-semibold">
-                          • {sym}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                      <span className="font-bold text-slate-600 block text-[11px] uppercase mb-1">Medical History</span>
-                      <p className="text-xs text-slate-700">{summaryModalData.summary?.medical_history?.join(', ') || 'None reported'}</p>
-                    </div>
-                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                      <span className="font-bold text-slate-600 block text-[11px] uppercase mb-1">Allergies</span>
-                      <p className="text-xs text-slate-700">{summaryModalData.summary?.allergies?.join(', ') || 'No known allergies'}</p>
-                    </div>
-                  </div>
-
-                  <div className="bg-blue-50/70 p-3.5 rounded-2xl border border-blue-100">
-                    <span className="font-bold text-black block text-xs uppercase tracking-wider mb-1">AI Doctor Guidance</span>
-                    <p className="text-xs text-black leading-relaxed">{summaryModalData.summary?.doctor_advice || 'Review symptoms and prescribe targeted medication as needed.'}</p>
-                  </div>
-
-                  <div className="pt-2 flex justify-end">
-                    <button
-                      onClick={() => setSummaryModalData(null)}
-                      className="bg-slate-900 hover:bg-slate-800 text-black font-bold px-5 py-2.5 rounded-xl text-xs transition-colors"
-                    >
-                      Close Summary
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
-        )}
-      </main>
+
+          {/* AI Consultation Summary Modal */}
+          {summaryModalData && (
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 animate-in zoom-in-95">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-sm">
+                      ✨
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-lg text-slate-900">AI Clinical Summary</h3>
+                      <p className="text-xs text-slate-500">{summaryModalData.patientName}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSummaryModalData(null)}
+                    className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 font-bold transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {summaryModalData.loading ? (
+                  <div className="py-12 flex justify-center">
+                    <LiquidLoader text="Generating AI Consultation Summary" />
+                  </div>
+                ) : (
+                  <div className="space-y-4 text-sm">
+                    <div className="bg-purple-50/60 p-3.5 rounded-2xl border border-purple-100">
+                      <span className="font-bold text-purple-900 block text-xs uppercase tracking-wider mb-1">Chief Complaint</span>
+                      <p className="text-slate-800 font-medium">{summaryModalData.summary?.chief_complaint || 'General Checkup'}</p>
+                    </div>
+
+                    <div>
+                      <span className="font-bold text-slate-700 block text-xs uppercase tracking-wider mb-1.5">Key Symptoms Identified</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {summaryModalData.summary?.symptoms?.map((sym: string, i: number) => (
+                          <span key={i} className="bg-slate-100 text-slate-800 px-2.5 py-1 rounded-lg text-xs font-semibold">
+                            • {sym}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <span className="font-bold text-slate-600 block text-[11px] uppercase mb-1">Medical History</span>
+                        <p className="text-xs text-slate-700">{summaryModalData.summary?.medical_history?.join(', ') || 'None reported'}</p>
+                      </div>
+                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <span className="font-bold text-slate-600 block text-[11px] uppercase mb-1">Allergies</span>
+                        <p className="text-xs text-slate-700">{summaryModalData.summary?.allergies?.join(', ') || 'No known allergies'}</p>
+                      </div>
+                    </div>
+
+                    <div className="bg-blue-50/70 p-3.5 rounded-2xl border border-blue-100">
+                      <span className="font-bold text-black block text-xs uppercase tracking-wider mb-1">AI Doctor Guidance</span>
+                      <p className="text-xs text-black leading-relaxed">{summaryModalData.summary?.doctor_advice || 'Review symptoms and prescribe targeted medication as needed.'}</p>
+                    </div>
+
+                    <div className="pt-2 flex justify-end">
+                      <button
+                        onClick={() => setSummaryModalData(null)}
+                        className="bg-slate-900 hover:bg-slate-800 text-black font-bold px-5 py-2.5 rounded-xl text-xs transition-colors"
+                      >
+                        Close Summary
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   );
 };

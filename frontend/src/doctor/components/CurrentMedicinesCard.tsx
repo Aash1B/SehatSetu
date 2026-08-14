@@ -1,7 +1,6 @@
 import React from 'react';
 import SectionCard from './SectionCard';
 import MedicineItem from './MedicineItem';
-import StatusBadge from './StatusBadge';
 
 export interface MedicineType {
   name: string;
@@ -11,27 +10,23 @@ export interface MedicineType {
 
 export interface CurrentMedicinesCardProps {
   medicines: MedicineType[];
-  allergies: string[];
+  allergies?: string[];
 }
 
-const CurrentMedicinesCard: React.FC<CurrentMedicinesCardProps> = ({ medicines, allergies }) => {
+const CurrentMedicinesCard: React.FC<CurrentMedicinesCardProps> = ({ medicines }) => {
   return (
     <SectionCard title="Current Medicines" className="mb-6">
-      <div className="flex flex-col mb-6">
-        {medicines.map((med, index) => (
-          <MedicineItem key={index} {...med} />
-        ))}
-      </div>
-      
-      <div>
-        <h4 className="text-xs font-bold text-aster-blue uppercase tracking-wider mb-3">Known Allergies</h4>
-        <div className="flex flex-wrap gap-2">
-          {allergies.map((allergy, index) => (
-            <StatusBadge key={index} label={allergy} variant="default" className="border border-red-200 text-red-500 bg-red-50" />
+      {medicines && medicines.length > 0 ? (
+        <div className="flex flex-col">
+          {medicines.map((med, index) => (
+            <MedicineItem key={index} {...med} />
           ))}
-          {allergies.length === 0 && <span className="text-sm text-aster-blue">None reported</span>}
         </div>
-      </div>
+      ) : (
+        <p className="text-base md:text-lg font-bold text-slate-600 -mt-2 -ml-0.5">
+          No ongoing medicines
+        </p>
+      )}
     </SectionCard>
   );
 };

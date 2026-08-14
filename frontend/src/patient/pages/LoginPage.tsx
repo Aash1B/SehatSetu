@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../utils/constants';
 import { setToken } from '../utils/storage';
+import { saveAuth } from '../../auth/authStorage';
 import { useTranslation } from 'react-i18next';
 import PasswordInput from '../../common/components/PasswordInput';
 
@@ -34,6 +35,12 @@ const LoginPage: React.FC = () => {
         throw new Error(t('auth:patientLogin.patientAccountRequired'));
       }
       setToken(body.accessToken);
+      saveAuth(body.accessToken, {
+        id: body.user?.id || body.userId || '',
+        email: body.user?.email || email,
+        fullName: body.user?.fullName || body.fullName || 'Patient',
+        role: 'PATIENT',
+      });
       navigate('/patient/dashboard');
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : t('auth:patientLogin.signInFailed'));

@@ -311,12 +311,15 @@ export async function main() {
       update: {
         fullName: docData.name,
         role: Role.DOCTOR,
+        emailVerified: true,
+        passwordHash,
       },
       create: {
         email: docData.email,
         fullName: docData.name,
         passwordHash,
         role: Role.DOCTOR,
+        emailVerified: true,
       },
     });
 
@@ -340,6 +343,7 @@ export async function main() {
         availability: defaultAvailability,
         profileCompleted: true,
         isVerified: true,
+        verificationStatus: 'APPROVED',
         isActive: true,
         availableToday: true,
       },
@@ -362,6 +366,7 @@ export async function main() {
         availability: defaultAvailability,
         profileCompleted: true,
         isVerified: true,
+        verificationStatus: 'APPROVED',
         isActive: true,
         availableToday: true,
       },
@@ -374,12 +379,15 @@ export async function main() {
       where: { email: patientData.email },
       update: {
         fullName: patientData.fullName,
+        emailVerified: true,
+        passwordHash,
       },
       create: {
         email: patientData.email,
         fullName: patientData.fullName,
         passwordHash,
         role: Role.PATIENT,
+        emailVerified: true,
       },
     });
 

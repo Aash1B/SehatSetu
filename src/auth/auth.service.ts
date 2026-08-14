@@ -400,6 +400,94 @@ export class AuthService {
     return { message: 'Password reset successfully. You can now log in with your new password.' };
   }
 
+  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found.');
+    }
+
+    const currentMatches = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!currentMatches) {
+      throw new BadRequestException('Current password is incorrect.');
+    }
+
+    const isSamePassword = await bcrypt.compare(newPassword, user.passwordHash);
+    if (isSamePassword) {
+      throw new BadRequestException('New password must be different from your current password.');
+    }
+
+    const newPasswordHash = await bcrypt.hash(newPassword, 10);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash: newPasswordHash },
+    });
+
+    return { message: 'Password changed successfully.' };
+  }
+
+  async sendResetOtp(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found.');
+    }
+
+    const otp = this.generateOtp();
+    const otpHash = await bcrypt.hash(otp, 10);
+    const otpExpiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        emailOtpHash: otpHash,
+        emailOtpExpiresAt: otpExpiresAt,
+      },
+    });
+
+    await this.mailService.sendMail(
+      user.email,
+      'SehatSetu Password Reset Verification Code',
+      `<div style="font-family: Arial, sans-serif; padding: 20px; color: #0f172a;">
+        <h2 style="color: #223382; margin-bottom: 10px;">Password Reset Code</h2>
+        <p>Hi ${user.fullName},</p>
+        <p>You requested to reset your password. Use the 6-digit OTP below:</p>
+        <div style="background: #f1f5f9; padding: 16px; border-radius: 12px; font-size: 26px; font-weight: 800; letter-spacing: 6px; color: #223382; display: inline-block; margin: 15px 0;">
+          ${otp}
+        </div>
+        <p style="color: #64748b; font-size: 13px;">This OTP code expires in ${OTP_EXPIRY_MINUTES} minutes. If you did not request this, please ignore this email.</p>
+       </div>`,
+    );
+
+    return { message: `Verification OTP sent to ${user.email}` };
+  }
+
+  async resetPasswordWithOtp(userId: string, otp: string, newPassword: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found.');
+    }
+
+    if (!user.emailOtpHash || !user.emailOtpExpiresAt || user.emailOtpExpiresAt < new Date()) {
+      throw new BadRequestException('OTP expired or invalid. Please request a new code.');
+    }
+
+    const otpMatches = await bcrypt.compare(otp, user.emailOtpHash);
+    if (!otpMatches) {
+      throw new UnauthorizedException('Invalid OTP code. Please check and try again.');
+    }
+
+    const newPasswordHash = await bcrypt.hash(newPassword, 10);
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash: newPasswordHash,
+        emailOtpHash: null,
+        emailOtpExpiresAt: null,
+      },
+    });
+
+    return { message: 'Password reset successfully with OTP!' };
+  }
+
   // Phone Number Authentication
   async sendPhoneOtp(phoneNumber: string, role: 'PATIENT' | 'DOCTOR') {
     // Store OTP in database with phone number

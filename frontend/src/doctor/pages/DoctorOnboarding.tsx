@@ -700,6 +700,39 @@ const DoctorOnboarding: React.FC = () => {
 
     const user = getUser();
     const activeDocId = user?.id || 'd-active';
+    const token = getToken();
+
+    // Ensure all 3 required verification documents are uploaded
+    const requiredDocTypes = ['medical-license', 'degree-certificate', 'id-proof'];
+    let finalUploadedDocs = [...uploadedDocsInfo];
+
+    for (const docType of requiredDocTypes) {
+      const fileObj = documentFiles[docType];
+      const alreadyUploaded = finalUploadedDocs.some(d => d.documentType === docType || d.name?.includes(docType));
+
+      if (fileObj && !alreadyUploaded) {
+        try {
+          const formDataUpload = new FormData();
+          formDataUpload.append('documentType', docType);
+          formDataUpload.append('file', fileObj);
+
+          const res = await fetch(`/api/doctor/${activeDocId}/documents/upload`, {
+            method: 'POST',
+            body: formDataUpload,
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          });
+
+          if (res.ok) {
+            const docResult = await res.json();
+            finalUploadedDocs.push({ ...docResult, documentType: docType });
+          }
+        } catch (err) {
+          console.warn(`Error auto-uploading document [${docType}]:`, err);
+        }
+      }
+    }
+
+    setUploadedDocsInfo(finalUploadedDocs);
 
     // Create updated profile payload
     const updatedProfile: DoctorProfileData = {
@@ -736,7 +769,7 @@ const DoctorOnboarding: React.FC = () => {
         slotDurationMinutes: formData.slotDurationMinutes,
         status: 'Available'
       },
-      documents: uploadedDocsInfo
+      documents: finalUploadedDocs
     };
 
     // Save doctor onboarding data to PostgreSQL Database via NestJS API

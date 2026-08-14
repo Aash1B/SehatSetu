@@ -4,14 +4,14 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { type DoctorProfile } from '../utils/doctorProfile';
 import { getToken, getUser, clearAuth } from '../../auth/authStorage';
-import BrandLogo from '../../common/components/BrandLogo';
+import DoctorLogoHeader from './DoctorLogoHeader';
 
 export interface DoctorSidebarProps {
   className?: string;
 }
 
 const navItems = [
-  { name: 'Home', path: '/doctor/dashboard', icon: Home },
+  { name: 'Dashboard', path: '/doctor/dashboard', icon: Home },
   { name: 'Patients', path: '/doctor/consultations', icon: Users },
   { name: 'EHR Drafts', path: '/doctor/ehr-drafts', icon: FileCheck },
   { name: 'Availability', path: '/doctor/availability', icon: Calendar },
@@ -50,8 +50,6 @@ const DoctorSidebar: React.FC<DoctorSidebarProps> = ({ className }) => {
     fetch('/api/doctors/me', { headers: { Authorization: `Bearer ${getToken()}` } })
       .then(async (response) => response.ok ? response.json() : Promise.reject())
       .then((profile) => {
-        // Name always comes from JWT auth storage — never from the backend profile
-        // which may have a different doctor's data if sessions overlap
         const name = storedUser?.fullName
           ? (storedUser.fullName.startsWith('Dr.') ? storedUser.fullName : `Dr. ${storedUser.fullName}`)
           : (profile.user?.fullName || profile.name || 'Doctor');
@@ -69,7 +67,6 @@ const DoctorSidebar: React.FC<DoctorSidebarProps> = ({ className }) => {
 
   const handleLogout = () => {
     const user = getUser();
-    // Clear this specific user's profile from localStorage to prevent bleed-over
     if (user?.id) {
       localStorage.removeItem(`sehat_doctor_profile_${user.id}`);
     }
@@ -79,62 +76,87 @@ const DoctorSidebar: React.FC<DoctorSidebarProps> = ({ className }) => {
     navigate('/doctor/login');
   };
 
-  const displayName = activeDoctor.name || authName;
-  const displaySpec = activeDoctor.specialization || 'General Physician';
-  const initials = getInitials(displayName);
-
   return (
-    <aside className={cn("doctor-sidebar shrink-0 w-72 bg-[#223382] border-r border-white/10 flex flex-col justify-between hidden md:flex h-full text-white", className)}>
-      <div>
-        {/* Logo */}
-        <div className="p-6 flex items-center gap-3">
-          <BrandLogo
-            className="gap-3"
-            markWrapperClassName="w-10 h-10 rounded-md bg-transparent flex items-center justify-center p-1.5"
-            wordmarkClassName="font-bold text-2xl text-white tracking-tight"
-            accentClassName="text-orange-400"
-          />
-        </div>
+    <aside className={cn("shrink-0 w-[320px] lg:w-[360px] bg-[#9BACD8] border-r border-slate-300 flex flex-col justify-between hidden md:flex h-full text-slate-800 font-sans", className)}>
+      <div className="flex flex-col h-full overflow-y-auto">
+        {/* Standalone modular Doctor Logo Header Card */}
+        <DoctorLogoHeader height="120px" className="bg-white shrink-0" />
 
-        {/* Navigation */}
-        <nav className="mt-4 flex flex-col gap-3 px-4">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.name}
-              to={item.path}
-              title={item.name}
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-4 px-5 py-4 rounded-2xl text-lg font-bold transition-colors relative",
-                  isActive
-                    ? "bg-white/20 text-white font-extrabold shadow-sm"
-                    : "text-white/80 hover:text-white hover:bg-white/10"
-                )
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  <item.icon className="w-7 h-7 text-white" />
-                  <span>{item.name}</span>
-                  {isActive && (
-                    <span className="absolute right-5 w-2.5 h-2.5 rounded-full bg-habanero"></span>
+        {/* Navigation Content */}
+        <div className="py-6 px-4 flex flex-col gap-7 flex-1 bg-[#9BACD8]">
+          {/* Main Navigation Group */}
+          <div className="flex flex-col gap-2.5">
+            <span className="text-base md:text-lg font-extrabold tracking-[1.5px] text-slate-900 uppercase px-5 mb-1.5">
+              Main Navigation
+            </span>
+            <nav className="flex flex-col gap-2">
+              {navItems.slice(0, 4).map((item) => (
+                <NavLink
+                  key={item.name}
+                  to={item.path}
+                  title={item.name}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-4 px-5 py-3.5 rounded-xl text-xl transition-all relative border-l-4 group",
+                      isActive
+                        ? "bg-white text-[#223382] font-bold border-transparent shadow-md"
+                        : "border-transparent text-slate-900 hover:bg-white/40 font-bold"
+                    )
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      <item.icon className={cn("w-7 h-7 transition-colors", isActive ? "text-[#223382]" : "text-slate-900 group-hover:text-slate-900")} />
+                      <span>{item.name}</span>
+                    </>
                   )}
-                </>
-              )}
-            </NavLink>
-          ))}
-        </nav>
+                </NavLink>
+              ))}
+            </nav>
+          </div>
+
+          {/* Account & Support Group */}
+          <div className="flex flex-col gap-2.5">
+            <span className="text-base md:text-lg font-extrabold tracking-[1.5px] text-slate-900 uppercase px-5 mb-1.5">
+              Account & Support
+            </span>
+            <nav className="flex flex-col gap-2">
+              {navItems.slice(4).map((item) => (
+                <NavLink
+                  key={item.name}
+                  to={item.path}
+                  title={item.name}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-4 px-5 py-3.5 rounded-xl text-xl transition-all relative border-l-4 group",
+                      isActive
+                        ? "bg-white text-[#223382] font-bold border-transparent shadow-md"
+                        : "border-transparent text-slate-900 hover:bg-white/40 font-bold"
+                    )
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      <item.icon className={cn("w-7 h-7 transition-colors", isActive ? "text-[#223382]" : "text-slate-900 group-hover:text-slate-900")} />
+                      <span>{item.name}</span>
+                    </>
+                  )}
+                </NavLink>
+              ))}
+            </nav>
+          </div>
+        </div>
       </div>
 
-      {/* Logout button */}
-      <div className="px-4 mb-6 mt-auto">
+      {/* Footer Sign Out Section */}
+      <div className="p-4 border-t border-slate-200 bg-white mt-auto shrink-0">
         <button
           onClick={handleLogout}
           title="Sign out"
-          className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-lg font-bold transition-colors relative text-white/80 hover:text-white hover:bg-white/10 cursor-pointer text-left"
+          className="w-full flex items-center justify-center gap-3 px-4 py-3.5 rounded-xl text-lg font-medium transition-all text-slate-700 hover:text-[#223382] hover:bg-[#223382]/5 cursor-pointer group"
         >
-          <LogOut className="w-7 h-7 text-white" />
           <span>Sign Out</span>
+          <LogOut className="w-6 h-6 text-slate-600 group-hover:text-[#223382]" />
         </button>
       </div>
     </aside>

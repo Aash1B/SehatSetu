@@ -8,36 +8,53 @@ async function patientRequest<T>(path: string, init?: RequestInit): Promise<T> {
   const token = getToken();
   if (!token) throw new Error(i18n.t('errors:authRequired'));
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/patient${path}`, {
-      ...init,
-      headers: {
-        Authorization: `Bearer ${token}`,
-        ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
-        ...init?.headers,
-      },
-    });
-    const body = await response.json().catch(() => null);
+  const candidateUrls = [
+    `${API_BASE_URL}/patient${path}`,
+    `/api/patient${path}`,
+    `http://127.0.0.1:8000/api/patient${path}`,
+    `http://localhost:8000/api/patient${path}`,
+  ];
+  const uniqueUrls = [...new Set(candidateUrls)];
 
-    if (response.status === 401) {
-      throw new Error('Session expired. Please sign out and sign in again.');
-    }
+  let lastNetworkError: Error | null = null;
+  for (const url of uniqueUrls) {
+    try {
+      const response = await fetch(url, {
+        ...init,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
+          ...init?.headers,
+        },
+      });
+      const body = await response.json().catch(() => null);
 
-    if (!response.ok) {
-      const fallbackKey = path === '/dashboard'
-        ? 'errors:unableToLoadDashboard'
-        : path.startsWith('/profile')
-          ? 'errors:unableToSaveProfile'
-          : 'errors:patientRequestFailed';
-      throw new Error(typeof body?.message === 'string' ? body.message : i18n.t(fallbackKey));
+      if (response.status === 401) {
+        throw new Error('Session expired. Please sign out and sign in again.');
+      }
+
+      if (!response.ok) {
+        const fallbackKey = path === '/dashboard'
+          ? 'errors:unableToLoadDashboard'
+          : path.startsWith('/profile')
+            ? 'errors:unableToSaveProfile'
+            : 'errors:patientRequestFailed';
+        throw new Error(typeof body?.message === 'string' ? body.message : i18n.t(fallbackKey));
+      }
+      return body as T;
+    } catch (err: any) {
+      if (err.message === 'Session expired. Please sign out and sign in again.') {
+        throw err;
+      }
+      if (err instanceof TypeError && (err.message === 'Failed to fetch' || err.message.includes('fetch'))) {
+        lastNetworkError = err;
+        continue;
+      }
+      throw err;
     }
-    return body as T;
-  } catch (err: any) {
-    if (err instanceof TypeError && (err.message === 'Failed to fetch' || err.message.includes('fetch'))) {
-      throw new Error('Unable to connect to SehatSetu backend server. Please check if the backend is running.');
-    }
-    throw err;
   }
+
+  throw new Error('Unable to connect to SehatSetu backend server. Please check if the backend is running.');
 }
 
 export interface PatientDashboardData {

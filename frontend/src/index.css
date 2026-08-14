@@ -12,6 +12,7 @@ body,
   box-sizing: border-box;
   background-color: #F8FAFC;
   overflow-x: hidden;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 * {
@@ -24,6 +25,7 @@ body:lang(hi) {
 }
 
 @theme {
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --color-luster-white: #F4F1EC;
   --color-aster-blue: #223382;
   --color-habanero: #F0541E;

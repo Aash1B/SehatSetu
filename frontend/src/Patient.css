@@ -68,6 +68,7 @@
   object-fit: contain;
   vertical-align: middle;
   margin-left: 6px;
+  transform: translateY(-8px);
   display: inline-block;
   animation: namaskarBowGesture 3s cubic-bezier(0.34, 1.56, 0.64, 1) 1 both;
   transform-origin: bottom center;
@@ -2201,14 +2202,14 @@
   }
 
   .doctor-experience-tag {
-    display: inline-block;
+    display: block;
     font-size: 0.85rem;
-    font-weight: 600;
-    color: #2563EB;
-    background: #EFF6FF;
-    padding: 3px 10px;
-    border-radius: 6px;
-    margin-bottom: 10px;
+    font-weight: 500;
+    color: #475569;
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    margin-bottom: 6px;
   }
 
   .doctor-rating-row {
@@ -2651,7 +2652,7 @@
     background-repeat: no-repeat;
     background-attachment: scroll;
     color: #94A3B8;
-    padding: 110px 24px 60px;
+    padding: 50px 24px 35px;
     border-top: 1px solid #1E293B;
   }
 
@@ -2665,24 +2666,31 @@
     justify-content: space-between;
     align-items: center;
     gap: 48px;
-    margin-bottom: 54px;
+    margin-bottom: 30px;
   }
 
   .footer-brand-col {
     max-width: 440px;
+    margin-bottom: 10px;
+  }
+
+  .footer-brand-col p {
+    margin-top: 4px !important;
   }
 
   .footer-right-links-wrapper {
-    display: flex;
-    justify-content: flex-end;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 48px;
     margin-left: auto;
   }
 
   .footer-logo {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
     text-decoration: none;
+    margin-bottom: 8px;
   }
 
   .footer-logo-img {
@@ -2790,8 +2798,10 @@
   }
 
   .footer-bottom-bar {
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    padding-top: 28px;
+    border-top: none;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin-top: 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -2801,6 +2811,10 @@
 
   .copyright-text {
     color: #94A3B8;
+    margin-top: 68px;
+    margin-left: 0;
+    font-size: 0.85rem;
+    letter-spacing: 0.01em;
   }
 
   .footer-bottom-links {
@@ -2895,6 +2909,10 @@
     .footer-bottom-bar {
       flex-direction: column;
       align-items: flex-start;
+    }
+
+    .copyright-text {
+      padding-left: 0;
     }
   }
 
@@ -3919,7 +3937,7 @@
     flex: 1;
   }
 
-  .booking-grid-wrapper {
+  .booking-grid-wrapper:not(.checkout-grid) {
     display: grid;
     grid-template-columns: 1fr 340px;
     gap: 32px;
@@ -5672,8 +5690,11 @@
   }
 
   .exp-tag {
-    background: #F1F5F9;
+    background: transparent;
     color: #475569;
+    padding: 0;
+    border-radius: 0;
+    font-weight: 500;
   }
 
   .rating-tag {
@@ -6007,7 +6028,7 @@
   .input-field-group {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     gap: 8px;
     width: 100%;
   }
@@ -6116,7 +6137,7 @@
 
   .step2-search-input {
     width: 100%;
-    padding: 12px 48px 12px 46px;
+    padding: 12px 20px 12px 46px;
     font-family: inherit;
     font-size: 0.92rem;
     color: #0F172A;
@@ -10017,7 +10038,7 @@
     gap: 60px !important;
   }
 
-  .booking-grid-wrapper {
+  .booking-grid-wrapper:not(.checkout-grid) {
     grid-template-columns: 1fr 380px !important;
     gap: 40px !important;
   }
@@ -10531,6 +10552,10 @@
 .ehr-section-title {
   font-size: 15px;
   font-weight: 700;
+  color: #0f172a;
+}
+
+.ehr-medical-summary-card .ehr-section-title {
   color: #ffffff;
 }
 
@@ -12137,26 +12162,49 @@
 }
 
 .checkout-grid {
-  display: block;
-  width: 100%;
-  max-width: 1120px;
-  margin: 0 auto;
+  display: block !important;
+  grid-template-columns: none !important;
+  width: 100% !important;
+  max-width: 1060px !important;
+  margin: 0 auto !important;
 }
 
 .checkout-form-card {
-  width: 100%;
-  max-width: none;
-  padding: 0;
-  border: 0;
-  box-shadow: none;
-  background: transparent;
-  gap: 0;
+  width: 100% !important;
+  max-width: 100% !important;
+  background: #ffffff !important;
+  border-radius: 24px !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08) !important;
+  padding: 36px 44px !important;
+  box-sizing: border-box !important;
 }
 
 .checkout-content {
-  width: 100%;
-  gap: 24px;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 24px !important;
+  width: 100% !important;
   color: var(--checkout-navy);
+}
+
+.checkout-main-col,
+.checkout-sidebar-col {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 24px !important;
+  width: 100% !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+@media (max-width: 640px) {
+  .checkout-form-card {
+    padding: 20px 16px !important;
+    border-radius: 16px !important;
+  }
 }
 
 .checkout-heading {

@@ -51,11 +51,18 @@ export class PaymentsService {
       throw new BadRequestException('This appointment has already been paid for');
     }
 
-    const order = await this.razorpay.orders.create({
-      amount: amountInPaise,
-      currency: 'INR',
-      receipt: `appt_${appointmentId.slice(0, 8)}_${Date.now()}`,
-    });
+    let order: { id: string };
+    try {
+      order = await this.razorpay.orders.create({
+        amount: amountInPaise,
+        currency: 'INR',
+        receipt: `appt_${appointmentId.slice(0, 8)}_${Date.now()}`,
+      });
+    } catch (err: any) {
+      console.error('Razorpay Order Creation Failed:', err);
+      const description = err?.error?.description || err?.message || 'Razorpay API call failed';
+      throw new BadRequestException(`Razorpay Error: ${description}`);
+    }
 
     if (existingPayment) {
       await this.prisma.payment.update({
