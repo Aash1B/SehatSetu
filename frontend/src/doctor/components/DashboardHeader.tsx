@@ -35,7 +35,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           <img
             src="/Nam.png"
             alt="Namaste"
-            className="w-28 h-28 md:w-32 md:h-32 lg:w-[130px] lg:h-[130px] object-contain inline-block -ml-6 align-middle -rotate-12 transform origin-bottom-center transition-transform hover:-rotate-18"
+            className="w-28 h-28 md:w-32 md:h-32 lg:w-[130px] lg:h-[130px] object-contain inline-block -ml-6 align-middle transition-transform hover:scale-105"
           />
         </h1>
       </div>

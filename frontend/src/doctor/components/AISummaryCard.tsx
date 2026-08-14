@@ -21,9 +21,12 @@ const AISummaryCard: React.FC<AISummaryCardProps> = ({ summary, confidence, isAc
           </div>
           
           {isActive && (
-            <div className="bg-[#9BACD8]/20 px-4.5 py-2 rounded-full flex items-center gap-2.5 border border-[#9BACD8]/50 shrink-0">
-              <span className="w-3 h-3 rounded-full bg-[#9BACD8] animate-pulse"></span>
-              <span className="text-xs md:text-sm font-extrabold text-[#223382] uppercase tracking-wider">Active</span>
+            <div className="bg-emerald-50 px-4.5 py-2 rounded-full flex items-center gap-2.5 border border-emerald-200 shrink-0 shadow-2xs">
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 animate-pulse"></span>
+              </span>
+              <span className="text-xs md:text-sm font-extrabold text-emerald-800 uppercase tracking-wider">Active</span>
             </div>
           )}
         </div>

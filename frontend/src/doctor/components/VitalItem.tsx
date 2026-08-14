@@ -10,14 +10,14 @@ export interface VitalItemProps {
   iconColorClass?: string;
 }
 
-const VitalItem: React.FC<VitalItemProps> = ({ icon: Icon, emoji, value, label, iconColorClass = "text-habanero bg-habanero/10" }) => {
+const VitalItem: React.FC<VitalItemProps> = ({ icon: Icon, emoji, value, label, iconColorClass = "text-[#0000EE] bg-[#E2E8FF]" }) => {
   return (
     <div className="flex flex-col items-center justify-center min-w-[75px]">
-      <div className={cn("w-11 h-11 rounded-full flex items-center justify-center mb-1.5 text-base md:text-lg shrink-0", iconColorClass)}>
+      <div className={cn("w-12 h-12 rounded-full flex items-center justify-center mb-1.5 text-base md:text-lg shrink-0", iconColorClass)}>
         {emoji ? (
-          <span>{emoji}</span>
+          <span className="text-xl">{emoji}</span>
         ) : Icon ? (
-          <Icon className="w-5 h-5 stroke-[2.5]" />
+          <Icon className="w-6 h-6 stroke-[2.5]" />
         ) : null}
       </div>
       <span className="font-black text-slate-900 text-base md:text-lg leading-tight">{value}</span>

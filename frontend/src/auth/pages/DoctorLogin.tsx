@@ -50,10 +50,14 @@ export default function DoctorLogin() {
         navigate(res.onboardingCompleted ? '/doctor/dashboard' : '/doctor/onboarding', { replace: true });
       }
     } catch (err: any) {
-      if (err.message.toLowerCase().includes('verify your email')) {
+      if (err?.message?.toLowerCase().includes('verify your email')) {
         navigate('/verify-otp', { state: { email, role: 'DOCTOR' } });
       } else {
-        setError(err.message);
+        const raw = err?.message || '';
+        const msg = (raw === 'Failed to fetch' || raw.includes('Failed to fetch'))
+          ? 'Unable to connect to SehatSetu backend server. Please make sure the backend server is running.'
+          : raw;
+        setError(msg || 'An error occurred during sign in');
       }
     } finally {
       setLoading(false);

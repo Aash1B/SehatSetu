@@ -2,7 +2,7 @@ import React from 'react';
 import SectionCard from './SectionCard';
 import StatusBadge from './StatusBadge';
 import VitalItem from './VitalItem';
-import { Droplets, Weight, Ruler, AlertCircle } from 'lucide-react';
+import { Droplet, Weight, Ruler, AlertCircle } from 'lucide-react';
 
 export interface PatientInfoProps {
   patient: {
@@ -38,13 +38,13 @@ const PatientInfoCard: React.FC<PatientInfoProps> = ({ patient }) => {
         </div>
 
         <div className="flex flex-wrap items-center gap-5 lg:gap-8 bg-gray-50/70 p-5 md:p-6 rounded-2xl border border-slate-200/80">
-          <VitalItem icon={Droplets} value={patient.vitals.bloodGroup} label="Blood Group" iconColorClass="text-red-500 bg-red-50" />
+          <VitalItem icon={Droplet} value={patient.vitals.bloodGroup} label="Blood Group" iconColorClass="text-[#0000EE] bg-[#E2E8FF]" />
           <div className="hidden sm:block w-px h-14 bg-slate-200/80"></div>
-          <VitalItem icon={Weight} value={patient.vitals.weight} label="Weight" iconColorClass="text-habanero bg-habanero/10" />
+          <VitalItem icon={Weight} value={patient.vitals.weight} label="Weight" iconColorClass="text-[#0000EE] bg-[#E2E8FF]" />
           <div className="hidden sm:block w-px h-14 bg-slate-200/80"></div>
-          <VitalItem emoji="📏" value={patient.vitals.height} label="Height" iconColorClass="bg-orange-50 text-orange-600" />
+          <VitalItem icon={Ruler} value={patient.vitals.height} label="Height" iconColorClass="text-[#0000EE] bg-[#E2E8FF]" />
           <div className="hidden sm:block w-px h-14 bg-slate-200/80"></div>
-          <VitalItem icon={AlertCircle} value={patient.vitals.allergies.toString()} label="Allergies" iconColorClass="text-red-500 bg-red-50" />
+          <VitalItem icon={AlertCircle} value={patient.vitals.allergies.toString()} label="Allergies" iconColorClass="text-[#0000EE] bg-[#E2E8FF]" />
         </div>
       </div>
     </SectionCard>
