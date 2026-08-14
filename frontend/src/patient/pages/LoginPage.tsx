@@ -4,6 +4,7 @@ import { API_BASE_URL } from '../utils/constants';
 import { setToken } from '../utils/storage';
 import { saveAuth } from '../../auth/authStorage';
 import { useTranslation } from 'react-i18next';
+import PasswordInput from '../../common/components/PasswordInput';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -74,8 +75,7 @@ const LoginPage: React.FC = () => {
         <label className="mb-2 block text-sm font-semibold text-slate-700">
           {t('auth:patientLogin.passwordLabel')}
         </label>
-        <input
-          type="password"
+        <PasswordInput
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           className="mb-4 w-full rounded-lg border border-slate-300 px-4 py-3"

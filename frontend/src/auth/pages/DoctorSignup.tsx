@@ -6,6 +6,7 @@ import { validatePassword } from '../validatePassword';
 import GoogleSignInButton from '../components/GoogleSignInButton';
 import { saveAuth } from '../authStorage';
 import BrandLogo from '../../common/components/BrandLogo';
+import PasswordInput from '../../common/components/PasswordInput';
 
 export default function DoctorSignup() {
   const navigate = useNavigate();
@@ -104,8 +105,7 @@ navigate('/verify-otp', { state: { email, role: 'DOCTOR' } });
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1 px-1">Password</label>
-              <input
-                type="password"
+              <PasswordInput
                 required
                 value={password}
                 onChange={(e) => {

@@ -7,6 +7,7 @@ import { saveAuth } from '../authStorage';
 import GoogleSignInButton from '../components/GoogleSignInButton';
 import { useTranslation } from 'react-i18next';
 import BrandLogo from '../../common/components/BrandLogo';
+import PasswordInput from '../../common/components/PasswordInput';
 
 type LoginMethod = 'email' | 'phone';
 
@@ -313,8 +314,7 @@ export default function PatientLogin() {
                   <label className="block text-sm font-medium text-slate-700">{t('patientLogin.passwordLabel')}</label>
                   <Link to="/forgot-password" className="text-xs text-orange-500 hover:underline">{t('patientLogin.forgotPassword')}</Link>
                 </div>
-                <input
-                  type="password"
+                <PasswordInput
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
