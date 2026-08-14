@@ -445,7 +445,10 @@ export class AuthService {
     // For now, log it for development
     console.log(`[DEV] OTP for ${phoneNumber}: ${otp}`);
 
-    return { message: 'OTP sent to your phone number' };
+    return {
+      message: 'OTP sent to your phone number',
+      ...(process.env.NODE_ENV !== 'production' ? { devOtp: otp } : {}),
+    };
   }
 
   async verifyPhoneOtp(phoneNumber: string, otp: string, role: 'PATIENT' | 'DOCTOR') {

@@ -29,7 +29,7 @@ const HeroSection: React.FC = () => {
       className="w-full bg-gradient-to-b from-brand-50/60 via-white to-slate-50/30 -mt-16 sm:-mt-20 pt-16 sm:pt-18 lg:pt-20 pb-8 px-2 sm:px-4 lg:px-6 flex justify-center"
     >
       {/* Pop-out Hero Card container matching Navbar width & shadow */}
-      <div className="w-full max-w-[98%] sm:max-w-[96%] lg:max-w-[95%] xl:max-w-[96%] bg-white/95 backdrop-blur-md rounded-[28px] sm:rounded-[36px] shadow-[0_15px_40px_rgba(0,0,0,0.06)] border border-slate-100/90 py-10 sm:py-14 lg:py-16 px-6 sm:px-10 lg:px-12 transition-all duration-300">
+      <div className="w-full max-w-[98%] sm:max-w-[96%] lg:max-w-[95%] xl:max-w-[96%] bg-gradient-to-b from-[#FAFBFD] via-[#C0D3F7] to-[#688EE6] backdrop-blur-md rounded-[28px] sm:rounded-[36px] shadow-[0_20px_50px_rgba(104,142,230,0.20)] border border-slate-200/80 py-10 sm:py-14 lg:py-16 px-6 sm:px-10 lg:px-12 transition-all duration-300">
         <div className="grid w-full grid-cols-1 items-center gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-12 xl:gap-14">
         {/* Left Column: Badge, Heading, Description, CTA Buttons, Trust Badges */}
         <div className="relative z-10 min-w-0">

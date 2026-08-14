@@ -92,7 +92,6 @@ export default function PatientSignup() {
   };
 
   const handleSendOtp = async (e: FormEvent) => {
-    e.preventDefault();
     if (!phoneNumber || phoneNumber.length < 10) {
       setError('Please enter a valid phone number');
       return;
@@ -108,21 +107,15 @@ export default function PatientSignup() {
     setError('');
     setLoading(true);
     try {
-      // Generate a test OTP for development
-      const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-      setTestOtp(generatedOtp);
-      
-      await sendPhoneOtp({ phoneNumber, role: 'PATIENT' });
+      const res = await sendPhoneOtp({ phoneNumber, role: 'PATIENT' });
+      if (res.devOtp) {
+        setTestOtp(res.devOtp);
+      }
       setOtpSent(true);
       startOtpTimer();
       setError('');
     } catch (err: any) {
-      // Even if backend fails, show test OTP silently for development
-      const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-      setTestOtp(generatedOtp);
-      setOtpSent(true);
-      startOtpTimer();
-      setError(''); // Don't show backend error, just display test OTP
+      setError(err.message || 'Failed to send OTP');
     } finally {
       setLoading(false);
     }
@@ -133,19 +126,14 @@ export default function PatientSignup() {
     setError('');
     setLoading(true);
     try {
-      // Generate a new test OTP for development
-      const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-      setTestOtp(generatedOtp);
-      
-      await sendPhoneOtp({ phoneNumber, role: 'PATIENT' });
+      const res = await sendPhoneOtp({ phoneNumber, role: 'PATIENT' });
+      if (res.devOtp) {
+        setTestOtp(res.devOtp);
+      }
       startOtpTimer();
       setError('');
     } catch (err: any) {
-      // Even if backend fails, show new test OTP silently for development
-      const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-      setTestOtp(generatedOtp);
-      startOtpTimer();
-      setError(''); // Don't show backend error, just display test OTP
+      setError(err.message || 'Failed to resend OTP');
     } finally {
       setLoading(false);
     }
@@ -161,22 +149,6 @@ export default function PatientSignup() {
     setLoading(true);
     
     try {
-      // For testing: if OTP matches test OTP, allow signup
-      if (testOtp && otp === testOtp) {
-        // Simulate successful signup for testing
-        const mockUser = {
-          id: 'test-' + phoneNumber,
-          email: phoneNumber + '@phone.user',
-          fullName: phoneFullName,
-          role: 'PATIENT' as const,
-        };
-        const mockToken = 'test-token-' + Date.now();
-        
-        saveAuth(mockToken, mockUser);
-        navigate('/patient/dashboard', { replace: true });
-        return;
-      }
-      
       // Try actual backend signup
       const res = await phoneSignup({
         phoneNumber,
@@ -188,21 +160,6 @@ export default function PatientSignup() {
       saveAuth(res.accessToken, { id: res.id, email: res.email, fullName: res.fullName, role: res.role });
       navigate('/patient/dashboard', { replace: true });
     } catch (err: any) {
-      // If backend not ready and OTP matches test OTP, allow anyway
-      if (testOtp && otp === testOtp) {
-        const mockUser = {
-          id: 'test-' + phoneNumber,
-          email: phoneNumber + '@phone.user',
-          fullName: phoneFullName,
-          role: 'PATIENT' as const,
-        };
-        const mockToken = 'test-token-' + Date.now();
-        
-        saveAuth(mockToken, mockUser);
-        navigate('/patient/dashboard', { replace: true });
-        return;
-      }
-      
       setError(err.message);
     } finally {
       setLoading(false);

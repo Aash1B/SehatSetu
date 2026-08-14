@@ -71,18 +71,20 @@ import OfflineStatusIndicator from './common/components/OfflineStatusIndicator';
 import PWAUpdatePrompt from './common/components/PWAUpdatePrompt';
 import PWAInstallPrompt from './common/components/PWAInstallPrompt';
 import { LiquidLoader } from './common/components/LiquidLoader';
+import ErrorBoundary from './common/components/ErrorBoundary';
 
 function App() {
   const { t } = useTranslation('common');
   return (
     <Provider store={store}>
-      <Router>
-        <OfflineStatusIndicator />
-        <PWAUpdatePrompt />
-        <PWAInstallPrompt />
-        <ChatProvider />
-        <Suspense fallback={null}>
-        <Routes>
+      <ErrorBoundary>
+        <Router>
+          <OfflineStatusIndicator />
+          <PWAUpdatePrompt />
+          <PWAInstallPrompt />
+          <ChatProvider />
+          <Suspense fallback={<LiquidLoader fullScreen text="Loading SehatSetu..." />}>
+          <Routes>
 
           {/* Auth Routes (new) */}
            <Route path="/patient/login" element={<PatientLogin />} />
@@ -135,7 +137,8 @@ function App() {
           </Route>
         </Routes>
         </Suspense>
-      </Router>
+        </Router>
+      </ErrorBoundary>
     </Provider>
   );
 }

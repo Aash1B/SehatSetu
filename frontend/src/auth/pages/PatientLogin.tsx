@@ -73,7 +73,6 @@ export default function PatientLogin() {
   };
 
   const handleSendOtp = async (e: FormEvent) => {
-    e.preventDefault();
     if (!phoneNumber || phoneNumber.length < 10) {
       setError('Please enter a valid phone number');
       return;
@@ -81,21 +80,15 @@ export default function PatientLogin() {
     setError('');
     setLoading(true);
     try {
-      // Generate a test OTP for development
-      const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-      setTestOtp(generatedOtp);
-      
-      await sendPhoneOtp({ phoneNumber, role: 'PATIENT' });
+      const res = await sendPhoneOtp({ phoneNumber, role: 'PATIENT' });
+      if (res.devOtp) {
+        setTestOtp(res.devOtp);
+      }
       setOtpSent(true);
       startOtpTimer();
       setError('');
     } catch (err: any) {
-      // Even if backend fails, show test OTP silently for development
-      const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-      setTestOtp(generatedOtp);
-      setOtpSent(true);
-      startOtpTimer();
-      setError(''); // Don't show backend error, just display test OTP
+      setError(err.message || 'Failed to send OTP');
     } finally {
       setLoading(false);
     }
@@ -106,19 +99,14 @@ export default function PatientLogin() {
     setError('');
     setLoading(true);
     try {
-      // Generate a new test OTP for development
-      const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-      setTestOtp(generatedOtp);
-      
-      await sendPhoneOtp({ phoneNumber, role: 'PATIENT' });
+      const res = await sendPhoneOtp({ phoneNumber, role: 'PATIENT' });
+      if (res.devOtp) {
+        setTestOtp(res.devOtp);
+      }
       startOtpTimer();
       setError('');
     } catch (err: any) {
-      // Even if backend fails, show new test OTP silently for development
-      const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-      setTestOtp(generatedOtp);
-      startOtpTimer();
-      setError(''); // Don't show backend error, just display test OTP
+      setError(err.message || 'Failed to resend OTP');
     } finally {
       setLoading(false);
     }
@@ -135,23 +123,6 @@ export default function PatientLogin() {
     setLoading(true);
     
     try {
-      // For testing: if OTP matches test OTP, allow login/signup
-      if (testOtp && otp === testOtp) {
-        // Simulate successful login for testing
-        const mockUser = {
-          id: 'test-' + phoneNumber,
-          email: phoneNumber + '@phone.user',
-          fullName: phoneFullName || 'Phone User',
-          role: 'PATIENT' as const,
-        };
-        const mockToken = 'test-token-' + Date.now();
-        
-        saveAuth(mockToken, mockUser);
-        const requestedPath = (location.state as { from?: string } | null)?.from;
-        navigate(requestedPath?.startsWith('/patient/') ? requestedPath : '/patient/dashboard', { replace: true });
-        return;
-      }
-      
       // Try actual backend verification
       const res = await verifyPhoneOtp({ phoneNumber, otp, role: 'PATIENT' });
       if (res.role !== 'PATIENT') {
@@ -162,26 +133,10 @@ export default function PatientLogin() {
       const requestedPath = (location.state as { from?: string } | null)?.from;
       navigate(requestedPath?.startsWith('/patient/') ? requestedPath : '/patient/dashboard', { replace: true });
     } catch (err: any) {
-      // If backend not ready and OTP matches test OTP, allow anyway
-      if (testOtp && otp === testOtp) {
-        const mockUser = {
-          id: 'test-' + phoneNumber,
-          email: phoneNumber + '@phone.user',
-          fullName: phoneFullName || 'Phone User',
-          role: 'PATIENT' as const,
-        };
-        const mockToken = 'test-token-' + Date.now();
-        
-        saveAuth(mockToken, mockUser);
-        const requestedPath = (location.state as { from?: string } | null)?.from;
-        navigate(requestedPath?.startsWith('/patient/') ? requestedPath : '/patient/dashboard', { replace: true });
-        return;
-      }
-      
-      // Backend-specific errors
-      if (err.message.toLowerCase().includes('not found') || err.message.toLowerCase().includes('user does not exist')) {
+      const errMsg = (err.message || '').toLowerCase();
+      if (errMsg.includes('not found') || errMsg.includes('complete your registration') || errMsg.includes('does not exist')) {
         if (!phoneFullName.trim()) {
-          setError('This number is not registered. Please enter your name to create an account.');
+          setError('This number is not registered. Please enter your full name above to create an account.');
           return;
         }
         try {

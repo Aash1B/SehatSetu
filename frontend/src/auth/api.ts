@@ -170,13 +170,13 @@ export interface PhoneLoginPayload {
   otp: string;
 }
 
-export async function sendPhoneOtp(payload: SendPhoneOtpPayload): Promise<MessageResponse> {
+export async function sendPhoneOtp(payload: SendPhoneOtpPayload): Promise<MessageResponse & { devOtp?: string }> {
   const res = await fetch(`${API_BASE_URL}/auth/send-phone-otp`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
-  return handleResponse<MessageResponse>(res);
+  return handleResponse<MessageResponse & { devOtp?: string }>(res);
 }
 
 export async function verifyPhoneOtp(payload: VerifyPhoneOtpPayload): Promise<AuthResponse> {

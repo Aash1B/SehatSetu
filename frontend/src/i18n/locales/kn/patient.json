@@ -1,4 +1,4 @@
-﻿{
+{
   "videoConsultation": {
     "backToDashboard": "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ಗೆ ಹಿಂತಿರುಗಿ",
     "endToEndEncrypted": "ಎಂಡ್-ಟು-ಎಂಡ್ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಲಾಗಿದೆ",
@@ -119,7 +119,7 @@
   "whatBringsYou": "ಇಂದು ನಿಮಗೆ ಏನು ಬೇಕು?",
   "matchYouWith": "ಸರಿಯಾದ ತಜ್ಞರನ್ನು ಹೊಂದಿಸಲು ನಮಗೆ ಸಹಾಯ ಮಾಡಿ.",
   "symptoms": "ನೀವು ಯಾವ ರೋಗಲಕ್ಷಣಗಳನ್ನು ಅನುಭವಿಸುತ್ತಿದ್ದೀರಿ?",
-  "searchSymptoms": "ರೋಗಲಕ್ಷಣ ಹುಡುಕಿ ಅಥವಾ ಟೈಪ್ ಮಾಡಿ (ಉದಾ., ಜ್ವರ, ಕೆಮ್ಮು, ತಲೆನೋವು)",
+  "searchSymptoms": "ರೋಗಲಕ್ಷಣ ಹುಡುಕಿ ಅಥವಾ ಟೈಪ್ ಮಾಡಿ",
   "popularSymptoms": "ಸಾಮಾನ್ಯ ರೋಗಲಕ್ಷಣಗಳು",
   "showLess": "- ಕಡಿಮೆ",
   "showMore": "+ ಹೆಚ್ಚು",
@@ -233,7 +233,7 @@
   "other": "ಇತರ",
   "datePending": "ದಿನಾಂಕ ಬಾಕಿ",
   "timePending": "ಸಮಯ ಬಾಕಿ",
-  "addToCalendar": "📅 ಕ್ಯಾಲೆಂಡರ್‌ಗೆ ಸೇರಿಸಿ",
+  "addToCalendar": "ಕ್ಯಾಲೆಂಡರ್‌ಗೆ ಸೇರಿಸಿ",
   "healthConcernTitle": "ಆರೋಗ್ಯ ಕಾಳಜಿ",
   "chatMessage": "ಚಾಟ್ / ಸಂದೇಶ",
   "inPersonVisit": "ವ್ಯಕ್ತಿಗತ ಭೇಟಿ",

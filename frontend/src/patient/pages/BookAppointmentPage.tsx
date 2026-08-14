@@ -652,11 +652,9 @@ const BookAppointmentPage: React.FC = () => {
               onClick={() => navigate('/')}
             >
               <BrandLogo
-                className="gap-2.5"
-                markWrapperClassName="logo-badge"
-                markClassName="logo-icon"
-                wordmarkClassName="brand-title"
-                accentClassName="text-orange-500 brand-title-accent"
+                markWrapperClassName="landing-brand-mark rounded-xl bg-transparent flex items-center justify-center p-1.5 shadow-none transition group-hover:scale-105"
+                wordmarkClassName="landing-brand-wordmark font-extrabold text-slate-900 tracking-tight"
+                accentClassName="brand-title-accent-royal"
               />
             </button>
           </div>
@@ -1088,18 +1086,21 @@ const BookAppointmentPage: React.FC = () => {
                   {/* Q4: Additional Details */}
                   <div className="form-question-block">
                     <label className="question-label">{t('patient:additionalDetails')}</label>
-                    <div className="notes-textarea-card">
-                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#94A3B8" strokeWidth="2" className="notes-icon">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                      </svg>
-                      <textarea
-                        rows={3}
-                        maxLength={500}
-                        placeholder={t('forms:notesPlaceholder')}
-                        value={formData.notes}
-                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                      />
-                      <span className="char-count-badge">{formData.notes.length}{t('patient:charCount')}</span>
+                    <div className="relative w-full rounded-2xl border border-slate-200 bg-white p-3.5 sm:p-4 shadow-2xs transition-all focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100">
+                      <div className="flex items-start gap-3 w-full">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#94A3B8" strokeWidth="2" className="mt-1 shrink-0">
+                          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        <textarea
+                          rows={3}
+                          maxLength={500}
+                          className="w-full bg-transparent border-none outline-none text-slate-800 text-sm sm:text-base leading-relaxed placeholder:text-slate-400 p-0 resize-none"
+                          placeholder={t('forms:notesPlaceholder')}
+                          value={formData.notes}
+                          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                        />
+                      </div>
+                      <span className="absolute bottom-2.5 right-3.5 text-xs text-slate-400 font-medium">{formData.notes.length}{t('patient:charCount')}</span>
                     </div>
                   </div>
                 </>
@@ -1341,7 +1342,6 @@ const BookAppointmentPage: React.FC = () => {
                     {/* Section 1: Select Date Carousel */}
                     <div className="slot-section-block">
                       <div className="slot-section-header">
-                        <span className="section-icon">📅</span>
                         <h3 className="section-title">{t('patient:selectDate')}</h3>
                       </div>
 
@@ -1533,7 +1533,7 @@ const BookAppointmentPage: React.FC = () => {
                         <input 
                           type="text" 
                           className="form-control-input"
-                          placeholder={t('patient:e.g.165')}
+                          placeholder=""
                           value={formData.patientHeight} 
                           onChange={(e) => {
                             setStep4Error('');
@@ -1546,7 +1546,7 @@ const BookAppointmentPage: React.FC = () => {
                             type="text" 
                             className="form-control-input"
                             style={{ flex: 1 }}
-                            placeholder={t('patient:ftIn')}
+                            placeholder=""
                             value={heightFt} 
                             onChange={(e) => {
                               setStep4Error('');
@@ -1557,7 +1557,7 @@ const BookAppointmentPage: React.FC = () => {
                             type="text" 
                             className="form-control-input"
                             style={{ flex: 1 }}
-                             placeholder={t('patient:e.g.137')}
+                            placeholder=""
                             value={heightIn} 
                             onChange={(e) => {
                               setStep4Error('');
@@ -1611,7 +1611,7 @@ const BookAppointmentPage: React.FC = () => {
                         <input 
                           type="text" 
                           className="form-control-input"
-                           placeholder={t('patient:e.g.62')}
+                          placeholder=""
                           value={formData.patientWeight} 
                           onChange={(e) => {
                             setStep4Error('');
@@ -1622,7 +1622,7 @@ const BookAppointmentPage: React.FC = () => {
                         <input 
                           type="text" 
                           className="form-control-input"
-                           placeholder={t('patient:e.g.137lbs')}
+                          placeholder=""
                           value={weightLbs} 
                           onChange={(e) => {
                             setStep4Error('');
@@ -1667,7 +1667,7 @@ const BookAppointmentPage: React.FC = () => {
                     </div>
 
                     <div className="input-field-group full-width-field">
-                       <label className="field-label">{t('forms:gender')} <span className="helper-note">{t('forms:genderHelper')}</span></label>
+                       <label className="field-label">{t('forms:gender')}</label>
                       <div className="gender-selector-row">
                            {[{ id: 'Female' }, { id: 'Male' }, { id: 'Other' }].map((g) => {
                            const isSelected = formData.patientGender === g.id;
@@ -1763,7 +1763,7 @@ const BookAppointmentPage: React.FC = () => {
                           className="btn-add-calendar"
                           onClick={handleAddToCalendar}
                         >
-                          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                             <path d="M12 5v14M5 12h14" />
                           </svg>
                           {t('patient:addToCalendar')}
@@ -1837,7 +1837,7 @@ const BookAppointmentPage: React.FC = () => {
                         patientName={formData.patientName}
                         patientEmail={formData.patientEmail}
                         amountLabel={formatFeeAmount(formData.selectedDoctor?.fee)}
-                        buttonLabel={`🔒 Proceed to Pay ₹${formatFeeAmount(formData.selectedDoctor?.fee)}`}
+                        buttonLabel={`Proceed to Pay ₹${formatFeeAmount(formData.selectedDoctor?.fee)}`}
                         buttonClassName="checkout-pay-button"
                         onSuccess={(receipt) => {
                           setPaymentReceipt(receipt);
@@ -1855,7 +1855,7 @@ const BookAppointmentPage: React.FC = () => {
                   <div className="form-card-footer">
                     <button 
                       type="button" 
-                      className="btn-form-back"
+                      className="px-5 py-2.5 rounded-xl border border-slate-300 hover:border-slate-400 bg-white text-slate-700 hover:text-slate-900 font-bold text-base sm:text-lg flex items-center gap-2 shadow-2xs transition-all cursor-pointer active:scale-95"
                       onClick={handlePrevStep}
                     >
                       ← {t('common:back')}
@@ -1906,15 +1906,41 @@ const BookAppointmentPage: React.FC = () => {
                   </div>
                 )}
 
-                {/* Card 3: Need Help Box */}
-                <div className="summary-card help-sidebar-card">
-                  <div className="help-sidebar-content" onClick={() => setShowHelpModal(false)}>
-                    <span className="headset-icon">🎧</span>
-                    <div>
-                      <h5 className="help-sidebar-title">{t('patient:needHelp')}</h5>
-                      <p className="help-sidebar-sub">{t('patient:supportOnline')}</p>
-                    </div>
+                {/* Card 3: Need Help Box with Chatbot Trigger (Updated Proportions & Image 2 Icon) */}
+                <div className="w-full rounded-[24px] sm:rounded-[28px] border border-slate-200/90 bg-white/95 backdrop-blur-md p-5 sm:p-6 shadow-[0_12px_35px_rgba(0,0,0,0.06)] flex flex-col items-center gap-5 sm:gap-6 my-4 transition-all duration-300">
+                  {/* Top: Larger Dashed Need Help Card */}
+                  <div 
+                    className="w-full rounded-[20px] border-2 border-dashed border-slate-300/90 bg-[#FAFBFD] p-5 sm:p-6 shadow-2xs transition-all duration-300 hover:border-orange-400 hover:bg-orange-50/40 cursor-pointer text-left"
+                    onClick={() => window.dispatchEvent(new CustomEvent('open-sehatsetu-chatbot'))}
+                  >
+                    <h5 className="text-lg sm:text-xl font-extrabold text-[#991B1B] mb-2 tracking-tight">
+                      {t('patient:needHelp')}
+                    </h5>
+                    <p className="text-sm sm:text-[14.5px] leading-relaxed text-slate-600 font-medium">
+                      {t('patient:supportOnline')}
+                    </p>
                   </div>
+
+                  {/* Bottom: Decreased / Sleeker Blue HELP Pill Button with Image 2 Icon */}
+                  <button
+                    type="button"
+                    onClick={() => window.dispatchEvent(new CustomEvent('open-sehatsetu-chatbot'))}
+                    className="w-full py-2.5 sm:py-3 px-6 rounded-full bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.98] text-white font-black text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-md shadow-blue-500/25 transition-all duration-300 cursor-pointer border-none max-w-[85%] mx-auto"
+                  >
+                    <svg className="w-6.5 h-6.5 sm:w-7 sm:h-7 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path 
+                        d="M12 2.2L2.5 9.8C2.1 10.1 2.3 10.8 2.9 10.8H4.5V17.5C4.5 19.7 6.3 21.5 8.5 21.5H15.5C17.7 21.5 19.5 19.7 19.5 17.5V10.8H21.1C21.7 10.8 21.9 10.1 21.5 9.8L12 2.2Z" 
+                        fill="white" 
+                      />
+                      <path 
+                        d="M12 8.8V16.2M8.3 12.5H15.7" 
+                        stroke="#2563EB" 
+                        strokeWidth="3.2" 
+                        strokeLinecap="round" 
+                      />
+                    </svg>
+                    <span className="tracking-wide uppercase font-extrabold text-white">HELP</span>
+                  </button>
                 </div>
               </div>
             )}

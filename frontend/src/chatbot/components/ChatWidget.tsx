@@ -125,6 +125,12 @@ const ChatWidget: React.FC = () => {
   }, [isOpen]);
 
   useEffect(() => {
+    const handleOpenChat = () => setIsOpen(true);
+    window.addEventListener('open-sehatsetu-chatbot', handleOpenChat);
+    return () => window.removeEventListener('open-sehatsetu-chatbot', handleOpenChat);
+  }, []);
+
+  useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       if (e.key === '/' && e.shiftKey) {
         e.preventDefault();
