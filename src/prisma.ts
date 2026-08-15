@@ -8,7 +8,13 @@ if (!connectionString) {
   throw new Error('DATABASE_URL is required');
 }
 
-const pool = new Pool({ connectionString, max: 4 });
+const pool = new Pool({
+  connectionString,
+  max: 4,
+  ssl: {
+    rejectUnauthorized: false,
+  },
+});
 const adapter = new PrismaPg(pool);
 
 export const prisma = new PrismaClient({ adapter });
