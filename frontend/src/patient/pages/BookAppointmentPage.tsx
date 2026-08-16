@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import BrandLogo from '../../common/components/BrandLogo';
 import PayButton from '../../payments/PayButton';
 import type { PaymentReceipt } from '../../payments/api';
+import { API_BASE_URL } from '../utils/constants';
 
 interface BookingFormData {
   // Step 1
@@ -354,7 +355,7 @@ const BookAppointmentPage: React.FC = () => {
 
   useEffect(() => {
     if (!rescheduleId) return;
-    fetch(`/api/appointments/${encodeURIComponent(rescheduleId)}`, {
+    fetch(`${API_BASE_URL}/appointments/${encodeURIComponent(rescheduleId)}`, {
       headers: { Authorization: `Bearer ${getToken()}` },
     }).then(async (response) => {
       if (!response.ok) throw new Error(t('errors:appointmentNotFound'));
@@ -419,7 +420,7 @@ const BookAppointmentPage: React.FC = () => {
     const docId = formData.selectedDoctor?.id;
     if (docId) {
       Promise.resolve().then(() => setLoadingAvailability(true));
-      fetch(`/api/doctor/${docId}/availability`)
+      fetch(`${API_BASE_URL}/doctor/${docId}/availability`)
         .then(res => {
           if (res.ok) return res.json();
           return null;
@@ -556,7 +557,7 @@ const BookAppointmentPage: React.FC = () => {
           timeSlot: formData.selectedTimeSlot,
         };
 
-        const response = await fetch(rescheduleId ? `/api/appointments/${encodeURIComponent(rescheduleId)}/reschedule` : '/api/appointments', {
+        const response = await fetch(rescheduleId ? `${API_BASE_URL}/appointments/${encodeURIComponent(rescheduleId)}/reschedule` : `${API_BASE_URL}/appointments`, {
           method: rescheduleId ? 'PATCH' : 'POST',
           headers: {
             'Content-Type': 'application/json',

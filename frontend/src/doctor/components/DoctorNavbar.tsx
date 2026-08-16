@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BrandLogo from '../../common/components/BrandLogo';
 import { getToken, getUser } from '../../auth/authStorage';
+import { API_BASE_URL } from '../../patient/utils/constants';
 import type { Doctor } from '../../types';
 
 export interface DoctorNavbarProps {
@@ -29,7 +30,7 @@ const DoctorNavbar: React.FC<DoctorNavbarProps> = ({ doctor }) => {
     if (doctor?.imageUrl) {
       setFetchedImage(doctor.imageUrl);
     } else {
-      fetch('/api/doctors/me', { headers: { Authorization: `Bearer ${getToken()}` } })
+      fetch(`${API_BASE_URL}/doctors/me`, { headers: { Authorization: `Bearer ${getToken()}` } })
         .then(async (res) => (res.ok ? res.json() : null))
         .then((profile) => {
           if (profile?.imageUrl) {

@@ -3,6 +3,7 @@ import SectionCard from '../SectionCard';
 import { DocumentInfo } from '../../types/profile.types';
 import { CheckCircle2, Clock, FileText, ExternalLink, AlertCircle, Upload, FileSignature, Loader2, RefreshCw } from 'lucide-react';
 import { getToken } from '../../../auth/authStorage';
+import { API_BASE_URL } from '../../../patient/utils/constants';
 
 interface Props {
   documents: DocumentInfo[];
@@ -99,7 +100,7 @@ const DocumentCard: React.FC<Props> = ({ documents, doctorId, onRefresh }) => {
           formData.append('file', file);
           formData.append('documentType', key);
           try {
-            await fetch(`/api/doctor/${doctorId}/documents/upload`, {
+            await fetch(`${API_BASE_URL}/doctor/${doctorId}/documents/upload`, {
               method: 'POST',
               headers: { Authorization: `Bearer ${getToken()}` },
               body: formData,

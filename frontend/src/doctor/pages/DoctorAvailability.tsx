@@ -8,6 +8,7 @@ import { getActiveDoctor, type DoctorProfile as ActiveDoc } from '../utils/docto
 import { getDoctorProfileData } from '../utils/doctorProfile';
 import { getToken } from '../../auth/authStorage';
 import { LiquidLoader } from '../../common/components/LiquidLoader';
+import { API_BASE_URL } from '../../patient/utils/constants';
 
 const DoctorAvailability: React.FC = () => {
   const [activeDoctor, setActiveDoctor] = useState<ActiveDoc>(getActiveDoctor());
@@ -18,7 +19,7 @@ const DoctorAvailability: React.FC = () => {
   const fetchAvailability = async (docId: string) => {
     setIsLoading(true);
     try {
-      const profileResponse = await fetch('/api/doctors/me', {
+      const profileResponse = await fetch(`${API_BASE_URL}/doctors/me`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
       if (!profileResponse.ok) throw new Error('Unable to load doctor profile');
@@ -31,7 +32,7 @@ const DoctorAvailability: React.FC = () => {
         specialization: doctor.specialty,
       });
 
-      const response = await fetch(`/api/doctor/${doctor.id}/availability`);
+      const response = await fetch(`${API_BASE_URL}/doctor/${doctor.id}/availability`);
       if (response.ok) {
         const availabilityData = await response.json();
         if (availabilityData) {
@@ -61,7 +62,7 @@ const DoctorAvailability: React.FC = () => {
   const handleSaveAvailability = async (updatedAvailability: Availability) => {
     setIsSaving(true);
     try {
-      const res = await fetch(`/api/doctor/${activeDoctor.id}/availability`, {
+      const res = await fetch(`${API_BASE_URL}/doctor/${activeDoctor.id}/availability`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

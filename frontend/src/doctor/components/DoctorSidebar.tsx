@@ -4,6 +4,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { type DoctorProfile } from '../utils/doctorProfile';
 import { getToken, getUser, clearAuth } from '../../auth/authStorage';
+import { API_BASE_URL } from '../../patient/utils/constants';
 import DoctorLogoHeader from './DoctorLogoHeader';
 
 export interface DoctorSidebarProps {
@@ -47,7 +48,7 @@ const DoctorSidebar: React.FC<DoctorSidebarProps> = ({ className }) => {
     window.addEventListener('sehat_doctor_changed', handleDoctorChange);
 
     // Fetch backend profile to get specialization (name always comes from JWT)
-    fetch('/api/doctors/me', { headers: { Authorization: `Bearer ${getToken()}` } })
+    fetch(`${API_BASE_URL}/doctors/me`, { headers: { Authorization: `Bearer ${getToken()}` } })
       .then(async (response) => response.ok ? response.json() : Promise.reject())
       .then((profile) => {
         const name = storedUser?.fullName

@@ -7,8 +7,9 @@ import { uploadMedicalReport, type MedicalReportExtractedData, type MedicalRepor
 import { doctorsData } from '../data/doctorsData';
 import { getAppointmentTimeStatus } from '../../utils/appointmentTime';
 import PrescriptionViewModal from '../../common/components/PrescriptionViewModal';
-import { clearAuth } from '../../auth/authStorage';
+import { clearAuth, getToken } from '../../auth/authStorage';
 import { getPatientDashboard, updatePatientProfile, uploadPatientAvatar } from '../services/patientApi';
+import { API_BASE_URL } from '../utils/constants';
 import AccountDeletionDangerZone from '../../auth/components/AccountDeletionDangerZone';
 import BrandLogo from '../../common/components/BrandLogo';
 import { useTranslation } from 'react-i18next';
@@ -749,7 +750,10 @@ const DashboardPage: React.FC = () => {
 
       const fetchAppointments = async () => {
         try {
-          const res = await fetch('/api/appointments');
+          const token = getToken();
+          const res = await fetch(`${API_BASE_URL}/appointments`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          });
           if (res.ok) {
             const apps = await res.json();
             if (Array.isArray(apps) && apps.length > 0) {

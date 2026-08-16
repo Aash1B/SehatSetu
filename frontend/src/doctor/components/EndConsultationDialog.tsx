@@ -3,6 +3,7 @@ import { X, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { PrescriptionData } from '../../common/components/PrescriptionViewModal';
 import { getToken } from '../../auth/authStorage';
+import { API_BASE_URL } from '../../patient/utils/constants';
 
 interface EndConsultationDialogProps {
   isOpen: boolean;
@@ -37,7 +38,7 @@ const EndConsultationDialog: React.FC<EndConsultationDialogProps> = ({
       : [];
 
     try {
-      const response = await fetch('/api/livekit/end-consultation', {
+      const response = await fetch(`${API_BASE_URL}/livekit/end-consultation`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
         body: JSON.stringify({
