@@ -25,6 +25,7 @@
     "start:prod": "node dist/main.js"
   },
   "dependencies": {
+    "@getbrevo/brevo": "^6.0.3",
     "@nestjs/bullmq": "^11.0.4",
     "@nestjs/common": "^11.1.28",
     "@nestjs/core": "^11.1.28",

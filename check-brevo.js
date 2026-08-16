@@ -1,0 +1,10 @@
+const Brevo = require('@getbrevo/brevo');
+const keys = Object.keys(Brevo);
+console.log('Transactional keys:', keys.filter(k => k.includes('Transactional') || k.includes('SendSmtp') || k.includes('ApiKeys')).join(', '));
+const inst = new Brevo.TransactionalEmailsApi();
+console.log('setApiKey:', typeof inst.setApiKey);
+console.log('sendTransacEmail:', typeof inst.sendTransacEmail);
+const email = new Brevo.SendSmtpEmail();
+console.log('SendSmtpEmail keys:', Object.keys(email).slice(0, 10).join(', '));
+const apiKeysEnum = Brevo.TransactionalEmailsApiApiKeys;
+console.log('ApiKeys enum:', JSON.stringify(apiKeysEnum));
