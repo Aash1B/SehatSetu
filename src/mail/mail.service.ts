@@ -71,7 +71,11 @@ export class MailService {
 
   async sendAdminVerificationEmail(data: AdminVerificationEmailData) {
     const adminEmail = process.env.ADMIN_EMAIL || process.env.BREVO_SENDER_EMAIL || 'sehatsetu26@gmail.com';
-    const backendUrl = (process.env.BACKEND_URL || 'http://localhost:8000').replace(/\/+$/, '');
+    const backendUrl = (
+      process.env.BACKEND_URL && !process.env.BACKEND_URL.includes('localhost')
+        ? process.env.BACKEND_URL
+        : (process.env.RENDER_EXTERNAL_URL || (process.env.NODE_ENV === 'production' ? 'https://sehat-setu-api.onrender.com' : (process.env.BACKEND_URL || 'http://localhost:8000')))
+    ).replace(/\/+$/, '');
 
     const approveUrl = `${backendUrl}/api/doctor/approve?token=${data.token}`;
     const rejectUrl = `${backendUrl}/api/doctor/reject?token=${data.token}`;

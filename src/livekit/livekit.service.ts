@@ -172,10 +172,42 @@ export class LivekitService {
           dietAdvice: prescription.dietAdvice || null,
         },
       });
+      const rawMeds = Array.isArray(prescription.medications) ? prescription.medications : [];
+      const medicationStrings: string[] = rawMeds.map((m: any) => {
+        if (typeof m === 'string') return m;
+        const parts = [
+          m.name,
+          m.dosage,
+          m.frequency ? `(${m.frequency})` : '',
+          m.timing ? `[${m.timing}]` : '',
+          m.duration ? `for ${m.duration}` : '',
+        ].filter(Boolean);
+        return parts.join(' ');
+      }).filter(Boolean);
+
+      const existingEhr = await prisma.ehrRecord.findUnique({ where: { appointmentId } });
+      const existingStructured = (existingEhr?.structuredData as Record<string, any>) || {};
+
       await prisma.ehrRecord.upsert({
         where: { appointmentId },
-        create: { appointmentId, patientId: appointment.patientId, diagnosis: prescription.diagnosis || appointment.healthConcern, notes: prescription.notes || notes },
-        update: { diagnosis: prescription.diagnosis || appointment.healthConcern, notes: prescription.notes || notes },
+        create: {
+          appointmentId,
+          patientId: appointment.patientId,
+          diagnosis: prescription.diagnosis || appointment.healthConcern,
+          notes: prescription.notes || notes,
+          structuredData: {
+            ...existingStructured,
+            medications: medicationStrings,
+          },
+        },
+        update: {
+          diagnosis: prescription.diagnosis || appointment.healthConcern,
+          notes: prescription.notes || notes,
+          structuredData: {
+            ...existingStructured,
+            medications: medicationStrings,
+          },
+        },
       });
     }
     await prisma.appointment.update({

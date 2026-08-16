@@ -38,11 +38,33 @@ export class ConsultationProcessor extends WorkerHost {
       // 1. Fetch appointment details if available
       const appointment = await prisma.appointment.findUnique({
         where: { id: data.appointmentId },
-        include: { doctor: { select: { userId: true } } },
+        include: {
+          doctor: { select: { userId: true } },
+          prescription: true,
+        },
       });
 
       const patientId = data.patientId || appointment?.patientId || 'patient-default';
       const notes = data.notes || appointment?.notes || 'Post-consultation notes recorded.';
+
+      const existingEhr = await prisma.ehrRecord.findUnique({ where: { appointmentId: data.appointmentId } });
+      const existingStructured = (existingEhr?.structuredData as Record<string, any>) || {};
+
+      let structuredData = existingStructured;
+      if (appointment?.prescription?.medicines && Array.isArray(appointment.prescription.medicines) && appointment.prescription.medicines.length > 0) {
+        const meds = appointment.prescription.medicines.map((m: any) => {
+          if (typeof m === 'string') return m;
+          const parts = [
+            m.name,
+            m.dosage,
+            m.frequency ? `(${m.frequency})` : '',
+            m.timing ? `[${m.timing}]` : '',
+            m.duration ? `for ${m.duration}` : '',
+          ].filter(Boolean);
+          return parts.join(' ');
+        }).filter(Boolean);
+        structuredData = { ...existingStructured, medications: meds };
+      }
 
       // 2. Generate structured AI summary narrative
       const aiSummary = `[AI Post-Consultation Summary] ` +
@@ -56,13 +78,15 @@ export class ConsultationProcessor extends WorkerHost {
         update: {
           notes,
           aiSummary,
+          structuredData,
         },
         create: {
           appointmentId: data.appointmentId,
           patientId: patientId !== 'patient-default' ? patientId : (appointment?.patientId || 'default-id'),
           notes,
           aiSummary,
-          diagnosis: appointment?.healthConcern || 'General Medical Consultation',
+          diagnosis: appointment?.prescription?.diagnosis || appointment?.healthConcern || 'General Medical Consultation',
+          structuredData,
         },
       });
 

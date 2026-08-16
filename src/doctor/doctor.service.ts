@@ -102,11 +102,15 @@ export class DoctorService {
     const filename = `${safeDocId}-${cleanDocType}-${Date.now()}.${fileExt}`;
     const storagePath = `doctor-documents/${safeDocId}/${filename}`;
     
-    const backendUrl = (process.env.BACKEND_URL || 'http://localhost:8000').replace(/\/+$/, '');
+    const backendUrl = (
+      process.env.BACKEND_URL && !process.env.BACKEND_URL.includes('localhost')
+        ? process.env.BACKEND_URL
+        : (process.env.RENDER_EXTERNAL_URL || (process.env.NODE_ENV === 'production' ? 'https://sehat-setu-api.onrender.com' : (process.env.BACKEND_URL || 'http://localhost:8000')))
+    ).replace(/\/+$/, '');
     const localDocUrl = `${backendUrl}/api/doctor/documents/file/${filename}`;
     let publicUrl = localDocUrl;
 
-    // Save copy of document buffer to local filesystem as bulletproof fallback
+    // Save copy of document buffer to local filesystem as fallback
     try {
       const uploadDir = path.join(process.cwd(), 'uploads', 'doctor-documents');
       if (!fs.existsSync(uploadDir)) {
@@ -134,11 +138,34 @@ export class DoctorService {
         });
 
         if (response.ok) {
-          publicUrl = `${projectUrl}/storage/v1/object/public/${bucket}/${storagePath}`;
+          // Generate signed URL valid for 30 days so admin can open the document directly from email
+          try {
+            const signRes = await fetch(`${projectUrl}/storage/v1/object/sign/${bucket}/${storagePath}`, {
+              method: 'POST',
+              headers: {
+                apikey: secretKey,
+                Authorization: `Bearer ${secretKey}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ expiresIn: 60 * 60 * 24 * 30 }),
+            });
+            if (signRes.ok) {
+              const signData = await signRes.json();
+              if (signData?.signedURL) {
+                publicUrl = `${projectUrl}/storage/v1${signData.signedURL}`;
+              }
+            }
+          } catch (signErr) {
+            console.warn('Could not generate signed URL, using direct Supabase path:', signErr);
+          }
+
+          if (!publicUrl || publicUrl === localDocUrl) {
+            publicUrl = `${projectUrl}/storage/v1/object/public/${bucket}/${storagePath}`;
+          }
           console.log(`Successfully stored document in Supabase bucket [${bucket}]: ${storagePath}`);
         } else {
           const errText = await response.text();
-          console.warn(`Supabase storage response non-200 (${response.status}): ${errText}. Using local backend document URL.`);
+          console.warn(`Supabase storage response non-200 (${response.status}): ${errText}. Using backend proxy URL.`);
         }
       } catch (error) {
         console.error('Error during Supabase document upload:', error);
