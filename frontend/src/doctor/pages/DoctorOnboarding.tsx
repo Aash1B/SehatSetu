@@ -34,6 +34,18 @@ import { getToken } from '../../auth/authStorage';
 import { DoctorProfileData } from '../types/profile.types';
 import BrandLogo from '../../common/components/BrandLogo';
 
+// Resolve the backend base URL the same way auth/api.ts does:
+// - In production (Vercel), VITE_API_BASE_URL is set to the Render backend URL.
+// - In local dev, it is empty so the Vite dev-server proxy handles /api/* requests.
+const getApiBase = (): string => {
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  if (envUrl && envUrl !== 'http://localhost:8000') {
+    return envUrl.replace(/\/+$/, '');
+  }
+  return '';
+};
+const API_BASE = getApiBase();
+
 const SPECIALIZATIONS = [
   'General Physician',
   'Cardiologist',
@@ -499,7 +511,7 @@ const DoctorOnboarding: React.FC = () => {
 
       // Also try to fetch existing profile from backend (in case of re-login)
       const token = getToken();
-      fetch(`/api/doctor/${user.id}/profile`, {
+      fetch(`${API_BASE}/api/doctor/${user.id}/profile`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       })
         .then(res => res.ok ? res.json() : null)
@@ -624,7 +636,7 @@ const DoctorOnboarding: React.FC = () => {
         formDataUpload.append('file', fileObj);
       }
 
-      const res = await fetch(`/api/doctor/${activeDocId}/documents/upload`, {
+      const res = await fetch(`${API_BASE}/api/doctor/${activeDocId}/documents/upload`, {
         method: 'POST',
         body: formDataUpload,
         headers: { Authorization: `Bearer ${getToken()}` },
@@ -660,7 +672,7 @@ const DoctorOnboarding: React.FC = () => {
         formDataUpload.append('documentType', 'profile-photo');
         formDataUpload.append('file', file);
 
-        const res = await fetch(`/api/doctor/${activeDocId}/documents/upload`, {
+        const res = await fetch(`${API_BASE}/api/doctor/${activeDocId}/documents/upload`, {
           method: 'POST',
           body: formDataUpload,
           headers: { Authorization: `Bearer ${getToken()}` },
@@ -716,7 +728,7 @@ const DoctorOnboarding: React.FC = () => {
           formDataUpload.append('documentType', docType);
           formDataUpload.append('file', fileObj);
 
-          const res = await fetch(`/api/doctor/${activeDocId}/documents/upload`, {
+          const res = await fetch(`${API_BASE}/api/doctor/${activeDocId}/documents/upload`, {
             method: 'POST',
             body: formDataUpload,
             headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -775,7 +787,7 @@ const DoctorOnboarding: React.FC = () => {
     // Save doctor onboarding data to PostgreSQL Database via NestJS API
     try {
       const token = getToken();
-      const response = await fetch(`/api/doctor/${activeDocId}/onboarding`, {
+      const response = await fetch(`${API_BASE}/api/doctor/${activeDocId}/onboarding`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
