@@ -2,7 +2,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useLocation }
 import { lazy, Suspense, Component, type ReactNode } from 'react';
 import { Provider } from 'react-redux';
 import { store } from './patient/store';
-import { useTranslation } from 'react-i18next';
 import './Patient.css';
 import ChatProvider from './chatbot/ChatProvider';
 import './chatbot/chatbot.css';
@@ -81,11 +80,18 @@ import { getToken, getUser } from './auth/authStorage';
 
 import PaymentTestPage from './payments/PaymentTestPage';
 
-const PatientLayout = () => (
-  <div className="patient-portal min-h-screen">
-    <Outlet />
-  </div>
-);
+const PatientLayout = () => {
+  const location = useLocation();
+  const showDashboardMenu = /^\/patient\/(dashboard|appointments|mch|medical|vitals|book|questionnaire|consultation)/.test(location.pathname);
+
+  return (
+    <div className="patient-portal min-h-screen">
+      <Sidebar />
+      <PatientMobileMenuButton visible={showDashboardMenu} />
+      <Outlet />
+    </div>
+  );
+};
 
 const RoleProtectedRoute = ({ role }: { role: 'PATIENT' | 'DOCTOR' }) => {
   const user = getUser();
@@ -134,9 +140,10 @@ import PWAUpdatePrompt from './common/components/PWAUpdatePrompt';
 import PWAInstallPrompt from './common/components/PWAInstallPrompt';
 import { LiquidLoader } from './common/components/LiquidLoader';
 import ErrorBoundary from './common/components/ErrorBoundary';
+import Sidebar from './patient/components/Sidebar';
+import PatientMobileMenuButton from './patient/components/PatientMobileMenuButton';
 
 function App() {
-  const { t } = useTranslation('common');
   return (
     <Provider store={store}>
       <ErrorBoundary>

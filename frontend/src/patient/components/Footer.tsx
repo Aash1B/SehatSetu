@@ -36,7 +36,7 @@ const Footer: React.FC = () => {
             </p>
           </div>
 
-          <div className="footer-right-links-wrapper" style={{ marginLeft: '0', marginRight: '120px' }}>
+          <div className="footer-right-links-wrapper" style={{ marginLeft: '0' }}>
             <div className="footer-links-col">
               <h4 className="footer-col-title">{t('connect')}</h4>
               <ul className="footer-links-list">

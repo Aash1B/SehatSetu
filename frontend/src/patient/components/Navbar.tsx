@@ -109,7 +109,7 @@ const Navbar: React.FC = () => {
         {/* Right: Language Selector & Actions */}
         <div className="landing-navbar-actions flex items-center gap-2 sm:gap-6 shrink-0">
           {/* Language Toggle */}
-          <div className="language-toggle flex items-center bg-slate-100/80 p-0.5 sm:p-1 rounded-full border border-slate-200/60" role="radiogroup" aria-label={t("selectLanguage")}>
+          <div className="language-toggle language-toggle-desktop flex items-center bg-slate-100/80 p-0.5 sm:p-1 rounded-full border border-slate-200/60" role="radiogroup" aria-label={t("selectLanguage")}>
             {supportedLanguages.map((lang) => (
               <button
                 key={lang.code}
@@ -126,6 +126,19 @@ const Navbar: React.FC = () => {
               </button>
             ))}
           </div>
+          <label className="language-select-mobile-label">
+            <span className="sr-only">{t("selectLanguage")}</span>
+            <select
+              className="language-select-mobile"
+              value={currentLang}
+              onChange={(event) => handleLanguageChange(event.target.value)}
+              aria-label={t("selectLanguage")}
+            >
+              {supportedLanguages.map((lang) => (
+                <option key={lang.code} value={lang.code}>{lang.code.toUpperCase()}</option>
+              ))}
+            </select>
+          </label>
 
           {!isAuthenticated && !isLandingPage && (
             <button
