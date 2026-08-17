@@ -194,22 +194,22 @@ export default function PatientLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-blue-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-blue-50 px-3 sm:px-4 py-6 sm:py-8">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 sm:mb-8">
           <Link to="/" className="inline-flex items-center">
             <BrandLogo
               className="gap-2"
               markWrapperClassName="w-8 h-8 rounded-xl bg-transparent flex items-center justify-center p-1.5"
-              wordmarkClassName="text-2xl font-extrabold tracking-tight"
+              wordmarkClassName="text-xl sm:text-2xl font-extrabold tracking-tight"
               accentClassName="text-orange-500 brand-title-accent"
             />
           </Link>
-          <p className="text-slate-500 mt-2">{t('patientLogin.portalLabel')}</p>
+          <p className="text-slate-500 text-xs sm:text-sm mt-1 sm:mt-2">{t('patientLogin.portalLabel')}</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
-          <h1 className="text-xl font-semibold text-slate-900 mb-6">{t('patientLogin.title')}</h1>
+        <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-5 sm:p-8">
+          <h1 className="text-lg sm:text-xl font-semibold text-slate-900 mb-4 sm:mb-6">{t('patientLogin.title')}</h1>
 
           {/* Tab Switcher */}
           <div className="flex gap-2 mb-6 p-1 bg-slate-100 rounded-lg">

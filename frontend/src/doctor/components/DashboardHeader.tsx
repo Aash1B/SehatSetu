@@ -25,9 +25,9 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   }, [doctor.imageUrl]);
 
   return (
-    <header className={cn("flex justify-between items-start mb-2", className)}>
+    <header className={cn("flex flex-col sm:flex-row justify-between items-start mb-4 sm:mb-6", className)}>
       <div>
-        <h1 className="text-5xl md:text-6xl lg:text-[58px] font-black tracking-tight flex items-center gap-2.5">
+        <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-[58px] font-black tracking-tight flex flex-wrap items-center gap-1.5 sm:gap-2.5">
           <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#FF9933] via-[#D4AC0D] to-[#138808] font-black inline-block">
             Namaste
           </span>
@@ -35,7 +35,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           <img
             src="/Nam.png"
             alt="Namaste"
-            className="w-28 h-28 md:w-32 md:h-32 lg:w-[130px] lg:h-[130px] object-contain inline-block -ml-6 align-middle transition-transform hover:scale-105"
+            className="w-12 h-12 sm:w-20 sm:h-20 md:w-28 md:h-28 lg:w-[120px] lg:h-[120px] object-contain inline-block -ml-2 sm:-ml-4 align-middle transition-transform hover:scale-105"
           />
         </h1>
       </div>

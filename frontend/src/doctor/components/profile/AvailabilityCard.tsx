@@ -245,7 +245,7 @@ const AvailabilityCard: React.FC<Props> = ({ availability, onSave, isSaving = fa
           <span className="text-base md:text-lg lg:text-xl font-black text-[#111144] uppercase tracking-wider block mb-2">Select Practicing Days</span>
 
           {/* 7 day chips */}
-          <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
+          <div className="grid grid-cols-7 gap-1 sm:gap-2">
             {ALL_DAYS.map(day => {
               const active = (schedule[day] || []).length > 0;
               return (
@@ -253,7 +253,7 @@ const AvailabilityCard: React.FC<Props> = ({ availability, onSave, isSaving = fa
                   key={day}
                   type="button"
                   onClick={() => toggleDay(day)}
-                  className={`py-3.5 px-1 rounded-xl text-base sm:text-lg md:text-xl font-normal text-center transition-all cursor-pointer border ${active
+                  className={`py-2.5 sm:py-3.5 px-0.5 sm:px-1 rounded-xl text-[11px] sm:text-lg md:text-xl font-normal text-center transition-all cursor-pointer border ${active
                     ? 'bg-[#223362] text-white border-[#223362] shadow-md scale-[1.02]'
                     : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
                     }`}

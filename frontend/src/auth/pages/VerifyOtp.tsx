@@ -70,22 +70,22 @@ export default function VerifyOtp() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-blue-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-blue-50 px-3 sm:px-4 py-6 sm:py-8">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 sm:mb-8">
           <Link to="/" className="inline-flex items-center">
             <BrandLogo
               className="gap-2"
               markWrapperClassName="w-8 h-8 rounded-xl bg-transparent flex items-center justify-center p-1.5"
-              wordmarkClassName="text-2xl font-extrabold tracking-tight"
+              wordmarkClassName="text-xl sm:text-2xl font-extrabold tracking-tight"
               accentClassName="text-orange-500 brand-title-accent"
             />
           </Link>
-          <p className="text-slate-500 mt-2">{t('portalLabel')}</p>
+          <p className="text-slate-500 text-xs sm:text-sm mt-1 sm:mt-2">{t('portalLabel')}</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
-          <p className="text-sm text-slate-600 mb-6">
+        <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-5 sm:p-8">
+          <p className="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6">
             {t('instructions')} <span className="font-medium text-slate-900">{email}</span>. {t('enterCode')}
           </p>
 
@@ -106,7 +106,7 @@ export default function VerifyOtp() {
                 required
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-400 text-center text-2xl tracking-[0.5em]"
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-400 text-center text-xl sm:text-2xl tracking-[0.2em] sm:tracking-[0.5em]"
                 placeholder={t('codePlaceholder')}
               />
             </div>

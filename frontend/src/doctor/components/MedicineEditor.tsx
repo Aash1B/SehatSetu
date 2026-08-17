@@ -191,26 +191,26 @@ const MedicineEditor: React.FC<MedicineEditorProps> = ({ className, aiExtractedM
                     {[med.dosage, med.frequency, med.duration, med.timing].filter(Boolean).join(' · ') || 'Tap to fill details'}
                   </span>
                 </div>
-                <div className="absolute right-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute right-3 flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); removeMedicine(med.id); }}
-                    className="text-gray-400 hover:text-red-500 p-1"
+                    className="text-gray-400 hover:text-red-500 p-1.5 min-w-[32px] min-h-[32px] flex items-center justify-center"
                     title="Remove medicine"
                   >
-                    <X className="w-3.5 h-3.5" />
+                    <X className="w-4 h-4" />
                   </button>
                   {expandedId === med.id ? (
-                    <ChevronUp className="w-3.5 h-3.5 text-gray-400" />
+                    <ChevronUp className="w-4 h-4 text-gray-400" />
                   ) : (
-                    <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+                    <ChevronDown className="w-4 h-4 text-gray-400" />
                   )}
                 </div>
               </div>
 
               {/* Expanded detail fields */}
               {expandedId === med.id && (
-                <div className="bg-[#EEF2FF] border-t border-[#BFDBFE] px-3 py-2 grid grid-cols-2 gap-2 animate-in fade-in">
+                <div className="bg-[#EEF2FF] border-t border-[#BFDBFE] px-3 py-2 grid grid-cols-1 sm:grid-cols-2 gap-2 animate-in fade-in">
                   <div className="col-span-2">
                     <label className="block text-[10px] font-semibold text-[#1E40AF] uppercase mb-0.5">Medicine Name</label>
                     <input

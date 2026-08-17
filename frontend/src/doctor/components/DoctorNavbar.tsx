@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { toggleSidebar } from '../../patient/store/uiSlice';
 import BrandLogo from '../../common/components/BrandLogo';
 import { getToken, getUser } from '../../auth/authStorage';
 import type { Doctor } from '../../types';
@@ -16,6 +18,7 @@ export interface DoctorNavbarProps {
 
 const DoctorNavbar: React.FC<DoctorNavbarProps> = ({ doctor }) => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const storedUser = getUser();
   const authName = storedUser?.fullName
     ? (storedUser.fullName.startsWith('Dr.') ? storedUser.fullName : `Dr. ${storedUser.fullName}`)
@@ -44,17 +47,33 @@ const DoctorNavbar: React.FC<DoctorNavbarProps> = ({ doctor }) => {
   const imageUrl = doctor?.imageUrl || fetchedImage;
 
   return (
-    <header className="h-[80px] px-8 bg-white border-b border-slate-200 flex items-center justify-between sticky top-0 z-40 w-full shrink-0 shadow-xs font-sans">
-      {/* Left: Spacer (Logo resides in the sidebar top) */}
-      <div className="flex-1" />
+    <header className="h-[64px] sm:h-[80px] px-3 sm:px-6 md:px-8 bg-white border-b border-slate-200 flex items-center justify-between sticky top-0 z-40 w-full shrink-0 shadow-xs font-sans gap-2">
+      {/* Left: Mobile Hamburger Menu & Logo */}
+      <div className="flex items-center gap-2 flex-1">
+        <button
+          type="button"
+          onClick={() => dispatch(toggleSidebar())}
+          className="md:hidden p-2 rounded-xl text-slate-700 hover:bg-slate-100 transition border-none bg-transparent cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center"
+          aria-label="Open Navigation Menu"
+        >
+          <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
 
-      {/* Center: DOCTOR PORTAL */}
-      <div className="flex-1 flex items-center justify-center">
+        <div className="md:hidden">
+          <BrandLogo showWordmark={false} markWrapperClassName="w-8 h-8 rounded-lg bg-transparent flex items-center justify-center p-0.5" />
+        </div>
+      </div>
+
+      {/* Center: DOCTOR PORTAL Title */}
+      <div className="flex items-center justify-center">
         <span
-          className="text-xl md:text-2xl font-extrabold uppercase tracking-widest"
+          className="text-xs sm:text-base md:text-2xl font-extrabold uppercase tracking-wider sm:tracking-widest truncate"
           style={{
             color: '#223382',
-            letterSpacing: '2.5px',
             display: 'inline-block'
           }}
         >
@@ -67,10 +86,10 @@ const DoctorNavbar: React.FC<DoctorNavbarProps> = ({ doctor }) => {
         <button
           type="button"
           onClick={() => navigate('/doctor/profile')}
-          className="flex items-center gap-3 px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 rounded-full transition-all cursor-pointer shadow-xs"
+          className="flex items-center gap-2 sm:gap-3 p-1 sm:px-4 sm:py-2 bg-white hover:bg-slate-50 border border-slate-200 rounded-full transition-all cursor-pointer shadow-xs min-h-[40px]"
           title="View Doctor Profile"
         >
-          <div className="w-10 h-10 rounded-full bg-[#111144] overflow-hidden flex items-center justify-center shrink-0 border border-slate-200">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#111144] overflow-hidden flex items-center justify-center shrink-0 border border-slate-200">
             {imageUrl && !imageLoadFailed ? (
               <img
                 src={imageUrl}
@@ -85,7 +104,7 @@ const DoctorNavbar: React.FC<DoctorNavbarProps> = ({ doctor }) => {
               </svg>
             )}
           </div>
-          <span className="text-base font-extrabold text-slate-900 pr-1 max-w-[160px] truncate">
+          <span className="hidden sm:inline-block text-sm sm:text-base font-extrabold text-slate-900 pr-1 max-w-[120px] md:max-w-[160px] truncate">
             {displayName}
           </span>
         </button>

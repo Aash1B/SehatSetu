@@ -163,7 +163,7 @@ const ConsultationsList: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen w-screen bg-[#F8FAFC]">
+      <div className="flex items-center justify-center h-screen w-full bg-[#F8FAFC]">
         <LiquidLoader text="Loading appointments" />
       </div>
     );
@@ -174,7 +174,7 @@ const ConsultationsList: React.FC = () => {
       <DoctorSidebar />
       <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#F8FAFC]">
         <DoctorNavbar />
-        <main className="flex-1 flex flex-col overflow-hidden px-8 md:px-10 pt-12 pb-10 bg-[#F8FAFC]">
+        <main className="flex-1 flex flex-col overflow-hidden px-4 sm:px-6 md:px-10 pt-4 sm:pt-12 pb-10 bg-[#F8FAFC]">
         <PageHeader 
           title="Patient Appointments" 
           onBack={() => navigate('/doctor/dashboard')}
@@ -183,7 +183,7 @@ const ConsultationsList: React.FC = () => {
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           <div className="w-full space-y-4 pb-12">
               <>
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                   <h2 className="text-xl font-extrabold text-slate-900">Upcoming Appointments</h2>
 
                   {/* Filter Icon + Popup */}

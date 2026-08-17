@@ -30,21 +30,21 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-blue-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-blue-50 px-3 sm:px-4 py-6 sm:py-8">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 sm:mb-8">
           <Link to="/" className="inline-flex items-center">
             <BrandLogo
               className="gap-2"
               markWrapperClassName="w-8 h-8 rounded-xl bg-transparent flex items-center justify-center p-1.5"
-              wordmarkClassName="text-2xl font-extrabold tracking-tight"
+              wordmarkClassName="text-xl sm:text-2xl font-extrabold tracking-tight"
               accentClassName="text-orange-500 brand-title-accent"
             />
           </Link>
-          <p className="text-slate-500 mt-2">{forgotT('title')}</p>
+          <p className="text-slate-500 text-xs sm:text-sm mt-1 sm:mt-2">{forgotT('title')}</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
+        <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-5 sm:p-8">
           {submitted ? (
             <div className="text-center">
               <p className="text-sm text-slate-700">{message}</p>

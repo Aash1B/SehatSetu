@@ -61,21 +61,21 @@ navigate('/verify-otp', { state: { email, role: 'DOCTOR' } });
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#fff7ed] via-[#fed7aa] to-[#fb923c] px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#fff7ed] via-[#fed7aa] to-[#fb923c] px-3 sm:px-4 py-6 sm:py-12">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 sm:mb-8">
           <Link to="/" className="inline-flex items-center">
             <BrandLogo
               className="gap-2"
-              markWrapperClassName="w-9 h-9 rounded-lg bg-transparent flex items-center justify-center p-1.5"
-              wordmarkClassName="text-3xl font-extrabold tracking-tight"
+              markWrapperClassName="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-transparent flex items-center justify-center p-1.5"
+              wordmarkClassName="text-2xl sm:text-3xl font-extrabold tracking-tight"
               accentClassName="text-orange-500 brand-title-accent"
             />
           </Link>
-          <p className="text-slate-800 font-bold text-lg mt-2">Create your Doctor account</p>
+          <p className="text-slate-800 font-bold text-base sm:text-lg mt-1 sm:mt-2">Create your Doctor account</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
+        <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-5 sm:p-8">
           {error && (
             <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-600 text-sm">{error}</div>
           )}

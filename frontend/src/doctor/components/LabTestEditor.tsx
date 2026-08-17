@@ -135,12 +135,12 @@ const LabTestEditor: React.FC<LabTestEditorProps> = ({ className }) => {
               ) : (
                 <>
                   <span className={cn("flex-1", test.isAi && "text-[#F98513]")}>{test.text}</span>
-                  <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
-                    <button onClick={() => startEdit(test)} className="text-gray-400 hover:text-blue-500 p-1">
-                      <Edit2 className="w-3.5 h-3.5" />
+                  <div className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 flex items-center gap-1 transition-opacity">
+                    <button onClick={() => startEdit(test)} className="text-gray-400 hover:text-blue-500 p-1.5 min-w-[32px] min-h-[32px] flex items-center justify-center">
+                      <Edit2 className="w-4 h-4" />
                     </button>
-                    <button onClick={() => removeTest(test.id)} className="text-gray-400 hover:text-red-500 p-1">
-                      <X className="w-3.5 h-3.5" />
+                    <button onClick={() => removeTest(test.id)} className="text-gray-400 hover:text-red-500 p-1.5 min-w-[32px] min-h-[32px] flex items-center justify-center">
+                      <X className="w-4 h-4" />
                     </button>
                   </div>
                 </>

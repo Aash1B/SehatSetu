@@ -298,7 +298,7 @@ const MCHPage: React.FC = () => {
       </aside>
 
       {/* Main content */}
-      <main className="mch-main" style={{ flex: 1, padding: '28px 32px', overflowY: 'auto', maxWidth: 'calc(100vw - 220px)' }}>
+      <main className="mch-main min-w-0" style={{ flex: 1, padding: '16px', overflowY: 'auto', maxWidth: '100%' }}>
         {error && <div style={{ background: '#fee2e2', color: '#991b1b', padding: '12px 16px', borderRadius: 8, marginBottom: 16, fontSize: 14 }}>{error}</div>}
 
         {tab === 'overview' && <OverviewTab overview={overview} t={t} setTab={setTab} setSelectedPregnancy={setSelectedPregnancy} setSelectedChild={setSelectedChild} pregnancies={pregnancies} children={children} />}

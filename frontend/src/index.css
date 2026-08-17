@@ -198,3 +198,33 @@ body:lang(hi) {
     opacity: 0;
   }
 }
+
+/* Global Mobile Responsiveness Utilities */
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Responsive Table Wrapper */
+.table-responsive-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Break words for long medical info, IDs, emails, doctor names */
+.break-words-anywhere {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Safe area padding utilities for mobile PWAs */
+.safe-area-pb {
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+.safe-area-pt {
+  padding-top: max(16px, env(safe-area-inset-top));
+}
+

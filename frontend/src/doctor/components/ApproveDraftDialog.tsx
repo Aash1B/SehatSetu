@@ -38,23 +38,23 @@ const ApproveDraftDialog: React.FC<ApproveDraftDialogProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in-95">
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50">
-          <h2 className="text-xl font-bold text-deep-space flex items-center gap-2">
-            <CheckCircle className="w-6 h-6 text-green-500" />
-            Approve EHR Draft
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in-95 max-h-[90vh] flex flex-col">
+        <div className="p-4 sm:p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50 shrink-0">
+          <h2 className="text-lg sm:text-xl font-bold text-deep-space flex items-center gap-2">
+            <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-500 shrink-0" />
+            <span>Approve EHR Draft</span>
           </h2>
           <button
             onClick={handleClose}
-            className="w-8 h-8 rounded-full hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors cursor-pointer shrink-0"
             aria-label="Close"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-6">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1">
           <p className="text-gray-600 mb-2 text-sm">
             Approve the AI-drafted EHR record for{' '}
             <strong>{patientName || 'this patient'}</strong>?
@@ -70,18 +70,18 @@ const ApproveDraftDialog: React.FC<ApproveDraftDialogProps> = ({
             </p>
           )}
 
-          <div className="flex gap-4">
+          <div className="flex flex-col-reverse sm:flex-row gap-2.5 sm:gap-4">
             <button
               onClick={handleClose}
               disabled={isSubmitting}
-              className="flex-1 py-3 rounded-xl border border-gray-200 text-deep-space font-bold hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50"
+              className="w-full sm:flex-1 py-3 rounded-xl border border-gray-200 text-deep-space font-bold hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50 min-h-[44px]"
             >
               Cancel
             </button>
             <button
               onClick={handleConfirm}
               disabled={isSubmitting}
-              className="flex-1 py-3 rounded-xl bg-[#9BACD8] text-slate-900 font-bold hover:bg-[#8ba0d2] transition-colors shadow-md flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
+              className="w-full sm:flex-1 py-3 rounded-xl bg-[#9BACD8] text-slate-900 font-bold hover:bg-[#8ba0d2] transition-colors shadow-md flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 min-h-[44px]"
             >
               {isSubmitting ? 'Approving…' : 'Confirm Approval'}
             </button>

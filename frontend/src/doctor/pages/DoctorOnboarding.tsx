@@ -808,52 +808,52 @@ const DoctorOnboarding: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-deadly-depths flex flex-col">
       {/* Top Bar Header */}
-      <header className="bg-deep-space text-white border-b border-white/10 px-6 py-4 flex items-center justify-between shadow-md">
-        <div className="flex items-center gap-3">
+      <header className="bg-deep-space text-white border-b border-white/10 px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between shadow-md gap-2">
+        <div className="flex items-center gap-2 sm:gap-3">
           <BrandLogo
             showWordmark={false}
-            markWrapperClassName="w-9 h-9 rounded-lg bg-transparent flex items-center justify-center p-1.5"
+            markWrapperClassName="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-transparent flex items-center justify-center p-1"
             markClassName="w-full h-full object-contain"
             alt=""
           />
           <div>
             <BrandLogo
               showMark={false}
-              wordmarkClassName="font-bold text-lg leading-tight tracking-tight text-white"
+              wordmarkClassName="font-bold text-base sm:text-lg leading-tight tracking-tight text-white"
               accentClassName="text-orange-400"
             />
-            <p className="text-xs text-white/60">Doctor Partner Onboarding & Profile Setup</p>
+            <p className="text-[10px] sm:text-xs text-white/60 truncate max-w-[180px] sm:max-w-none">Doctor Partner Onboarding & Profile Setup</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <span className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full bg-white/10 text-white/90">
-            <ShieldCheck className="w-4 h-4 text-emerald-400" /> All fields are mandatory
+        <div className="flex items-center gap-2">
+          <span className="hidden sm:inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full bg-white/10 text-white/90">
+            <ShieldCheck className="w-4 h-4 text-emerald-400" /> Mandatory Fields
           </span>
         </div>
       </header>
 
       {/* Main Container */}
-      <main className="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col gap-6">
+      <main className="flex-1 max-w-4xl w-full mx-auto p-3 sm:p-6 lg:p-8 flex flex-col gap-6">
 
         {/* Form & Stepper Container */}
         <div className="flex-1 flex flex-col gap-6">
 
           {/* Stepper Progress */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-slate-900">
-                Step {currentStep} of 4: {
-                  currentStep === 1 ? 'Personal Information' :
-                    currentStep === 2 ? 'Professional Credentials' :
-                      currentStep === 3 ? 'Clinic & Fees' : 'Verification Documents'
+          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs">
+            <div className="flex items-center justify-between mb-3 text-xs">
+              <span className="font-extrabold uppercase tracking-wider text-slate-900 truncate">
+                Step {currentStep}/4: {
+                  currentStep === 1 ? 'Personal Info' :
+                    currentStep === 2 ? 'Credentials' :
+                      currentStep === 3 ? 'Clinic & Fees' : 'Verification Docs'
                 }
               </span>
-              <span className="text-xs text-slate-900 font-bold">{currentStep * 25}% Completed</span>
+              <span className="text-slate-900 font-bold ml-2 shrink-0">{currentStep * 25}%</span>
             </div>
 
             {/* Step Bar - can only go back to completed steps */}
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
               {[1, 2, 3, 4].map(step => (
                 <div
                   key={step}

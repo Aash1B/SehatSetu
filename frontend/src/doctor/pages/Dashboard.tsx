@@ -142,7 +142,7 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen w-screen bg-[#F8FAFC]">
+      <div className="flex items-center justify-center h-screen w-full bg-[#F8FAFC]">
         <LiquidLoader text="Loading appointments" />
       </div>
     );
@@ -155,7 +155,7 @@ const Dashboard = () => {
       <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#F8FAFC]">
         <DoctorNavbar doctor={activeDoctor} />
 
-        <main className="flex-1 overflow-y-auto px-8 md:px-10 pt-2 pb-10 relative bg-[#F8FAFC]">
+        <main className="flex-1 overflow-y-auto px-4 sm:px-6 md:px-10 pt-2 pb-10 relative bg-[#F8FAFC]">
           <DashboardHeader
             doctor={{
               id: activeDoctor.id,
@@ -169,7 +169,7 @@ const Dashboard = () => {
           />
 
           {/* Stats Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8">
             <StatCard
               title="Today's Appointments"
               value={<span className="text-[#F98513]">{consultations.filter(c => c.status !== ConsultationStatus.COMPLETED && c.status !== ConsultationStatus.NO_SHOW).length}</span>}
@@ -186,13 +186,13 @@ const Dashboard = () => {
 
           {/* Main Area: Consultations */}
           <div className="w-full">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
               <div>
-                <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">Consultations</h2>
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">Consultations</h2>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                 {/* Date Filter */}
-                <div className="flex items-center gap-3 bg-[#9BACD8] px-5 md:px-6 py-3 md:py-3.5 rounded-2xl border border-[#9BACD8] shadow-2xs">
+                <div className="flex items-center gap-2 sm:gap-3 bg-[#9BACD8] px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 rounded-2xl border border-[#9BACD8] shadow-2xs text-xs sm:text-base">
                   <span className="text-base md:text-lg font-bold text-slate-900">Date:</span>
                   <input
                     type="date"
