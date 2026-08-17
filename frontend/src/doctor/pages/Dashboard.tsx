@@ -12,6 +12,7 @@ import { type DoctorProfile } from '../utils/doctorProfile';
 import { fetchConsultationSummary } from '../../common/services/aiApi';
 import { getToken, getUser } from '../../auth/authStorage';
 import { LiquidLoader } from '../../common/components/LiquidLoader';
+import { API_BASE_URL } from '../../patient/utils/constants';
 
 const getInitials = (name?: string) => {
   if (!name) return 'DR';
@@ -65,7 +66,7 @@ const Dashboard = () => {
       setLoading(true);
       try {
         const headers = { Authorization: `Bearer ${getToken()}` };
-        const profileResponse = await fetch('/api/doctors/me', { headers });
+        const profileResponse = await fetch(`${API_BASE_URL}/doctors/me`, { headers });
         if (!profileResponse.ok) throw new Error('Unable to load signed-in doctor profile');
         const profile = await profileResponse.json();
         // Always use the authenticated user's fullName from JWT storage — the API profile
@@ -81,7 +82,7 @@ const Dashboard = () => {
           imageUrl: profile.imageUrl || '',
         });
 
-        const res = await fetch('/api/appointments', { headers });
+        const res = await fetch(`${API_BASE_URL}/appointments`, { headers });
         if (res.ok) {
           const dbAppointments = await res.json();
           if (Array.isArray(dbAppointments)) {

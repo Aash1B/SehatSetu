@@ -14,6 +14,7 @@ import type { PatientProfile, TranscriptDTO, AIInsightDTO } from '../../types';
 import { ArrowLeft, Mic } from 'lucide-react';
 import { useLiveAudioTranscription } from '../../common/hooks/useLiveAudioTranscription';
 import { getToken } from '../../auth/authStorage';
+import { API_BASE_URL } from '../../patient/utils/constants';
 import LowBandwidthMode from '../../common/components/LowBandwidthMode';
 
 const VideoConsultation: React.FC = () => {
@@ -40,13 +41,13 @@ const VideoConsultation: React.FC = () => {
   React.useEffect(() => {
     (async () => {
       try {
-        const appointmentResponse = await fetch(`/api/appointments/${encodeURIComponent(consultationId)}`, {
+        const appointmentResponse = await fetch(`${API_BASE_URL}/appointments/${encodeURIComponent(consultationId)}`, {
           headers: { Authorization: `Bearer ${getToken()}` },
         });
         if (!appointmentResponse.ok) throw new Error('Unable to load consultation details');
         const appointmentData = await appointmentResponse.json();
         setAppointment(appointmentData);
-        const resp = await fetch(`/api/livekit/token?appointmentId=${encodeURIComponent(consultationId)}`, {
+        const resp = await fetch(`${API_BASE_URL}/livekit/token?appointmentId=${encodeURIComponent(consultationId)}`, {
           headers: { Authorization: `Bearer ${getToken()}` },
         });
         if (!resp.ok) throw new Error(`Unable to create video-room token (${resp.status})`);
@@ -68,7 +69,7 @@ const VideoConsultation: React.FC = () => {
     let cancelled = false;
     const loadConsultationCount = async () => {
       try {
-        const response = await fetch('/api/appointments', {
+        const response = await fetch(`${API_BASE_URL}/appointments`, {
           headers: { Authorization: `Bearer ${getToken()}` },
         });
         if (!response.ok) return;

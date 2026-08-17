@@ -111,16 +111,52 @@ export class DoctorController {
     const safeFilename = path.basename(filename);
     const filePath = path.join(process.cwd(), 'uploads', 'doctor-documents', safeFilename);
 
-    if (fs.existsSync(filePath)) {
-      const ext = safeFilename.split('.').pop()?.toLowerCase();
-      let contentType = 'application/pdf';
-      if (['jpg', 'jpeg'].includes(ext || '')) contentType = 'image/jpeg';
-      else if (ext === 'png') contentType = 'image/png';
-      else if (ext === 'webp') contentType = 'image/webp';
+    const ext = safeFilename.split('.').pop()?.toLowerCase();
+    let contentType = 'application/pdf';
+    if (['jpg', 'jpeg'].includes(ext || '')) contentType = 'image/jpeg';
+    else if (ext === 'png') contentType = 'image/png';
+    else if (ext === 'webp') contentType = 'image/webp';
 
+    if (fs.existsSync(filePath)) {
       res.setHeader('Content-Type', contentType);
       res.setHeader('Content-Disposition', `inline; filename="${safeFilename}"`);
       return res.sendFile(filePath);
+    }
+
+    // Attempt retrieval from Supabase Storage
+    const projectUrl = process.env.SUPABASE_URL?.replace(/\/+$/, '') || 'https://jxsfimnztuoorcpttikz.supabase.co';
+    const secretKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+    const bucket = process.env.SUPABASE_STORAGE_BUCKET || 'medical-reports';
+
+    if (secretKey && !secretKey.includes('placeholder')) {
+      const parts = safeFilename.split('-');
+      const possibleSafeDocId = parts[0];
+      const candidatePaths = [
+        `doctor-documents/${possibleSafeDocId}/${safeFilename}`,
+        `doctor-documents/${safeFilename}`,
+      ];
+
+      for (const storagePath of candidatePaths) {
+        try {
+          const downloadUrl = `${projectUrl}/storage/v1/object/authenticated/${bucket}/${storagePath}`;
+          const response = await fetch(downloadUrl, {
+            headers: {
+              apikey: secretKey,
+              Authorization: `Bearer ${secretKey}`,
+            },
+          });
+
+          if (response.ok) {
+            const arrayBuffer = await response.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            res.setHeader('Content-Type', contentType);
+            res.setHeader('Content-Disposition', `inline; filename="${safeFilename}"`);
+            return res.send(buffer);
+          }
+        } catch (e) {
+          // Continue trying other candidate paths
+        }
+      }
     }
 
     return res.status(404).send(`

@@ -10,6 +10,7 @@ import CurrentMedicinesCard from '../components/CurrentMedicinesCard';
 import AISummaryCard from '../components/AISummaryCard';
 import ReferralModal from '../components/ReferralModal';
 import { LiquidLoader } from '../../common/components/LiquidLoader';
+import { API_BASE_URL } from '../../patient/utils/constants';
 import { ChevronRight } from 'lucide-react';
 import { getToken } from '../../auth/authStorage';
 
@@ -38,7 +39,7 @@ const PatientDetails: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`/api/appointments/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/appointments/${id}`, {
           headers: { Authorization: `Bearer ${getToken()}` },
         });
         if (response.ok) {
@@ -46,7 +47,7 @@ const PatientDetails: React.FC = () => {
           setAppointment(data);
         } else {
           // If direct ID lookup fails, fetch all appointments and find matching record
-          const allRes = await fetch('/api/appointments', {
+          const allRes = await fetch(`${API_BASE_URL}/appointments`, {
             headers: { Authorization: `Bearer ${getToken()}` },
           });
           if (allRes.ok) {

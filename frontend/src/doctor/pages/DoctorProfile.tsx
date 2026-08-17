@@ -11,6 +11,7 @@ import { DoctorProfileData } from '../types/profile.types';
 import { getDoctorProfileData } from '../utils/doctorProfile';
 import { getToken } from '../../auth/authStorage';
 import { LiquidLoader } from '../../common/components/LiquidLoader';
+import { API_BASE_URL } from '../../patient/utils/constants';
 
 const DoctorProfile: React.FC = () => {
   const [profile, setProfile] = useState<DoctorProfileData | null>(null);
@@ -23,13 +24,13 @@ const DoctorProfile: React.FC = () => {
     setIsLoading(true);
     try {
       const storedProfile = getDoctorProfileData();
-      const response = await fetch('/api/doctors/me', {
+      const response = await fetch(`${API_BASE_URL}/doctors/me`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
       if (!response.ok) throw new Error('Unable to load doctor profile');
       const doctor = await response.json();
       // Also fetch the full availability record (canonical document source)
-      const availRes = await fetch(`/api/doctor/${doctor.id}/availability`, {
+      const availRes = await fetch(`${API_BASE_URL}/doctor/${doctor.id}/availability`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
       let freshDocs: any[] = [];
@@ -140,7 +141,7 @@ const DoctorProfile: React.FC = () => {
       if (pendingImage) {
         const imageFormData = new FormData();
         imageFormData.append('image', pendingImage);
-        const imageResponse = await fetch(`/api/doctor/${formData.id}/profile-image`, {
+        const imageResponse = await fetch(`${API_BASE_URL}/doctor/${formData.id}/profile-image`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${getToken()}` },
           body: imageFormData,
@@ -150,7 +151,7 @@ const DoctorProfile: React.FC = () => {
         profileToSave.photoUrl = uploadedImage.imageUrl;
       }
 
-      const response = await fetch(`/api/doctor/${formData.id}/profile`, {
+      const response = await fetch(`${API_BASE_URL}/doctor/${formData.id}/profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
         body: JSON.stringify({

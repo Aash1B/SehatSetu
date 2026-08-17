@@ -121,6 +121,7 @@ def create_application() -> FastAPI:
         """Protect non-public HTTP endpoints when an internal key is configured."""
         public_paths = {
             "/",
+            "/health",
             "/healthz",
             "/docs",
             "/openapi.json",
@@ -151,7 +152,8 @@ def create_application() -> FastAPI:
 
     @application.get("/health", include_in_schema=False)
     async def process_health() -> dict[str, str]:
-        return {"status": "healthy", "service": settings.app_name}
+        """Return a minimal public process-liveness response."""
+        return {"status": "ok"}
 
     @application.api_route(
         "/healthz",
@@ -198,6 +200,8 @@ def create_application() -> FastAPI:
         try:
             response = await call_next(request)
             response.headers["X-Request-ID"] = request_id
+            if request.url.path == "/health":
+                return response
             content_type = response.headers.get("content-type", "")
             if "application/json" not in content_type:
                 return response

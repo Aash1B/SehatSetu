@@ -42,7 +42,30 @@ export class AuthService {
   ) {
     const existingUser = await this.prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      throw new ConflictException('An account with this email already exists');
+      // If the existing account is already verified, reject the signup normally
+      if (existingUser.emailVerified) {
+        throw new ConflictException('An account with this email already exists');
+      }
+
+      // The account exists but was never verified (e.g. email delivery previously failed).
+      // Regenerate a fresh OTP, update the stored hash, and resend — do NOT create a
+      // duplicate user.  This lets the user complete verification without getting stuck.
+      this.logger.log(`Unverified account found for ${email} — resending OTP instead of creating duplicate`);
+      const otp = this.generateOtp();
+      const otpHash = await bcrypt.hash(otp, 10);
+      const otpExpiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
+
+      await this.prisma.user.update({
+        where: { id: existingUser.id },
+        data: { emailOtpHash: otpHash, emailOtpExpiresAt: otpExpiresAt },
+      });
+
+      await this.sendOtpEmail(email, existingUser.fullName, otp);
+
+      return {
+        message: 'A verification code has been sent to your email. Please check your inbox.',
+        email,
+      };
     }
 
     const passwordHash = await bcrypt.hash(password, 10);

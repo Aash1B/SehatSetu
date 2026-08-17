@@ -9,6 +9,7 @@ import ConsultationTimer from '../../doctor/components/ConsultationTimer';
 import PrescriptionViewModal from '../../common/components/PrescriptionViewModal';
 import { getToken } from '../../auth/authStorage';
 import LowBandwidthMode from '../../common/components/LowBandwidthMode';
+import { API_BASE_URL } from '../utils/constants';
 
 interface ConsultationPrescription {
   id: string;
@@ -67,7 +68,7 @@ const VideoConsultationPage: React.FC = () => {
         const authHeaders: Record<string, string> = rawToken ? { Authorization: `Bearer ${rawToken}` } : {};
         
         try {
-          const appointmentResponse = await fetch(`/api/appointments/${encodeURIComponent(consultationId)}`, { headers: authHeaders });
+          const appointmentResponse = await fetch(`${API_BASE_URL}/appointments/${encodeURIComponent(consultationId)}`, { headers: authHeaders });
           if (appointmentResponse.ok) {
             const appointmentData = await appointmentResponse.json() as ConsultationAppointment;
             setAppointment(appointmentData);
@@ -94,7 +95,7 @@ const VideoConsultationPage: React.FC = () => {
           console.warn('[Consultation] Could not load appointment details:', appErr);
         }
 
-        const resp = await fetch(`/api/livekit/token?appointmentId=${encodeURIComponent(consultationId)}`, {
+        const resp = await fetch(`${API_BASE_URL}/livekit/token?appointmentId=${encodeURIComponent(consultationId)}`, {
           headers: authHeaders,
         });
         if (!resp.ok) throw new Error(`${tErrors('videoRoomToken')} (${resp.status})`);
@@ -124,7 +125,7 @@ const VideoConsultationPage: React.FC = () => {
   const handleEndCall = async () => {
     setIsTimerRunning(false);
     try {
-      await fetch('/api/livekit/end-consultation', {
+      await fetch(`${API_BASE_URL}/livekit/end-consultation`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
         body: JSON.stringify({
@@ -146,7 +147,7 @@ const VideoConsultationPage: React.FC = () => {
         await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
       }
       try {
-        const response = await fetch(`/api/appointments/${encodeURIComponent(consultationId)}`, {
+        const response = await fetch(`${API_BASE_URL}/appointments/${encodeURIComponent(consultationId)}`, {
           headers: { Authorization: `Bearer ${getToken()}` },
         });
         const latest = response.ok ? await response.json() as ConsultationAppointment : null;

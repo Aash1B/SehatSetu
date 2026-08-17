@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import PrescriptionViewModal from '../../common/components/PrescriptionViewModal';
 import { generatePrescriptionDraft } from '../../common/services/aiApi';
 import { getToken, getUser } from '../../auth/authStorage';
+import { API_BASE_URL } from '../../patient/utils/constants';
 
 const extractSymptomsFromNotes = (notes: string): string[] => {
   const match = notes.match(/(?:^|\n)Symptoms:\s*(.+)/i);
@@ -24,7 +25,7 @@ const DoctorPrescription: React.FC = () => {
 
   useEffect(() => {
     if (id) {
-      fetch(`/api/appointments/${encodeURIComponent(id)}`, { headers: { Authorization: `Bearer ${getToken()}` } })
+      fetch(`${API_BASE_URL}/appointments/${encodeURIComponent(id)}`, { headers: { Authorization: `Bearer ${getToken()}` } })
         .then(async (response) => response.ok ? response.json() : Promise.reject())
         .then((appointment) => {
           const notes = appointment.ehrRecord?.notes || appointment.notes || '';

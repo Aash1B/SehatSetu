@@ -16,11 +16,35 @@ export class EhrService {
   private decryptRecord<T extends { diagnosis: string | null; notes: string | null; aiSummary: string | null }>(
     record: T,
   ): T {
+    let structuredData = (record as any).structuredData;
+    const rx = (record as any).appointment?.prescription;
+    if (rx && Array.isArray(rx.medicines) && rx.medicines.length > 0) {
+      const existingMeds = structuredData?.medications;
+      if (!existingMeds || (Array.isArray(existingMeds) && existingMeds.length === 0)) {
+        const meds = (rx.medicines as any[]).map((m: any) => {
+          if (typeof m === 'string') return m;
+          const parts = [
+            m.name,
+            m.dosage,
+            m.frequency ? `(${m.frequency})` : '',
+            m.timing ? `[${m.timing}]` : '',
+            m.duration ? `for ${m.duration}` : '',
+          ].filter(Boolean);
+          return parts.join(' ');
+        }).filter(Boolean);
+        structuredData = { ...(structuredData || {}), medications: meds };
+      }
+    }
+
+    const decryptedDiagnosis = this.encryption.decrypt(record.diagnosis);
+    const diagnosis = decryptedDiagnosis || rx?.diagnosis || (record as any).appointment?.healthConcern || null;
+
     return {
       ...record,
-      diagnosis: this.encryption.decrypt(record.diagnosis),
+      diagnosis,
       notes: this.encryption.decrypt(record.notes),
       aiSummary: this.encryption.decrypt(record.aiSummary),
+      ...(structuredData ? { structuredData } : {}),
     };
   }
 
@@ -135,6 +159,11 @@ export class EhrService {
         originalFileName: true,
         reportType: true,
         createdAt: true,
+      },
+    },
+    appointment: {
+      include: {
+        prescription: true,
       },
     },
   } as const;

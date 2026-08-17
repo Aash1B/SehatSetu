@@ -72,7 +72,24 @@ const EhrDraftDetail: React.FC = () => {
   const vitals = draft?.structuredData?.vitals && typeof draft.structuredData.vitals === 'object'
     ? Object.entries(draft.structuredData.vitals).filter(([, value]) => value !== null && value !== undefined && value !== '')
     : [];
-  const medications = Array.isArray(draft?.structuredData?.medications) ? draft!.structuredData!.medications as string[] : [];
+
+  const rawMeds = Array.isArray(draft?.structuredData?.medications) && draft!.structuredData!.medications.length > 0
+    ? draft!.structuredData!.medications
+    : (Array.isArray((draft as any)?.appointment?.prescription?.medicines)
+      ? (draft as any).appointment.prescription.medicines
+      : []);
+
+  const medications: string[] = rawMeds.map((med: any) => {
+    if (typeof med === 'string') return med;
+    const parts = [
+      med.name,
+      med.dosage,
+      med.frequency ? `(${med.frequency})` : '',
+      med.timing ? `[${med.timing}]` : '',
+      med.duration ? `for ${med.duration}` : '',
+    ].filter(Boolean);
+    return parts.join(' ');
+  }).filter(Boolean);
 
   if (loading) {
     return (

@@ -9,6 +9,7 @@ import { ConsultationStatus, Priority } from '../../types';
 import { getToken, getUser } from '../../auth/authStorage';
 import { SlidersHorizontal, Check } from 'lucide-react';
 import { LiquidLoader } from '../../common/components/LiquidLoader';
+import { API_BASE_URL } from '../../patient/utils/constants';
 
 // Mock Data
 const mockConsultations: ConsultationSummary[] = [
@@ -107,12 +108,12 @@ const ConsultationsList: React.FC = () => {
       setLoading(true);
       try {
         const headers = { Authorization: `Bearer ${getToken()}` };
-        const profileResponse = await fetch('/api/doctors/me', { headers });
+        const profileResponse = await fetch(`${API_BASE_URL}/doctors/me`, { headers });
         if (!profileResponse.ok) throw new Error('Unable to load signed-in doctor profile');
         const profile = await profileResponse.json();
         const doctorName = profile.name || profile.user?.fullName || signedInUser?.fullName || 'Doctor';
         setActiveDoctor({ id: profile.id, name: doctorName, initials: getInitials(doctorName), specialization: profile.specialty || 'General Physician' });
-        const res = await fetch('/api/appointments', { headers });
+        const res = await fetch(`${API_BASE_URL}/appointments`, { headers });
         if (res.ok) {
           const dbAppointments = await res.json();
           if (Array.isArray(dbAppointments) && dbAppointments.length > 0) {

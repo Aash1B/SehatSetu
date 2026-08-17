@@ -3,10 +3,11 @@
 // Fallback: Local NestJS backend proxy (/api/doctors)
 
 import { doctorsData, type Doctor } from '../data/doctorsData';
+import { API_BASE_URL } from '../utils/constants';
 
 const supabase: any = null;
 
-const API_BASE = '/api/doctors';
+const API_BASE = `${API_BASE_URL}/doctors`;
 
 export interface RecommendationResult {
   recommendedCategory: string;

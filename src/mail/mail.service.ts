@@ -1,5 +1,5 @@
 import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
+import { BrevoClient } from '@getbrevo/brevo';
 
 export interface AdminVerificationEmailData {
   doctorName: string;
@@ -18,51 +18,51 @@ export interface AdminVerificationEmailData {
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
-  private transporter?: nodemailer.Transporter;
+  private brevoClient?: BrevoClient;
 
-  private getTransporter(): nodemailer.Transporter {
-    if (this.transporter) {
-      return this.transporter;
+  private getBrevoClient(): BrevoClient {
+    if (this.brevoClient) {
+      return this.brevoClient;
     }
 
-    const user = (process.env.SMTP_USER || process.env.SMTP_EMAIL || '').trim();
-    const pass = process.env.SMTP_PASS || '';
-    if (!user || !pass) {
+    const apiKey = process.env.BREVO_API_KEY?.trim();
+    if (!apiKey) {
       throw new ServiceUnavailableException(
-        'Email service is not configured. Set SMTP_USER (or SMTP_EMAIL) and SMTP_PASS.',
+        'Email service is not configured. Set BREVO_API_KEY.',
       );
     }
 
-    const host = process.env.SMTP_HOST?.trim();
-    const service = process.env.SMTP_SERVICE?.trim() || (host ? undefined : 'gmail');
-    const port = Number(process.env.SMTP_PORT || 587);
-    if (!Number.isInteger(port) || port < 1 || port > 65535) {
-      throw new ServiceUnavailableException('SMTP_PORT must be a valid port number.');
+    const senderEmail = process.env.BREVO_SENDER_EMAIL?.trim();
+    if (!senderEmail) {
+      throw new ServiceUnavailableException(
+        'Email service is not configured. Set BREVO_SENDER_EMAIL.',
+      );
     }
 
-    const secure = process.env.SMTP_SECURE
-      ? process.env.SMTP_SECURE.toLowerCase() === 'true'
-      : port === 465;
-    const auth = { user, pass };
-
-    this.transporter = host
-      ? nodemailer.createTransport({ host, port, secure, auth })
-      : nodemailer.createTransport({ service, auth });
-
-    return this.transporter;
+    this.brevoClient = new BrevoClient({ apiKey });
+    return this.brevoClient;
   }
 
-  async sendMail(to: string, subject: string, html: string) {
-    const fromAddress = (process.env.SMTP_FROM || process.env.SMTP_USER || process.env.SMTP_EMAIL || '').trim();
+  async sendMail(to: string, subject: string, html: string): Promise<void> {
+    const senderEmail = process.env.BREVO_SENDER_EMAIL?.trim();
+    const senderName = (process.env.BREVO_SENDER_NAME || 'SehatSetu Medical Board').trim();
+
+    if (!senderEmail) {
+      this.logger.error('BREVO_SENDER_EMAIL is not configured');
+      throw new ServiceUnavailableException('Email service is unavailable. Please try again later.');
+    }
 
     try {
-      await this.getTransporter().sendMail({
-        from: `"SehatSetu Medical Board" <${fromAddress}>`,
-        to,
+      const client = this.getBrevoClient();
+      await client.transactionalEmails.sendTransacEmail({
+        sender: { name: senderName, email: senderEmail },
+        to: [{ email: to }],
         subject,
-        html,
+        htmlContent: html,
       });
+      this.logger.log(`Email sent successfully to ${to} via Brevo`);
     } catch (error) {
+      // Log the error message without exposing API key or secrets
       const details = error instanceof Error ? error.message : String(error);
       this.logger.error(`Failed to send email to ${to}: ${details}`);
       throw new ServiceUnavailableException('Email service is unavailable. Please try again later.');
@@ -70,8 +70,12 @@ export class MailService {
   }
 
   async sendAdminVerificationEmail(data: AdminVerificationEmailData) {
-    const adminEmail = process.env.ADMIN_EMAIL || process.env.SMTP_EMAIL || 'sehatsetu26@gmail.com';
-    const backendUrl = (process.env.BACKEND_URL || 'http://localhost:8000').replace(/\/+$/, '');
+    const adminEmail = process.env.ADMIN_EMAIL || process.env.BREVO_SENDER_EMAIL || 'sehatsetu26@gmail.com';
+    const backendUrl = (
+      process.env.BACKEND_URL && !process.env.BACKEND_URL.includes('localhost')
+        ? process.env.BACKEND_URL
+        : (process.env.RENDER_EXTERNAL_URL || (process.env.NODE_ENV === 'production' ? 'https://sehat-setu-api.onrender.com' : (process.env.BACKEND_URL || 'http://localhost:8000')))
+    ).replace(/\/+$/, '');
 
     const approveUrl = `${backendUrl}/api/doctor/approve?token=${data.token}`;
     const rejectUrl = `${backendUrl}/api/doctor/reject?token=${data.token}`;
