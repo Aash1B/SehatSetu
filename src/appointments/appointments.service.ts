@@ -363,7 +363,6 @@ export class AppointmentsService {
       return prisma.appointment.findMany({
         where: {
           doctor: { is: { userId } },
-          payment: { is: { status: 'PAID' } },
         },
         orderBy: { createdAt: 'desc' },
         include: { patient: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } }, prescription: true, ehrRecord: true },
@@ -384,7 +383,6 @@ export class AppointmentsService {
           : role === Role.DOCTOR
             ? {
                 doctor: { is: { userId } },
-                payment: { is: { status: 'PAID' } },
               }
             : { id: '__unauthorized__' }),
       },
@@ -538,7 +536,6 @@ export class AppointmentsService {
     const appointments = await prisma.appointment.findMany({
       where: {
         doctorId,
-        payment: { is: { status: 'PAID' } },
       },
       orderBy: { createdAt: 'desc' },
       include: {
