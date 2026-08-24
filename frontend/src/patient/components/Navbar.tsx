@@ -15,9 +15,29 @@ const Navbar: React.FC = () => {
   const { t, i18n } = useTranslation('navbar');
   const tCommon = (key: string) => i18n.t(key, { ns: 'common' });
   const currentPage = useSelector((state: RootState) => state.ui.currentPage);
-  const token = getToken();
-  const user = getUser();
-  const isAuthenticated = Boolean(token && user);
+  
+  const [authState, setAuthState] = useState(() => {
+    const token = getToken();
+    const user = getUser();
+    return { token, user, isAuthenticated: Boolean(token && user) };
+  });
+
+  useEffect(() => {
+    const handleAuthChange = () => {
+      const token = getToken();
+      const user = getUser();
+      setAuthState({ token, user, isAuthenticated: Boolean(token && user) });
+    };
+
+    window.addEventListener('auth-change', handleAuthChange);
+    window.addEventListener('storage', handleAuthChange);
+    return () => {
+      window.removeEventListener('auth-change', handleAuthChange);
+      window.removeEventListener('storage', handleAuthChange);
+    };
+  }, []);
+
+  const { isAuthenticated, user } = authState;
   const isDoctor = user?.role === 'DOCTOR';
   const currentLang = getCurrentLanguage();
   const isLandingPage = currentPage === 'landing';
@@ -191,21 +211,19 @@ const Navbar: React.FC = () => {
             )}
           </div>
 
-          {!isAuthenticated && !isLandingPage && (
+          {!isAuthenticated ? (
             <button
               type="button"
-              className="hidden sm:inline-flex items-center justify-center px-4 py-2 text-xs font-bold text-orange-600 border border-orange-500/40 hover:bg-orange-50 rounded-full transition cursor-pointer btn-sign-in border-2 border-orange-500"
+              className="inline-flex items-center justify-center px-3.5 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-full shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/30 transition-all transform active:scale-95 cursor-pointer border-none btn-sign-in"
               onClick={() => navigate('/patient/login')}
             >
               {t("signIn")}
             </button>
-          )}
-
-          {!isDoctor && (
+          ) : (
             <button
               type="button"
               className="inline-flex items-center justify-center px-3.5 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-full shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/30 transition-all transform active:scale-95 cursor-pointer border-none btn-get-started"
-              onClick={() => navigate('/patient/dashboard')}
+              onClick={() => navigate(isDoctor ? '/doctor/dashboard' : '/patient/dashboard')}
             >
               {t("dashboard")}
             </button>

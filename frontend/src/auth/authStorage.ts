@@ -14,6 +14,9 @@ export function saveAuth(accessToken: string, user: StoredUser) {
     localStorage.setItem(TOKEN_KEY, accessToken);
     localStorage.setItem(ALT_TOKEN_KEY, accessToken);
     localStorage.setItem(USER_KEY, JSON.stringify(user));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('auth-change'));
+    }
   } catch (err) {
     console.error('Failed to save auth to localStorage:', err);
   }
@@ -43,6 +46,9 @@ export function clearAuth() {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(ALT_TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('auth-change'));
+    }
   } catch (err) {
     console.error('Failed to clear auth from localStorage:', err);
   }
