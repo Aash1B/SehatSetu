@@ -25,6 +25,10 @@ export const clearTokens = (): void => {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(ALT_TOKEN_KEY);
   localStorage.removeItem(REFRESH_TOKEN_KEY);
+  localStorage.removeItem('sehatsetu_user');
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('auth-change'));
+  }
 };
 
 export const isTokenExpired = (token: string): boolean => {

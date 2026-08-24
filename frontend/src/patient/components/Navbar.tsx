@@ -214,7 +214,8 @@ const Navbar: React.FC = () => {
           {!isAuthenticated ? (
             <button
               type="button"
-              className="inline-flex items-center justify-center px-3.5 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-full shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/30 transition-all transform active:scale-95 cursor-pointer border-none btn-sign-in"
+              className="inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-extrabold text-black bg-[#F98513] hover:bg-[#e0740b] rounded-full shadow-md shadow-orange-500/20 hover:shadow-lg transition-all transform active:scale-95 cursor-pointer border-none btn-sign-in"
+              style={{ backgroundColor: '#F98513', color: '#000000' }}
               onClick={() => navigate('/patient/login')}
             >
               {t("signIn")}

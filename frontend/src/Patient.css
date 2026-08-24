@@ -1564,14 +1564,20 @@
   }
 
   .btn-sign-in {
-    background: transparent;
+    background: #F98513 !important;
     border: none;
     font-family: inherit;
     font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--color-text-main);
+    font-weight: 700;
+    color: #000000 !important;
     cursor: pointer;
-    padding: 8px 16px;
+    padding: 10px 24px;
+    border-radius: var(--radius-pill);
+    transition: all 0.2s ease;
+  }
+  .btn-sign-in:hover {
+    background: #e0740b !important;
+    color: #000000 !important;
   }
 
   .btn-get-started {

@@ -26,42 +26,23 @@ class ChunkErrorBoundary extends Component<ChunkErrorBoundaryProps, ChunkErrorBo
 
   componentDidCatch(error: any, errorInfo: any) {
     console.error('SehatSetu ChunkErrorBoundary caught an unhandled render error:', error, errorInfo);
-    const isChunkError =
-      error?.name === 'ChunkLoadError' ||
-      error?.message?.includes('Failed to fetch dynamically imported module') ||
-      error?.message?.includes('Loading chunk') ||
-      error?.message?.includes('import');
-
-    if (isChunkError && typeof window !== 'undefined') {
+    if (typeof window !== 'undefined') {
       const chunkRetry = sessionStorage.getItem('sehatsetu_chunk_retry');
       if (!chunkRetry) {
         sessionStorage.setItem('sehatsetu_chunk_retry', 'true');
         window.location.reload();
+      } else {
+        setTimeout(() => {
+          sessionStorage.removeItem('sehatsetu_chunk_retry');
+          window.location.reload();
+        }, 1500);
       }
     }
   }
 
   render() {
     if (this.state.hasError) {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6 text-center">
-          <div className="max-w-md bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-            <h2 className="text-xl font-bold text-slate-900 mb-2">Connecting to SehatSetu...</h2>
-            <p className="text-sm text-slate-600 mb-6">Updating application to the latest version. Please tap below to continue.</p>
-            <button
-              onClick={() => {
-                if (typeof window !== 'undefined') {
-                  sessionStorage.removeItem('sehatsetu_chunk_retry');
-                  window.location.reload();
-                }
-              }}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2.5 rounded-xl font-semibold transition-colors cursor-pointer"
-            >
-              Refresh Application
-            </button>
-          </div>
-        </div>
-      );
+      return <LiquidLoader fullScreen text="Loading SehatSetu..." />;
     }
     return this.props.children;
   }
