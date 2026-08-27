@@ -308,7 +308,7 @@ export const doctorsData: Doctor[] = [
     experience: '9+ Years Experience',
     hospital: 'Diabetes & Thyroid Clinic',
     location: 'Mumbai',
-    imageUrl: '/doctors/doctor-15.png',
+    imageUrl: '/doctors/doctor-15.webp',
     imagePosition: '50% 15%',
     fee: '₹850',
     availableToday: true,

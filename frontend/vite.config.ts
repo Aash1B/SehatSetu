@@ -66,9 +66,10 @@ export default defineConfig({
         ],
       },
       workbox: {
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
         skipWaiting: true,
         clientsClaim: true,
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest,woff,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest,woff,woff2,webp}'],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [
           /^\/api\//,
