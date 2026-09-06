@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { setCurrentPage } from '../patient/store/uiSlice';
 import Navbar from '../patient/components/Navbar';
+import Sidebar from '../patient/components/Sidebar';
 import Footer from '../patient/components/Footer';
 import FloatingEmergencyButton from '../patient/components/FloatingEmergencyButton';
 
@@ -248,6 +249,7 @@ const About: React.FC = () => {
 
   return (
     <div className="patient-portal about-page">
+      <Sidebar />
       <Navbar />
       <main>
         <section className="about-story-section" aria-labelledby="our-story-title">

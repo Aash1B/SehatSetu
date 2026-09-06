@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setCurrentPage } from '../store/uiSlice';
 import Navbar from '../components/Navbar';
-import Sidebar from '../components/Sidebar';
 import Footer from '../components/Footer';
 import FloatingEmergencyButton from '../components/FloatingEmergencyButton';
 import CustomSelect, { type OptionItem } from '../components/CustomSelect';
@@ -167,7 +166,6 @@ const DoctorSearchPage: React.FC = () => {
 
   return (
     <div className="all-doctors-page">
-      <Sidebar />
       <Navbar />
 
       <main className="doctors-page-main">

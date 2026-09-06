@@ -12,7 +12,10 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: [
         'logo.svg',
+        'favicon.svg',
         'favicon.ico',
+        'pwa-192x192.png',
+        'pwa-512x512.png',
         'apple-touch-icon.png',
         'maskable-icon-192x192.png',
         'maskable-icon-512x512.png',
@@ -63,9 +66,10 @@ export default defineConfig({
         ],
       },
       workbox: {
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
         skipWaiting: true,
         clientsClaim: true,
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest,woff,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest,woff,woff2,webp}'],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [
           /^\/api\//,

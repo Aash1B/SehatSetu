@@ -56,6 +56,17 @@ const DoctorSearchSection: React.FC = () => {
   const [hospitalFilter, setHospitalFilter] = useState("All");
   const [favorites, setFavorites] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [cardsPerView, setCardsPerView] = useState(() => (
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches ? 2 : 4
+  ));
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 639px)');
+    const syncCardsPerView = () => setCardsPerView(mediaQuery.matches ? 2 : 4);
+    syncCardsPerView();
+    mediaQuery.addEventListener('change', syncCardsPerView);
+    return () => mediaQuery.removeEventListener('change', syncCardsPerView);
+  }, []);
 
   useEffect(() => {
     fetchDoctors().then(docs => {
@@ -116,14 +127,15 @@ const DoctorSearchSection: React.FC = () => {
     return (b.reviewsCount || 0) - (a.reviewsCount || 0);
   });
 
-  const effectiveIndex = currentIndex < sortedDoctors.length ? currentIndex : 0;
+  const maxStartIndex = Math.max(0, sortedDoctors.length - cardsPerView);
+  const effectiveIndex = Math.min(currentIndex, maxStartIndex);
 
   const handlePrev = () => {
-    setCurrentIndex(prev => (prev > 0 ? prev - 1 : Math.max(0, sortedDoctors.length - 3)));
+    setCurrentIndex(prev => (prev > 0 ? prev - 1 : maxStartIndex));
   };
 
   const handleNext = () => {
-    setCurrentIndex(prev => (prev + 1 < sortedDoctors.length ? prev + 1 : 0));
+    setCurrentIndex(prev => (prev < maxStartIndex ? prev + 1 : 0));
   };
 
   const handleSearchSubmit = () => {
@@ -136,8 +148,8 @@ const DoctorSearchSection: React.FC = () => {
   };
 
   const visibleDoctors = searchTerm.trim()
-    ? sortedDoctors.slice(0, 4)
-    : sortedDoctors.slice(effectiveIndex, effectiveIndex + 4);
+    ? sortedDoctors.slice(0, cardsPerView)
+    : sortedDoctors.slice(effectiveIndex, effectiveIndex + cardsPerView);
 
   return (
     <section id="doctors" className="doctor-search-section">
