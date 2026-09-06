@@ -1,28 +1,12 @@
 <div align="center">
-  <table align="center" border="0" width="100%" background="./frontend/public/tech-med-bg.svg" style="border-radius:18px;">
-    <tr>
-      <td align="center" valign="middle">
-        <br />
-        <table align="center" border="0">
-          <tr>
-            <td valign="middle">
-              <img src="./frontend/public/logo.svg" alt="SehatSetu logo" width="58" />
-            </td>
-            <td valign="middle">
-              <font size="6"><b><font color="#ffffff">Sehat</font><font color="#2563EB">Setu</font></b></font>
-              <br />
-              <img src="./frontend/public/ecg-pulse.svg" alt="Animated Pulse" width="180" height="20" />
-            </td>
-          </tr>
-        </table>
-        <br />
-        <img src="./frontend/public/header-tagline-card.svg" alt="SehatSetu Tagline" width="100%" style="max-width:750px;" />
-        <br /><br />
-      </td>
-    </tr>
-  </table>
+  <br />
+  <img src="./frontend/public/header-logo-animated.svg" alt="SehatSetu Header Logo" width="380" />
+  <br /><br />
+  <img src="./frontend/public/header-tagline-card.svg" alt="AI & Machine Learning Powered Rural & Urban Healthcare Platform" width="100%" style="max-width:750px;" />
+  <br /><br />
 </div>
 <br />
+
 
 **SehatSetu** is an **AI and Machine Learning-powered healthcare platform**, built as a **Progressive Web App**, that reimagines how patients across India connect with certified doctors — closing the gap of distance, fragmented records, and language barriers with a single, intelligent digital bridge. It brings together telemedicine, automated clinical documentation, electronic health records, multilingual interaction, and personalized health guidance into one continuous experience, so that healthcare feels less like a series of disconnected visits and more like an ongoing relationship between patient and provider.
 
@@ -547,11 +531,21 @@ docker-compose up --build
 
 <p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
 
-## SehatSetu
+## 📬 Contact
 
-### *"A digital bridge to better healthcare."*
+This project was developed by:
 
-**🌱 Accessible Healthcare • 🤖 Intelligent Assistance • 🩺 Connected Care • 🇮🇳 Healthcare for Everyone**
+- [Aashi](https://github.com/Aash1B)
+- [Ananya Tamta](https://github.com/Ananya-2026)
+- [Kritagya Arora](https://github.com/Kritagyaaa)
+- [Shubham Katyan](https://github.com/shubhamkatyan1324)
+
+For any queries, feel free to open an issue in this repository.
+
+
+<p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
+
+
+
 
 </div>
-
