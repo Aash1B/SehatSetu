@@ -38,14 +38,17 @@
 
 ## 📖 Table of Contents
 
-- [Problem Statement](#-problem-statement)
-- [What is SehatSetu](#-how-it-works)
-- [Inside The SehatSetu](#-screenshots)
-- [Project Structure](#-tech-stack)
-- [System Architecture](#-project-structure)
+- [The Healthcare Problem](#-the-healthcare-problem)
+- [What is SehatSetu](#what-is-sehatsetu-)
+- [Inside the SehatSetu](#inside-the-sehatsetu)
+- [System Architecture](#-system-architecture)
+- [Project Structure](#-project-structure)
+- [Patient Experience](#patient-experience)
+- [Doctor Experience](#doctor-experience)
+- [Artificial Intelligence](#artificial-intelligence-in-sehatsetu)
+- [Electronic Health Records](#electronic-health-records)
+- [Multilingual Healthcare](#multilingual-healthcare)
 - [Getting Started](#-getting-started)
-- [Roadmap](#-roadmap)
-- [Contributing](#-contributing)
 - [Contact](#-contact)
 
 <p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
