@@ -26,9 +26,11 @@
 
 **SehatSetu** is an **AI and Machine Learning-powered healthcare platform**, built as a **Progressive Web App**, that reimagines how patients across India connect with certified doctors — closing the gap of distance, fragmented records, and language barriers with a single, intelligent digital bridge. It brings together telemedicine, automated clinical documentation, electronic health records, multilingual interaction, and personalized health guidance into one continuous experience, so that healthcare feels less like a series of disconnected visits and more like an ongoing relationship between patient and provider.
 
-
+🔗 **Live Demo:** [https://sehat-setu-ai.vercel.app]()
 
 <br />
+
+
 
 <p align="center">
   <img src="https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB" alt="React" />
@@ -49,6 +51,21 @@
 </p>
 
 <p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
+
+## 📖 Table of Contents
+
+- [Problem Statement](#-problem-statement)
+- [What is SehatSetu](#-how-it-works)
+- [Inside The SehatSetu](#-screenshots)
+- [Project Structure](#-tech-stack)
+- [System Architecture](#-project-structure)
+- [Getting Started](#-getting-started)
+- [Roadmap](#-roadmap)
+- [Contributing](#-contributing)
+- [Contact](#-contact)
+
+<p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
+
 
 ## <img src="./frontend/public/icon-warning-pulse.svg" width="28" height="28" valign="middle" /> The Healthcare Problem
 
@@ -86,36 +103,48 @@ SehatSetu is a digital healthcare platform that connects patients directly with 
 Beyond the consultation itself, SehatSetu functions as a continuous healthcare companion rather than a one-time service. Every prescription, medical report, and consultation record is stored in a centralized electronic health record, so a patient's medical history is available and organized for every future visit. The platform layers additional support on top of this — personalized diet recommendations based on the patient's condition, automated reminders for follow-ups and medication, and smart referrals to nearby hospitals when a case requires in-person or emergency attention. Together, these pieces make SehatSetu less of a video-calling app and more of a connected system that stays with the patient across their entire healthcare journey.
 
 <p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
+
 ## Inside the SehatSetu
 
 
 <table align="center">
   <tr>
-    <td align="center"><b>Home</b></td>
-    <td align="center"><b>Account</b></td>
+    <td align="center"><b>Patient Dashboard</b></td>
+    <td align="center"><b>Doctor Dashboard</b></td>
   </tr>
   <tr>
-    <td><img src="src/assets/Screenshots/home.png" width="450"/></td>
-    <td><img src="src/assets/Screenshots/account.png" width="450"/></td>
+    <td><img src="./frontend/public/Patient Dashboard.png" width="450" alt="Patient Dashboard"/></td>
+    <td><img src="./frontend/public/Doctor Dashboard.png" width="450" alt="Doctor Dashboard"/></td>
   </tr>
 
   <tr>
-    <td align="center"><b>Profile</b></td>
-    <td align="center"><b>Authentication</b></td>
+    <td align="center"><b>Find Doctors</b></td>
+    <td align="center"><b>AI Health Chatbot</b></td>
   </tr>
   <tr>
-    <td><img src="src/assets/Screenshots/profile.png" width="450"/></td>
-    <td><img src="src/assets/Screenshots/authentication.png" width="450"/></td>
+    <td><img src="./frontend/public/Find Doctors.png" width="450" alt="Find Doctors"/></td>
+    <td><img src="./frontend/public/Chat Bot.png" width="450" alt="AI Chatbot"/></td>
   </tr>
 
-   <tr>
-  <td colspan="2" align="center"><b>Creator Dashboard</b></td>
-</tr>
-<tr>
-  <td colspan="2" align="center">
-    <img src="src/assets/Screenshots/creat <img src="src/assets/Screenshots/creator dashboard.png" width="430"/>
-  </td>
-</tr>
+  <tr>
+    <td align="center"><b>Electronic Health Records (EHR)</b></td>
+    <td align="center"><b>Doctor EHR Management</b></td>
+  </tr>
+  <tr>
+    <td><img src="./frontend/public/EHR.png" width="450" alt="Patient EHR"/></td>
+    <td><img src="./frontend/public/EHR Doctor.png" width="450" alt="Doctor EHR"/></td>
+  </tr>
+
+   
+  </tr>
+  <tr>
+    <td align="center"><b>Emergency Care</b></td>
+    <td align="center"><b>Platform Overview</b></td>
+  </tr>
+  <tr>
+    <td><img src="./frontend/public/Emergency.png" width="450" alt="Emergency Care"/></td>
+    <td><img src="./frontend/public/Main image.png" width="450" alt="Platform Overview"/></td>
+  </tr>
 </table>
 <p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
 
@@ -158,7 +187,62 @@ SehatSetu uses a **multi-service architecture** where different technologies han
 
 <p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
 
+## 📁 Project Structure
 
+```text
+SehatSetu/
+├── ai-service/
+│   ├── app/
+│   │   ├── routers/
+│   │   ├── services/
+│   │   └── utils/
+│   ├── tests/
+│   ├── Dockerfile
+│   └── requirements.txt
+├── frontend/
+│   ├── public/
+│   ├── src/
+│   │   ├── auth/
+│   │   ├── chatbot/
+│   │   ├── common/
+│   │   ├── doctor/
+│   │   ├── i18n/
+│   │   ├── lib/
+│   │   ├── pages/
+│   │   ├── patient/
+│   │   ├── payments/
+│   │   ├── types/
+│   │   ├── utils/
+│   │   ├── App.tsx
+│   │   └── main.tsx
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── vite.config.ts
+├── prisma/
+│   ├── migrations/
+│   └── schema.prisma
+├── src/
+│   ├── abdm/
+│   ├── ai/
+│   ├── appointments/
+│   ├── auth/
+│   ├── chatbot/
+│   ├── doctor/
+│   ├── ehr/
+│   ├── livekit/
+│   ├── mch/
+│   ├── medical-reports/
+│   ├── patient/
+│   ├── payments/
+│   ├── app.module.ts
+│   └── main.ts
+├── docker-compose.yml
+├── Dockerfile
+├── package.json
+└── tsconfig.json
+```
+
+<p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
 
 ## <img src="./frontend/public/icon-patient-glow.svg" width="32" height="32" valign="middle" /> Patient Experience
 
@@ -332,6 +416,136 @@ The platform uses **Razorpay** for consultation payments. Other integrations sup
 
 <p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
 
+## 🚀 Getting Started
+
+Follow these instructions to set up and run **SehatSetu** locally on your development machine.
+
+---
+
+### 📋 Prerequisites
+
+Ensure you have the following installed on your system:
+- **Node.js** (v18.x or v20.x) & **npm**
+- **Python** (v3.10+)
+- **PostgreSQL** (v14+) or Supabase instance
+- **Docker & Docker Compose** *(Optional, for containerized deployment)*
+
+---
+
+### 1️⃣ Clone the Repository
+
+```bash
+git clone https://github.com/Aash1B/SehatSetu.git
+cd SehatSetu
+```
+
+---
+
+### 2️⃣ Environment Configuration
+
+Create your `.env` file from the provided sample template:
+
+```bash
+cp .env.example .env
+```
+
+Open `.env` and configure your local database connection and service credentials:
+
+```env
+PORT=8000
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/sehat_setu"
+JWT_SECRET="your-super-secret-jwt-key"
+AI_SERVICE_URL="http://localhost:8001"
+```
+
+---
+
+### 3️⃣ Install Dependencies
+
+#### **Backend & Root Dependencies**
+```bash
+npm install
+```
+
+#### **Frontend Dependencies**
+```bash
+cd frontend
+npm install
+cd ..
+```
+
+#### **AI Microservice Dependencies**
+```bash
+cd ai-service
+python -m venv .venv
+
+# On Windows:
+.venv\Scripts\activate
+
+# On macOS / Linux:
+source .venv/bin/activate
+
+pip install -r requirements.txt
+cd ..
+```
+
+---
+
+### 4️⃣ Database Migration & Seeding
+
+Generate the Prisma Client, run migrations, and seed initial data:
+
+```bash
+# Generate Prisma Client
+npx prisma generate
+
+# Apply migrations to database
+npx prisma migrate dev
+
+# Seed initial data
+npm run prisma:seed
+```
+
+---
+
+### 5️⃣ Run the Application
+
+#### **Option A: Run All Services Concurrently (Recommended)**
+```bash
+npm run dev
+```
+
+#### **Option B: Run Services Independently**
+- **NestJS Backend API Gateway:**
+  ```bash
+  npm run dev:backend
+  ```
+- **Vite React Frontend:**
+  ```bash
+  npm run dev:frontend
+  ```
+- **FastAPI AI Microservice:**
+  ```bash
+  npm run dev:ai
+  ```
+
+#### **Option C: Containerized with Docker**
+```bash
+docker-compose up --build
+```
+
+---
+
+### 🌐 Access Points
+
+| Service | Local URL |
+| :--- | :--- |
+| 💻 **Frontend Web App** | [`http://localhost:5173`](http://localhost:5173) |
+| ⚙️ **NestJS Backend API** | [`http://localhost:8000`](http://localhost:8000) |
+| 🤖 **FastAPI AI Service** | [`http://localhost:8001`](http://localhost:8001) |
+| 📄 **AI API Docs (Swagger)** | [`http://localhost:8001/docs`](http://localhost:8001/docs) |
+
+<p align="center"><img src="./frontend/public/divider-pulse.svg" alt="Section Divider" width="100%" /></p>
 
 ## SehatSetu
 
@@ -340,3 +554,4 @@ The platform uses **Razorpay** for consultation payments. Other integrations sup
 **🌱 Accessible Healthcare • 🤖 Intelligent Assistance • 🩺 Connected Care • 🇮🇳 Healthcare for Everyone**
 
 </div>
+

@@ -33,10 +33,11 @@
   <line x1="0" y1="8" x2="800" y2="8" class="bg-line"/>
 
   <!-- Animated ECG Wave Sweep Line -->
-  <path class="pulse-line" filter="url(#glow-divider)" d="M0,8 L360,8 L366,8 L371,2 L376,14 L381,-2 L386,18 L391,5 L396,8 L800,8" />
+  <path class="pulse-line" filter="url(#glow-divider)" d="M0,8 L370,8 L376,5 L382,8 L387,8 L392,12 L397,2 L400,8 L403,14 L408,8 L413,8 L420,5 L426,8 L800,8" />
 
   <!-- Animated Center Pulse Dot -->
-  <circle cx="381" cy="8" r="2.5" fill="#38bdf8" filter="url(#glow-divider)">
+  <circle cx="400" cy="8" r="2.5" fill="#38bdf8" filter="url(#glow-divider)">
     <animate attributeName="r" values="1.5;4;1.5" dur="1.5s" repeatCount="indefinite"/>
   </circle>
 </svg>
+

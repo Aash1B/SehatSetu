@@ -29,10 +29,11 @@
   </defs>
 
   <!-- Animated ECG Heartbeat Pulse Line -->
-  <path class="ecg-line" filter="url(#glow-effect)" d="M0,12 L60,12 L66,12 L72,3 L78,21 L84,0 L90,24 L96,8 L102,12 L200,12" />
+  <path class="ecg-line" filter="url(#glow-effect)" d="M0,12 L80,12 L85,8 L90,12 L94,17 L98,3 L100,12 L102,21 L108,7 L114,12 L200,12" />
 
   <!-- Animated Pulse Node -->
-  <circle cx="84" cy="0" r="3" fill="#38bdf8" filter="url(#glow-effect)">
+  <circle cx="100" cy="12" r="3" fill="#38bdf8" filter="url(#glow-effect)">
     <animate attributeName="r" values="2;4.5;2" dur="1.5s" repeatCount="indefinite"/>
   </circle>
 </svg>
+
