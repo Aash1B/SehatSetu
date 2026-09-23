@@ -6,9 +6,8 @@ import { useTranslation } from 'react-i18next';
 import type { RootState } from '../../patient/store';
 import { closeSidebar } from '../../patient/store/uiSlice';
 import { cn } from '../../lib/utils';
-import { getUser, clearAuth } from '../../auth/authStorage';
+import { clearAuth } from '../../auth/authStorage';
 import BrandLogo from '../../common/components/BrandLogo';
-import LanguageSwitcher from '../../components/LanguageSwitcher';
 
 export interface AshaSidebarProps {
   className?: string;
@@ -19,7 +18,6 @@ const AshaSidebar: React.FC<AshaSidebarProps> = ({ className }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation('asha');
   const isSidebarOpen = useSelector((state: RootState) => state.ui.isSidebarOpen);
-  const storedUser = getUser();
 
   const navItems = [
     { name: t('nav.dashboard'), path: '/asha/dashboard', icon: Home },
@@ -44,12 +42,14 @@ const AshaSidebar: React.FC<AshaSidebarProps> = ({ className }) => {
       {/* Brand Header */}
       <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <BrandLogo showWordmark={true} />
+          <BrandLogo
+            showWordmark={true}
+            wordmarkClassName="font-black text-slate-900 text-xl sm:text-2xl tracking-tight brand-title"
+            accentClassName="text-emerald-600 !text-emerald-600 font-black"
+            markWrapperClassName="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-transparent flex items-center justify-center p-0.5 shadow-none"
+          />
         </div>
         <div className="flex items-center gap-2">
-          <span className="hidden sm:inline-block text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-            ASHA
-          </span>
           <button
             type="button"
             onClick={() => dispatch(closeSidebar())}
@@ -61,20 +61,6 @@ const AshaSidebar: React.FC<AshaSidebarProps> = ({ className }) => {
         </div>
       </div>
 
-      {/* Worker Area Badge */}
-      <div className="mx-4 mt-4 p-3 bg-emerald-50/80 rounded-xl border border-emerald-100 flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
-          {(storedUser?.fullName || 'AS').substring(0, 2).toUpperCase()}
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-xs font-bold text-slate-900 truncate">
-            {storedUser?.fullName || 'ASHA Worker'}
-          </p>
-          <p className="text-[11px] text-emerald-700 font-medium truncate">
-            {storedUser?.ashaWorker?.assignedArea || storedUser?.ashaWorker?.village || t('portalTitle')}
-          </p>
-        </div>
-      </div>
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
@@ -98,14 +84,8 @@ const AshaSidebar: React.FC<AshaSidebarProps> = ({ className }) => {
         ))}
       </nav>
 
-      {/* Bottom Footer / Language Switcher & Logout */}
-      <div className="p-4 border-t border-slate-100 space-y-2.5 safe-area-pb">
-        <div className="flex items-center justify-between px-1">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-            {t('nav.language', 'Language')}
-          </span>
-          <LanguageSwitcher align="right" dropUp={true} />
-        </div>
+      {/* Bottom Footer / Logout */}
+      <div className="p-4 border-t border-slate-100 safe-area-pb">
         <button
           type="button"
           onClick={handleLogout}

@@ -278,7 +278,7 @@ const Dashboard = () => {
                   <ConsultationCard
                     key={consultation.id}
                     consultation={consultation}
-                    onViewPatient={() => navigate(`/doctor/patient/${consultation.patient.id}`)}
+                    onViewPatient={() => navigate(`/doctor/patient/${consultation.id}`)}
                     onViewSummary={async () => {
                       const text = `Patient ${consultation.patient.name}, ${consultation.patient.age}${consultation.patient.gender}, reports ${consultation.chiefComplaint}. No known drug allergies reported. Prior history includes routine wellness checkups.`;
                       setSummaryModalData({

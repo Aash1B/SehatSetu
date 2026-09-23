@@ -11,7 +11,6 @@ import {
   RefreshCw,
   PhoneCall,
   ChevronRight,
-  ShieldCheck,
 } from 'lucide-react';
 import AshaSidebar from '../components/AshaSidebar';
 import AshaNavbar from '../components/AshaNavbar';
@@ -80,10 +79,6 @@ export default function AshaDashboardPage() {
           {/* Welcome Banner */}
           <div className="bg-gradient-to-r from-emerald-800 via-teal-800 to-slate-900 rounded-3xl p-5 sm:p-7 text-white shadow-lg relative overflow-hidden">
             <div className="relative z-10 space-y-2">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-400/30">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>{t('portalTitle')}</span>
-              </div>
               <h2 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight">
                 {t('dashboard.welcome', { name: storedUser?.fullName || 'Health Worker' })}
               </h2>
@@ -98,7 +93,7 @@ export default function AshaDashboardPage() {
           </div>
 
           {loading ? (
-            <LiquidLoader fullScreen={false} text="Loading field dashboard..." />
+            <LiquidLoader fullScreen={false} text="Loading Asha dashboard..." />
           ) : error ? (
             <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-800 text-sm font-semibold flex items-center justify-between">
               <span>{error}</span>
@@ -204,14 +199,14 @@ export default function AshaDashboardPage() {
                 <button
                   type="button"
                   onClick={() => navigate('/asha/patients/new')}
-                  className="bg-white rounded-2xl p-4 sm:p-5 border border-emerald-200 shadow-2xs flex items-center justify-between hover:bg-emerald-50/50 transition cursor-pointer text-left group"
+                  className="bg-white rounded-2xl p-4 sm:p-5 border border-blue-200 shadow-2xs flex items-center justify-between hover:bg-blue-50/50 transition cursor-pointer text-left group"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
                       <UserPlus className="w-6 h-6" />
                     </div>
                     <div className="min-w-0">
-                      <h4 className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-emerald-700 transition truncate">
+                      <h4 className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-blue-700 transition truncate">
                         {t('nav.quickRegister')}
                       </h4>
                       <p className="text-xs text-slate-500 line-clamp-1">
@@ -219,7 +214,7 @@ export default function AshaDashboardPage() {
                       </p>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-emerald-600 transition shrink-0" />
+                  <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-blue-600 transition shrink-0" />
                 </button>
 
                 <button
@@ -293,7 +288,7 @@ export default function AshaDashboardPage() {
                   <button
                     type="button"
                     onClick={() => navigate('/asha/patients')}
-                    className="text-xs font-bold text-emerald-700 hover:text-emerald-800 border-none bg-transparent cursor-pointer"
+                    className="text-xs font-bold text-slate-500 hover:text-slate-700 border-none bg-transparent cursor-pointer transition-colors"
                   >
                     View Caseload →
                   </button>
@@ -312,7 +307,11 @@ export default function AshaDashboardPage() {
                           </p>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
-                          <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700">
+                          <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
+                            appt.status?.toUpperCase() === 'COMPLETED'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60'
+                              : 'bg-orange-50 text-habanero border border-orange-200/80'
+                          }`}>
                             {appt.status}
                           </span>
                         </div>

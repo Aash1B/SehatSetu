@@ -76,6 +76,7 @@ export class AppointmentsService {
         patient = await tx.patient.create({
           data: {
             userId: user.id,
+            name: data.patientName || user.fullName || null,
             gender: data.patientGender || null,
             allergies: [],
             chronicConditions: [],
@@ -85,6 +86,7 @@ export class AppointmentsService {
         patient = await tx.patient.update({
           where: { id: patient.id },
           data: {
+            ...((data.patientName || user.fullName) && { name: data.patientName || user.fullName }),
             ...(data.patientAge && { age: String(data.patientAge) }),
             ...(data.patientGender && { gender: data.patientGender }),
             ...(data.patientHeight && { height: String(data.patientHeight) }),
@@ -194,6 +196,7 @@ export class AppointmentsService {
           doctorId: doctor.id,
           scheduledAt: scheduledAt,
           status: 'PAYMENT_PENDING',
+          patientName: data.patientName || user.fullName || patient.name || null,
           patientAge: data.patientAge ? String(data.patientAge) : null,
           patientGender: data.patientGender || null,
           patientHeight: data.patientHeight ? String(data.patientHeight) : null,
@@ -360,7 +363,7 @@ export class AppointmentsService {
       }));
     }
     if (role === Role.DOCTOR) {
-      return prisma.appointment.findMany({
+      const docAppointments = await prisma.appointment.findMany({
         where: {
           doctor: { is: { userId } },
         },
@@ -372,6 +375,10 @@ export class AppointmentsService {
           bookedByAsha: { select: { workerCode: true, village: true, assignedArea: true, user: { select: { fullName: true } } } },
         },
       });
+      return docAppointments.map((app) => ({
+        ...app,
+        patientName: app.patientName || app.patient?.name || app.patient?.user?.fullName || null,
+      }));
     }
     return [];
   }
@@ -415,6 +422,7 @@ export class AppointmentsService {
     return {
       ...appointment,
       ehrRecord: role === Role.PATIENT ? redactEhrRecordForPatient(appointment.ehrRecord) : appointment.ehrRecord,
+      patientName: appointment.patientName || appointment.patient?.name || appointment.patient?.user?.fullName || null,
       patientAge: appointment.patientAge || appointment.patient?.age || ageFromDateOfBirth,
       patientGender: appointment.patientGender || appointment.patient?.gender || '',
       patientHeight: appointment.patientHeight || appointment.patient?.height || '',
