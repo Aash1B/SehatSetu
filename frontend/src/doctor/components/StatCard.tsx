@@ -11,6 +11,8 @@ export interface StatCardProps {
   iconColorClass?: string;
   badgeBgClass?: string;
   className?: string;
+  onClick?: () => void;
+  clickable?: boolean;
 }
 
 const StatCard: React.FC<StatCardProps> = ({
@@ -22,9 +24,28 @@ const StatCard: React.FC<StatCardProps> = ({
   iconColorClass = "text-[#223382]",
   badgeBgClass = "bg-[#fff6ed] border-[#ffedd5]",
   className,
+  onClick,
+  clickable = true,
 }) => {
+  const isInteractive = Boolean(onClick) || clickable;
+
   return (
-    <div className={cn("bg-white p-3.5 sm:p-4 md:p-5 rounded-2xl shadow-xs border border-slate-200/90 flex items-center justify-between gap-3 sm:gap-6 transition-all hover:shadow-md cursor-pointer min-h-[84px] sm:min-h-[90px] md:min-h-[100px]", className)}>
+    <div
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (onClick && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      className={cn(
+        "bg-white p-3.5 sm:p-4 md:p-5 rounded-2xl shadow-xs border border-slate-200/90 flex items-center justify-between gap-3 sm:gap-6 transition-all min-h-[84px] sm:min-h-[90px] md:min-h-[100px] text-left select-none",
+        isInteractive && "cursor-pointer hover:shadow-md hover:border-slate-300 active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-teal-500/20 group",
+        className
+      )}
+    >
       {/* Left: Icon Badge or Image + (Title & Subtitle below) */}
       <div className="flex items-center gap-3 sm:gap-5 min-w-0 flex-1">
         {imageSrc ? (
@@ -34,13 +55,20 @@ const StatCard: React.FC<StatCardProps> = ({
             className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 object-contain shrink-0"
           />
         ) : Icon ? (
-          <div className={cn("w-11 h-11 sm:w-14 sm:h-14 md:w-18 md:h-18 rounded-full flex items-center justify-center shrink-0 border", badgeBgClass)}>
+          <div className={cn("w-11 h-11 sm:w-14 sm:h-14 md:w-18 md:h-18 rounded-full flex items-center justify-center shrink-0 border transition-transform duration-200 group-hover:scale-105", badgeBgClass)}>
             <Icon className={cn("w-6 h-6 sm:w-7 sm:h-7 md:w-9 md:h-9", iconColorClass)} />
           </div>
         ) : null}
 
         <div className="flex flex-col justify-center min-w-0 flex-1">
-          <h3 className="text-sm sm:text-base md:text-lg font-extrabold text-slate-900 leading-tight truncate">{title}</h3>
+          <div className="flex items-center gap-1.5">
+            <h3 className="text-sm sm:text-base md:text-lg font-extrabold text-slate-900 leading-tight truncate">{title}</h3>
+            {onClick && (
+              <span className="text-[10px] font-semibold text-teal-600 bg-teal-50 px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity hidden sm:inline-block">
+                View →
+              </span>
+            )}
+          </div>
           <p className="text-xs sm:text-sm md:text-base text-slate-500 font-medium mt-0.5 sm:mt-1 line-clamp-2">{subtitle}</p>
         </div>
       </div>
