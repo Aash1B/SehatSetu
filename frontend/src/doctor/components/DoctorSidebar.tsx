@@ -95,7 +95,7 @@ const DoctorSidebar: React.FC<DoctorSidebarProps> = ({ className }) => {
         <button
           type="button"
           onClick={() => dispatch(closeSidebar())}
-          className="md:hidden absolute top-4 right-4 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
+          className="md:hidden absolute top-4 right-4 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center"
           aria-label="Close sidebar"
         >
           <X className="w-5 h-5" />
@@ -170,7 +170,7 @@ const DoctorSidebar: React.FC<DoctorSidebarProps> = ({ className }) => {
       </div>
 
       {/* Footer Sign Out Section */}
-      <div className="p-4 border-t border-slate-200 bg-white mt-auto shrink-0">
+      <div className="p-4 border-t border-slate-200 bg-white mt-auto shrink-0 safe-area-pb">
         <button
           onClick={handleLogout}
           title="Sign out"

@@ -37,7 +37,7 @@ export class AuthService {
     email: string,
     password: string,
     fullName: string,
-    role: 'PATIENT' | 'DOCTOR',
+    role: 'PATIENT' | 'DOCTOR' | 'ASHA',
     dataConsent: boolean,
   ) {
     const existingUser = await this.prisma.user.findUnique({ where: { email } });
@@ -112,6 +112,14 @@ export class AuthService {
             tags: ['English', 'Hindi'],
           },
         });
+      } else if (role === 'ASHA') {
+        await tx.ashaWorker.create({
+          data: {
+            userId: newUser.id,
+            workerCode: `ASHA-${newUser.id.substring(0, 6).toUpperCase()}`,
+            assignedArea: 'Assigned Health Area',
+          },
+        });
       }
 
       return newUser;
@@ -149,7 +157,7 @@ export class AuthService {
         emailOtpHash: null,
         emailOtpExpiresAt: null,
       },
-      include: { doctor: true, patient: true },
+      include: { doctor: true, patient: true, ashaWorker: true },
     });
 
     const authPayload = this.buildAuthResponse(updatedUser);
@@ -186,7 +194,7 @@ export class AuthService {
   async login(email: string, password: string) {
     const user = await this.prisma.user.findUnique({
       where: { email },
-      include: { doctor: true, patient: true },
+      include: { doctor: true, patient: true, ashaWorker: true },
     });
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -231,7 +239,7 @@ export class AuthService {
     return this.buildAuthResponse(user);
   }
 
-  async googleLogin(credential: string, role: 'PATIENT' | 'DOCTOR', dataConsent?: boolean) {
+  async googleLogin(credential: string, role: 'PATIENT' | 'DOCTOR' | 'ASHA', dataConsent?: boolean) {
     if (dataConsent === false) {
       throw new BadRequestException('You must consent to data processing to create an account.');
     }
@@ -512,7 +520,7 @@ export class AuthService {
   }
 
   // Phone Number Authentication
-  async sendPhoneOtp(phoneNumber: string, role: 'PATIENT' | 'DOCTOR') {
+  async sendPhoneOtp(phoneNumber: string, role: 'PATIENT' | 'DOCTOR' | 'ASHA') {
     // Store OTP in database with phone number
     const otp = this.generateOtp();
     const otpHash = await bcrypt.hash(otp, 10);
@@ -562,7 +570,7 @@ export class AuthService {
     };
   }
 
-  async verifyPhoneOtp(phoneNumber: string, otp: string, role: 'PATIENT' | 'DOCTOR') {
+  async verifyPhoneOtp(phoneNumber: string, otp: string, role: 'PATIENT' | 'DOCTOR' | 'ASHA') {
     const user = await this.prisma.user.findFirst({
       where: {
         phone: phoneNumber,
@@ -706,7 +714,7 @@ export class AuthService {
       id: string;
       email: string;
       fullName: string;
-      role: 'PATIENT' | 'DOCTOR';
+      role: 'PATIENT' | 'DOCTOR' | 'ASHA' | 'FACILITY_ADMIN';
       tokenVersion: number;
       accountStatus: string;
       avatarUrl: string | null;
@@ -715,19 +723,38 @@ export class AuthService {
     } | null>;
   }
 
-  private roleMismatchMessage(role: 'PATIENT' | 'DOCTOR') {
-    return role === 'DOCTOR'
-      ? 'This account is registered as a Doctor. Please use the Doctor login.'
-      : 'This account is registered as a Patient. Please use the Patient login.';
+  private verifyPhoneMatch(
+    phoneNumber: string,
+    user: {
+      phone?: string | null;
+    },
+  ) {
+    if (user.phone && user.phone !== phoneNumber) {
+      throw new UnauthorizedException('Phone number does not match this account.');
+    }
+  }
+
+  private roleMismatchMessage(role: 'PATIENT' | 'DOCTOR' | 'ASHA' | 'FACILITY_ADMIN') {
+    if (role === 'DOCTOR') {
+      return 'This account is registered as a Doctor. Please use the Doctor login.';
+    }
+    if (role === 'ASHA') {
+      return 'This account is registered as an ASHA Health Worker. Please use the ASHA login.';
+    }
+    if (role === 'FACILITY_ADMIN') {
+      return 'This account is registered as a Facility Admin. Please use the Facility login.';
+    }
+    return 'This account is registered as a Patient. Please use the Patient login.';
   }
 
   private buildAuthResponse(user: {
     id: string;
     email: string;
     fullName: string;
-    role: 'PATIENT' | 'DOCTOR';
+    role: 'PATIENT' | 'DOCTOR' | 'ASHA' | 'FACILITY_ADMIN';
     tokenVersion: number;
     doctor?: { degrees: string | null; experience: string | null; hospital: string | null; availability: unknown | null } | null;
+    ashaWorker?: { id: string; workerCode: string | null; assignedArea: string | null; village: string | null } | null;
   }) {
     const accessToken = this.jwtService.sign({ sub: user.id, role: user.role, ver: user.tokenVersion });
 
@@ -738,14 +765,15 @@ export class AuthService {
       role: user.role,
       accessToken,
       onboardingCompleted: this.isOnboardingCompleted(user),
+      ...(user.role === 'ASHA' && user.ashaWorker ? { ashaWorker: user.ashaWorker } : {}),
     };
   }
 
   private isOnboardingCompleted(user: {
-    role: 'PATIENT' | 'DOCTOR';
+    role: 'PATIENT' | 'DOCTOR' | 'ASHA' | 'FACILITY_ADMIN';
     doctor?: { degrees: string | null; experience: string | null; hospital: string | null; availability: unknown | null; profileCompleted?: boolean } | null;
   }) {
-    if (user.role === 'PATIENT') {
+    if (user.role === 'PATIENT' || user.role === 'ASHA' || user.role === 'FACILITY_ADMIN') {
       return true;
     }
 

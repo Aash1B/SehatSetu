@@ -38,5 +38,31 @@
   "learnMore": "ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ →",
   "home": "ಮನೆ",
   "dashboard": "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
-  "backToHome": "ಮನೆಗೆ ಹಿಂತಿರುಗಿ"
+  "backToHome": "ಮನೆಗೆ ಹಿಂತಿರುಗಿ",
+  "referral": {
+    "steps": {
+      "pending": "ಬಾಕಿ ಉಳಿದಿದೆ",
+      "scheduled": "ನಿಗದಿಯಾಗಿದೆ",
+      "visited": "ಭೇಟಿ ನೀಡಲಾಗಿದೆ",
+      "completed": "ಪೂರ್ಣಗೊಂಡಿದೆ",
+      "declined": "ತಿರಸ್ಕರಿಸಲಾಗಿದೆ"
+    },
+    "facilityTypes": {
+      "government": "ಸರ್ಕಾರಿ ಆಸ್ಪತ್ರೆ",
+      "private": "ಖಾಸಗಿ ಚಿಕಿತ್ಸಾಲಯ",
+      "specialty": "ವಿಶೇಷ ಕೇಂದ್ರ"
+    },
+    "referredBy": "ಶಿಫಾರಸು ಮಾಡಿದವರು",
+    "reason": "ಕಾರಣ",
+    "scheduledDate": "ನಿಗದಿತ ದಿನಾಂಕ",
+    "followUpNotes": "ಫಾಲೋ-ಅಪ್ ಟಿಪ್ಪಣಿಗಳು",
+    "advancePipeline": "ಸ್ಥಿತಿಯನ್ನು ಮುನ್ನಡೆಸಿ",
+    "markScheduled": "ನಿಗದಿಯಾಗಿದೆ ಎಂದು ಗುರುತಿಸಿ",
+    "markVisited": "ಭೇಟಿ ನೀಡಲಾಗಿದೆ ಎಂದು ಗುರುತಿಸಿ",
+    "markCompleted": "ಪೂರ್ಣಗೊಂಡಿದೆ ಎಂದು ಗುರುತಿಸಿ",
+    "updateStatusPrompt": "ರೆಫರಲ್ ವಿವರಗಳನ್ನು ನವೀಕರಿಸಿ",
+    "selectDate": "ಭೇಟಿಯ ದಿನಾಂಕ",
+    "addNotesOptional": "ಫಾಲೋ-ಅಪ್ / ಆಶಾ ಟಿಪ್ಪಣಿಗಳು (ಐಚ್ಛಿಕ)",
+    "myReferrals": "ಆಸ್ಪತ್ರೆ ರೆಫರಲ್‌ಗಳು"
+  }
 }

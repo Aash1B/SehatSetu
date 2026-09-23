@@ -1,0 +1,20 @@
+{
+  "title": "प्राथमिक आरोग्य केंद्र (PHC) ऑपरेशन्स पोर्टल",
+  "overview": "महत्त्वाचे आरोग्य आणि ऑपरेशन्स मेट्रिक्स",
+  "consultationsTitle": "सल्लामसलत",
+  "completed": "पूर्ण",
+  "total": "एकूण",
+  "referralsTitle": "येणारे संदर्भ (Referrals)",
+  "visited": "भेट दिली",
+  "highRiskTitle": "उच्च-जोखीम प्रकरणे",
+  "urgentFlags": "तातडीचे ट्रायज फ्लॅग्ज",
+  "diagnosticsTitle": "निदान चाचणी ऑर्डर्स",
+  "reviewed": "निकाल पुनरावलोकन केले",
+  "medicineShortagesTitle": "औषधांची टंचाई",
+  "outOfStock": "साठा संपला",
+  "lowStock": "कमी साठा",
+  "overdueTitle": "थकीत फॉलो-अप",
+  "remindersOverdue": "लसीकरण / ANC स्मरणपत्रे",
+  "inventoryTitle": "आरोग्य केंद्र औषध साठा आणि टंचाई देखरेख",
+  "inventorySubtitle": "थेट औषधालय साठा स्तर — रिअल-टाइममध्ये प्रमाण बदला"
+}

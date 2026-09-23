@@ -15,6 +15,8 @@ import { EmergencyHandlingService } from './services/emergency-handling.service'
 import { LabTestGuidanceService } from './services/lab-test-guidance.service';
 import { AiChatService, AiChatContext } from './services/ai-chat.service';
 import { MedicalConditionService, MedicalConditionResult } from './services/medical-condition.service';
+import { ReferralsService } from '../referrals/referrals.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 interface AuthenticatedUser {
   userId: string;
@@ -38,6 +40,8 @@ export class ChatbotService {
     private readonly labTestGuidanceService: LabTestGuidanceService,
     private readonly aiChatService: AiChatService,
     private readonly medicalConditionService: MedicalConditionService,
+    private readonly referralsService: ReferralsService,
+    private readonly prisma: PrismaService,
   ) {
     this.conversationService.startCleanup();
   }
@@ -102,6 +106,8 @@ export class ChatbotService {
       suggestedReplies.push(...emergencyResult.suggestedReplies);
       suggestedReplies.push('Call 108');
 
+      await this.tryCreateEmergencyReferral(user, dto.message, cards);
+
       const uniqueReplies = [...new Set(suggestedReplies)];
       return await this.buildResponse(
         conversation,
@@ -154,6 +160,7 @@ export class ChatbotService {
         cards.push(...emergencyResult.cards);
         suggestedReplies.push(...emergencyResult.suggestedReplies);
         suggestedReplies.push('Call 108');
+        await this.tryCreateEmergencyReferral(user, dto.message, cards);
         return await this.buildResponse(
           conversation,
           intentResponse,
@@ -496,5 +503,31 @@ export class ChatbotService {
     });
 
     return response;
+  }
+
+  private async tryCreateEmergencyReferral(
+    user?: AuthenticatedUser | null,
+    message?: string,
+    cards: ChatCard[] = [],
+  ) {
+    if (!user?.userId) return;
+    try {
+      const patient = await this.prisma.patient.findUnique({
+        where: { userId: user.userId },
+      });
+      if (patient) {
+        const topHospitalCard = cards.find((c: any) => c.title);
+        const hospitalName =
+          (topHospitalCard as any)?.title || 'District Emergency Hospital / Nearest PHC';
+        await this.referralsService.autoCreateEmergencyReferral({
+          patientId: patient.id,
+          recommendedFacility: hospitalName,
+          facilityType: 'GOVERNMENT',
+          reason: `Emergency triage escalation: ${(message || 'Acute emergency symptoms').slice(0, 150)}`,
+        });
+      }
+    } catch (err: any) {
+      this.logger.warn(`Failed auto-creating emergency referral: ${err?.message}`);
+    }
   }
 }

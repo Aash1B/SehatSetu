@@ -6,7 +6,13 @@ export interface StoredUser {
   id: string;
   email: string;
   fullName: string;
-  role: 'PATIENT' | 'DOCTOR';
+  role: 'PATIENT' | 'DOCTOR' | 'ASHA';
+  ashaWorker?: {
+    id: string;
+    workerCode: string | null;
+    assignedArea: string | null;
+    village: string | null;
+  } | null;
 }
 
 export function saveAuth(accessToken: string, user: StoredUser) {

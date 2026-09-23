@@ -68,5 +68,37 @@
   "noAppointments": "तुमच्याकडे {filter} अपॉइंटमेंट नाहीत.",
   "noUpcomingAppointments": "आगामी अपॉइंटमेंट नियोजित नाहीत.",
   "upcomingAppointments": "आगामी अपॉइंटमेंट",
-  "patientAppointments": "रुग्णांच्या अपॉइंटमेंट"
+  "patientAppointments": "रुग्णांच्या अपॉइंटमेंट",
+  "referral": {
+    "modalTitle": "रुग्णालय रेफरल तयार करा",
+    "patient": "रुग्ण",
+    "selectFacility": "लक्षित आरोग्य केंद्र",
+    "facilityType": "केंद्राचा प्रकार",
+    "clinicalReason": "रेफरलचे वैद्यकीय कारण",
+    "recommendedDate": "भेटीची शिफारस केलेली तारीख (पर्यायी)",
+    "additionalNotes": "आशा / फॉलो-अपसाठी सूचना (पर्यायी)",
+    "sendReferral": "रेफरल तयार करा",
+    "reasonRequired": "कृपया रेफरलचे कारण नमूद करा",
+    "creationFailed": "रेफरल तयार करण्यात अयशस्वी"
+  },
+  "diagnostics": {
+    "nameRequired": "कृपया चाचणीचे नाव प्रविष्ट करा",
+    "orderFailed": "निदान चाचणी ऑर्डर तयार करण्यात अयशस्वी",
+    "orderNewTest": "निदान चाचणीची ऑर्डर द्या",
+    "orderSubtitle": "साठी लॅब किंवा इमेजिंग चाचणीची विनंती करा",
+    "quickSelect": "मानक चाचणी द्रुत निवडा",
+    "testName": "चाचणीचे नाव",
+    "testType": "तपासणीचा प्रकार",
+    "instructions": "रुग्ण आणि प्रयोगशाळेसाठी सूचना (पर्यायी)",
+    "submitOrder": "चाचणी ऑर्डर द्या",
+    "activeOrders": "ऑर्डर केलेल्या चाचण्या आणि लॅब निकाल",
+    "noOrders": "या रुग्णासाठी अद्याप कोणत्याही चाचण्या ऑर्डर केलेल्या नाहीत.",
+    "reviewResultTitle": "क्लिनिकल निष्कर्ष / निदान सारांश नोंदवा",
+    "statusPending": "नमुना / चाचणी प्रलंबित",
+    "statusReportUploaded": "अहवाल अपलोड केला",
+    "statusReviewed": "पुनरावलोकन केले आणि EHR मध्ये सेव्ह केले",
+    "reviewFindings": "पुनरावलोकन करा आणि निष्कर्ष नोंदवा",
+    "saveToEhr": "रुग्ण EHR मध्ये निष्कर्ष सेव्ह करा",
+    "reviewPlaceholder": "क्लिनिकल निष्कर्ष, असामान्य बाबी किंवा पुढील सूचना लिहा..."
+  }
 }

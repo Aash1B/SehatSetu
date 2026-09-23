@@ -103,4 +103,21 @@ export class EmergencyHandlingService {
       suggestedReplies,
     };
   }
+
+  isEmergency(concern?: string | null, symptoms?: string[] | null, severity?: string | null, urgency?: string | null): boolean {
+    if (severity?.toLowerCase() === 'emergency' || urgency?.toLowerCase() === 'emergency') {
+      return true;
+    }
+    const text = [concern || '', ...(symptoms || [])].join(' ');
+    return this.detectEmergency(text);
+  }
+
+  getEmergencyReferralRecommendation(matchedEntities: string[] = []) {
+    return {
+      facilityType: 'GOVERNMENT',
+      recommendedFacility: 'District Emergency Hospital / Nearest PHC',
+      reason: `Acute emergency symptoms detected: ${matchedEntities.join(', ') || 'Critical triage priority'}`,
+    };
+  }
 }
+

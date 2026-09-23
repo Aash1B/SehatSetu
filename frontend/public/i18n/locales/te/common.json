@@ -38,5 +38,31 @@
   "learnMore": "మరింత తెలుసుకోండి →",
   "home": "హోమ్",
   "dashboard": "డాష్‌బోర్డ్",
-  "backToHome": "హోమ్‌కు తిరిగి వెళ్ళండి"
+  "backToHome": "హోమ్‌కు తిరిగి వెళ్ళండి",
+  "referral": {
+    "steps": {
+      "pending": "పెండింగ్‌లో ఉంది",
+      "scheduled": "షెడ్యూల్ చేయబడింది",
+      "visited": "సందర్శించారు",
+      "completed": "పూర్తయింది",
+      "declined": "తిరస్కరించబడింది"
+    },
+    "facilityTypes": {
+      "government": "ప్రభుత్వ ఆసుపత్రి",
+      "private": "ప్రైవేట్ క్లినిక్",
+      "specialty": "స్పెషాలిటీ సెంటర్"
+    },
+    "referredBy": "సిఫార్సు చేసిన వారు",
+    "reason": "కారణం",
+    "scheduledDate": "షెడ్యూల్ తేదీ",
+    "followUpNotes": "ఫాలో-అప్ నోట్స్",
+    "advancePipeline": "స్థితిని ముందుకు తీసుకెళ్లండి",
+    "markScheduled": "షెడ్యూల్ చేసినట్లు గుర్తించండి",
+    "markVisited": "సందర్శించినట్లు గుర్తించండి",
+    "markCompleted": "పూర్తయినట్లు గుర్తించండి",
+    "updateStatusPrompt": "రిఫరల్ వివరాలను నవీకరించండి",
+    "selectDate": "సందర్శన తేదీ",
+    "addNotesOptional": "ఆశా ఫాలో-అప్ నోట్స్ (ఐచ్ఛికం)",
+    "myReferrals": "ఆసుపత్రి రిఫరల్స్"
+  }
 }

@@ -38,5 +38,31 @@
   "learnMore": "अधिक जाणून घ्या →",
   "home": "होम",
   "dashboard": "डॅशबोर्ड",
-  "backToHome": "होमवर परत जा"
+  "backToHome": "होमवर परत जा",
+  "referral": {
+    "steps": {
+      "pending": "प्रलंबित",
+      "scheduled": "नियोजित",
+      "visited": "भेट दिली",
+      "completed": "पूर्ण झाले",
+      "declined": "नाकारले"
+    },
+    "facilityTypes": {
+      "government": "शासकीय रुग्णालय",
+      "private": "खाजगी क्लिनिक",
+      "specialty": "विशेष केंद्र"
+    },
+    "referredBy": "यांच्याद्वारे संदर्भित",
+    "reason": "कारण",
+    "scheduledDate": "नियोजित तारीख",
+    "followUpNotes": "फॉलो-अप नोंदी",
+    "advancePipeline": "स्थिती पुढे करा",
+    "markScheduled": "नियोजित चिन्हांकित करा",
+    "markVisited": "भेट दिली चिन्हांकित करा",
+    "markCompleted": "पूर्ण चिन्हांकित करा",
+    "updateStatusPrompt": "रेफरल तपशील अद्यतनित करा",
+    "selectDate": "नियोजित भेटीची तारीख",
+    "addNotesOptional": "फॉलो-अप / आशा नोंदी (पर्यायी)",
+    "myReferrals": "रुग्णालय रेफरल्स"
+  }
 }

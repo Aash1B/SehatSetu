@@ -16,9 +16,19 @@ import { DoctorsModule } from '../doctors/doctors.module';
 import { DoctorModule } from '../doctor/doctor.module';
 import { AppointmentsModule } from '../appointments/appointments.module';
 import { HospitalsModule } from '../hospitals/hospitals.module';
+import { ReferralsModule } from '../referrals/referrals.module';
+import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
-  imports: [DoctorsModule, DoctorModule, AppointmentsModule, HospitalsModule, AiModule],
+  imports: [
+    DoctorsModule,
+    DoctorModule,
+    AppointmentsModule,
+    HospitalsModule,
+    AiModule,
+    ReferralsModule,
+    PrismaModule,
+  ],
   controllers: [ChatbotController],
   providers: [
     ChatbotService,
@@ -33,6 +43,6 @@ import { HospitalsModule } from '../hospitals/hospitals.module';
     AiChatService,
     MedicalConditionService,
   ],
-  exports: [ChatbotService],
+  exports: [ChatbotService, EmergencyHandlingService],
 })
 export class ChatbotModule {}

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Pill, X, Plus, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { searchCatalog } from '../data/prescriptionCatalog';
+import MedicineAvailabilityInline from './MedicineAvailabilityInline';
 
 export interface StructuredMedicine {
   id: string;
@@ -185,11 +186,18 @@ const MedicineEditor: React.FC<MedicineEditorProps> = ({ className, aiExtractedM
                   aria-hidden="true"
                   className="absolute left-3 w-3.5 h-3.5 text-[#223382] shrink-0"
                 />
-                <div className="flex min-w-0 max-w-full items-center justify-start gap-2 whitespace-nowrap px-5">
-                  <span className={cn("text-sm font-semibold truncate", med.isAi ? "text-[#F98513]" : "text-deep-space")}>{med.name || <span className="italic text-gray-400">Unnamed</span>}</span>
-                  <span className="text-[11px] text-gray-500 truncate">
-                    {[med.dosage, med.frequency, med.duration, med.timing].filter(Boolean).join(' · ') || 'Tap to fill details'}
-                  </span>
+                <div className="flex min-w-0 max-w-full flex-col justify-start gap-1 px-5 pr-14">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={cn("text-sm font-semibold truncate", med.isAi ? "text-[#F98513]" : "text-deep-space")}>{med.name || <span className="italic text-gray-400">Unnamed</span>}</span>
+                    <span className="text-[11px] text-gray-500 truncate">
+                      {[med.dosage, med.frequency, med.duration, med.timing].filter(Boolean).join(' · ') || 'Tap to fill details'}
+                    </span>
+                  </div>
+                  {med.name && (
+                    <div>
+                      <MedicineAvailabilityInline medicineName={med.name} />
+                    </div>
+                  )}
                 </div>
                 <div className="absolute right-3 flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                   <button

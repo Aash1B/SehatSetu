@@ -148,8 +148,8 @@ const VideoConsultation: React.FC = () => {
               {appointment && <PatientMiniCard
                 patient={{
                   id: appointment.patient?.id || '',
-                  name: appointment.patient?.user?.fullName || appointment.patientName || 'Patient',
-                  initials: (appointment.patient?.user?.fullName || appointment.patientName || 'Patient').split(/\s+/).filter(Boolean).slice(0, 2).map((part: string) => part[0]).join('').toUpperCase(),
+                  name: appointment.patient?.name || appointment.patient?.user?.fullName || appointment.patientName || 'Patient',
+                  initials: (appointment.patient?.name || appointment.patient?.user?.fullName || appointment.patientName || 'Patient').split(/\s+/).filter(Boolean).slice(0, 2).map((part: string) => part[0]).join('').toUpperCase(),
                   age: Number(appointment.patient?.age || appointment.patientAge || 0),
                   gender: appointment.patient?.gender || appointment.patientGender || 'Other',
                   bloodGroup: appointment.patient?.bloodGroup || appointment.patientBloodGroup,
@@ -159,6 +159,9 @@ const VideoConsultation: React.FC = () => {
                 consultationCount={consultationCount}
                 consultationSummary={appointment.ehrRecord?.aiSummary || appointment.ehrRecord?.notes || appointment.notes}
                 chiefComplaint={appointment.healthConcern || appointment.symptoms?.[0] || 'General medical consultation'}
+                verifiedByAsha={appointment.verifiedByAsha}
+                verifiedByAshaAt={appointment.verifiedByAshaAt}
+                bookedByAsha={appointment.bookedByAsha}
               />}
               <div className="flex-1 flex flex-col gap-4 min-h-0">
                 <section className="rounded-2xl bg-[#9bacd8] p-3 shadow-sm border border-gray-200">

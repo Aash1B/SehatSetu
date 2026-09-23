@@ -38,6 +38,8 @@ export const namespaceList = [
   'bookingFlow',
   'verifyOtp',
   'mch',
+  'asha',
+  'facility',
 ] as const;
 
 const STORAGE_KEY = 'sehatsetu_language';
@@ -80,7 +82,7 @@ i18n
     },
     ns: namespaceList,
     defaultNS: 'common',
-    fallbackNS: ['common', 'navbar', 'footer', 'home', 'about', 'auth', 'buttons', 'forms', 'errors', 'bookingFlow', 'verifyOtp'],
+    fallbackNS: ['common', 'navbar', 'footer', 'home', 'about', 'auth', 'buttons', 'forms', 'errors', 'bookingFlow', 'verifyOtp', 'asha'],
     interpolation: {
       escapeValue: false,
     },

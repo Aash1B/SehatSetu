@@ -20,6 +20,10 @@ import { PatientModule } from './patient/patient.module';
 import { SagaModule } from './saga/saga.module';
 import { MchModule } from './mch/mch.module';
 import { SlotsModule } from './slots/slots.module';
+import { AshaModule } from './asha/asha.module';
+import { ReferralsModule } from './referrals/referrals.module';
+import { DiagnosticsModule } from './diagnostics/diagnostics.module';
+import { FacilitiesModule } from './facilities/facilities.module';
 
 @Module({
   imports: [
@@ -43,6 +47,10 @@ import { SlotsModule } from './slots/slots.module';
     SagaModule,
     MchModule,
     SlotsModule,
+    AshaModule,
+    ReferralsModule,
+    DiagnosticsModule,
+    FacilitiesModule,
   ],
   controllers: [HealthController],
 })

@@ -1,0 +1,20 @@
+{
+  "title": "প্রাথমিক স্বাস্থ্য কেন্দ্র (পিএইচসি) পরিচালনা পোর্টাল",
+  "overview": "প্রধান স্বাস্থ্য এবং অপারেশন মেট্রিক্স",
+  "consultationsTitle": "পরামর্শ",
+  "completed": "সম্পন্ন",
+  "total": "মোট",
+  "referralsTitle": "আগত রেফারেল",
+  "visited": "পরিদর্শন",
+  "highRiskTitle": "উচ্চ ঝুঁকিপূর্ণ ঘটনা",
+  "urgentFlags": "জরুরি ট্রায়াজ সতর্কতা",
+  "diagnosticsTitle": "ডায়াগনস্টিক অর্ডার",
+  "reviewed": "ফলাফল পর্যালোচিত এবং সিঙ্ক",
+  "medicineShortagesTitle": "ওষুধের ঘাটতি",
+  "outOfStock": "স্টক শেষ",
+  "lowStock": "সীমিত স্টক",
+  "overdueTitle": "বকেয়া ফলো-আপ",
+  "remindersOverdue": "টিকা / এএনসি অনুস্মারক",
+  "inventoryTitle": "স্বাস্থ্য কেন্দ্রের ওষুধের স্টক ও ঘাটতি পর্যবেক্ষণ",
+  "inventorySubtitle": "সরাসরি ওষুধের মজুদ স্তর — রিয়েল-টাইমে পরিমাণ পরিবর্তন করুন"
+}

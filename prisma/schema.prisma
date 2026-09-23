@@ -34,6 +34,7 @@ model User {
   doctor                 Doctor?
   uploadedMedicalReports MedicalReport[]      @relation("MedicalReportUploader")
   patient                Patient?
+  ashaWorker             AshaWorker?
 }
 
 model AccountDeletionOtp {
@@ -77,8 +78,9 @@ model StorageCleanupJob {
 
 model Patient {
   id                 String          @id @default(uuid())
-  userId             String          @unique
-  gender             String?
+  userId                 String?         @unique
+  name                   String?
+  gender                 String?
   maritalStatus      String?
   occupation         String?
   preferredLanguages String[]        @default([])
@@ -91,6 +93,11 @@ model Patient {
   height             String?
   phone              String?
   weight             String?
+  village            String?
+  assignedArea       String?
+  assignedAshaWorkerId String?
+  registeredByAshaId String?
+  isAshaRegistered   Boolean         @default(false)
   profileImagePath   String?
   abhaId             String?         @unique
   appointments       Appointment[]
@@ -99,10 +106,29 @@ model Patient {
   mchDocuments       MchDocument[]
   mchReminders       MchReminder[]
   medicalReports     MedicalReport[]
-  user               User            @relation(fields: [userId], references: [id])
+  user               User?           @relation(fields: [userId], references: [id])
+  assignedAshaWorker AshaWorker?     @relation("AshaCaseload", fields: [assignedAshaWorkerId], references: [id])
+  registeredByAsha   AshaWorker?     @relation("AshaRegistered", fields: [registeredByAshaId], references: [id])
   payments           Payment[]
   pregnancies        Pregnancy[]
   prescriptions      Prescription[]
+  referrals          Referral[]
+  diagnosticOrders   DiagnosticOrder[]
+}
+
+model AshaWorker {
+  id                 String          @id @default(uuid())
+  userId             String          @unique
+  user               User            @relation(fields: [userId], references: [id])
+  workerCode         String?         @unique
+  assignedArea       String?
+  village            String?
+  subCenterId        String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @default(now()) @updatedAt
+  patients           Patient[]       @relation("AshaCaseload")
+  registeredPatients Patient[]       @relation("AshaRegistered")
+  bookedAppointments Appointment[]   @relation("AshaBookings")
 }
 
 model Pregnancy {
@@ -391,6 +417,8 @@ model Doctor {
   prescriptions       Prescription[]
   availabilities      DoctorAvailability[]
   slots               Slot[]
+  referredReferrals   Referral[]           @relation("DoctorReferrals")
+  orderedDiagnostics  DiagnosticOrder[]    @relation("DoctorDiagnosticOrders")
 }
 
 enum SlotStatus {
@@ -459,6 +487,10 @@ model Appointment {
   priority              String          @default("ROUTINE")
   isFollowUp            Boolean         @default(false)
   emailRemindersEnabled Boolean         @default(true)
+  bookedByAshaId        String?
+  bookedByAsha          AshaWorker?     @relation("AshaBookings", fields: [bookedByAshaId], references: [id])
+  verifiedByAsha        Boolean         @default(false)
+  verifiedByAshaAt      DateTime?
   doctor                Doctor          @relation(fields: [doctorId], references: [id])
   patient               Patient?        @relation(fields: [patientId], references: [id])
   slot                  Slot?
@@ -466,6 +498,8 @@ model Appointment {
   medicalReports        MedicalReport[]
   payment               Payment?
   prescription          Prescription?
+  referrals             Referral[]
+  diagnosticOrders      DiagnosticOrder[]
 
   @@index([doctorId, date, timeSlot])
 }
@@ -588,6 +622,8 @@ enum Gender {
 enum Role {
   PATIENT
   DOCTOR
+  ASHA
+  FACILITY_ADMIN
 }
 
 enum AuthProvider {
@@ -696,4 +732,69 @@ enum ReminderStatus {
   PENDING
   SENT
   FAILED
+}
+
+model Referral {
+  id                  String       @id @default(uuid())
+  patientId           String
+  patient             Patient      @relation(fields: [patientId], references: [id])
+  referredByDoctorId  String?
+  referredByDoctor    Doctor?      @relation("DoctorReferrals", fields: [referredByDoctorId], references: [id])
+  appointmentId       String?
+  appointment         Appointment? @relation(fields: [appointmentId], references: [id])
+  recommendedFacility String
+  facilityType        String       // GOVERNMENT, PRIVATE, SPECIALTY
+  reason              String
+  status              String       @default("PENDING") // PENDING, SCHEDULED, VISITED, COMPLETED, DECLINED
+  scheduledDate       DateTime?
+  completedAt         DateTime?
+  followUpNotes       String?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @default(now()) @updatedAt
+
+  @@index([patientId, status])
+  @@index([status])
+}
+
+model DiagnosticOrder {
+  id                String       @id @default(uuid())
+  patientId         String
+  patient           Patient      @relation(fields: [patientId], references: [id])
+  orderedByDoctorId String
+  orderedByDoctor   Doctor       @relation("DoctorDiagnosticOrders", fields: [orderedByDoctorId], references: [id])
+  appointmentId     String?
+  appointment       Appointment? @relation(fields: [appointmentId], references: [id])
+  testName          String
+  testType          String       // BLOOD, IMAGING, URINE, OTHER
+  instructions      String?
+  status            String       @default("ORDERED") // ORDERED, SAMPLE_COLLECTED, REPORT_UPLOADED, REVIEWED
+  reportFileUrl     String?
+  resultSummary     String?
+  orderedAt         DateTime     @default(now())
+  resultAt          DateTime?
+
+  @@index([patientId, status])
+  @@index([status])
+}
+
+model Facility {
+  id        String          @id @default(uuid())
+  name      String
+  type      String          // GOVERNMENT, PRIVATE, PHC, SPECIALTY
+  village   String?
+  district  String?
+  inventory MedicineStock[]
+}
+
+model MedicineStock {
+  id           String   @id @default(uuid())
+  facilityId   String
+  facility     Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  medicineName String
+  status       String   // AVAILABLE, LOW_STOCK, OUT_OF_STOCK
+  quantity     Int?
+  updatedAt    DateTime @default(now()) @updatedAt
+
+  @@index([facilityId])
+  @@index([medicineName])
 }

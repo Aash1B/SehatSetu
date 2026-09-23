@@ -38,5 +38,31 @@
   "learnMore": "Learn more →",
   "home": "Home",
   "dashboard": "Dashboard",
-  "backToHome": "Back to Home"
+  "backToHome": "Back to Home",
+  "referral": {
+    "steps": {
+      "pending": "Pending",
+      "scheduled": "Scheduled",
+      "visited": "Visited",
+      "completed": "Completed",
+      "declined": "Declined"
+    },
+    "facilityTypes": {
+      "government": "Government Hospital",
+      "private": "Private Clinic",
+      "specialty": "Specialty Center"
+    },
+    "referredBy": "Referred by",
+    "reason": "Reason",
+    "scheduledDate": "Scheduled Date",
+    "followUpNotes": "Follow-up Notes",
+    "advancePipeline": "Advance Status",
+    "markScheduled": "Mark Scheduled",
+    "markVisited": "Mark Visited",
+    "markCompleted": "Mark Completed",
+    "updateStatusPrompt": "Update Referral Details",
+    "selectDate": "Scheduled Visit Date",
+    "addNotesOptional": "Follow-up / ASHA Notes (optional)",
+    "myReferrals": "Facility Referrals"
+  }
 }

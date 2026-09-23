@@ -4,6 +4,7 @@ import PrescriptionViewModal from '../../common/components/PrescriptionViewModal
 import { generatePrescriptionDraft } from '../../common/services/aiApi';
 import { getToken, getUser } from '../../auth/authStorage';
 import { API_BASE_URL } from '../../patient/utils/constants';
+import MedicineAvailabilityInline from '../components/MedicineAvailabilityInline';
 
 const extractSymptomsFromNotes = (notes: string): string[] => {
   const match = notes.match(/(?:^|\n)Symptoms:\s*(.+)/i);
@@ -195,6 +196,9 @@ const DoctorPrescription: React.FC = () => {
                   onChange={(e) => handleMedChange(index, 'duration', e.target.value)}
                   className="p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                 />
+                <div className="col-span-2 pt-1">
+                  <MedicineAvailabilityInline medicineName={med.name} />
+                </div>
               </div>
             ))}
           </div>

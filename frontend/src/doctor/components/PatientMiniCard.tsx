@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BadgeAlert, FileText, History as HistoryIcon, UserRound } from 'lucide-react';
+import { BadgeAlert, CheckCircle2, FileText, History as HistoryIcon, UserRound } from 'lucide-react';
 import type { PatientProfile } from '../../types';
 
 interface PatientMiniCardProps {
@@ -7,6 +7,9 @@ interface PatientMiniCardProps {
   consultationCount?: number;
   consultationSummary?: string;
   chiefComplaint?: string;
+  verifiedByAsha?: boolean;
+  verifiedByAshaAt?: string;
+  bookedByAsha?: { workerCode?: string; village?: string; assignedArea?: string; user?: { fullName?: string } };
 }
 
 const PatientMiniCard: React.FC<PatientMiniCardProps> = ({
@@ -14,6 +17,9 @@ const PatientMiniCard: React.FC<PatientMiniCardProps> = ({
   consultationCount = 1,
   consultationSummary,
   chiefComplaint = 'General medical consultation',
+  verifiedByAsha,
+  verifiedByAshaAt,
+  bookedByAsha,
 }) => {
   const [showOverview, setShowOverview] = useState(true);
   const visitCount = Math.max(1, consultationCount);
@@ -52,6 +58,21 @@ const PatientMiniCard: React.FC<PatientMiniCardProps> = ({
           {visitLabel}
         </span>
       </div>
+
+      {verifiedByAsha && (
+        <div className="mb-3 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800 shadow-2xs">
+          <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+          <span>
+            Verified in-person by ASHA worker
+            {bookedByAsha?.user?.fullName ? ` (${bookedByAsha.user.fullName})` : bookedByAsha?.workerCode ? ` (${bookedByAsha.workerCode})` : ''}
+            {verifiedByAshaAt && (
+              <span className="ml-1 text-[10px] text-emerald-600 font-normal">
+                • {new Date(verifiedByAshaAt).toLocaleDateString()}
+              </span>
+            )}
+          </span>
+        </div>
+      )}
 
       {showOverview ? (
         <div className="animate-in space-y-1.5 rounded-xl border border-amber-200/80 bg-amber-50/80 p-3 text-xs fade-in duration-200">

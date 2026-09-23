@@ -29,6 +29,7 @@ import { OCR_CLIENT, OcrClient } from './ocr/ocr-client';
 import { MedicalReportsRepository } from './medical-reports.repository';
 import { EhrParserService } from '../ehr/ehr-parser.service';
 import { EhrService } from '../ehr/ehr.service';
+import { prisma } from '../prisma';
 
 @Injectable()
 export class MedicalReportsService {
@@ -398,6 +399,18 @@ export class MedicalReportsService {
     const patient = await this.reports.findPatient(patientId);
     if (!patient) throw new NotFoundException('Patient was not found');
     if (actor.role === 'PATIENT' && patient.userId === actor.userId) return;
+    if (actor.role === 'ASHA') {
+      const isAssigned = await prisma.patient.findFirst({
+        where: {
+          id: patientId,
+          OR: [
+            { assignedAshaWorker: { userId: actor.userId } },
+            { registeredByAsha: { userId: actor.userId } },
+          ],
+        },
+      });
+      if (isAssigned) return;
+    }
     if (actor.role === 'DOCTOR') {
       const appointment = await this.reports.doctorCanAccessPatient(
         actor.userId,

@@ -58,8 +58,17 @@ const ForgotPassword = lazy(() => import('./auth/pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('./auth/pages/ResetPassword'));
 import { getToken, getUser } from './auth/authStorage';
 
+// ASHA Pages
+const AshaLogin = lazy(() => import('./asha/pages/LoginPage'));
+const AshaDashboard = lazy(() => import('./asha/pages/DashboardPage'));
+const AshaPatientsList = lazy(() => import('./asha/pages/PatientsListPage'));
+const AshaPatientDetail = lazy(() => import('./asha/pages/PatientDetailPage'));
+const AshaQuickRegister = lazy(() => import('./asha/pages/QuickRegisterPatientPage'));
+const AshaBookOnBehalf = lazy(() => import('./asha/pages/BookOnBehalfPage'));
 
-import PaymentTestPage from './payments/PaymentTestPage';
+// Facility Pages
+const FacilityDashboard = lazy(() => import('./facility/pages/FacilityDashboardPage'));
+const PaymentTestPage = lazy(() => import('./payments/PaymentTestPage'));
 
 const PatientLayout = () => {
   const location = useLocation();
@@ -74,13 +83,14 @@ const PatientLayout = () => {
   );
 };
 
-const RoleProtectedRoute = ({ role }: { role: 'PATIENT' | 'DOCTOR' }) => {
+const RoleProtectedRoute = ({ role }: { role: 'PATIENT' | 'DOCTOR' | 'ASHA' }) => {
   const user = getUser();
   const location = useLocation();
+  const loginPath = role === 'DOCTOR' ? '/doctor/login' : role === 'ASHA' ? '/asha/login' : '/patient/login';
   return getToken() && user?.role === role
     ? <Outlet />
     : <Navigate
-        to={role === 'DOCTOR' ? '/doctor/login' : '/patient/login'}
+        to={loginPath}
         replace
         state={{ from: location.pathname }}
       />;
@@ -143,6 +153,7 @@ function App() {
                 <Route path="/patient/signup" element={<PatientSignup />} />
                 <Route path="/doctor/login" element={<DoctorLogin />} />
                 <Route path="/doctor/signup" element={<DoctorSignup />} />
+                <Route path="/asha/login" element={<AshaLogin />} />
                 <Route path="/verify-otp" element={<VerifyOtp />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
@@ -185,6 +196,18 @@ function App() {
                   <Route path="/doctor/ehr-drafts" element={<EhrDrafts />} />
                   <Route path="/doctor/ehr-drafts/:id" element={<EhrDraftDetail />} />
                 </Route>
+
+                {/* ASHA Routes */}
+                <Route element={<RoleProtectedRoute role="ASHA" />}>
+                  <Route path="/asha/dashboard" element={<AshaDashboard />} />
+                  <Route path="/asha/patients" element={<AshaPatientsList />} />
+                  <Route path="/asha/patients/new" element={<AshaQuickRegister />} />
+                  <Route path="/asha/patients/:id" element={<AshaPatientDetail />} />
+                  <Route path="/asha/book" element={<AshaBookOnBehalf />} />
+                </Route>
+
+                {/* Facility / PHC Operations Dashboard */}
+                <Route path="/facility/dashboard" element={<FacilityDashboard />} />
               </Routes>
             </Suspense>
           </ChunkErrorBoundary>

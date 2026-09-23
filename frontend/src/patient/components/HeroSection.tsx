@@ -109,16 +109,36 @@ const HeroSection: React.FC = () => {
             </svg>
           </div>
 
-          <img
-            src="/hero.jpeg"
-            alt={t('heroAlt')}
-            width={1600}
-            height={959}
-            decoding="async"
-            loading="eager"
-            fetchPriority="high"
-            className="block h-full w-full object-contain object-center transition-transform duration-500"
-          />
+          <picture>
+            <source
+              type="image/avif"
+              media="(max-width: 768px)"
+              srcSet="/hero-mobile.avif"
+            />
+            <source
+              type="image/webp"
+              media="(max-width: 768px)"
+              srcSet="/hero-mobile.webp"
+            />
+            <source
+              type="image/avif"
+              srcSet="/hero.avif"
+            />
+            <source
+              type="image/webp"
+              srcSet="/hero.webp"
+            />
+            <img
+              src="/hero-mobile.webp"
+              alt={t('heroAlt')}
+              width={1600}
+              height={959}
+              decoding="async"
+              loading="eager"
+              fetchPriority="high"
+              className="block h-full w-full object-contain object-center transition-transform duration-500"
+            />
+          </picture>
         </div>
       </div>
     </div>
