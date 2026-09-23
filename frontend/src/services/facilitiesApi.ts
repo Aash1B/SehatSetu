@@ -26,6 +26,113 @@ export interface FacilityRecord {
   inventory?: MedicineStockRecord[];
 }
 
+export interface FacilityAppointmentItem {
+  id: string;
+  patientId?: string | null;
+  patientName?: string | null;
+  patientAge?: string | null;
+  patientGender?: string | null;
+  patientPhone?: string | null;
+  healthConcern?: string | null;
+  symptoms?: string[];
+  severity?: string | null;
+  status: string;
+  priority: string;
+  urgency?: string | null;
+  date?: string | null;
+  timeSlot?: string | null;
+  createdAt: string;
+  patient?: {
+    id: string;
+    name?: string | null;
+    gender?: string | null;
+    age?: string | null;
+    phone?: string | null;
+    village?: string | null;
+  } | null;
+  doctor?: {
+    id: string;
+    name: string;
+    specialty: string;
+    hospital?: string | null;
+  } | null;
+}
+
+export interface FacilityReferralItem {
+  id: string;
+  patientId: string;
+  recommendedFacility: string;
+  facilityType: string;
+  reason: string;
+  status: string;
+  scheduledDate?: string | null;
+  completedAt?: string | null;
+  followUpNotes?: string | null;
+  createdAt: string;
+  patient?: {
+    id: string;
+    name?: string | null;
+    gender?: string | null;
+    phone?: string | null;
+    village?: string | null;
+  } | null;
+  referredByDoctor?: {
+    id: string;
+    name: string;
+    specialty: string;
+  } | null;
+}
+
+export interface FacilityDiagnosticItem {
+  id: string;
+  patientId: string;
+  testName: string;
+  status: string;
+  reportFileUrl?: string | null;
+  resultSummary?: string | null;
+  orderedAt: string;
+  resultAt?: string | null;
+  patient?: {
+    id: string;
+    name?: string | null;
+    phone?: string | null;
+    village?: string | null;
+  } | null;
+  orderedByDoctor?: {
+    id: string;
+    name: string;
+    specialty: string;
+  } | null;
+}
+
+export interface FacilityOverdueItem {
+  id: string;
+  patientId: string;
+  reminderType: string;
+  eventDate: string;
+  status: string;
+  patient?: {
+    id: string;
+    name?: string | null;
+    phone?: string | null;
+    village?: string | null;
+  } | null;
+  child?: {
+    id: string;
+    name?: string | null;
+    dateOfBirth?: string | null;
+  } | null;
+}
+
+export interface FacilityDashboardDetails {
+  consultations: FacilityAppointmentItem[];
+  referrals: FacilityReferralItem[];
+  highRiskCases: FacilityAppointmentItem[];
+  diagnosticOrders: FacilityDiagnosticItem[];
+  medicineShortages: MedicineStockRecord[];
+  overdueFollowUps: FacilityOverdueItem[];
+}
+
 export interface FacilityDashboardMetrics {
   facility: FacilityRecord;
   metrics: {
@@ -60,6 +167,7 @@ export interface FacilityDashboardMetrics {
     };
   };
   inventory: MedicineStockRecord[];
+  details?: FacilityDashboardDetails;
 }
 
 function authHeaders(): HeadersInit {

@@ -223,7 +223,7 @@ const DoctorProfile: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            <div className="lg:col-span-2 space-y-8">
+            <div className="lg:col-span-2 space-y-8 min-w-0">
               <div>
                 <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-4">Professional Information</h3>
                 <ProfessionalInfoCard
@@ -238,7 +238,7 @@ const DoctorProfile: React.FC = () => {
               </div>
             </div>
 
-            <div className="space-y-8">
+            <div className="space-y-8 min-w-0">
               <div>
                 <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-4">Contact Information</h3>
                 <ContactInfoCard

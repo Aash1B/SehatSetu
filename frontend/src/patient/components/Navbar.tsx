@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { toggleSidebar } from '../store/uiSlice';
+import { toggleSidebar, setDashboardTab, setCurrentPage } from '../store/uiSlice';
 import type { RootState } from '../store';
 import { useNavigate } from 'react-router-dom';
 import { getToken, getUser } from '../../auth/authStorage';
@@ -84,6 +84,16 @@ const Navbar: React.FC = () => {
               {t("home")}
             </button>
           )}
+
+          <button
+            type="button"
+            className="relative py-1.5 text-sm font-bold transition-colors cursor-pointer border-none bg-transparent nav-link hover:opacity-85"
+            style={{ color: '#166534' }}
+            onClick={() => navigate('/asha/dashboard')}
+          >
+            ASHA Dashboard
+          </button>
+
           {currentPage === 'landing' ? (
             <a href="#services" className="nav-link text-slate-600 hover:text-slate-900 font-bold text-sm">{t("services")}</a>
           ) : (
@@ -119,6 +129,15 @@ const Navbar: React.FC = () => {
               {tCommon('about')}
             </button>
           )}
+
+          <button
+            type="button"
+            className="relative py-1.5 text-sm font-bold transition-colors cursor-pointer border-none bg-transparent nav-link hover:opacity-85 whitespace-nowrap"
+            style={{ color: '#ca8a04' }}
+            onClick={() => navigate('/facility/dashboard')}
+          >
+            Facility Dashboard
+          </button>
         </nav>
 
         {/* Right: Language Selector & Actions */}
@@ -139,7 +158,13 @@ const Navbar: React.FC = () => {
             <button
               type="button"
               className="inline-flex items-center justify-center px-3.5 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-full shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/30 transition-all transform active:scale-95 cursor-pointer border-none btn-get-started"
-              onClick={() => navigate(isDoctor ? '/doctor/dashboard' : '/patient/dashboard')}
+              onClick={() => {
+                if (!isDoctor) {
+                  dispatch(setCurrentPage('dashboard'));
+                  dispatch(setDashboardTab('overview'));
+                }
+                navigate(isDoctor ? '/doctor/dashboard' : '/patient/dashboard');
+              }}
             >
               {t("dashboard")}
             </button>

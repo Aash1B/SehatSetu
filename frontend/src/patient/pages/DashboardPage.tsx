@@ -1,8 +1,8 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../store';
-import { setDashboardTab, type DashboardTabType } from '../store/uiSlice';
-import { useNavigate } from 'react-router-dom';
+import { setDashboardTab, setCurrentPage, type DashboardTabType } from '../store/uiSlice';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { uploadMedicalReport, type MedicalReportExtractedData, type MedicalReportResponse, type OcrStructuredEntity } from '../services/medicalReportsApi';
 import { doctorsData } from '../data/doctorsData';
 import { getAppointmentTimeStatus } from '../../utils/appointmentTime';
@@ -982,6 +982,16 @@ const DashboardPage: React.FC = () => {
       })
       .finally(() => setDashboardLoading(false));
   };
+
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    dispatch(setCurrentPage('dashboard'));
+    const tabParam = searchParams.get('tab') as DashboardTabType | null;
+    if (tabParam && ['overview', 'appointments', 'video', 'records', 'prescriptions', 'profile'].includes(tabParam)) {
+      dispatch(setDashboardTab(tabParam));
+    }
+  }, [searchParams, dispatch]);
 
   useEffect(() => {
     loadDashboardData();

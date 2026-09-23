@@ -42,18 +42,10 @@ const DoctorSearchSection: React.FC = () => {
     { value: "Hyderabad", label: tFilters("locationHyderabad") },
   ];
 
-  const HOSPITAL_OPTIONS: OptionItem[] = [
-    { value: "All", label: tFilters("hospitalAll") },
-    { value: "city", label: tFilters("hospitalCityCare") },
-    { value: "skin", label: tFilters("hospitalSkinPlus") },
-    { value: "neuro", label: tFilters("hospitalNeuroCare") },
-  ];
-
   const [doctorsList, setDoctorsList] = useState<Doctor[]>(doctorsData);
   const [searchTerm, setSearchTerm] = useState("");
   const [specialtyFilter, setSpecialtyFilter] = useState("All");
   const [locationFilter, setLocationFilter] = useState("All");
-  const [hospitalFilter, setHospitalFilter] = useState("All");
   const [favorites, setFavorites] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [cardsPerView, setCardsPerView] = useState(() => (
@@ -188,12 +180,6 @@ const DoctorSearchSection: React.FC = () => {
               options={LOCATION_OPTIONS}
               value={locationFilter}
               onChange={setLocationFilter}
-            />
-
-            <CustomSelect
-              options={HOSPITAL_OPTIONS}
-              value={hospitalFilter}
-              onChange={setHospitalFilter}
             />
           </div>
         </div>

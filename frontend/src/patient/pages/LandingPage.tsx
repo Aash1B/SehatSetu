@@ -19,12 +19,21 @@ const LandingPage: React.FC = () => {
   useEffect(() => {
     dispatch(setCurrentPage('landing'));
     if (location.hash) {
-      const elem = document.querySelector(location.hash);
-      if (elem) {
-        setTimeout(() => {
+      const scrollToHash = () => {
+        const elem = document.querySelector(location.hash);
+        if (elem) {
           elem.scrollIntoView({ behavior: 'smooth' });
-        }, 100);
-      }
+        }
+      };
+      scrollToHash();
+      const t1 = setTimeout(scrollToHash, 100);
+      const t2 = setTimeout(scrollToHash, 350);
+      const t3 = setTimeout(scrollToHash, 700);
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+        clearTimeout(t3);
+      };
     }
   }, [dispatch, location]);
 

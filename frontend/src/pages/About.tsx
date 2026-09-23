@@ -283,14 +283,14 @@ const About: React.FC = () => {
                 </ul>
               </div>
 
-              {/* Privacy Point Item (Centered 7th point) */}
+              {/* Privacy Point Item */}
               <div className="about-deliver-privacy-centered mt-4">
-                <div className="flex flex-col items-center text-center max-w-2xl">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="about-deliver-dot" />
-                    <span className="about-deliver-item-title mb-0">{t('privacyTitle')}</span>
+                <div className="about-deliver-privacy-inner">
+                  <span className="about-deliver-dot" />
+                  <div className="about-deliver-privacy-text">
+                    <span className="about-deliver-item-title">{t('privacyTitle')}</span>
+                    <span className="about-deliver-item-desc">{t('privacyBody')}</span>
                   </div>
-                  <span className="about-deliver-item-desc">{t('privacyBody')}</span>
                 </div>
               </div>
             </div>

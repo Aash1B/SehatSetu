@@ -155,81 +155,206 @@ export class FacilitiesService {
       where: { status: 'COMPLETED' },
     });
 
+    const recentAppointments = await this.prisma.appointment.findMany({
+      take: 50,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        patient: {
+          select: {
+            id: true,
+            name: true,
+            gender: true,
+            age: true,
+            phone: true,
+            village: true,
+          },
+        },
+        doctor: {
+          select: {
+            id: true,
+            name: true,
+            specialty: true,
+            hospital: true,
+          },
+        },
+      },
+    });
+
     // 2. Incoming and completed referrals
-    const incomingReferrals = await this.prisma.referral.count({
-      where: {
-        recommendedFacility: {
-          contains: facility.name,
-          mode: 'insensitive',
-        },
-      },
-    });
-
-    const completedReferrals = await this.prisma.referral.count({
-      where: {
-        recommendedFacility: {
-          contains: facility.name,
-          mode: 'insensitive',
-        },
-        status: 'COMPLETED',
-      },
-    });
-
-    const pendingReferrals = await this.prisma.referral.count({
-      where: {
-        recommendedFacility: {
-          contains: facility.name,
-          mode: 'insensitive',
-        },
-        status: { in: ['PENDING', 'SCHEDULED'] },
-      },
-    });
-
-    // 3. High-risk cases (urgent triage appointments & overdue MCH)
-    const highRiskAppointments = await this.prisma.appointment.count({
+    const facilityReferrals = await this.prisma.referral.findMany({
       where: {
         OR: [
-          { priority: 'EMERGENCY' },
-          { priority: 'HIGH' },
-          { urgency: 'emergency' },
-          { urgency: 'high' },
+          { recommendedFacility: { contains: facility.name, mode: 'insensitive' } },
+          { recommendedFacility: { contains: facility.district || '', mode: 'insensitive' } },
         ],
+      },
+      take: 50,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        patient: {
+          select: {
+            id: true,
+            name: true,
+            gender: true,
+            phone: true,
+            village: true,
+          },
+        },
+        referredByDoctor: {
+          select: {
+            id: true,
+            name: true,
+            specialty: true,
+          },
+        },
       },
     });
 
-    const highRiskMch = 0;
+    // If no direct matches for this specific facility, include all referrals for regional coordination
+    const allReferrals = facilityReferrals.length > 0
+      ? facilityReferrals
+      : await this.prisma.referral.findMany({
+          take: 50,
+          orderBy: { createdAt: 'desc' },
+          include: {
+            patient: {
+              select: {
+                id: true,
+                name: true,
+                gender: true,
+                phone: true,
+                village: true,
+              },
+            },
+            referredByDoctor: {
+              select: {
+                id: true,
+                name: true,
+                specialty: true,
+              },
+            },
+          },
+        });
 
-    // 4. Diagnostic orders status
-    const totalDiagnosticOrders = await this.prisma.diagnosticOrder.count();
-    const pendingDiagnosticOrders = await this.prisma.diagnosticOrder.count({
-      where: { status: { in: ['ORDERED', 'SAMPLE_COLLECTED'] } },
+    const incomingReferrals = allReferrals.length;
+    const completedReferrals = allReferrals.filter((r) => r.status === 'COMPLETED' || r.status === 'VISITED').length;
+    const pendingReferrals = allReferrals.filter((r) => r.status === 'PENDING' || r.status === 'SCHEDULED').length;
+
+    // 3. High-risk cases (urgent triage appointments & overdue MCH)
+    const highRiskAppointments = await this.prisma.appointment.findMany({
+      where: {
+        OR: [
+          { priority: { in: ['EMERGENCY', 'HIGH'] } },
+          { urgency: { in: ['emergency', 'high', 'today'] } },
+          { severity: { in: ['CRITICAL', 'SEVERE', 'critical', 'severe'] } },
+        ],
+      },
+      take: 50,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        patient: {
+          select: {
+            id: true,
+            name: true,
+            gender: true,
+            age: true,
+            phone: true,
+            village: true,
+          },
+        },
+        doctor: {
+          select: {
+            id: true,
+            name: true,
+            specialty: true,
+          },
+        },
+      },
     });
-    const completedDiagnosticOrders = await this.prisma.diagnosticOrder.count({
-      where: { status: 'REVIEWED' },
+
+    // 4. Diagnostic orders status & list
+    const diagnosticOrders = await this.prisma.diagnosticOrder.findMany({
+      take: 50,
+      orderBy: { orderedAt: 'desc' },
+      include: {
+        patient: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+            village: true,
+          },
+        },
+        orderedByDoctor: {
+          select: {
+            id: true,
+            name: true,
+            specialty: true,
+          },
+        },
+      },
     });
+
+    const totalDiagnosticOrders = diagnosticOrders.length;
+    const pendingDiagnosticOrders = diagnosticOrders.filter((d) =>
+      ['ORDERED', 'SAMPLE_COLLECTED', 'PENDING'].includes(d.status),
+    ).length;
+    const completedDiagnosticOrders = diagnosticOrders.filter((d) =>
+      ['REVIEWED', 'REPORT_UPLOADED', 'COMPLETED'].includes(d.status),
+    ).length;
 
     // 5. Medicine Inventory Shortages
     const allStocks = await this.prisma.medicineStock.findMany({
       where: { facilityId },
+      orderBy: { medicineName: 'asc' },
     });
 
-    const outOfStockCount = allStocks.filter((s) => s.status === 'OUT_OF_STOCK' || (s.quantity !== null && s.quantity <= 0)).length;
-    const lowStockCount = allStocks.filter((s) => s.status === 'LOW_STOCK' || (s.quantity !== null && s.quantity > 0 && s.quantity < 10)).length;
-    const availableCount = allStocks.filter((s) => s.status === 'AVAILABLE' && (s.quantity === null || s.quantity >= 10)).length;
+    const outOfStockCount = allStocks.filter(
+      (s) => s.status === 'OUT_OF_STOCK' || (s.quantity !== null && s.quantity <= 0),
+    ).length;
+    const lowStockCount = allStocks.filter(
+      (s) => s.status === 'LOW_STOCK' || (s.quantity !== null && s.quantity > 0 && s.quantity < 10),
+    ).length;
+    const availableCount = allStocks.filter(
+      (s) => s.status === 'AVAILABLE' && (s.quantity === null || s.quantity >= 10),
+    ).length;
+
+    const medicineShortages = allStocks.filter(
+      (s) => s.status === 'OUT_OF_STOCK' || s.status === 'LOW_STOCK' || (s.quantity !== null && s.quantity < 10),
+    );
 
     // 6. Overdue follow-ups
-    let overdueMchReminders = 0;
+    let overdueMchReminders: any[] = [];
     try {
       if ((this.prisma as any).mchReminder) {
-        overdueMchReminders = await (this.prisma as any).mchReminder.count({
+        overdueMchReminders = await (this.prisma as any).mchReminder.findMany({
           where: {
             status: { in: ['FAILED', 'PENDING'] },
             reminderType: { in: ['VACCINATION_OVERDUE', 'ANC_OVERDUE'] },
           },
+          take: 50,
+          orderBy: { eventDate: 'desc' },
+          include: {
+            patient: {
+              select: {
+                id: true,
+                name: true,
+                phone: true,
+                village: true,
+              },
+            },
+            child: {
+              select: {
+                id: true,
+                name: true,
+                dateOfBirth: true,
+              },
+            },
+          },
         });
       }
-    } catch {
-      overdueMchReminders = 0;
+    } catch (e) {
+      this.logger.warn('Could not query mchReminders', e);
     }
 
     return {
@@ -251,9 +376,9 @@ export class FacilitiesService {
           completed: completedReferrals,
         },
         highRiskCases: {
-          total: highRiskAppointments + highRiskMch,
-          appointments: highRiskAppointments,
-          mchHighRiskMothers: highRiskMch,
+          total: highRiskAppointments.length,
+          appointments: highRiskAppointments.length,
+          mchHighRiskMothers: 0,
         },
         diagnosticOrders: {
           total: totalDiagnosticOrders,
@@ -268,10 +393,18 @@ export class FacilitiesService {
           shortages: lowStockCount + outOfStockCount,
         },
         overdueFollowUps: {
-          total: overdueMchReminders,
+          total: overdueMchReminders.length,
         },
       },
       inventory: allStocks,
+      details: {
+        consultations: recentAppointments,
+        referrals: allReferrals,
+        highRiskCases: highRiskAppointments,
+        diagnosticOrders,
+        medicineShortages,
+        overdueFollowUps: overdueMchReminders,
+      },
     };
   }
 }

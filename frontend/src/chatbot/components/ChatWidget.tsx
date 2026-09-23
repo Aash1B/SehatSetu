@@ -120,7 +120,14 @@ const ChatWidget: React.FC = () => {
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
-      inputRef.current.focus();
+      const isTouchOrMobile =
+        typeof window !== 'undefined' &&
+        (window.innerWidth <= 768 ||
+          window.matchMedia('(pointer: coarse)').matches ||
+          'ontouchstart' in window);
+      if (!isTouchOrMobile) {
+        inputRef.current.focus();
+      }
     }
   }, [isOpen]);
 
@@ -140,7 +147,14 @@ const ChatWidget: React.FC = () => {
     };
     const handleOpenSetuAI = () => {
       setIsOpen(true);
-      setTimeout(() => inputRef.current?.focus(), 100);
+      const isTouchOrMobile =
+        typeof window !== 'undefined' &&
+        (window.innerWidth <= 768 ||
+          window.matchMedia('(pointer: coarse)').matches ||
+          'ontouchstart' in window);
+      if (!isTouchOrMobile) {
+        setTimeout(() => inputRef.current?.focus(), 100);
+      }
     };
 
     document.addEventListener('keydown', handleGlobalKeyDown);

@@ -14,13 +14,13 @@ const ContactInfoCard: React.FC<Props> = ({ profile, isEditing, onChange }) => {
 
   return (
     <SectionCard>
-      <div className="space-y-4">
-        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-          <div className="p-2 bg-white rounded shadow-sm text-aster-blue">
+      <div className="space-y-3.5">
+        <div className="flex items-start sm:items-center gap-3 p-3 sm:p-3.5 bg-gray-50 rounded-xl overflow-hidden">
+          <div className="p-2 bg-white rounded-lg shadow-2xs text-aster-blue shrink-0 mt-0.5 sm:mt-0">
             <Mail className="w-4 h-4" />
           </div>
-          <div className="flex-1">
-            <p className="text-sm text-gray-500">Email Address</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs sm:text-sm text-gray-500 font-medium">Email Address</p>
             {isEditing ? (
               <input 
                 type="email"
@@ -29,17 +29,19 @@ const ContactInfoCard: React.FC<Props> = ({ profile, isEditing, onChange }) => {
                 className={inputClassName}
               />
             ) : (
-              <p className="text-base font-medium text-deep-space">{profile.email}</p>
+              <p className="text-sm sm:text-base font-semibold text-deep-space break-all leading-snug mt-0.5">
+                {profile.email}
+              </p>
             )}
           </div>
         </div>
         
-        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-          <div className="p-2 bg-white rounded shadow-sm text-aster-blue">
+        <div className="flex items-start sm:items-center gap-3 p-3 sm:p-3.5 bg-gray-50 rounded-xl overflow-hidden">
+          <div className="p-2 bg-white rounded-lg shadow-2xs text-aster-blue shrink-0 mt-0.5 sm:mt-0">
             <Phone className="w-4 h-4" />
           </div>
-          <div className="flex-1">
-            <p className="text-sm text-gray-500">Phone Number</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs sm:text-sm text-gray-500 font-medium">Phone Number</p>
             {isEditing ? (
               <input 
                 type="tel"
@@ -48,17 +50,19 @@ const ContactInfoCard: React.FC<Props> = ({ profile, isEditing, onChange }) => {
                 className={inputClassName}
               />
             ) : (
-              <p className="text-base font-medium text-deep-space">{profile.phoneNumber}</p>
+              <p className="text-sm sm:text-base font-semibold text-deep-space break-words leading-snug mt-0.5">
+                {profile.phoneNumber}
+              </p>
             )}
           </div>
         </div>
 
-        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-          <div className="p-2 bg-white rounded shadow-sm text-aster-blue">
+        <div className="flex items-start sm:items-center gap-3 p-3 sm:p-3.5 bg-gray-50 rounded-xl overflow-hidden">
+          <div className="p-2 bg-white rounded-lg shadow-2xs text-aster-blue shrink-0 mt-0.5 sm:mt-0">
             <Building2 className="w-4 h-4" />
           </div>
-          <div className="flex-1">
-            <p className="text-sm text-gray-500">Primary Clinic/Hospital</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs sm:text-sm text-gray-500 font-medium">Primary Clinic/Hospital</p>
             {isEditing ? (
               <input 
                 type="text"
@@ -67,17 +71,19 @@ const ContactInfoCard: React.FC<Props> = ({ profile, isEditing, onChange }) => {
                 className={inputClassName}
               />
             ) : (
-              <p className="text-base font-medium text-deep-space">{profile.clinicName}</p>
+              <p className="text-sm sm:text-base font-semibold text-deep-space break-words leading-snug mt-0.5">
+                {profile.clinicName}
+              </p>
             )}
           </div>
         </div>
 
-        <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-          <div className="p-2 bg-white rounded shadow-sm text-aster-blue shrink-0">
+        <div className="flex items-start gap-3 p-3 sm:p-3.5 bg-gray-50 rounded-xl overflow-hidden">
+          <div className="p-2 bg-white rounded-lg shadow-2xs text-aster-blue shrink-0 mt-0.5">
             <MapPin className="w-4 h-4" />
           </div>
-          <div className="flex-1">
-            <p className="text-sm text-gray-500">Address</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs sm:text-sm text-gray-500 font-medium">Address</p>
             {isEditing ? (
               <input 
                 type="text"
@@ -86,7 +92,9 @@ const ContactInfoCard: React.FC<Props> = ({ profile, isEditing, onChange }) => {
                 className={inputClassName}
               />
             ) : (
-              <p className="text-base font-medium text-deep-space">{profile.address}</p>
+              <p className="text-sm sm:text-base font-semibold text-deep-space break-words leading-snug mt-0.5">
+                {profile.address}
+              </p>
             )}
           </div>
         </div>

@@ -25,7 +25,7 @@ export default defineConfig({
         name: 'SehatSetu',
         short_name: 'SehatSetu',
         description: 'Connect with verified doctors, book online consultations, manage prescriptions, and access medical records on SehatSetu.',
-        theme_color: '#863bff',
+        theme_color: '#FD6B05',
         background_color: '#f8fafc',
         display: 'standalone',
         orientation: 'portrait-primary',
