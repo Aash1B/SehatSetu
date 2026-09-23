@@ -77,8 +77,7 @@
   "emergencyCall": "అత్యవసర కాల్",
   "doctorHelpline": "24/7 వైద్య సహాయ వరుస",
   "tollFree": "టోల్-ఫ్రీ తక్షణ సంప్రదింపు",
-  "emergencyHospitals": "సమీపంలోని అత్యవసర ఆసుపత్రులు"
-,
+  "emergencyHospitals": "సమీపంలోని అత్యవసర ఆసుపత్రులు",
   "erIcu": "ER కేంద్రాలు మరియు ICU లభ్యత చూడండి",
   "view": "చూడండి",
   "patientID": "రోగి ఐడి:",
@@ -123,8 +122,7 @@
   "popularSymptoms": "సాధారణ లక్షణాలు",
   "showLess": "- తక్కువ",
   "showMore": "+ మరిన్ని",
-  "selectedSymptoms": "ఎంచుకున్న లక్షణాలు"
-,
+  "selectedSymptoms": "ఎంచుకున్న లక్షణాలు",
   "howLong": "మీకు ఎంత కాలంగా ఇది ఉంది?",
   "durationOptions": {
     "lessThanDay": "ఒక రోజు కంటే తక్కువ",
@@ -171,8 +169,7 @@
   "noSlotsLeft": "ఈ తేదీన స్లాట్‌లు మిగిలి లేవు",
   "pleaseSelectAlternate": "పైన మరొక రోజు ఎంచుకోండి.",
   "slotBooked": "స్లాట్ బుక్ అయింది",
-  "slotPast": "స్లాట్ గడిచిపోయింది"
-,
+  "slotPast": "స్లాట్ గడిచిపోయింది",
   "patientDetails": "రోగి వివరాలు",
   "enterDetails": "సంప్రదింపు రికార్డు కోసం వివరాలు నమోదు చేయండి. ఎత్తు మరియు బరువు మీ వైద్యుడికి మీ ఆరోగ్యంపై ముఖ్యమైన సమాచారం అందిస్తాయి.",
   "fullName": "పూర్తి పేరు",
@@ -219,8 +216,7 @@
   "netBankingSub": "అన్ని ప్రధాన బ్యాంకులు",
   "wallet": "వాలెట్లు",
   "walletSub": "Paytm, PhonePe, Amazon Pay",
-  "securePayments": "100% సురక్షిత చెల్లింపులు"
-,
+  "securePayments": "100% సురక్షిత చెల్లింపులు",
   "appointmentDetails": "అపాయింట్‌మెంట్ వివరాలు",
   "dateAndTime": "తేదీ మరియు సమయం",
   "consultationMode": "సంప్రదింపు విధానం:",
@@ -279,8 +275,7 @@
   "genderLabel": "లింగం",
   "male": "పురుషుడు",
   "female": "స్త్రీ",
-  "notConfigured": "కాన్ఫిగర్ చేయబడలేదు"
-,
+  "notConfigured": "కాన్ఫిగర్ చేయబడలేదు",
   "defaultPaymentUPI": "డిఫాల్ట్ పేమెంట్ UPI",
   "noSavedUPI": "సేవ్ చేసిన UPI లేదు",
   "noSavedCard": "సేవ్ చేసిన కార్డు లేదు",
@@ -332,8 +327,7 @@
   "passwordUpdated": "పాస్‌వర్డ్ విజయవంతంగా అప్‌డేట్ అయింది.",
   "twoFactorAuth": "రెండు-కారకాల ప్రమాణీకరణ",
   "twoFactorEnabled": "సక్రియం",
-  "twoFactorDisabled": "నిష్క్రియం"
-,
+  "twoFactorDisabled": "నిష్క్రియం",
   "notifWhatsappTitle": "WhatsApp రిమైండర్లు",
   "notifWhatsappDesc": "WhatsApp ద్వారా అపాయింట్‌మెంట్ రిమైండర్లు మరియు ఆరోగ్య చిట్కాలు అందుకోండి",
   "notifEmailTitle": "ఇమెయిల్ ప్రిస్క్రిప్షన్లు",
@@ -371,5 +365,29 @@
     "notAvailable": "అందుబాటులో లేదు",
     "ocrText": "OCR వచనం",
     "ocrResult": "OCR ఫలితం"
+  },
+  "diagnostics": {
+    "pendingTestsTitle": "డయాగ్నస్టిక్ పరీక్షలు & ల్యాబ్ ఆర్డర్లు",
+    "awaitingCompletion": "పూర్తి లేదా సమీక్ష కోసం వేచి ఉంది",
+    "allCompleted": "అన్ని పరీక్షలు పూర్తయ్యాయి మరియు EHRకి సమకాలీకరించబడ్డాయి",
+    "reportUploaded": "నివేదిక అప్‌లోడ్ చేయబడింది (సమీక్షలో ఉంది)",
+    "samplePending": "నమూనా / నివేదిక పెండింగ్‌లో ఉంది",
+    "uploadReport": "ల్యాబ్ నివేదిక / స్కాన్ అప్‌లోడ్ చేయండి",
+    "uploading": "అప్‌లోడ్ అవుతోంది...",
+    "reviewedByDoctor": "వైద్యునిచే సమీక్షించబడింది మరియు EHRకి సమకాలీకరించబడింది",
+    "clinicalSummary": "క్లినికల్ ఫలితాలు / వైద్యుని సారాంశం"
+  },
+  "medicineAvailability": {
+    "title": "PHC / ప్రభుత్వ మందుల లభ్యత",
+    "subtitle": "మీ సమీప ఆరోగ్య కేంద్రం & ఆసుపత్రిలో ఉచిత మందుల నిల్వలను తనిఖీ చేయండి",
+    "searchPlaceholder": "మందు పేరును శోధించండి (ఉదా. పారాసిటమాల్, మెట్‌ఫార్మిన్)...",
+    "quickCheck": "త్వరిత తనిఖీ:",
+    "searching": "ఆరోగ్య కేంద్రాల నిల్వలను శోధిస్తోంది...",
+    "noStockFound": "సమీప కేంద్రాలలో ఈ ఔషధ నిల్వలు కనుగొనబడలేదు. దయచేసి మీ ఆశా కార్యకర్త లేదా వైద్యుడిని సంప్రదించండి.",
+    "availableAtFacilities": "{{count}} ఆరోగ్య కేంద్రాలలో అందుబాటులో ఉంది:",
+    "inStock": "నిల్వ ఉంది",
+    "lowStock": "తక్కువ నిల్వ",
+    "outOfStock": "నిల్వ అయిపోయింది",
+    "freeGovt": "ప్రభుత్వ ఉచిత పంపిణీ"
   }
 }

@@ -9,9 +9,13 @@ import MedicalHistoryCard from '../components/MedicalHistoryCard';
 import CurrentMedicinesCard from '../components/CurrentMedicinesCard';
 import AISummaryCard from '../components/AISummaryCard';
 import ReferralModal from '../components/ReferralModal';
+import ReferralStepperCard from '../../components/ReferralStepperCard';
+import { fetchPatientReferrals, updateReferralStatus, type ReferralRecord } from '../../services/referralsApi';
+import DiagnosticsOrderTab from '../components/DiagnosticsOrderTab';
+import { fetchPatientDiagnosticOrders, type DiagnosticOrderRecord } from '../../services/diagnosticsApi';
 import { LiquidLoader } from '../../common/components/LiquidLoader';
 import { API_BASE_URL } from '../../patient/utils/constants';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, CheckCircle2, Share2, TestTube2 } from 'lucide-react';
 import { getToken } from '../../auth/authStorage';
 
 const getInitials = (name?: string) => {
@@ -27,8 +31,29 @@ const PatientDetails: React.FC = () => {
   const navigate = useNavigate();
   const [isReferralOpen, setIsReferralOpen] = useState(false);
   const [appointment, setAppointment] = useState<any>(null);
+  const [referrals, setReferrals] = useState<ReferralRecord[]>([]);
+  const [diagnosticOrders, setDiagnosticOrders] = useState<DiagnosticOrderRecord[]>([]);
+  const [activeTab, setActiveTab] = useState<'clinical' | 'diagnostics'>('clinical');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const loadPatientReferrals = async (patientId: string) => {
+    try {
+      const data = await fetchPatientReferrals(patientId);
+      setReferrals(data);
+    } catch (e) {
+      console.warn('Could not load patient referrals', e);
+    }
+  };
+
+  const loadPatientDiagnostics = async (patientId: string) => {
+    try {
+      const data = await fetchPatientDiagnosticOrders(patientId);
+      setDiagnosticOrders(data);
+    } catch (e) {
+      console.warn('Could not load patient diagnostic orders', e);
+    }
+  };
 
   useEffect(() => {
     const fetchPatientDetails = async () => {
@@ -45,6 +70,11 @@ const PatientDetails: React.FC = () => {
         if (response.ok) {
           const data = await response.json();
           setAppointment(data);
+          const pId = data.patientId || data.patient?.id;
+          if (pId) {
+            loadPatientReferrals(pId);
+            loadPatientDiagnostics(pId);
+          }
         } else {
           // If direct ID lookup fails, fetch all appointments and find matching record
           const allRes = await fetch(`${API_BASE_URL}/appointments`, {
@@ -57,6 +87,11 @@ const PatientDetails: React.FC = () => {
               : null;
             if (found) {
               setAppointment(found);
+              const pId = found.patientId || found.patient?.id;
+              if (pId) {
+                loadPatientReferrals(pId);
+                loadPatientDiagnostics(pId);
+              }
             } else {
               setError('Patient appointment record not found.');
             }
@@ -74,6 +109,19 @@ const PatientDetails: React.FC = () => {
 
     fetchPatientDetails();
   }, [id]);
+
+  const handleReferralStatusUpdate = async (refId: string, newStatus: string, notes?: string, scheduledDate?: string) => {
+    try {
+      const updated = await updateReferralStatus(refId, {
+        status: newStatus,
+        followUpNotes: notes,
+        scheduledDate,
+      });
+      setReferrals((prev) => prev.map((r) => (r.id === refId ? updated : r)));
+    } catch (e) {
+      console.error('Failed to update referral', e);
+    }
+  };
 
   const handleBack = () => {
     navigate('/doctor/dashboard');
@@ -96,57 +144,36 @@ const PatientDetails: React.FC = () => {
         <DoctorSidebar />
         <main className="flex-1 p-8 bg-[#F8FAFC]">
           <PageHeader title="Patient Details" onBack={handleBack} />
-          <div className="bg-white rounded-2xl border border-red-200 p-8 text-center mt-6 shadow-sm max-w-xl mx-auto">
-            <h3 className="text-xl font-bold text-red-600 mb-2">Record Not Found</h3>
-            <p className="text-slate-600 mb-6">{error || 'Patient information could not be retrieved.'}</p>
-            <button
-              onClick={handleBack}
-              className="bg-habanero text-white px-6 py-2 rounded-xl font-bold hover:bg-[#e0750e] transition-colors cursor-pointer"
-            >
-              Return to Dashboard
-            </button>
+          <div className="p-4 bg-red-50 border border-red-200 text-red-600 rounded-xl">
+            {error || 'Patient not found'}
           </div>
         </main>
       </div>
     );
   }
 
-  // Parse patient attributes dynamically
-  const patientName = appointment.patientName || appointment.patient?.user?.fullName || 'Patient';
-  const patientAge = appointment.patientAge ? (parseInt(String(appointment.patientAge), 10) || 28) : 28;
-  const rawGender = String(appointment.patientGender || appointment.patient?.gender || 'F');
-  const genderChar = rawGender.toUpperCase().startsWith('M') ? 'M' : (rawGender.toUpperCase().startsWith('F') ? 'F' : 'O');
-  const genderFull = genderChar === 'M' ? 'Male' : (genderChar === 'F' ? 'Female' : 'Other');
+  // Formatting helpers
+  const patientName = appointment.patientName || appointment.patient?.name || appointment.patient?.fullName || 'Anonymous Patient';
+  const patientAge = appointment.patientAge || appointment.patient?.age || '28';
+  const genderRaw = appointment.patientGender || appointment.patient?.gender || 'FEMALE';
+  const genderFull = genderRaw.charAt(0).toUpperCase() + genderRaw.slice(1).toLowerCase();
+  
+  const chiefComplaints = appointment.symptoms && appointment.symptoms.length > 0 
+    ? appointment.symptoms 
+    : [appointment.healthConcern || 'General Consultation'];
+    
+  const durationSinceStart = appointment.duration ? `Since ${appointment.duration}` : 'Recently started';
+  
+  const bloodGroup = appointment.patientBloodGroup || appointment.patient?.bloodGroup || 'O+';
+  const height = appointment.patientHeight || appointment.patient?.height || '170 cm';
+  const weight = appointment.patientWeight || appointment.patient?.weight || '68 kg';
 
-  const bloodGroup = appointment.patientBloodGroup || appointment.patient?.bloodGroup || 'B+';
-  const weight = appointment.patientWeight || appointment.patient?.weight || '58kg';
-  const height = appointment.patientHeight || appointment.patient?.height || '162cm';
+  const pastConditions = appointment.patient?.chronicConditions && appointment.patient.chronicConditions.length > 0
+    ? appointment.patient.chronicConditions
+    : ['None reported'];
 
-  const chiefComplaints = Array.isArray(appointment.symptoms) && appointment.symptoms.length > 0
-    ? appointment.symptoms
-    : [appointment.healthConcern || 'General Medical Consultation'];
-
-  const durationSinceStart = appointment.duration || 'Recent';
-
-  // Construct medical history entries
-  const historyList = appointment.ehrRecord?.notes
-    ? [
-        {
-          id: appointment.ehrRecord.id || 'mh-1',
-          date: new Date(appointment.createdAt || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
-          description: appointment.ehrRecord.notes,
-        }
-      ]
-    : [
-        {
-          id: 'mh-1',
-          date: new Date(appointment.createdAt || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
-          description: `Initial consultation booked for ${appointment.healthConcern || 'general medical evaluation'}.`,
-        }
-      ];
-
-  const pastConditions = appointment.healthConcern
-    ? [appointment.healthConcern]
+  const historyList = appointment.notes && appointment.notes.includes('History:')
+    ? [appointment.notes.split('History:')[1].split('\n')[0].trim()]
     : ['No prior chronic conditions recorded'];
 
   // Construct current medicines
@@ -174,62 +201,172 @@ const PatientDetails: React.FC = () => {
         <DoctorNavbar />
 
         <main className="flex-1 overflow-y-auto p-4 md:p-8 relative bg-[#F8FAFC]">
-        <PageHeader 
-          title="Patient Details" 
-          onBack={handleBack} 
-        />
+          <PageHeader 
+            title="Patient Details" 
+            onBack={handleBack} 
+          />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column */}
-          <div className="lg:col-span-2">
-            <PatientInfoCard patient={{
-              name: patientName,
-              age: patientAge,
-              gender: genderFull,
-              initials: getInitials(patientName),
-              tag: "Assigned Patient",
-              vitals: {
-                bloodGroup: bloodGroup,
-                weight: weight,
-                height: height,
-                allergies: allergies.filter(a => a !== 'No known allergies').length,
-              }
-            }} />
-            <ChiefComplaintsCard complaints={chiefComplaints} since={durationSinceStart} />
-            <MedicalHistoryCard conditions={pastConditions} history={historyList} />
-            <CurrentMedicinesCard medicines={currentMedicines} allergies={allergies} />
-          </div>
-
-          {/* Right Column */}
-          <div className="lg:col-span-1">
-            <AISummaryCard summary={summaryText} confidence={92} />
-            
-            <button 
-              onClick={() => navigate(`/doctor/consultation/${appointment.id}`)}
-              className="w-full bg-habanero hover:bg-[#e0750e] text-white py-4 rounded-xl font-bold transition-colors shadow-sm flex items-center justify-center gap-2 text-lg group mb-3 cursor-pointer"
+          <div className="flex items-center gap-2 mb-6 border-b border-slate-200">
+            <button
+              type="button"
+              onClick={() => setActiveTab('clinical')}
+              className={`pb-3 px-3 text-sm font-bold border-b-2 transition cursor-pointer ${
+                activeTab === 'clinical'
+                  ? 'border-habanero text-habanero'
+                  : 'border-transparent text-slate-500 hover:text-slate-800'
+              }`}
             >
-              Start Consultation 
-              <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              Clinical Profile
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('diagnostics')}
+              className={`pb-3 px-3 text-sm font-bold border-b-2 transition flex items-center gap-2 cursor-pointer ${
+                activeTab === 'diagnostics'
+                  ? 'border-habanero text-habanero'
+                  : 'border-transparent text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <TestTube2 className="w-4 h-4" />
+              <span>Diagnostics & Labs</span>
+              {diagnosticOrders.length > 0 && (
+                <span className="px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-700 font-bold">
+                  {diagnosticOrders.length}
+                </span>
+              )}
             </button>
           </div>
-        </div>
 
-        <ReferralModal 
-          isOpen={isReferralOpen} 
-          onClose={() => setIsReferralOpen(false)} 
-          consultationId={appointment.id}
-          patientId={appointment.patientId || appointment.id}
-          fromDoctorId={appointment.doctorId}
-          patientName={patientName} 
-          onSubmit={(data) => {
-            console.log('Referral submitted with DTO:', data);
-            setIsReferralOpen(false);
-          }} 
-        />
-      </main>
+          {activeTab === 'diagnostics' ? (
+            <DiagnosticsOrderTab
+              patientId={appointment.patientId || appointment.patient?.id || appointment.id}
+              patientName={patientName}
+              doctorId={appointment.doctorId}
+              appointmentId={appointment.id}
+              orders={diagnosticOrders}
+              onOrderCreated={(order) => setDiagnosticOrders((prev) => [order, ...prev])}
+              onOrderReviewed={(order) =>
+                setDiagnosticOrders((prev) => prev.map((o) => (o.id === order.id ? order : o)))
+              }
+            />
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Left Column */}
+              <div className="lg:col-span-2">
+                {appointment.verifiedByAsha && (
+                  <div className="mb-4 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/90 p-4 text-emerald-900 shadow-xs">
+                    <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
+                    <div className="text-xs">
+                      <p className="font-bold text-emerald-950">
+                        Verified In-Person by ASHA Worker
+                        {appointment.bookedByAsha?.user?.fullName ? ` (${appointment.bookedByAsha.user.fullName})` : appointment.bookedByAsha?.workerCode ? ` (${appointment.bookedByAsha.workerCode})` : ''}
+                      </p>
+                      <p className="text-emerald-700 text-[11px] mt-0.5">
+                        Community health worker on the ground has confirmed symptoms and patient vitals.
+                        {appointment.verifiedByAshaAt && ` Verified on ${new Date(appointment.verifiedByAshaAt).toLocaleDateString()}.`}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                <PatientInfoCard patient={{
+                  name: patientName,
+                  age: patientAge,
+                  gender: genderFull,
+                  initials: getInitials(patientName),
+                  tag: "Assigned Patient",
+                  vitals: {
+                    bloodGroup: bloodGroup,
+                    weight: weight,
+                    height: height,
+                    allergies: allergies.filter(a => a !== 'No known allergies').length,
+                  }
+                }} />
+                <ChiefComplaintsCard complaints={chiefComplaints} since={durationSinceStart} />
+                <MedicalHistoryCard conditions={pastConditions} history={historyList} />
+                <CurrentMedicinesCard medicines={currentMedicines} allergies={allergies} />
+
+                {/* Referrals Section */}
+                <div className="mt-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-base font-extrabold text-slate-900">
+                      Referral Tracking ({referrals.length})
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setIsReferralOpen(true)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300 rounded-xl transition cursor-pointer"
+                    >
+                      <Share2 className="w-3.5 h-3.5" />
+                      <span>Refer to Facility</span>
+                    </button>
+                  </div>
+
+                  {referrals.length === 0 ? (
+                    <div className="p-4 rounded-2xl bg-white border border-dashed border-slate-200 text-center text-xs text-slate-400 font-medium">
+                      No active facility referrals for this patient. Click "Refer to Facility" to create one.
+                    </div>
+                  ) : (
+                    referrals.map((ref) => (
+                      <ReferralStepperCard
+                        key={ref.id}
+                        referral={ref}
+                        canUpdate={true}
+                        onStatusUpdate={handleReferralStatusUpdate}
+                      />
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Right Column */}
+              <div className="lg:col-span-1">
+                <AISummaryCard summary={summaryText} confidence={92} />
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('diagnostics')}
+                  className="w-full bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 py-3 rounded-xl font-bold transition shadow-2xs flex items-center justify-center gap-2 text-sm mb-3 cursor-pointer"
+                >
+                  <TestTube2 className="w-4 h-4 text-blue-600" />
+                  Diagnostics & Lab Orders ({diagnosticOrders.length})
+                </button>
+
+                <button 
+                  type="button"
+                  onClick={() => setIsReferralOpen(true)}
+                  className="w-full bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 py-3 rounded-xl font-bold transition shadow-2xs flex items-center justify-center gap-2 text-sm mb-3 cursor-pointer"
+                >
+                  <Share2 className="w-4 h-4 text-amber-600" />
+                  Refer Patient to Facility
+                </button>
+                
+                <button 
+                  onClick={() => navigate(`/doctor/consultation/${appointment.id}`)}
+                  className="w-full bg-habanero hover:bg-[#e0750e] text-white py-4 rounded-xl font-bold transition-colors shadow-sm flex items-center justify-center gap-2 text-lg group mb-3 cursor-pointer"
+                >
+                  Start Consultation 
+                  <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          <ReferralModal 
+            isOpen={isReferralOpen} 
+            onClose={() => setIsReferralOpen(false)} 
+            consultationId={appointment.id}
+            patientId={appointment.patientId || appointment.patient?.id || appointment.id}
+            fromDoctorId={appointment.doctorId}
+            patientName={patientName} 
+            onSubmit={(data) => {
+              setReferrals((prev) => [data, ...prev]);
+              setIsReferralOpen(false);
+            }} 
+          />
+        </main>
+      </div>
     </div>
-  </div>
-);
+  );
 };
 
 export default PatientDetails;

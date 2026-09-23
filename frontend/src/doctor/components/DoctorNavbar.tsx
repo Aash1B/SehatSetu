@@ -48,7 +48,7 @@ const DoctorNavbar: React.FC<DoctorNavbarProps> = ({ doctor }) => {
   const imageUrl = doctor?.imageUrl || fetchedImage;
 
   return (
-    <header className="h-[64px] sm:h-[80px] px-3 sm:px-6 md:px-8 bg-white border-b border-slate-200 flex items-center justify-between sticky top-0 z-40 w-full shrink-0 shadow-xs font-sans gap-2">
+    <header className="h-[64px] sm:h-[80px] px-3 sm:px-6 md:px-8 bg-white border-b border-slate-200 flex items-center justify-between sticky top-0 z-40 w-full shrink-0 shadow-xs font-sans gap-2 safe-area-pt">
       {/* Left: Mobile Hamburger Menu & Logo */}
       <div className="flex items-center gap-2 flex-1">
         <button
@@ -87,7 +87,7 @@ const DoctorNavbar: React.FC<DoctorNavbarProps> = ({ doctor }) => {
         <button
           type="button"
           onClick={() => navigate('/doctor/profile')}
-          className="flex items-center gap-2 sm:gap-3 p-1 sm:px-4 sm:py-2 bg-white hover:bg-slate-50 border border-slate-200 rounded-full transition-all cursor-pointer shadow-xs min-h-[40px]"
+          className="flex items-center gap-2 sm:gap-3 p-1 sm:px-4 sm:py-2 bg-white hover:bg-slate-50 border border-slate-200 rounded-full transition-all cursor-pointer shadow-xs min-h-[44px] min-w-[44px]"
           title="View Doctor Profile"
         >
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#111144] overflow-hidden flex items-center justify-center shrink-0 border border-slate-200">

@@ -77,8 +77,7 @@
   "emergencyCall": "आपत्कालीन कॉल",
   "doctorHelpline": "24/7 डॉक्टर हेल्पलाइन",
   "tollFree": "टोल-फ्री त्वरित सल्लामसलत",
-  "emergencyHospitals": "जवळपासचे आपत्कालीन रुग्णालये"
-,
+  "emergencyHospitals": "जवळपासचे आपत्कालीन रुग्णालये",
   "erIcu": "ER केंद्रे आणि ICU उपलब्धता पहा",
   "view": "पहा",
   "patientID": "रुग्ण आयडी:",
@@ -147,8 +146,7 @@
   "isFollowUp": "ही फॉलो-अप सल्लामसलत आहे",
   "followUpEmail": "फॉलो-अपच्या आधी चार वेळा पर्यंत ईमेल अनुस्मारक स्वयंचलितपणे पाठवले जातील.",
   "additionalDetails": "डॉक्टरांसाठी अतिरिक्त तपशील? (पर्यायी)",
-  "charCount": "/500"
-,
+  "charCount": "/500",
   "selectDoctor": "तुमचा डॉक्टर निवडा",
   "chooseFrom": "तुमच्या लक्षणांशी जुळणाऱ्या शीर्ष तज्ञांमधून निवडा.",
   "searchDoctor": "डॉक्टरचे नाव, विशेषज्ञता किंवा कीवर्डद्वारे शोधा…",
@@ -218,8 +216,7 @@
   "netBankingSub": "सर्व प्रमुख बँका",
   "wallet": "वॉलेट",
   "walletSub": "Paytm, PhonePe, Amazon Pay",
-  "securePayments": "100% सुरक्षित पेमेंट"
-,
+  "securePayments": "100% सुरक्षित पेमेंट",
   "appointmentDetails": "अपॉइंटमेंट तपशील",
   "dateAndTime": "तारीख आणि वेळ",
   "consultationMode": "सल्लामसलत विधान:",
@@ -286,8 +283,7 @@
   "paymentDetailsNotStored": "पेमेंट तपशील येथे साठवले जात नाहीत.",
   "visaDebitCard": "Visa डेबिट कार्ड",
   "patientCareHub": "रुग्ण काळजी केंद्र",
-  "mainNavigation": "मुख्य नेव्हिगेशन"
-,
+  "mainNavigation": "मुख्य नेव्हिगेशन",
   "upcoming": "आगामी",
   "past": "मागील",
   "cancelled": "रद्द",
@@ -369,5 +365,29 @@
     "notAvailable": "उपलब्ध नाही",
     "ocrText": "OCR मजकूर",
     "ocrResult": "OCR निकाल"
+  },
+  "diagnostics": {
+    "pendingTestsTitle": "निदान चाचण्या आणि लॅब ऑर्डर्स",
+    "awaitingCompletion": "पूर्ण होण्याची किंवा पुनरावलोकनाची वाट पाहत आहे",
+    "allCompleted": "सर्व चाचण्या पूर्ण झाल्या आणि EHR मध्ये सेव्ह झाल्या",
+    "reportUploaded": "अहवाल अपलोड केला (पुनरावलोकन चालू आहे)",
+    "samplePending": "नमुना / अहवाल प्रलंबित",
+    "uploadReport": "लॅब अहवाल / स्कॅन अपलोड करा",
+    "uploading": "अपलोड होत आहे...",
+    "reviewedByDoctor": "डॉक्टरांनी पुनरावलोकन केले आणि EHR मध्ये सेव्ह केले",
+    "clinicalSummary": "क्लिनिकल निष्कर्ष / डॉक्टरांचा सारांश"
+  },
+  "medicineAvailability": {
+    "title": "प्राथमिक आरोग्य केंद्र / सरकारी औषध उपलब्धता",
+    "subtitle": "तुमच्या जवळच्या आरोग्य केंद्र आणि रुग्णालयात मोफत औषध साठा तपासा",
+    "searchPlaceholder": "औषधाचे नाव शोधा (उदा. पॅरासिटामॉल, मेटफॉर्मिन)...",
+    "quickCheck": "द्रुत तपासणी:",
+    "searching": "आरोग्य केंद्रांचा साठा शोधत आहे...",
+    "noStockFound": "जवळपासच्या केंद्रांवर या औषधाचा कोणताही साठा आढळला नाही. कृपया आशा कार्यकर्त्या किंवा डॉक्टरांशी संपर्क साधा.",
+    "availableAtFacilities": "{{count}} आरोग्य केंद्रांमध्ये उपलब्ध:",
+    "inStock": "उपलब्ध",
+    "lowStock": "कमी साठा",
+    "outOfStock": "साठा संपला",
+    "freeGovt": "सरकारी मोफत वाटप"
   }
 }

@@ -66,10 +66,35 @@ export default defineConfig({
         ],
       },
       workbox: {
-        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         skipWaiting: true,
         clientsClaim: true,
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest,woff,woff2,webp}'],
+        // Only precache the critical app shell for landing / login
+        globPatterns: [
+          'index.html',
+          'manifest.webmanifest',
+          'favicon.ico',
+          'logo.svg',
+          'apple-touch-icon.png',
+          'pwa-192x192.png',
+          'pwa-512x512.png',
+          'maskable-icon-192x192.png',
+          'maskable-icon-512x512.png',
+          'assets/index-*.js',
+          'assets/index-*.css',
+          'assets/LandingPage-*.js',
+          'assets/LoginPage-*.js',
+          'assets/PatientLogin-*.js',
+          'assets/jsx-runtime-*.js',
+          'assets/purify.es-*.js',
+          'assets/utils-*.js',
+        ],
+        globIgnores: [
+          '**/LowBandwidthMode-*',
+          '**/PrescriptionViewModal-*',
+          '**/html2canvas-*',
+          '**/VideoConsultation*',
+        ],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [
           /^\/api\//,
@@ -118,6 +143,30 @@ export default defineConfig({
               expiration: {
                 maxEntries: 10,
                 maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+              },
+            },
+          },
+          {
+            // Lazy load role-specific and dynamic code chunks on demand
+            urlPattern: ({ request }) => request.destination === 'script' || request.destination === 'style',
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'app-dynamic-chunks',
+              expiration: {
+                maxEntries: 60,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+              },
+            },
+          },
+          {
+            // Lazy load images on demand and cache them
+            urlPattern: ({ request }) => request.destination === 'image',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'app-images',
+              expiration: {
+                maxEntries: 60,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
               },
             },
           },

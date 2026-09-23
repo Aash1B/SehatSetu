@@ -17,6 +17,11 @@ import { KnownConditionsIcon, AllergiesIcon, PastSurgeriesIcon, CurrentMedicatio
 import { LiquidLoader } from '../../common/components/LiquidLoader';
 import PasswordInput from '../../common/components/PasswordInput';
 import type { EhrDraftStructuredData } from '../../types';
+import ReferralStepperCard from '../../components/ReferralStepperCard';
+import { fetchPatientReferrals, updateReferralStatus, type ReferralRecord } from '../../services/referralsApi';
+import { PendingTestsCard } from '../components/PendingTestsCard';
+import { fetchPatientDiagnosticOrders, type DiagnosticOrderRecord } from '../../services/diagnosticsApi';
+import { MedicineAvailabilityWidget } from '../components/MedicineAvailabilityWidget';
 
 interface ConsultationItem {
   id: string;
@@ -322,7 +327,7 @@ const abnormalFindingValues = (value: unknown): ClinicalListItem[] => {
         .filter((part): part is string => Boolean(part))
         .join(' · ') || undefined,
     };
-  }).filter((finding): finding is ClinicalListItem => Boolean(finding));
+  }).filter((finding): finding is NonNullable<typeof finding> => Boolean(finding));
 };
 
 const structuredEntityValues = (value: unknown): ClinicalListItem[] => {
@@ -342,7 +347,7 @@ const structuredEntityValues = (value: unknown): ClinicalListItem[] => {
       .map(textValue)
       .filter((part): part is string => Boolean(part));
     return { label, value: entityValue, detail: details.length ? details.join(' · ') : undefined };
-  }).filter((entity): entity is ClinicalListItem => Boolean(entity));
+  }).filter((entity): entity is NonNullable<typeof entity> => Boolean(entity));
 };
 
 const hiddenRawKeys = new Set([
@@ -649,12 +654,27 @@ const DashboardPage: React.FC = () => {
 
   const [consultationsList, setConsultationsList] = useState<ConsultationItem[]>([]);
   const [prescriptionsList, setPrescriptionsList] = useState<any[]>([]);
+  const [patientReferrals, setPatientReferrals] = useState<ReferralRecord[]>([]);
+  const [patientDiagnosticOrders, setPatientDiagnosticOrders] = useState<DiagnosticOrderRecord[]>([]);
   const [dashboardLoading, setDashboardLoading] = useState(true);
   const [dashboardError, setDashboardError] = useState('');
   const [showRxModal, setShowRxModal] = useState<boolean>(false);
   const [selectedRxData, setSelectedRxData] = useState<any>(null);
   const [selectedEhrModalData, setSelectedEhrModalData] = useState<PatientEhrModalItem | null>(null);
   const [previewDoc, setPreviewDoc] = useState<{ url: string; fileName: string } | null>(null);
+
+  const handlePatientReferralUpdate = async (refId: string, newStatus: string, notes?: string, scheduledDate?: string) => {
+    try {
+      const updated = await updateReferralStatus(refId, {
+        status: newStatus,
+        followUpNotes: notes,
+        scheduledDate,
+      });
+      setPatientReferrals((prev) => prev.map((r) => (r.id === refId ? updated : r)));
+    } catch (e) {
+      console.error('Failed to update referral', e);
+    }
+  };
 
   // Profile & Settings states
   const [profileSubTab, setProfileSubTab] = useState<'personal' | 'medical' | 'security' | 'notifications' | 'billing'>('personal');
@@ -841,6 +861,15 @@ const DashboardPage: React.FC = () => {
           severeConditions: Array.isArray(p.severeConditions) ? p.severeConditions : [],
           familyHistory: Array.isArray(p.familyHistory) ? p.familyHistory : [],
         });
+
+        if (p.id) {
+          fetchPatientReferrals(p.id)
+            .then(setPatientReferrals)
+            .catch((err) => console.warn('Could not load patient referrals', err));
+          fetchPatientDiagnosticOrders(p.id)
+            .then(setPatientDiagnosticOrders)
+            .catch((err) => console.warn('Could not load patient diagnostic orders', err));
+        }
 
         const appointments = Array.isArray(data.appointments) ? data.appointments : [];
         setLatestAppointment(appointments.find((a: any) => a.status !== 'COMPLETED' && a.status !== 'CANCELLED') || null);
@@ -1446,6 +1475,46 @@ const DashboardPage: React.FC = () => {
               <div className="dash-body-grid">
                 {/* LEFT COLUMN: Upcoming Appointment & Recent Consultations */}
                 <div className="dash-left-col">
+                  {/* Active Facility Referrals */}
+                  {patientReferrals.length > 0 && (
+                    <div className="mb-5 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
+                          <span>{t('referral.myReferrals', 'Facility Referrals')} ({patientReferrals.length})</span>
+                        </h2>
+                      </div>
+                      <div className="space-y-3">
+                        {patientReferrals.map((ref) => (
+                          <ReferralStepperCard
+                            key={ref.id}
+                            referral={ref}
+                            canUpdate={false}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Diagnostic Orders & Lab Tests */}
+                  {patientDiagnosticOrders.length > 0 && (
+                    <div className="mb-5">
+                      <PendingTestsCard
+                        orders={patientDiagnosticOrders}
+                        onOrderUpdated={(updated) =>
+                          setPatientDiagnosticOrders((prev) =>
+                            prev.map((o) => (o.id === updated.id ? updated : o))
+                          )
+                        }
+                      />
+                    </div>
+                  )}
+
+                  {/* PHC Medicine Availability Widget */}
+                  <div className="mb-5">
+                    <MedicineAvailabilityWidget />
+                  </div>
+
                   {/* Upcoming Appointment Box */}
                   {(() => {
                     if (!latestAppointment) {

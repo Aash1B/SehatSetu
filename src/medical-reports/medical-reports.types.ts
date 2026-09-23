@@ -8,7 +8,7 @@ export const ALLOWED_MEDICAL_REPORT_MIME_TYPES = new Set([
 
 export interface AuthenticatedActor {
   userId: string;
-  role: 'PATIENT' | 'DOCTOR';
+  role: 'PATIENT' | 'DOCTOR' | 'ASHA';
 }
 
 export interface StoredObjectMetadata {

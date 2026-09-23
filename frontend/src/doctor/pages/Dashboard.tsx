@@ -87,7 +87,7 @@ const Dashboard = () => {
           const dbAppointments = await res.json();
           if (Array.isArray(dbAppointments)) {
             const formatted = dbAppointments.map((app: any) => {
-              const patientName = app.patientName || app.patient?.user?.fullName || 'Unknown Patient';
+              const patientName = app.patientName || app.patient?.name || app.patient?.user?.fullName || 'Unknown Patient';
               const patientAge = app.patientAge ? (parseInt(String(app.patientAge), 10) || 28) : 28;
               const patientGenderStr = app.patientGender || app.patient?.gender || 'Female';
               const genderChar = patientGenderStr.toUpperCase().startsWith('M') ? 'M' : (patientGenderStr.toUpperCase().startsWith('F') ? 'F' : 'O');
@@ -103,6 +103,14 @@ const Dashboard = () => {
                 displayDate = new Date().toISOString().split('T')[0];
               }
 
+              const tags: Array<{ label: string; variant: any }> = [
+                { label: 'Consultation', variant: 'default' as const },
+                { label: app.status === 'SCHEDULED' ? 'Scheduled' : (app.status === 'COMPLETED' ? 'Completed' : (app.status === 'CANCELLED' ? 'Cancelled' : (app.status || 'Scheduled'))), variant: (app.status === 'CANCELLED' ? 'cancelled' : app.status === 'COMPLETED' ? 'completed' : 'scheduled') as any },
+              ];
+              if (app.verifiedByAsha) {
+                tags.push({ label: 'ASHA Verified', variant: 'scheduled' as any });
+              }
+
               return {
                 id: String(app.id || Math.random()),
                 patient: {
@@ -113,10 +121,7 @@ const Dashboard = () => {
                   gender: genderChar,
                   avatarColorClass: 'bg-indigo-50 text-indigo-600',
                 },
-                tags: [
-                  { label: 'Consultation', variant: 'default' as const },
-                  { label: app.status === 'SCHEDULED' ? 'Scheduled' : (app.status === 'COMPLETED' ? 'Completed' : (app.status === 'CANCELLED' ? 'Cancelled' : (app.status || 'Scheduled'))), variant: (app.status === 'CANCELLED' ? 'cancelled' : app.status === 'COMPLETED' ? 'completed' : 'scheduled') as any },
-                ],
+                tags,
                 time: app.timeSlot || '10:00 AM',
                 date: displayDate,
                 chiefComplaint: app.healthConcern || (app.notes ? String(app.notes).split('\n')[0].replace(/^Concern:\s*/i, '') : 'General Medical Consultation'),

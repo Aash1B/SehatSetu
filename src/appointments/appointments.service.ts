@@ -365,7 +365,12 @@ export class AppointmentsService {
           doctor: { is: { userId } },
         },
         orderBy: { createdAt: 'desc' },
-        include: { patient: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } }, prescription: true, ehrRecord: true },
+        include: {
+          patient: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } },
+          prescription: true,
+          ehrRecord: true,
+          bookedByAsha: { select: { workerCode: true, village: true, assignedArea: true, user: { select: { fullName: true } } } },
+        },
       });
     }
     return [];
@@ -392,6 +397,7 @@ export class AppointmentsService {
         doctor: { include: { user: { select: { id: true, fullName: true, email: true, role: true } } } },
         prescription: true,
         ehrRecord: true,
+        bookedByAsha: { select: { workerCode: true, village: true, assignedArea: true, user: { select: { fullName: true } } } },
       },
     });
     if (!appointment) throw new NotFoundException('Appointment not found');
@@ -545,6 +551,7 @@ export class AppointmentsService {
           }
         },
         ehrRecord: true,
+        bookedByAsha: { select: { workerCode: true, village: true, assignedArea: true, user: { select: { fullName: true } } } },
       },
     });
 
@@ -559,9 +566,9 @@ export class AppointmentsService {
 
       return {
         ...app,
-        patientName: app.patientName || app.patient?.user?.fullName || 'Patient',
+        patientName: app.patientName || app.patient?.name || app.patient?.user?.fullName || 'Patient',
         patientGender: app.patientGender || app.patient?.gender || 'Female',
-        patientPhone: app.patientPhone || '',
+        patientPhone: app.patientPhone || app.patient?.phone || '',
         patientEmail: app.patientEmail || app.patient?.user?.email || '',
         notes: app.notes || app.ehrRecord?.notes || '',
         status: app.status || 'SCHEDULED',

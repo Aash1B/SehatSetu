@@ -13,10 +13,22 @@
 
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
     <link rel="shortcut icon" href="/logo.svg" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/logo.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="mask-icon" href="/logo.svg" color="#223382" />
 
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <script>
+      window.addEventListener('DOMContentLoaded', function () {
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap';
+        document.head.appendChild(link);
+      });
+    </script>
+
+    <link rel="preload" as="image" href="/hero-mobile.webp" type="image/webp" media="(max-width: 768px)" fetchpriority="high" />
+    <link rel="preload" as="image" href="/hero.webp" type="image/webp" media="(min-width: 769px)" fetchpriority="high" />
   </head>
   <body>
     <div id="root"></div>

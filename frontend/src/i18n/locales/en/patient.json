@@ -365,5 +365,29 @@
     "notAvailable": "Not available",
     "ocrText": "OCR text",
     "ocrResult": "OCR Result"
+  },
+  "diagnostics": {
+    "pendingTestsTitle": "Diagnostic Tests & Lab Orders",
+    "awaitingCompletion": "awaiting completion or review",
+    "allCompleted": "All diagnostic investigations completed & synced to EHR",
+    "reportUploaded": "Report Uploaded (Under Review)",
+    "samplePending": "Sample / Report Pending",
+    "uploadReport": "Upload Lab Report / Scan",
+    "uploading": "Uploading...",
+    "reviewedByDoctor": "Reviewed by Doctor & Synced to EHR",
+    "clinicalSummary": "Clinical Finding / Doctor Summary"
+  },
+  "medicineAvailability": {
+    "title": "PHC / Government Medicine Availability",
+    "subtitle": "Check free medicine inventory at your nearest Health Centre & Hospital",
+    "searchPlaceholder": "Search medicine name (e.g. Paracetamol, Metformin)...",
+    "quickCheck": "Quick check:",
+    "searching": "Searching facility inventories...",
+    "noStockFound": "No inventory records found for this medicine across nearby facilities. Please consult your ASHA worker or doctor for alternatives.",
+    "availableAtFacilities": "Found in {{count}} health facilities:",
+    "inStock": "In Stock",
+    "lowStock": "Low Stock",
+    "outOfStock": "Out of Stock",
+    "freeGovt": "Government Free Dispensation"
   }
 }

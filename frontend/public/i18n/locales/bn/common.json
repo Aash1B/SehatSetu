@@ -38,5 +38,31 @@
   "learnMore": "আরও জানুন →",
   "home": "হোম",
   "dashboard": "ড্যাশবোর্ড",
-  "backToHome": "হোমে ফিরুন"
+  "backToHome": "হোমে ফিরুন",
+  "referral": {
+    "steps": {
+      "pending": "মুলতুবি",
+      "scheduled": "নির্ধারিত",
+      "visited": "পরিদর্শিত",
+      "completed": "সম্পন্ন",
+      "declined": "প্রত্যাখ্যান"
+    },
+    "facilityTypes": {
+      "government": "সরকারি হাসপাতাল",
+      "private": "বেসরকারি ক্লিনিক",
+      "specialty": "বিশেষায়িত কেন্দ্র"
+    },
+    "referredBy": "দ্বারা রেফার করা হয়েছে",
+    "reason": "কারণ",
+    "scheduledDate": "নির্ধারিত তারিখ",
+    "followUpNotes": "ফলো-আপ নোট",
+    "advancePipeline": "অবস্থা এগিয়ে নিন",
+    "markScheduled": "নির্ধারিত হিসেবে চিহ্নিত করুন",
+    "markVisited": "পরিদর্শিত হিসেবে চিহ্নিত করুন",
+    "markCompleted": "সম্পন্ন হিসেবে চিহ্নিত করুন",
+    "updateStatusPrompt": "রেফারেল বিবরণ আপডেট করুন",
+    "selectDate": "পরিদর্শনের তারিখ",
+    "addNotesOptional": "ফলো-আপ / আশা নোট (ঐচ্ছিক)",
+    "myReferrals": "হাসপাতাল রেফারেল"
+  }
 }

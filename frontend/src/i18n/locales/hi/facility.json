@@ -1,0 +1,20 @@
+{
+  "title": "प्राथमिक स्वास्थ्य केंद्र (पीएचसी) संचालन पोर्टल",
+  "overview": "प्रमुख स्वास्थ्य एवं संचालन मेट्रिक्स",
+  "consultationsTitle": "परामर्श",
+  "completed": "पूर्ण",
+  "total": "कुल",
+  "referralsTitle": "आने वाले रेफरल",
+  "visited": "दौरा किया",
+  "highRiskTitle": "उच्च जोखिम वाले मामले",
+  "urgentFlags": "तत्काल ट्राइएज संकेत",
+  "diagnosticsTitle": "नैदानिक परीक्षण आदेश",
+  "reviewed": "परिणाम समीक्षित एवं सिंक",
+  "medicineShortagesTitle": "दवा की कमी",
+  "outOfStock": "समाप्त",
+  "lowStock": "कम स्टॉक",
+  "overdueTitle": "अतिदेय अनुवर्ती कार्य",
+  "remindersOverdue": "टीकाकरण / एएनसी रिमाइंडर",
+  "inventoryTitle": "स्वास्थ्य केंद्र दवा स्टॉक एवं कमी निगरानी",
+  "inventorySubtitle": "सक्रिय डिस्पेंसरी स्टॉक स्तर — वास्तविक समय में मात्रा समायोजित करें"
+}

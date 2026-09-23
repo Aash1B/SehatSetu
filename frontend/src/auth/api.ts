@@ -28,12 +28,18 @@ export interface AuthResponse {
   id: string;
   email: string;
   fullName: string;
-  role: 'PATIENT' | 'DOCTOR';
+  role: 'PATIENT' | 'DOCTOR' | 'ASHA';
   accessToken: string;
   onboardingCompleted: boolean;
   status?: 'PENDING' | 'APPROVED' | 'REJECTED';
   message?: string;
   rejectionReason?: string | null;
+  ashaWorker?: {
+    id: string;
+    workerCode: string | null;
+    assignedArea: string | null;
+    village: string | null;
+  } | null;
 }
 
 export interface SignupResponse {

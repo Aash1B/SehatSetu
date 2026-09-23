@@ -48,7 +48,7 @@ export class MchProcessor extends WorkerHost {
     }
 
     const recipientEmail = reminder.patient.user?.email;
-    const patientName = reminder.patient.user?.fullName || 'Patient';
+    const patientName = reminder.patient.name || reminder.patient.user?.fullName || 'Patient';
     if (!recipientEmail) {
       await prisma.mchReminder.update({ where: { id: reminder.id }, data: { status: ReminderStatus.FAILED } });
       return { status: 'failed', reason: 'No email address' };

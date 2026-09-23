@@ -68,5 +68,37 @@
   "noAppointments": "You have no {filter} appointments.",
   "noUpcomingAppointments": "No upcoming appointments scheduled.",
   "upcomingAppointments": "Upcoming Appointments",
-  "patientAppointments": "Patient Appointments"
+  "patientAppointments": "Patient Appointments",
+  "referral": {
+    "modalTitle": "Create Facility Referral",
+    "patient": "Patient",
+    "selectFacility": "Target Healthcare Facility",
+    "facilityType": "Facility Type",
+    "clinicalReason": "Clinical Reason for Referral",
+    "recommendedDate": "Recommended Date of Visit (Optional)",
+    "additionalNotes": "Follow-up Notes / Instructions for ASHA (Optional)",
+    "sendReferral": "Create Referral",
+    "reasonRequired": "Please provide a reason for referral",
+    "creationFailed": "Failed to create referral"
+  },
+  "diagnostics": {
+    "nameRequired": "Please enter a test name",
+    "orderFailed": "Failed to create diagnostic order",
+    "orderNewTest": "Order Diagnostic Investigation",
+    "orderSubtitle": "Request lab or imaging tests for",
+    "quickSelect": "Quick Select Standard Test",
+    "testName": "Test Name",
+    "testType": "Investigation Type",
+    "instructions": "Instructions for Patient & Phlebotomist / Lab (Optional)",
+    "submitOrder": "Order Investigation",
+    "activeOrders": "Ordered Tests & Lab Results",
+    "noOrders": "No diagnostic investigations ordered for this patient yet.",
+    "reviewResultTitle": "Enter Clinical Finding / Diagnostic Summary",
+    "statusPending": "Sample / Test Pending",
+    "statusReportUploaded": "Report Uploaded",
+    "statusReviewed": "Reviewed & Synced to EHR",
+    "reviewFindings": "Review & Enter Findings",
+    "saveToEhr": "Save Finding to Patient EHR",
+    "reviewPlaceholder": "Document clinical conclusions, abnormal flags, or follow-up recommendations..."
+  }
 }

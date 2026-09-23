@@ -38,5 +38,31 @@
   "learnMore": "अधिक जाणून घ्या →",
   "home": "होम",
   "dashboard": "डैशबोर्ड",
-  "backToHome": "होम पर वापस जाएँ"
+  "backToHome": "होम पर वापस जाएँ",
+  "referral": {
+    "steps": {
+      "pending": "लंबित",
+      "scheduled": "निर्धारित",
+      "visited": "दौरा किया",
+      "completed": "पूर्ण",
+      "declined": "अस्वीकृत"
+    },
+    "facilityTypes": {
+      "government": "सरकारी अस्पताल",
+      "private": "निजी क्लिनिक",
+      "specialty": "विशेषज्ञ केंद्र"
+    },
+    "referredBy": "द्वारा संदर्भित",
+    "reason": "कारण",
+    "scheduledDate": "निर्धारित तिथि",
+    "followUpNotes": "फॉलो-अप नोट्स",
+    "advancePipeline": "स्थिति आगे बढ़ाएं",
+    "markScheduled": "निर्धारित चिह्नित करें",
+    "markVisited": "दौरा किया चिह्नित करें",
+    "markCompleted": "पूर्ण चिह्नित करें",
+    "updateStatusPrompt": "रेफरल विवरण अपडेट करें",
+    "selectDate": "निर्धारित यात्रा तिथि",
+    "addNotesOptional": "फॉलो-अप / आशा नोट्स (वैकल्पिक)",
+    "myReferrals": "अस्पताल रेफरल"
+  }
 }

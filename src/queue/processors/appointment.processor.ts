@@ -61,7 +61,7 @@ export class AppointmentProcessor extends WorkerHost {
       return { status: 'skipped', reason: 'Patient email unavailable' };
     }
 
-    const patientName = appointment.patient?.user?.fullName || appointment.patientName || 'Patient';
+    const patientName = appointment.patient?.name || appointment.patient?.user?.fullName || appointment.patientName || 'Patient';
     const doctorName = appointment.doctor?.name || appointment.doctor?.user?.fullName || 'your doctor';
     const scheduledText = appointment.scheduledAt
       ? new Date(appointment.scheduledAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })
@@ -133,7 +133,7 @@ export class AppointmentProcessor extends WorkerHost {
     }
     const recipient = appointment.patient?.user?.email || appointment.patientEmail;
     if (!recipient) return { status: 'skipped', reason: 'Patient email is unavailable' };
-    const patientName = appointment.patient?.user?.fullName || appointment.patientName || 'Patient';
+    const patientName = appointment.patient?.name || appointment.patient?.user?.fullName || appointment.patientName || 'Patient';
     const doctorName = appointment.doctor?.name || appointment.doctor?.user?.fullName || 'your doctor';
     const scheduledText = appointment.scheduledAt?.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' }) || `${appointment.date} ${appointment.timeSlot}`;
     const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';

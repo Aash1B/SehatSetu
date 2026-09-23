@@ -24,7 +24,7 @@ import { CreateMchDocumentDto } from './dto/document.dto';
 
 export interface MchActor {
   userId: string;
-  role: 'PATIENT' | 'DOCTOR';
+  role: 'PATIENT' | 'DOCTOR' | 'ASHA';
 }
 
 @Injectable()
@@ -46,6 +46,19 @@ export class MchService {
       const patient = await prisma.patient.findUnique({ where: { userId: actor.userId }, select: { id: true } });
       if (!patient || patient.id !== patientId) throw new ForbiddenException('Access denied');
       return;
+    }
+    if (actor.role === 'ASHA') {
+      const isAssigned = await prisma.patient.findFirst({
+        where: {
+          id: patientId,
+          OR: [
+            { assignedAshaWorker: { userId: actor.userId } },
+            { registeredByAsha: { userId: actor.userId } },
+          ],
+        },
+        select: { id: true },
+      });
+      if (isAssigned) return;
     }
     // Doctor must have at least one appointment with patient
     const link = await prisma.appointment.findFirst({
@@ -722,7 +735,7 @@ export class MchService {
     const resolvedPatientId = patientId ?? report.patient.id;
     await this.assertPatientAccess(actor, resolvedPatientId);
 
-    if (report.patient.userId !== (await prisma.patient.findUnique({ where: { id: resolvedPatientId }, select: { userId: true } }))?.userId) {
+    if (report.patient.id !== resolvedPatientId) {
       throw new ForbiddenException('Medical report does not belong to this patient');
     }
 

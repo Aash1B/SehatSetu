@@ -68,5 +68,37 @@
   "noAppointments": "आपके पास कोई {filter} अपॉइंटमेंट नहीं है।",
   "noUpcomingAppointments": "कोई आगामी अपॉइंटमेंट निर्धारित नहीं है।",
   "upcomingAppointments": "आगामी अपॉइंटमेंट",
-  "patientAppointments": "रोगी के अपॉइंटमेंट"
+  "patientAppointments": "रोगी के अपॉइंटमेंट",
+  "referral": {
+    "modalTitle": "अस्पताल रेफरल बनाएं",
+    "patient": "मरीज़",
+    "selectFacility": "लक्षित स्वास्थ्य केंद्र",
+    "facilityType": "केंद्र का प्रकार",
+    "clinicalReason": "रेफरल का चिकित्सीय कारण",
+    "recommendedDate": "दौरे की अनुशंसित तिथि (वैकल्पिक)",
+    "additionalNotes": "आशा / फॉलो-अप हेतु निर्देश (वैकल्पिक)",
+    "sendReferral": "रेफरल बनाएं",
+    "reasonRequired": "कृपया रेफरल का कारण प्रदान करें",
+    "creationFailed": "रेफरल बनाने में विफल"
+  },
+  "diagnostics": {
+    "nameRequired": "कृपया जांच का नाम दर्ज करें",
+    "orderFailed": "नैदानिक परीक्षण आदेश बनाने में विफल",
+    "orderNewTest": "नैदानिक परीक्षण का आदेश दें",
+    "orderSubtitle": "के लिए प्रयोगशाला या इमेजिंग परीक्षण का अनुरोध करें",
+    "quickSelect": "मानक परीक्षण तुरंत चुनें",
+    "testName": "परीक्षण का नाम",
+    "testType": "जांच का प्रकार",
+    "instructions": "रोगी एवं प्रयोगशाला/फ्लेबोटोमिस्ट हेतु निर्देश (वैकल्पिक)",
+    "submitOrder": "परीक्षण आदेश दें",
+    "activeOrders": "आदेशित परीक्षण एवं प्रयोगशाला परिणाम",
+    "noOrders": "इस रोगी के लिए अभी तक कोई नैदानिक परीक्षण आदेशित नहीं किया गया है।",
+    "reviewResultTitle": "नैदानिक निष्कर्ष / सारांश दर्ज करें",
+    "statusPending": "नमूना / परीक्षण लंबित",
+    "statusReportUploaded": "रिपोर्ट अपलोड की गई",
+    "statusReviewed": "समीक्षित एवं ईएचआर में सिंक",
+    "reviewFindings": "समीक्षा करें एवं निष्कर्ष दर्ज करें",
+    "saveToEhr": "रोगी ईएचआर में निष्कर्ष सहेजें",
+    "reviewPlaceholder": "नैदानिक निष्कर्ष, असामान्य मान या अनुवर्ती सिफारिशें लिखें..."
+  }
 }

@@ -3,6 +3,7 @@ import { IsEmail, IsString, MinLength, IsEnum, IsBoolean, Equals, Matches } from
 export enum RoleInput {
   PATIENT = 'PATIENT',
   DOCTOR = 'DOCTOR',
+  ASHA = 'ASHA',
 }
 
 export class SignupDto {

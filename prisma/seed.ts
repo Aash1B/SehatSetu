@@ -236,11 +236,34 @@ export const CANONICAL_DOCTORS = [
   },
 ];
 
+export const CANONICAL_ASHA_WORKERS = [
+  {
+    id: 'asha-1',
+    email: 'sunita.asha@sehatsetu.com',
+    name: 'Sunita Devi',
+    workerCode: 'ASHA-DEL-01',
+    assignedArea: 'South West Delhi',
+    village: 'Chhawla',
+    subCenterId: 'SC-CHHAWLA-01',
+  },
+  {
+    id: 'asha-2',
+    email: 'rekha.asha@sehatsetu.com',
+    name: 'Rekha Bai',
+    workerCode: 'ASHA-MUM-01',
+    assignedArea: 'Central Mumbai',
+    village: 'Dharavi',
+    subCenterId: 'SC-DHARAVI-02',
+  },
+];
+
 const seededPatients = [
   {
     email: 'patient@example.com',
     fullName: 'Rahul Sharma',
     gender: 'Male',
+    village: 'Chhawla',
+    assignedArea: 'South West Delhi',
     allergies: ['Dust', 'Penicillin'],
     chronicConditions: ['Mild Asthma'],
   },
@@ -248,6 +271,8 @@ const seededPatients = [
     email: 'ananya.patient@sehatsetu.com',
     fullName: 'Ananya Sharma',
     gender: 'Female',
+    village: 'Chhawla',
+    assignedArea: 'South West Delhi',
     allergies: ['Pollen'],
     chronicConditions: ['Migraine'],
   },
@@ -373,7 +398,48 @@ export async function main() {
     });
   }
 
-  // 3. Seed Patients Idempotently
+  // 3. Seed ASHA Workers Idempotently
+  for (const ashaData of CANONICAL_ASHA_WORKERS) {
+    const ashaUser = await prisma.user.upsert({
+      where: { email: ashaData.email },
+      update: {
+        fullName: ashaData.name,
+        role: Role.ASHA,
+        emailVerified: true,
+        passwordHash,
+      },
+      create: {
+        email: ashaData.email,
+        fullName: ashaData.name,
+        passwordHash,
+        role: Role.ASHA,
+        emailVerified: true,
+      },
+    });
+
+    await prisma.ashaWorker.upsert({
+      where: { id: ashaData.id },
+      update: {
+        userId: ashaUser.id,
+        workerCode: ashaData.workerCode,
+        assignedArea: ashaData.assignedArea,
+        village: ashaData.village,
+        subCenterId: ashaData.subCenterId,
+      },
+      create: {
+        id: ashaData.id,
+        userId: ashaUser.id,
+        workerCode: ashaData.workerCode,
+        assignedArea: ashaData.assignedArea,
+        village: ashaData.village,
+        subCenterId: ashaData.subCenterId,
+      },
+    });
+  }
+
+  // 4. Seed Patients Idempotently and Link Caseload to primary ASHA worker
+  const primaryAsha = await prisma.ashaWorker.findUnique({ where: { id: 'asha-1' } });
+
   for (const patientData of seededPatients) {
     const patientUser = await prisma.user.upsert({
       where: { email: patientData.email },
@@ -394,13 +460,21 @@ export async function main() {
     await prisma.patient.upsert({
       where: { userId: patientUser.id },
       update: {
+        name: patientData.fullName,
         gender: patientData.gender,
+        village: patientData.village,
+        assignedArea: patientData.assignedArea,
+        assignedAshaWorkerId: primaryAsha?.id || null,
         allergies: patientData.allergies,
         chronicConditions: patientData.chronicConditions,
       },
       create: {
         userId: patientUser.id,
+        name: patientData.fullName,
         gender: patientData.gender,
+        village: patientData.village,
+        assignedArea: patientData.assignedArea,
+        assignedAshaWorkerId: primaryAsha?.id || null,
         allergies: patientData.allergies,
         chronicConditions: patientData.chronicConditions,
       },
@@ -408,7 +482,8 @@ export async function main() {
   }
 
   const doctorCount = await prisma.doctor.count();
-  console.log(`Database seeding completed! Total Doctor profiles: ${doctorCount} 🌱`);
+  const ashaCount = await prisma.ashaWorker.count();
+  console.log(`Database seeding completed! Doctors: ${doctorCount}, ASHA Workers: ${ashaCount} 🌱`);
 }
 
 main()

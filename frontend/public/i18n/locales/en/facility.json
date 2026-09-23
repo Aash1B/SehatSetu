@@ -1,0 +1,20 @@
+{
+  "title": "Primary Health Centre (PHC) Operations Portal",
+  "overview": "Key Health & Operations Metrics",
+  "consultationsTitle": "Consultations",
+  "completed": "completed",
+  "total": "total",
+  "referralsTitle": "Incoming Referrals",
+  "visited": "visited",
+  "highRiskTitle": "High-Risk Cases",
+  "urgentFlags": "urgent triage flags",
+  "diagnosticsTitle": "Diagnostic Orders",
+  "reviewed": "results reviewed & synced",
+  "medicineShortagesTitle": "Medicine Shortages",
+  "outOfStock": "out",
+  "lowStock": "low stock",
+  "overdueTitle": "Overdue Follow-ups",
+  "remindersOverdue": "vaccination / ANC reminders",
+  "inventoryTitle": "Facility Medicine Stock & Shortage Monitoring",
+  "inventorySubtitle": "Live dispensary stock levels — adjust quantities or flag shortages in real time"
+}
