@@ -4,6 +4,14 @@ import { EmergencyHandlingService } from '../chatbot/services/emergency-handling
 import { QuickRegisterPatientDto } from './dto/quick-register-patient.dto';
 import { AshaCreateAppointmentDto } from './dto/asha-create-appointment.dto';
 
+function formatDoctorName(name?: string | null): string {
+  if (!name || !name.trim()) return 'Doctor';
+  const trimmed = name.trim();
+  const stripped = trimmed.replace(/^((dr|doctor)\b\.?\s*)+/i, '').trim();
+  if (!stripped) return 'Doctor';
+  return `Dr. ${stripped}`;
+}
+
 @Injectable()
 export class AshaService {
   constructor(
@@ -170,7 +178,7 @@ export class AshaService {
         patientName: a.patientName || a.patient?.name || a.patient?.user?.fullName || 'Patient',
         patientPhone: a.patientPhone || a.patient?.phone,
         patientVillage: a.patient?.village || worker.village,
-        doctorName: a.doctor?.name || 'Doctor',
+        doctorName: formatDoctorName(a.doctor?.name),
         doctorSpecialty: a.doctor?.specialty,
         doctorImageUrl: a.doctor?.imageUrl,
         date: a.date,
@@ -329,7 +337,7 @@ export class AshaService {
       hasAccount: Boolean(patient.userId),
       appointments: patient.appointments.map((a) => ({
         id: a.id,
-        doctorName: a.doctor?.name,
+        doctorName: formatDoctorName(a.doctor?.name),
         specialty: a.doctor?.specialty,
         hospital: a.doctor?.hospital,
         date: a.date,
@@ -356,7 +364,7 @@ export class AshaService {
       })),
       prescriptions: patient.prescriptions.map((pr) => ({
         id: pr.id,
-        doctorName: pr.doctor?.name,
+        doctorName: formatDoctorName(pr.doctor?.name),
         specialty: pr.doctor?.specialty,
         diagnosis: pr.diagnosis,
         medicines: pr.medicines,
@@ -604,7 +612,7 @@ export class AshaService {
       patientName: a.patientName || a.patient?.name || a.patient?.user?.fullName || 'Patient',
       patientPhone: a.patientPhone || a.patient?.phone,
       patientVillage: a.patient?.village || worker.village,
-      doctorName: a.doctor?.name,
+      doctorName: a.doctor?.name ? formatDoctorName(a.doctor.name) : undefined,
       doctorSpecialty: a.doctor?.specialty,
       scheduledDate: a.date || a.scheduledAt?.toISOString().split('T')[0],
       timeSlot: a.timeSlot,
@@ -661,7 +669,7 @@ export class AshaService {
         patientName: a.patientName || a.patient?.name || a.patient?.user?.fullName || 'Patient',
         patientPhone: a.patientPhone || a.patient?.phone,
         patientVillage: a.patient?.village || worker.village,
-        doctorName: a.doctor?.name,
+        doctorName: a.doctor?.name ? formatDoctorName(a.doctor.name) : undefined,
         healthConcern: a.healthConcern,
         symptoms: a.symptoms,
         severity: a.severity,

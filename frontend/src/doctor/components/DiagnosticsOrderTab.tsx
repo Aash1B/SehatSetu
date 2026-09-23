@@ -16,6 +16,7 @@ import {
   reviewDiagnosticOrder,
   type DiagnosticOrderRecord,
 } from '../../services/diagnosticsApi';
+import { formatDoctorName } from '../../lib/utils';
 
 interface DiagnosticsOrderTabProps {
   patientId: string;
@@ -261,7 +262,7 @@ export const DiagnosticsOrderTab: React.FC<DiagnosticsOrderTabProps> = ({
                       </div>
                       <p className="text-[11px] text-slate-400 mt-0.5">
                         Ordered on {new Date(ord.orderedAt).toLocaleDateString()}
-                        {ord.orderedByDoctor && ` by Dr. ${ord.orderedByDoctor.name}`}
+                        {ord.orderedByDoctor && ` by ${formatDoctorName(ord.orderedByDoctor.name)}`}
                       </p>
                     </div>
                   </div>

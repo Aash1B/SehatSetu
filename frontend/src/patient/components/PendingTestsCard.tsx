@@ -14,6 +14,7 @@ import {
   uploadDiagnosticReport,
   type DiagnosticOrderRecord,
 } from '../../services/diagnosticsApi';
+import { formatDoctorName } from '../../lib/utils';
 
 interface PendingTestsCardProps {
   orders: DiagnosticOrderRecord[];
@@ -134,7 +135,7 @@ export const PendingTestsCard: React.FC<PendingTestsCardProps> = ({
                 </div>
                 {ord.orderedByDoctor && (
                   <p className="text-[11px] text-slate-400 mt-0.5">
-                    Ordered by Dr. {ord.orderedByDoctor.name} ({ord.orderedByDoctor.specialty})
+                    Ordered by {formatDoctorName(ord.orderedByDoctor.name)} ({ord.orderedByDoctor.specialty})
                   </p>
                 )}
               </div>

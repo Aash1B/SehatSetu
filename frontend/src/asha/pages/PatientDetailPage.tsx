@@ -19,6 +19,7 @@ import { fetchPatientDetail, type PatientDetailData } from '../services/ashaApi'
 import { LiquidLoader } from '../../common/components/LiquidLoader';
 import ReferralStepperCard from '../../components/ReferralStepperCard';
 import { fetchPatientReferrals, updateReferralStatus, type ReferralRecord } from '../../services/referralsApi';
+import { formatDoctorName } from '../../lib/utils';
 
 export default function PatientDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -266,7 +267,7 @@ export default function PatientDetailPage() {
                       <div key={appt.id} className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs space-y-2">
                         <div className="flex items-center justify-between text-xs sm:text-sm">
                           <span className="font-bold text-slate-900">
-                            Dr. {appt.doctorName || 'Consultation'} ({appt.specialty || 'General'})
+                            {formatDoctorName(appt.doctorName)} ({appt.specialty || 'General'})
                           </span>
                           <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700">
                             {appt.status}
@@ -297,7 +298,7 @@ export default function PatientDetailPage() {
                     patient.prescriptions.map((pr) => (
                       <div key={pr.id} className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs space-y-2">
                         <div className="flex items-center justify-between text-xs sm:text-sm">
-                          <span className="font-bold text-slate-900">By {pr.doctorName}</span>
+                          <span className="font-bold text-slate-900">By {formatDoctorName(pr.doctorName)}</span>
                           <span className="text-xs text-slate-400">
                             {new Date(pr.createdAt).toLocaleDateString()}
                           </span>
