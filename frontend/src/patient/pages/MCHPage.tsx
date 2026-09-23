@@ -297,6 +297,45 @@ const MCHPage: React.FC = () => {
         </button>
       </aside>
 
+      {/* Mobile Top Navigation (visible on < 768px via CSS) */}
+      <div className="mch-mobile-nav">
+        <div className="mch-mobile-header">
+          <button 
+            type="button" 
+            className="mch-mobile-back" 
+            onClick={() => navigate('/patient/dashboard')}
+            aria-label={t('backToDashboard')}
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12" />
+              <polyline points="12 19 5 12 12 5" />
+            </svg>
+          </button>
+          <div className="mch-mobile-title-wrap">
+            <h1 className="mch-mobile-title">{t('mchTitle')}</h1>
+            <span className="mch-mobile-sub">{t('mchSubtitle')}</span>
+          </div>
+        </div>
+        <div className="mch-mobile-tabs-scroll">
+          {([
+            { key: 'overview', label: t('nav.overview') },
+            { key: 'pregnancy', label: t('nav.pregnancy') },
+            { key: 'children', label: t('nav.children') },
+            { key: 'documents', label: t('nav.documents') },
+            { key: 'flags', label: t('nav.safetyFlags') },
+          ] as const).map(item => (
+            <button 
+              key={item.key} 
+              type="button" 
+              onClick={() => setTab(item.key as MCHTab)}
+              className={`mch-mobile-tab-btn ${tab === item.key ? 'active' : ''}`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Main content */}
       <main className="mch-main min-w-0" style={{ flex: 1, padding: '16px', overflowY: 'auto', maxWidth: '100%' }}>
         {error && <div style={{ background: '#fee2e2', color: '#991b1b', padding: '12px 16px', borderRadius: 8, marginBottom: 16, fontSize: 14 }}>{error}</div>}

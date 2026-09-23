@@ -1250,7 +1250,7 @@ const DashboardPage: React.FC = () => {
         {/* Top Header Navbar Bar */}
         <header className="sehat-top-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div className="top-bar-left" style={{ flex: 1 }}></div>
-          <div className="top-bar-center" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', transform: 'translateX(-45px)' }}>
+          <div className="top-bar-center" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <span
               style={{
                 fontSize: '18px',
@@ -1367,7 +1367,7 @@ const DashboardPage: React.FC = () => {
             <>
               {/* Greeting Header */}
               <div className="dash-greeting-header">
-                <h1 className="greeting-title" style={{ fontSize: '2.8rem', fontWeight: 900, display: 'inline-flex', alignItems: 'center', margin: 0 }}>
+                <h1 className="greeting-title" style={{ fontSize: 'clamp(1.5rem, 6vw, 2.8rem)', fontWeight: 900, display: 'flex', flexWrap: 'wrap', alignItems: 'center', margin: 0, gap: '6px' }}>
                   <span
                     style={{
                       background: 'linear-gradient(90deg, #FF9933 0%, #D4AC0D 50%, #138808 100%)',
@@ -1380,8 +1380,8 @@ const DashboardPage: React.FC = () => {
                     Namaste
                   </span>
                   <span style={{ color: '#111144', fontWeight: 800 }}> Patient</span>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', transform: 'translateY(-10px)', verticalAlign: 'middle', marginLeft: 6 }}>
-                    <img src="/namaskar-clean.png" alt="Namaste" className="namaskar-animated-icon" style={{ marginLeft: 0 }} />
+                  <span style={{ display: 'inline-flex', alignItems: 'center', marginLeft: 4 }}>
+                    <img src="/namaskar-clean.png" alt="Namaste" className="namaskar-animated-icon" style={{ marginLeft: 0, maxWidth: 44 }} />
                   </span>
                 </h1>
               </div>
