@@ -158,7 +158,7 @@ const ConsultationsList: React.FC = () => {
         setLoading(false);
       }
     };
-    
+
     fetchAppointments();
   }, []);
 
@@ -176,13 +176,13 @@ const ConsultationsList: React.FC = () => {
       <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#F8FAFC]">
         <DoctorNavbar />
         <main className="flex-1 flex flex-col overflow-hidden px-4 sm:px-6 md:px-10 pt-4 sm:pt-12 pb-10 bg-[#F8FAFC]">
-        <PageHeader 
-          title="Patient Appointments" 
-          onBack={() => navigate('/doctor/dashboard')}
-        />
-        
-        <div className="flex-1 overflow-y-auto custom-scrollbar">
-          <div className="w-full space-y-4 pb-12">
+          <PageHeader
+            title="Patient Appointments"
+            onBack={() => navigate('/doctor/dashboard')}
+          />
+
+          <div className="flex-1 overflow-y-auto custom-scrollbar">
+            <div className="w-full space-y-4 pb-12">
               <>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                   <h2 className="text-xl font-extrabold text-slate-900">Upcoming Appointments</h2>
@@ -205,10 +205,10 @@ const ConsultationsList: React.FC = () => {
                         </div>
                         <div className="py-1.5">
                           {([
-                            { key: 'ALL',       label: 'All Consultations', dot: 'bg-slate-400' },
-                            { key: 'SCHEDULED', label: 'Scheduled',         dot: 'bg-yellow-500' },
-                            { key: 'COMPLETED', label: 'Completed',         dot: 'bg-slate-500' },
-                            { key: 'CANCELLED', label: 'Cancelled',         dot: 'bg-red-500' },
+                            { key: 'ALL', label: 'All Consultations', dot: 'bg-slate-400' },
+                            { key: 'SCHEDULED', label: 'Scheduled', dot: 'bg-yellow-500' },
+                            { key: 'COMPLETED', label: 'Completed', dot: 'bg-slate-500' },
+                            { key: 'CANCELLED', label: 'Cancelled', dot: 'bg-red-500' },
                           ] as const).map(({ key, label, dot }) => {
                             const count = key === 'ALL'
                               ? consultations.length
@@ -217,11 +217,10 @@ const ConsultationsList: React.FC = () => {
                               <button
                                 key={key}
                                 onClick={() => { setStatusFilter(key); setFilterOpen(false); }}
-                                className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors cursor-pointer ${
-                                  statusFilter === key
+                                className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors cursor-pointer ${statusFilter === key
                                     ? 'bg-slate-50 text-slate-900 font-semibold'
                                     : 'text-slate-600 hover:bg-slate-50 font-medium'
-                                }`}
+                                  }`}
                               >
                                 <span className="flex items-center gap-2.5">
                                   <span className={`w-2 h-2 rounded-full ${dot}`} />
@@ -245,12 +244,12 @@ const ConsultationsList: React.FC = () => {
                     consultations
                       .filter(c => statusFilter === 'ALL' || c.tags?.[1]?.label?.toUpperCase() === statusFilter)
                       .map((consultation) => (
-                      <ConsultationCard 
-                        key={consultation.id} 
-                        consultation={consultation} 
-                        onViewPatient={() => navigate(`/doctor/consultations/${consultation.id}`)}
-                      />
-                    ))
+                        <ConsultationCard
+                          key={consultation.id}
+                          consultation={consultation}
+                          onViewPatient={() => navigate(`/doctor/consultations/${consultation.id}`)}
+                        />
+                      ))
                   ) : (
                     <div className="text-center py-12 bg-white rounded-2xl border border-jodhpur-tan/30">
                       <p className="text-gray-500">No upcoming appointments scheduled.</p>
@@ -258,8 +257,8 @@ const ConsultationsList: React.FC = () => {
                   )}
                 </div>
               </>
+            </div>
           </div>
-        </div>
         </main>
       </div>
     </div>

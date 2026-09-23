@@ -66,7 +66,7 @@ const VideoConsultationPage: React.FC = () => {
       try {
         const rawToken = getToken();
         const authHeaders: Record<string, string> = rawToken ? { Authorization: `Bearer ${rawToken}` } : {};
-        
+
         try {
           const appointmentResponse = await fetch(`${API_BASE_URL}/appointments/${encodeURIComponent(consultationId)}`, { headers: authHeaders });
           if (appointmentResponse.ok) {
@@ -207,7 +207,7 @@ const VideoConsultationPage: React.FC = () => {
         {/* Main Consultation Area */}
         <div className="consultation-content flex-1 min-h-0 p-6">
           <div className="consultation-layout">
-            
+
             {/* Left Column: Video & Controls */}
             <div className="consultation-video-column flex flex-col h-full gap-4">
               <div className="flex-1 min-h-0 relative rounded-2xl overflow-hidden bg-deep-space shadow-sm border border-gray-200">
@@ -304,7 +304,7 @@ const VideoConsultationPage: React.FC = () => {
       </main>
 
       {/* Real-time Prescription View Modal when Consultation Ends */}
-      <PrescriptionViewModal 
+      <PrescriptionViewModal
         isOpen={showPrescriptionModal}
         isModal={true}
         onClose={() => {

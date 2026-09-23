@@ -123,12 +123,14 @@ import { LiquidLoader } from './common/components/LiquidLoader';
 import ErrorBoundary from './common/components/ErrorBoundary';
 import Sidebar from './patient/components/Sidebar';
 import PatientMobileMenuButton from './patient/components/PatientMobileMenuButton';
+import ScrollToTop from './common/components/ScrollToTop';
 
 function App() {
   return (
     <Provider store={store}>
       <ErrorBoundary>
         <Router>
+          <ScrollToTop />
           <OfflineStatusIndicator />
           <PWAUpdatePrompt />
           <PWAInstallPrompt />

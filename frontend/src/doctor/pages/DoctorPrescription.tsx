@@ -91,14 +91,14 @@ const DoctorPrescription: React.FC = () => {
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">Confirmed Doctor Prescription</h1>
-        <button 
+        <button
           onClick={() => navigate('/doctor/dashboard')}
           className="text-sm font-medium text-gray-600 hover:text-gray-900 bg-white px-4 py-2 rounded-lg border border-gray-200"
         >
           ← Back to Dashboard
         </button>
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left Column: Transcription & Notes */}
         <div className="space-y-6">
@@ -141,17 +141,17 @@ const DoctorPrescription: React.FC = () => {
                 {isAiDrafting ? '✨ AI Generating...' : '✨ Re-Draft with AI'}
               </button>
             </div>
-            <textarea 
+            <textarea
               className="w-full h-40 p-4 border border-gray-200 rounded-lg bg-gray-50 resize-none focus:ring-2 focus:ring-blue-500 outline-none text-sm"
               placeholder="Listening to conversation..."
               value={transcription}
               onChange={(e) => setTranscription(e.target.value)}
             />
           </div>
-          
+
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <h2 className="text-xl font-semibold text-gray-700 mb-4">Diet & Lifestyle Instructions</h2>
-            <textarea 
+            <textarea
               className="w-full h-32 p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-sm"
               placeholder="E.g., Low sodium diet for hypertension..."
               value={dietRecommendations}
@@ -163,34 +163,34 @@ const DoctorPrescription: React.FC = () => {
         {/* Right Column: Prescription Details */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <h2 className="text-xl font-semibold text-gray-700 mb-4">Confirmed Medications</h2>
-          
+
           <div className="space-y-4">
             {medications.map((med, index) => (
               <div key={index} className="grid grid-cols-2 gap-4 p-4 border border-gray-100 rounded-lg bg-gray-50">
-                <input 
-                  type="text" 
-                  placeholder="Medicine Name" 
+                <input
+                  type="text"
+                  placeholder="Medicine Name"
                   value={med.name}
                   onChange={(e) => handleMedChange(index, 'name', e.target.value)}
                   className="p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                 />
-                <input 
-                  type="text" 
-                  placeholder="Dosage (e.g., 650 mg)" 
+                <input
+                  type="text"
+                  placeholder="Dosage (e.g., 650 mg)"
                   value={med.dosage}
                   onChange={(e) => handleMedChange(index, 'dosage', e.target.value)}
                   className="p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                 />
-                <input 
-                  type="text" 
-                  placeholder="Frequency (e.g., 1-0-1)" 
+                <input
+                  type="text"
+                  placeholder="Frequency (e.g., 1-0-1)"
                   value={med.frequency}
                   onChange={(e) => handleMedChange(index, 'frequency', e.target.value)}
                   className="p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                 />
-                <input 
-                  type="text" 
-                  placeholder="Duration (e.g., 5 days)" 
+                <input
+                  type="text"
+                  placeholder="Duration (e.g., 5 days)"
                   value={med.duration}
                   onChange={(e) => handleMedChange(index, 'duration', e.target.value)}
                   className="p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm"
@@ -198,17 +198,17 @@ const DoctorPrescription: React.FC = () => {
               </div>
             ))}
           </div>
-          
-          <button 
+
+          <button
             type="button"
             onClick={handleAddMedication}
             className="mt-4 text-blue-600 font-medium hover:text-blue-800 transition-colors text-sm"
           >
             + Add Another Medicine
           </button>
-          
+
           <div className="mt-8 pt-6 border-t border-gray-200">
-            <button 
+            <button
               type="button"
               onClick={() => setShowPreviewModal(true)}
               className="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition-colors shadow-md cursor-pointer text-sm"
@@ -220,7 +220,7 @@ const DoctorPrescription: React.FC = () => {
       </div>
 
       {/* Real-time Prescription View Modal */}
-      <PrescriptionViewModal 
+      <PrescriptionViewModal
         isOpen={showPreviewModal}
         isModal={true}
         onClose={() => setShowPreviewModal(false)}

@@ -60,7 +60,7 @@ const DoctorProfileHeader: React.FC<Props> = ({ profile, isEditing, onEdit, onCa
           </button>
         )}
       </div>
-      
+
       <div className="flex-1 w-full">
         <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4">
           <div>
@@ -70,16 +70,16 @@ const DoctorProfileHeader: React.FC<Props> = ({ profile, isEditing, onEdit, onCa
 
 
           </div>
-          
+
           {isEditing ? (
             <div className="flex items-center gap-3 shrink-0">
-              <button 
+              <button
                 onClick={onCancel}
                 className="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-6 py-2 rounded-xl font-medium transition-colors shadow-sm flex items-center gap-2"
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={onSave}
                 className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-xl font-medium transition-colors shadow-sm flex items-center gap-2"
               >
@@ -89,7 +89,7 @@ const DoctorProfileHeader: React.FC<Props> = ({ profile, isEditing, onEdit, onCa
             </div>
           ) : (
             <div className="flex items-center gap-3 shrink-0">
-              <button 
+              <button
                 onClick={onEdit}
                 className="bg-habanero hover:bg-[#e0750e] text-white px-5 py-2 rounded-xl font-medium transition-colors shadow-sm flex items-center gap-2"
               >

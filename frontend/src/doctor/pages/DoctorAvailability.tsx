@@ -106,8 +106,8 @@ const DoctorAvailability: React.FC = () => {
 
         <main className="flex-1 overflow-y-auto px-8 md:px-10 pt-10 pb-10 relative bg-[#F8FAFC]">
           <div className="w-full pb-10">
-            <AvailabilityCard 
-              availability={profile.availability} 
+            <AvailabilityCard
+              availability={profile.availability}
               onSave={handleSaveAvailability}
               isSaving={isSaving}
             />

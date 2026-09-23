@@ -209,8 +209,8 @@ const DoctorProfile: React.FC = () => {
         <DoctorNavbar doctor={dashboardDoctor as any} />
 
         <main className="flex-1 overflow-y-auto p-8 relative bg-[#F8FAFC]">
-          <DoctorProfileHeader 
-            profile={formData || profile} 
+          <DoctorProfileHeader
+            profile={formData || profile}
             isEditing={isEditing}
             onEdit={handleEdit}
             onCancel={handleCancel}
@@ -218,45 +218,45 @@ const DoctorProfile: React.FC = () => {
             onPhotoChange={handlePhotoChange}
           />
 
-        <div className="mb-8">
-          <StatisticsGrid stats={profile.stats} />
-        </div>
+          <div className="mb-8">
+            <StatisticsGrid stats={profile.stats} />
+          </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          <div className="lg:col-span-2 space-y-8">
-            <div>
-              <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-4">Professional Information</h3>
-              <ProfessionalInfoCard 
-                profile={formData || profile} 
-                isEditing={isEditing}
-                onChange={handleChange}
-              />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            <div className="lg:col-span-2 space-y-8">
+              <div>
+                <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-4">Professional Information</h3>
+                <ProfessionalInfoCard
+                  profile={formData || profile}
+                  isEditing={isEditing}
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-4">Professional Documents</h3>
+                <DocumentCard documents={profile.documents} doctorId={profile.id} onRefresh={loadProfile} />
+              </div>
             </div>
-            <div>
-              <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-4">Professional Documents</h3>
-              <DocumentCard documents={profile.documents} doctorId={profile.id} onRefresh={loadProfile} />
+
+            <div className="space-y-8">
+              <div>
+                <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-4">Contact Information</h3>
+                <ContactInfoCard
+                  profile={formData || profile}
+                  isEditing={isEditing}
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-4">Account Settings</h3>
+                <SettingsCard />
+              </div>
             </div>
           </div>
-          
-          <div className="space-y-8">
-            <div>
-              <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-4">Contact Information</h3>
-              <ContactInfoCard 
-                profile={formData || profile}
-                isEditing={isEditing}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-4">Account Settings</h3>
-              <SettingsCard />
-            </div>
-          </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
-  </div>
-);
+  );
 };
 
 export default DoctorProfile;

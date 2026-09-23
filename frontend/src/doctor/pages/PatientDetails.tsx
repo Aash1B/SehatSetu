@@ -131,19 +131,19 @@ const PatientDetails: React.FC = () => {
   // Construct medical history entries
   const historyList = appointment.ehrRecord?.notes
     ? [
-        {
-          id: appointment.ehrRecord.id || 'mh-1',
-          date: new Date(appointment.createdAt || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
-          description: appointment.ehrRecord.notes,
-        }
-      ]
+      {
+        id: appointment.ehrRecord.id || 'mh-1',
+        date: new Date(appointment.createdAt || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+        description: appointment.ehrRecord.notes,
+      }
+    ]
     : [
-        {
-          id: 'mh-1',
-          date: new Date(appointment.createdAt || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
-          description: `Initial consultation booked for ${appointment.healthConcern || 'general medical evaluation'}.`,
-        }
-      ];
+      {
+        id: 'mh-1',
+        date: new Date(appointment.createdAt || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+        description: `Initial consultation booked for ${appointment.healthConcern || 'general medical evaluation'}.`,
+      }
+    ];
 
   const pastConditions = appointment.healthConcern
     ? [appointment.healthConcern]
@@ -152,11 +152,11 @@ const PatientDetails: React.FC = () => {
   // Construct current medicines
   const currentMedicines = Array.isArray(appointment.prescription?.medicines) && appointment.prescription.medicines.length > 0
     ? appointment.prescription.medicines.map((m: any, idx: number) => ({
-        id: `med-${idx}`,
-        name: typeof m === 'string' ? m : (m.name || 'Medication'),
-        dosage: typeof m === 'object' ? (m.dosage || '') : '',
-        frequency: typeof m === 'object' ? (m.frequency || 'As directed') : 'As directed',
-      }))
+      id: `med-${idx}`,
+      name: typeof m === 'string' ? m : (m.name || 'Medication'),
+      dosage: typeof m === 'object' ? (m.dosage || '') : '',
+      frequency: typeof m === 'object' ? (m.frequency || 'As directed') : 'As directed',
+    }))
     : [];
 
   const allergies = appointment.notes && appointment.notes.includes('Allergies:')
@@ -174,62 +174,62 @@ const PatientDetails: React.FC = () => {
         <DoctorNavbar />
 
         <main className="flex-1 overflow-y-auto p-4 md:p-8 relative bg-[#F8FAFC]">
-        <PageHeader 
-          title="Patient Details" 
-          onBack={handleBack} 
-        />
+          <PageHeader
+            title="Patient Details"
+            onBack={handleBack}
+          />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column */}
-          <div className="lg:col-span-2">
-            <PatientInfoCard patient={{
-              name: patientName,
-              age: patientAge,
-              gender: genderFull,
-              initials: getInitials(patientName),
-              tag: "Assigned Patient",
-              vitals: {
-                bloodGroup: bloodGroup,
-                weight: weight,
-                height: height,
-                allergies: allergies.filter(a => a !== 'No known allergies').length,
-              }
-            }} />
-            <ChiefComplaintsCard complaints={chiefComplaints} since={durationSinceStart} />
-            <MedicalHistoryCard conditions={pastConditions} history={historyList} />
-            <CurrentMedicinesCard medicines={currentMedicines} allergies={allergies} />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left Column */}
+            <div className="lg:col-span-2">
+              <PatientInfoCard patient={{
+                name: patientName,
+                age: patientAge,
+                gender: genderFull,
+                initials: getInitials(patientName),
+                tag: "Assigned Patient",
+                vitals: {
+                  bloodGroup: bloodGroup,
+                  weight: weight,
+                  height: height,
+                  allergies: allergies.filter(a => a !== 'No known allergies').length,
+                }
+              }} />
+              <ChiefComplaintsCard complaints={chiefComplaints} since={durationSinceStart} />
+              <MedicalHistoryCard conditions={pastConditions} history={historyList} />
+              <CurrentMedicinesCard medicines={currentMedicines} allergies={allergies} />
+            </div>
+
+            {/* Right Column */}
+            <div className="lg:col-span-1">
+              <AISummaryCard summary={summaryText} confidence={92} />
+
+              <button
+                onClick={() => navigate(`/doctor/consultation/${appointment.id}`)}
+                className="w-full bg-habanero hover:bg-[#e0750e] text-white py-4 rounded-xl font-bold transition-colors shadow-sm flex items-center justify-center gap-2 text-lg group mb-3 cursor-pointer"
+              >
+                Start Consultation
+                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
           </div>
 
-          {/* Right Column */}
-          <div className="lg:col-span-1">
-            <AISummaryCard summary={summaryText} confidence={92} />
-            
-            <button 
-              onClick={() => navigate(`/doctor/consultation/${appointment.id}`)}
-              className="w-full bg-habanero hover:bg-[#e0750e] text-white py-4 rounded-xl font-bold transition-colors shadow-sm flex items-center justify-center gap-2 text-lg group mb-3 cursor-pointer"
-            >
-              Start Consultation 
-              <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </button>
-          </div>
-        </div>
-
-        <ReferralModal 
-          isOpen={isReferralOpen} 
-          onClose={() => setIsReferralOpen(false)} 
-          consultationId={appointment.id}
-          patientId={appointment.patientId || appointment.id}
-          fromDoctorId={appointment.doctorId}
-          patientName={patientName} 
-          onSubmit={(data) => {
-            console.log('Referral submitted with DTO:', data);
-            setIsReferralOpen(false);
-          }} 
-        />
-      </main>
+          <ReferralModal
+            isOpen={isReferralOpen}
+            onClose={() => setIsReferralOpen(false)}
+            consultationId={appointment.id}
+            patientId={appointment.patientId || appointment.id}
+            fromDoctorId={appointment.doctorId}
+            patientName={patientName}
+            onSubmit={(data) => {
+              console.log('Referral submitted with DTO:', data);
+              setIsReferralOpen(false);
+            }}
+          />
+        </main>
+      </div>
     </div>
-  </div>
-);
+  );
 };
 
 export default PatientDetails;

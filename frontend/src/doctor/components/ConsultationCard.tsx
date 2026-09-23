@@ -55,7 +55,7 @@ const ConsultationCard: React.FC<ConsultationCardProps> = ({
 
       {/* Right Column: Action Buttons (Fixed 380px width) */}
       <div className="flex items-center justify-end gap-3 w-[380px] shrink-0">
-        <button 
+        <button
           type="button"
           className="bg-[#223382] hover:bg-[#1a2868] text-white border border-[#223382] px-5 py-2.5 rounded-xl font-bold text-sm md:text-base transition-all shadow-xs whitespace-nowrap cursor-pointer"
           onClick={(e) => {
@@ -65,7 +65,7 @@ const ConsultationCard: React.FC<ConsultationCardProps> = ({
         >
           Consultation Summary
         </button>
-        <button 
+        <button
           onClick={onViewPatient}
           className="bg-habanero hover:bg-[#e0750e] text-white px-6 py-2.5 rounded-xl font-bold text-sm md:text-base transition-all shadow-xs whitespace-nowrap cursor-pointer"
         >

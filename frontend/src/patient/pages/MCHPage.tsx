@@ -120,22 +120,22 @@ const MCHPage: React.FC = () => {
 
   useEffect(() => {
     if (selectedPregnancy) {
-      listAncVisits(selectedPregnancy.id).then(setAncVisits).catch(() => {});
-      listInvestigations(selectedPregnancy.id).then(setInvestigations).catch(() => {});
+      listAncVisits(selectedPregnancy.id).then(setAncVisits).catch(() => { });
+      listInvestigations(selectedPregnancy.id).then(setInvestigations).catch(() => { });
     }
   }, [selectedPregnancy]);
 
   useEffect(() => {
     if (selectedChild) {
-      listVaccinations(selectedChild.id).then(setVaccinations).catch(() => {});
-      listGrowthMeasurements(selectedChild.id).then(setGrowth).catch(() => {});
-      listMilestones(selectedChild.id).then(setMilestones).catch(() => {});
+      listVaccinations(selectedChild.id).then(setVaccinations).catch(() => { });
+      listGrowthMeasurements(selectedChild.id).then(setGrowth).catch(() => { });
+      listMilestones(selectedChild.id).then(setMilestones).catch(() => { });
     }
   }, [selectedChild]);
 
   useEffect(() => {
-    if (tab === 'documents') listMchDocuments().then(setDocuments).catch(() => {});
-    if (tab === 'flags') listSafetyFlags().then(setFlags).catch(() => {});
+    if (tab === 'documents') listMchDocuments().then(setDocuments).catch(() => { });
+    if (tab === 'flags') listSafetyFlags().then(setFlags).catch(() => { });
   }, [tab]);
 
   // ── Submit handlers ─────────────────────────────────────────────────────────
@@ -248,7 +248,7 @@ const MCHPage: React.FC = () => {
   const markVaccineDone = async (id: string) => {
     try {
       await recordVaccination(id, { administeredDate: new Date().toISOString().slice(0, 10) });
-      if (selectedChild) listVaccinations(selectedChild.id).then(setVaccinations).catch(() => {});
+      if (selectedChild) listVaccinations(selectedChild.id).then(setVaccinations).catch(() => { });
     } catch (e: any) { setError(e.message); }
   };
 
@@ -333,7 +333,7 @@ const MCHPage: React.FC = () => {
             t={t}
           />
         )}
-        {tab === 'documents' && <DocumentsTab documents={documents} t={t} onRefresh={() => listMchDocuments().then(setDocuments).catch(() => {})} />}
+        {tab === 'documents' && <DocumentsTab documents={documents} t={t} onRefresh={() => listMchDocuments().then(setDocuments).catch(() => { })} />}
         {tab === 'flags' && <FlagsTab flags={flags} t={t} />}
       </main>
     </div>

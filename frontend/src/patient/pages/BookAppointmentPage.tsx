@@ -248,6 +248,12 @@ const BookAppointmentPage: React.FC = () => {
       }
     })();
   }, []);
+
+  // Ensure window is scrolled to the top when opening the questionnaire or switching steps
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
+  }, [id, currentStep]);
+
   const [clockNow, setClockNow] = useState(() => new Date());
 
   const [formData, setFormData] = useState<BookingFormData>({
