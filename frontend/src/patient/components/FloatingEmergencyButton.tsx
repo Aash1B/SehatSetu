@@ -72,12 +72,22 @@ const FloatingEmergencyButton: React.FC = () => {
   useEffect(() => {
     if (!modalOpen) return;
 
+    // Lock background scroll when modal is open
+    const originalOverflow = document.body.style.overflow;
+    const originalTouchAction = document.body.style.touchAction;
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setModalOpen(false);
     };
 
     document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.touchAction = originalTouchAction;
+      document.removeEventListener('keydown', handleEscape);
+    };
   }, [modalOpen]);
 
   const openNearbyHospitals = () => {
