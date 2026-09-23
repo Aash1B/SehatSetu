@@ -16,7 +16,7 @@ const CaseloadTable: React.FC<CaseloadTableProps> = ({ patients, loading }) => {
   if (loading) {
     return (
       <div className="bg-white rounded-2xl border border-slate-200 p-8 flex flex-col items-center justify-center gap-3">
-        <div className="w-8 h-8 border-3 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-3 border-habanero border-t-transparent rounded-full animate-spin" />
         <p className="text-sm font-medium text-slate-500">Loading caseload...</p>
       </div>
     );
@@ -29,7 +29,7 @@ const CaseloadTable: React.FC<CaseloadTableProps> = ({ patients, loading }) => {
         <button
           type="button"
           onClick={() => navigate('/asha/patients/new')}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition border-none cursor-pointer"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-habanero hover:bg-[#e0750e] transition border-none cursor-pointer"
         >
           {t('caseload.registerButton')}
         </button>
@@ -44,7 +44,7 @@ const CaseloadTable: React.FC<CaseloadTableProps> = ({ patients, loading }) => {
         {patients.map((patient) => (
           <div
             key={patient.id}
-            className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs space-y-3 transition hover:border-emerald-200"
+            className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs space-y-3 transition hover:border-orange-200"
           >
             {/* Top row: Name, age, badges */}
             <div className="flex items-start justify-between gap-2">
@@ -92,7 +92,7 @@ const CaseloadTable: React.FC<CaseloadTableProps> = ({ patients, loading }) => {
             <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 text-xs text-slate-600">
               <div className="flex items-center gap-1.5 truncate">
                 <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <a href={`tel:${patient.phone}`} className="text-emerald-700 font-semibold no-underline truncate">
+                <a href={`tel:${patient.phone}`} className="text-slate-600 font-semibold no-underline truncate">
                   {patient.phone}
                 </a>
               </div>
@@ -109,7 +109,7 @@ const CaseloadTable: React.FC<CaseloadTableProps> = ({ patients, loading }) => {
               <button
                 type="button"
                 onClick={() => navigate(`/asha/book?patientId=${patient.id}`)}
-                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition min-h-[44px] border-none cursor-pointer shadow-xs"
+                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold text-white bg-habanero hover:bg-[#e0750e] transition min-h-[44px] border-none cursor-pointer shadow-xs"
               >
                 <CalendarPlus className="w-3.5 h-3.5 shrink-0" />
                 <span>{t('caseload.bookAction')}</span>
@@ -146,19 +146,14 @@ const CaseloadTable: React.FC<CaseloadTableProps> = ({ patients, loading }) => {
                 <tr key={patient.id} className="hover:bg-slate-50/60 transition">
                   {/* Patient Name & Badges */}
                   <td className="py-3.5 px-4">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-800 font-bold text-xs flex items-center justify-center shrink-0">
-                        {patient.name.substring(0, 2).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="font-bold text-slate-900 leading-snug">
-                          {patient.name}
-                        </p>
-                        <p className="text-xs text-slate-400">
-                          {patient.gender ? `${patient.gender}` : ''}
-                          {patient.age ? ` • ${patient.age}y` : ''}
-                        </p>
-                      </div>
+                    <div>
+                      <p className="font-bold text-slate-900 leading-snug">
+                        {patient.name}
+                      </p>
+                      <p className="text-xs text-slate-400">
+                        {patient.gender ? `${patient.gender}` : ''}
+                        {patient.age ? ` • ${patient.age}y` : ''}
+                      </p>
                     </div>
                   </td>
 
@@ -178,7 +173,7 @@ const CaseloadTable: React.FC<CaseloadTableProps> = ({ patients, loading }) => {
                   <td className="py-3.5 px-4">
                     <a
                       href={`tel:${patient.phone}`}
-                      className="text-xs font-semibold text-emerald-700 hover:underline flex items-center gap-1.5"
+                      className="text-xs font-semibold text-slate-600 hover:text-slate-900 hover:underline flex items-center gap-1.5"
                     >
                       <Phone className="w-3 h-3 text-slate-400" />
                       <span>{patient.phone}</span>
@@ -218,7 +213,7 @@ const CaseloadTable: React.FC<CaseloadTableProps> = ({ patients, loading }) => {
                       <button
                         type="button"
                         onClick={() => navigate(`/asha/book?patientId=${patient.id}`)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition border-none cursor-pointer shadow-2xs"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-habanero hover:bg-[#e0750e] transition border-none cursor-pointer shadow-2xs"
                       >
                         <CalendarPlus className="w-3 h-3" />
                         <span>{t('caseload.bookAction')}</span>

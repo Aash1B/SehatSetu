@@ -22,7 +22,7 @@
     "doctorLogin": "Doctor Portal"
   },
   "dashboard": {
-    "title": "Field Dashboard",
+    "title": "ASHA Dashboard",
     "welcome": "Namaste, {{name}}",
     "areaBadge": "Assigned Area: {{area}}",
     "workerCode": "Worker ID: {{code}}",

@@ -153,7 +153,12 @@ const PatientDetails: React.FC = () => {
   }
 
   // Formatting helpers
-  const patientName = appointment.patientName || appointment.patient?.name || appointment.patient?.fullName || 'Anonymous Patient';
+  const patientName = appointment.patientName 
+    || appointment.patient?.name 
+    || appointment.patient?.user?.fullName 
+    || appointment.patient?.fullName 
+    || appointment.user?.fullName 
+    || 'Patient';
   const patientAge = appointment.patientAge || appointment.patient?.age || '28';
   const genderRaw = appointment.patientGender || appointment.patient?.gender || 'FEMALE';
   const genderFull = genderRaw.charAt(0).toUpperCase() + genderRaw.slice(1).toLowerCase();
@@ -340,10 +345,10 @@ const PatientDetails: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setActiveTab('diagnostics')}
-                  className="w-full bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 py-3 rounded-xl font-bold transition shadow-2xs flex items-center justify-center gap-2 text-sm mb-3 cursor-pointer"
+                  className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 py-3 rounded-xl font-bold transition shadow-2xs flex items-center justify-center gap-2 text-sm mb-3 cursor-pointer"
                 >
                   <TestTube2 className="w-4 h-4 text-blue-600" />
-                  Diagnostics & Lab Orders ({diagnosticOrders.length})
+                  <span>Diagnostics & Lab Orders ({diagnosticOrders.length})</span>
                 </button>
 
                 <button 

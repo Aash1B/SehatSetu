@@ -89,9 +89,9 @@ const EndConsultationDialog: React.FC<EndConsultationDialogProps> = ({
         </div>
 
         <div className="p-6">
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-4 text-lg !text-white !font-normal !text-left flex items-start">
-            <div className="flex-1 !text-white !font-normal !text-left">
-              <span className="!font-bold block !text-left !text-white">Prescription Sync</span>
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-4 text-sm text-blue-900 font-normal text-left flex items-start">
+            <div className="flex-1 text-blue-800">
+              <span className="font-bold block text-left text-blue-950">Prescription Sync</span>
               Ending the call will publish the official prescription directly to both doctor and patient screens.
             </div>
           </div>

@@ -110,7 +110,7 @@ export const ConsultationsModal: React.FC<ConsultationsModalProps> = ({
           ) : (
             <div className="space-y-2.5">
               {filtered.map((item) => {
-                const patientName = item.patient?.name || item.patientName || 'Anonymous Patient';
+                const patientName = item.patient?.name || item.patient?.user?.fullName || item.patientName || 'Patient';
                 const doctorName = item.doctor?.name || 'Dr. On-Duty';
                 const isCompleted = item.status === 'COMPLETED';
                 const isEmergency = item.priority === 'EMERGENCY' || item.urgency === 'emergency';

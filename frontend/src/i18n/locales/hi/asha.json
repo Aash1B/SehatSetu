@@ -22,7 +22,7 @@
     "doctorLogin": "डॉक्टर पोर्टल"
   },
   "dashboard": {
-    "title": "फील्ड डैशबोर्ड",
+    "title": "आशा डैशबोर्ड",
     "welcome": "नमस्ते, {{name}}",
     "areaBadge": "आवंटित क्षेत्र: {{area}}",
     "workerCode": "कार्यकर्ता आईडी: {{code}}",

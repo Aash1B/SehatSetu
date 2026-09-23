@@ -76,6 +76,7 @@ export default function AshaLoginPage() {
               className="gap-2"
               markWrapperClassName="w-10 h-10 rounded-xl bg-transparent flex items-center justify-center p-1"
               wordmarkClassName="text-2xl sm:text-3xl font-extrabold tracking-tight"
+              accentClassName="text-emerald-600 !text-emerald-600 font-extrabold"
             />
           </Link>
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Search, UserPlus, X, Filter } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Search, X } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AshaSidebar from '../components/AshaSidebar';
 import AshaNavbar from '../components/AshaNavbar';
@@ -8,7 +8,6 @@ import CaseloadTable from '../components/CaseloadTable';
 import { fetchCaseloadPatients, type CaseloadPatientItem } from '../services/ashaApi';
 
 export default function PatientsListPage() {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useTranslation('asha');
 
@@ -59,24 +58,13 @@ export default function PatientsListPage() {
 
         <main className="flex-1 p-3 sm:p-6 md:p-8 space-y-5 max-w-7xl w-full mx-auto safe-area-pb">
           {/* Header row */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                {t('caseload.title')}
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-500">
-                {t('caseload.subtitle')}
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => navigate('/asha/patients/new')}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition border-none cursor-pointer shadow-sm shadow-emerald-600/20 min-h-[44px]"
-            >
-              <UserPlus className="w-4 h-4" />
-              <span>{t('caseload.registerButton')}</span>
-            </button>
+          <div>
+            <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+              {t('caseload.title')}
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500">
+              {t('caseload.subtitle')}
+            </p>
           </div>
 
           {/* Search bar & filters */}
