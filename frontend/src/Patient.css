@@ -11076,6 +11076,7 @@
   display: flex;
   flex-direction: column;
   width: 100%;
+  min-width: 0;
   box-sizing: border-box;
 }
 
@@ -11086,17 +11087,33 @@
   gap: 4px;
   flex: 1;
   margin-top: 8px;
+  min-width: 0;
+  width: 100%;
 }
 
 .ehr-rx-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   padding: 12px 14px;
   border-bottom: 1px solid #f1f5f9;
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.15s ease;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ehr-rx-content {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.ehr-rx-arrow {
+  flex-shrink: 0;
 }
 
 .ehr-rx-row:hover {
@@ -11111,6 +11128,7 @@
   font-size: 13.5px;
   font-weight: 700;
   color: #0f172a;
+  overflow-wrap: break-word;
 }
 
 .ehr-rx-detail {
@@ -11118,6 +11136,8 @@
   color: #64748b;
   margin-top: 3px;
   line-height: 1.4;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 /* Investigations */
@@ -11127,16 +11147,28 @@
   gap: 4px;
   flex: 1;
   margin-top: 8px;
+  min-width: 0;
+  width: 100%;
 }
 
 .ehr-investigation-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   padding: 12px 14px;
   border-bottom: 1px solid #f1f5f9;
   border-radius: 8px;
   transition: background 0.15s ease;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ehr-inv-content {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .ehr-investigation-row:hover {
@@ -11151,6 +11183,9 @@
   font-size: 13.5px;
   font-weight: 700;
   color: #0f172a;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.35;
 }
 
 .ehr-inv-date {
@@ -11165,6 +11200,8 @@
   padding: 4px 12px;
   border-radius: 20px;
   white-space: nowrap;
+  flex-shrink: 0;
+  margin-left: 8px;
 }
 
 /* Vitals Snapshot */
@@ -11295,7 +11332,196 @@
   }
 
   .ehr-consult-row {
-    flex-wrap: wrap !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    padding: 14px 12px !important;
+    background: #f8fafc !important;
+    border-radius: 14px !important;
+    margin-bottom: 10px !important;
+    border-bottom: none !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .ehr-consult-date-col {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+    border-right: none !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding-right: 0 !important;
+    padding-bottom: 8px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .ehr-date-day {
+    font-size: 16px !important;
+  }
+
+  .ehr-date-month,
+  .ehr-date-year {
+    font-size: 12px !important;
+    margin-top: 0 !important;
+  }
+
+  .ehr-consult-doctor-col,
+  .ehr-consult-detail-col,
+  .ehr-consult-rx-col {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    flex-shrink: 1 !important;
+  }
+
+  .ehr-detail-value {
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+  }
+
+  .ehr-view-full-btn {
+    width: 100% !important;
+    text-align: center !important;
+    justify-content: center !important;
+    margin-left: 0 !important;
+    margin-top: 4px !important;
+  }
+
+  .ehr-mid-row {
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    gap: 14px !important;
+  }
+
+  .ehr-medical-summary-card,
+  .ehr-recent-consult-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    padding: 16px 14px !important;
+    border-radius: 16px !important;
+  }
+
+  .ehr-bottom-row {
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    gap: 14px !important;
+  }
+
+  .ehr-bottom-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    padding: 16px 14px !important;
+    border-radius: 16px !important;
+    overflow: hidden !important;
+  }
+
+  .ehr-section-title-row {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .ehr-section-title {
+    font-size: 14px !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .ehr-view-all-btn {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    font-size: 12px !important;
+  }
+
+  .ehr-rx-row,
+  .ehr-investigation-row {
+    padding: 10px 8px !important;
+    gap: 8px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .ehr-rx-date {
+    font-size: 13px !important;
+  }
+
+  .ehr-rx-detail {
+    font-size: 11.5px !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+
+  .ehr-inv-name {
+    font-size: 12.5px !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+    line-height: 1.3 !important;
+  }
+
+  .ehr-inv-status {
+    font-size: 11px !important;
+    padding: 3px 8px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .ehr-summary-full-btn {
+    width: 100% !important;
+    font-size: 12px !important;
+    padding: 10px 12px !important;
+    margin-top: 10px !important;
+    text-align: center !important;
+    box-sizing: border-box !important;
+  }
+
+  .prescriptions-card-shell {
+    padding: 16px 12px !important;
+    border-radius: 16px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .prescriptions-tab-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    gap: 16px !important;
+  }
+
+  .prescriptions-tab-content .consultation-row {
+    padding: 12px 10px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .prescriptions-tab-content .row-doc-name {
+    font-size: 13.5px !important;
+  }
+
+  .prescriptions-tab-content .row-doc-spec {
+    font-size: 12px !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+
+  .prescriptions-tab-content .btn-view-details {
+    width: 100% !important;
+    text-align: center !important;
+    justify-content: center !important;
+    padding: 10px 14px !important;
+    font-size: 12px !important;
+    box-sizing: border-box !important;
   }
 }
 
@@ -12055,37 +12281,67 @@
   }
 
   .sehat-top-bar {
+    position: relative !important;
     height: 56px;
-    padding: 0 12px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
   .top-bar-left {
-    display: none;
+    display: block;
+    width: 44px;
+    flex: 0 0 44px;
   }
 
   .top-bar-center {
-    flex: 1;
-    transform: none !important;
-    justify-content: flex-start;
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    pointer-events: none;
+    max-width: calc(100% - 130px);
+    z-index: 1;
   }
 
   .top-portal-text,
   .top-portal-badge {
     transform: none;
-    font-size: 0.85rem;
+    font-size: 0.95rem !important;
     letter-spacing: 0.8px;
+    white-space: nowrap !important;
   }
 
   .top-bar-actions {
-    flex: 0 0 auto;
+    flex: 0 0 auto !important;
+    margin-left: auto !important;
+    z-index: 2;
   }
 
   .top-user-pill {
-    padding-right: 4px;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
   }
 
   .top-user-pill .user-pill-info {
-    display: none;
+    display: none !important;
+  }
+
+  .top-user-pill .user-pill-avatar {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 50% !important;
+    border: none !important;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15) !important;
   }
 
   .sehat-dash-content {
@@ -12670,15 +12926,18 @@
 
   .landing-navbar-shell>div:first-child {
     min-width: 0;
+    flex-shrink: 0 !important;
   }
 
   .landing-navbar-shell .landing-brand-wordmark {
-    font-size: 1.05rem;
+    font-size: 0.95rem;
+    white-space: nowrap;
   }
 
   .landing-navbar-actions {
     min-width: 0;
-    gap: 4px !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
   }
 
   .landing-navbar-actions .language-toggle {
@@ -13391,11 +13650,17 @@
 
   .landing-navbar-shell > div:first-child {
     min-width: 0 !important;
-    flex-shrink: 1 !important;
+    flex-shrink: 0 !important;
+  }
+
+  .landing-brand-mark {
+    width: 28px !important;
+    height: 28px !important;
   }
 
   .landing-navbar-shell .landing-brand-wordmark {
-    font-size: 0.95rem !important;
+    font-size: 0.9rem !important;
+    white-space: nowrap !important;
   }
 
   .landing-actions-wrap {
@@ -13405,14 +13670,16 @@
   .landing-navbar-actions {
     min-width: 0 !important;
     flex-shrink: 0 !important;
-    gap: 4px !important;
+    gap: 6px !important;
   }
 
   .landing-navbar-actions .btn-sign-in,
   .landing-navbar-actions .btn-get-started {
-    padding-inline: 10px !important;
+    padding-inline: 12px !important;
+    padding-block: 6px !important;
     font-size: 11px !important;
-    min-height: 44px !important;
+    min-height: 34px !important;
+    height: auto !important;
     white-space: nowrap !important;
   }
 
@@ -13440,9 +13707,11 @@
   }
 
   .sehat-top-bar {
+    position: relative !important;
     min-height: 56px;
-    padding-left: 68px !important;
-    padding-right: 14px !important;
+    height: 56px;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
   }
 
   .sehat-dash-content,

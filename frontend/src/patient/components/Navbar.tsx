@@ -45,14 +45,14 @@ const Navbar: React.FC = () => {
       <div className="landing-navbar-shell pointer-events-auto w-full max-w-[98%] sm:max-w-[96%] lg:max-w-[95%] xl:max-w-[96%] bg-white/96 backdrop-blur-md px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3.5 lg:py-4 flex items-center justify-between gap-2 sm:gap-4 rounded-[22px] shadow-[0_10px_30px_rgba(0,0,0,0.07)] border border-slate-100/90 transition-all duration-300 relative">
         
         {/* Left: Mobile Hamburger Toggle + Brand Logo */}
-        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+        <div className="flex items-center gap-1 sm:gap-3 shrink-0">
           <button
             type="button"
-            className="md:hidden p-2 rounded-xl text-slate-700 hover:bg-slate-100 transition border-none bg-transparent cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center"
+            className="md:hidden p-1 sm:p-2 rounded-xl text-slate-700 hover:bg-slate-100 transition border-none bg-transparent cursor-pointer min-w-[36px] sm:min-w-[44px] min-h-[36px] sm:min-h-[44px] flex items-center justify-center shrink-0"
             onClick={() => dispatch(toggleSidebar())}
             aria-label={t("openSidebar")}
           >
-            <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className="sm:w-[22px] sm:h-[22px]">
               <line x1="3" y1="12" x2="21" y2="12"></line>
               <line x1="3" y1="6" x2="21" y2="6"></line>
               <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -62,12 +62,12 @@ const Navbar: React.FC = () => {
           {/* Brand Logo */}
           <button
             type="button"
-            className="flex items-center gap-2 border-none bg-transparent cursor-pointer p-0 group"
+            className="flex items-center gap-1.5 sm:gap-2 border-none bg-transparent cursor-pointer p-0 group shrink-0"
             onClick={() => navigate('/')}
           >
             <BrandLogo
-              markWrapperClassName="landing-brand-mark rounded-xl bg-transparent flex items-center justify-center p-1 shadow-none transition group-hover:scale-105"
-              wordmarkClassName="landing-brand-wordmark font-extrabold text-slate-900 tracking-tight text-sm sm:text-base"
+              markWrapperClassName="landing-brand-mark rounded-xl bg-transparent flex items-center justify-center p-0.5 sm:p-1 shadow-none transition group-hover:scale-105 shrink-0"
+              wordmarkClassName="landing-brand-wordmark font-extrabold text-slate-900 tracking-tight text-xs sm:text-base whitespace-nowrap"
               accentClassName="brand-title-accent-royal"
             />
           </button>
@@ -141,14 +141,14 @@ const Navbar: React.FC = () => {
         </nav>
 
         {/* Right: Language Selector & Actions */}
-        <div className="landing-navbar-actions flex items-center gap-2 sm:gap-4 shrink-0">
+        <div className="landing-navbar-actions flex items-center gap-1.5 sm:gap-4 shrink-0">
           {/* Language Dropdown */}
           <LanguageSwitcher />
 
           {!isAuthenticated ? (
             <button
               type="button"
-              className="inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-extrabold text-black bg-[#F98513] hover:bg-[#e0740b] rounded-full shadow-md shadow-orange-500/20 hover:shadow-lg transition-all transform active:scale-95 cursor-pointer border-none btn-sign-in"
+              className="inline-flex items-center justify-center px-3 sm:px-6 py-1.5 sm:py-2.5 text-xs sm:text-sm font-extrabold text-black bg-[#F98513] hover:bg-[#e0740b] rounded-full shadow-md shadow-orange-500/20 hover:shadow-lg transition-all transform active:scale-95 cursor-pointer border-none btn-sign-in whitespace-nowrap shrink-0"
               style={{ backgroundColor: '#F98513', color: '#000000' }}
               onClick={() => navigate('/patient/login')}
             >
@@ -157,7 +157,7 @@ const Navbar: React.FC = () => {
           ) : (
             <button
               type="button"
-              className="inline-flex items-center justify-center px-3.5 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-full shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/30 transition-all transform active:scale-95 cursor-pointer border-none btn-get-started"
+              className="inline-flex items-center justify-center px-3 sm:px-6 py-1.5 sm:py-2.5 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-full shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/30 transition-all transform active:scale-95 cursor-pointer border-none btn-get-started whitespace-nowrap shrink-0"
               onClick={() => {
                 if (!isDoctor) {
                   dispatch(setCurrentPage('dashboard'));

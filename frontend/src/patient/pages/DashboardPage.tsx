@@ -1262,6 +1262,7 @@ const DashboardPage: React.FC = () => {
           <div className="top-bar-left" style={{ flex: 1 }}></div>
           <div className="top-bar-center" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <span
+              className="top-portal-text"
               style={{
                 fontSize: '18px',
                 fontWeight: 800,
@@ -1271,7 +1272,8 @@ const DashboardPage: React.FC = () => {
                 background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
-                display: 'inline-block'
+                display: 'inline-block',
+                whiteSpace: 'nowrap'
               }}
             >
               PATIENT PORTAL
@@ -1279,7 +1281,13 @@ const DashboardPage: React.FC = () => {
           </div>
           <div className="top-bar-actions" style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '12px' }}>
             {/* User Profile Display */}
-            <div className="top-user-pill">
+            <div
+              className="top-user-pill"
+              onClick={() => handleTabClick('profile')}
+              role="button"
+              tabIndex={0}
+              title="Profile Settings"
+            >
               {profileImageUrl ? (
                 <img src={profileImageUrl} alt={profileData.fullName || 'Patient'} className="user-pill-avatar" />
               ) : (
@@ -2387,12 +2395,26 @@ const DashboardPage: React.FC = () => {
                         <div style={{ color: '#94a3b8', fontSize: '13px', padding: '12px 0' }}>No prescriptions yet.</div>
                       ) : (
                         prescriptionsList.slice(0, 3).map((rx: any) => (
-                          <div key={rx.id} className="ehr-rx-row">
-                            <div>
+                          <div
+                            key={rx.id}
+                            className="ehr-rx-row"
+                            onClick={() => {
+                              setSelectedRxData(rx.fullData || {
+                                id: rx.id,
+                                doctorName: rx.doctorName,
+                                patientName: profileData.fullName,
+                                date: rx.date,
+                                medications: [],
+                                dietAdvice: ''
+                              });
+                              setShowRxModal(true);
+                            }}
+                          >
+                            <div className="ehr-rx-content">
                               <div className="ehr-rx-date">{rx.date} · {rx.doctorName}</div>
                               <div className="ehr-rx-detail">{rx.meds} · {rx.fullData?.diagnosis || 'Consultation'}</div>
                             </div>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" width="16" height="16" className="ehr-rx-arrow"><polyline points="9 18 15 12 9 6"/></svg>
                           </div>
                         ))
                       )}
@@ -2413,7 +2435,7 @@ const DashboardPage: React.FC = () => {
                           const completed = report.status === 'SUCCEEDED' || report.status === 'PROCESSED';
                           return (
                             <div key={report.id} className="ehr-investigation-row">
-                              <div>
+                              <div className="ehr-inv-content">
                                 <div className="ehr-inv-name">{report.title}</div>
                                 <div className="ehr-inv-date">Uploaded on {report.date}</div>
                               </div>
@@ -3523,7 +3545,7 @@ const DashboardPage: React.FC = () => {
                 </div>
               </div>
 
-              <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '20px', padding: '24px', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
+              <div className="prescriptions-card-shell" style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '20px', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
                 <div className="consultations-table">
                   {prescriptionsList.map((rx) => (
                     <div key={rx.id} className="consultation-row">

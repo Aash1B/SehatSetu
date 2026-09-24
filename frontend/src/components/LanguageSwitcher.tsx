@@ -54,12 +54,13 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
         aria-haspopup="listbox"
         aria-expanded={langDropdownOpen}
         aria-label={t('selectLanguage', 'Select Language')}
-        className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-full bg-slate-100/90 hover:bg-slate-200/80 text-slate-700 text-xs sm:text-sm font-semibold border border-slate-200/70 transition-all cursor-pointer shadow-xs focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+        className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-slate-100/90 hover:bg-slate-200/80 text-slate-700 text-xs sm:text-sm font-semibold border border-slate-200/70 transition-all cursor-pointer shadow-xs focus:outline-none focus:ring-2 focus:ring-orange-500/20 shrink-0"
       >
         <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500 shrink-0" />
-        <span className="max-w-[75px] sm:max-w-none truncate">{selectedLangObj.nativeName}</span>
+        <span className="hidden sm:inline max-w-[75px] sm:max-w-none truncate">{selectedLangObj.nativeName}</span>
+        <span className="sm:hidden text-[11px] font-bold tracking-tight">{selectedLangObj.code.toUpperCase()}</span>
         <ChevronDown
-          className={`w-3.5 h-3.5 text-slate-500 transition-transform duration-200 ${
+          className={`w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-500 transition-transform duration-200 ${
             langDropdownOpen ? 'rotate-180' : ''
           }`}
         />
