@@ -12593,18 +12593,26 @@
   }
 
   .emergency-btn {
-    width: 116px;
-    height: 116px;
-    gap: 4px;
+    width: 90px;
+    height: 90px;
+    gap: 3px;
+    background: radial-gradient(circle at 35% 30%, #ff5252 0%, #e52d27 60%, #b31217 100%);
+    box-shadow: 0 4px 18px rgba(229, 45, 39, 0.55), 0 0 0 2.5px rgba(255, 255, 255, 0.85);
+  }
+
+  .emergency-btn .ring {
+    display: none !important;
   }
 
   .emergency-btn .siren-svg {
-    width: 44px;
-    height: 44px;
+    width: 38px;
+    height: 38px;
+    filter: none !important;
   }
 
   .emergency-btn .label {
-    font-size: 12px;
+    font-size: 10px;
+    font-weight: 800;
   }
 
   .emergency-modal-overlay {
@@ -13943,24 +13951,36 @@
   }
 
   .emergency-btn {
-    width: 72px;
-    height: 72px;
-    gap: 1px;
+    width: 72px !important;
+    height: 72px !important;
+    gap: 2px !important;
+    background: radial-gradient(circle at 35% 30%, #ff5252 0%, #e52d27 60%, #b31217 100%) !important;
+    box-shadow: 0 4px 16px rgba(229, 45, 39, 0.5), 0 0 0 2px rgba(255, 255, 255, 0.85) !important;
+  }
+
+  .emergency-btn .ring {
+    display: none !important;
   }
 
   .emergency-btn .siren-svg {
-    width: 30px;
-    height: 30px;
+    width: 32px !important;
+    height: 32px !important;
+    filter: none !important;
   }
 
   .emergency-btn .label {
-    max-width: calc(100% - 10px);
-    font-size: 8px !important;
-    letter-spacing: 0.02em;
+    max-width: calc(100% - 6px) !important;
+    font-size: 8.5px !important;
+    font-weight: 900 !important;
+    letter-spacing: 0.04em !important;
+    color: #ffffff !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+    margin-top: 1px !important;
+    line-height: 1 !important;
   }
 
   .emergency-btn .divider {
-    display: none;
+    display: none !important;
   }
 }
 
