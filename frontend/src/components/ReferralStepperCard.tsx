@@ -46,6 +46,14 @@ export const ReferralStepperCard: React.FC<ReferralStepperCardProps> = ({
   const currentStepIndex = STEPS.findIndex((s) => s.key === referral.status);
   const isDeclined = referral.status === 'DECLINED';
 
+  const getTodayDateString = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const handleStepClick = async (nextStatus: string) => {
     if (!onStatusUpdate || updating) return;
 
@@ -251,8 +259,13 @@ export const ReferralStepperCard: React.FC<ReferralStepperCardProps> = ({
                   </label>
                   <input
                     type="date"
+                    min={getTodayDateString()}
                     value={scheduledDate}
-                    onChange={(e) => setScheduledDate(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const today = getTodayDateString();
+                      setScheduledDate(val && val < today ? today : val);
+                    }}
                     className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-800"
                   />
                 </div>

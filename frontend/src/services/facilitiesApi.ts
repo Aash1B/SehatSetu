@@ -49,6 +49,9 @@ export interface FacilityAppointmentItem {
     age?: string | null;
     phone?: string | null;
     village?: string | null;
+    user?: {
+      fullName?: string | null;
+    } | null;
   } | null;
   doctor?: {
     id: string;
