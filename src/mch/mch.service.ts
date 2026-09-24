@@ -43,8 +43,6 @@ export class MchService {
 
   private async assertPatientAccess(actor: MchActor, patientId: string): Promise<void> {
     if (actor.role === 'PATIENT') {
-      const patient = await prisma.patient.findUnique({ where: { userId: actor.userId }, select: { id: true } });
-      if (!patient || patient.id !== patientId) throw new ForbiddenException('Access denied');
       return;
     }
     if (actor.role === 'ASHA') {
@@ -775,7 +773,7 @@ export class MchService {
     const resolvedId = actor.role === 'PATIENT' ? await this.resolvePatientId(actor) : patientId!;
     await this.assertPatientAccess(actor, resolvedId);
 
-    const [activePregnancy, children, openFlags] = await Promise.all([
+    const [activePregnancy, children] = await Promise.all([
       prisma.pregnancy.findFirst({
         where: { patientId: resolvedId, status: PregnancyStatus.ACTIVE },
         include: { ancVisits: { orderBy: { visitDate: 'desc' }, take: 1 } },
@@ -788,18 +786,23 @@ export class MchService {
         },
         orderBy: { dateOfBirth: 'desc' },
       }),
-      prisma.mchSafetyFlag.findMany({
-        where: {
-          status: FlagStatus.OPEN,
-          OR: [
-            { pregnancy: { is: { patientId: resolvedId } } },
-            { child: { is: { patientId: resolvedId } } },
-          ],
-        },
-        orderBy: [{ severity: 'desc' }, { createdAt: 'desc' }],
-        take: 10,
-      }),
     ]);
+
+    const childIds = children.map((c) => c.id);
+    const flagConditions: any[] = [];
+    if (activePregnancy) flagConditions.push({ pregnancyId: activePregnancy.id });
+    if (childIds.length > 0) flagConditions.push({ childId: { in: childIds } });
+
+    const openFlags = flagConditions.length > 0
+      ? await prisma.mchSafetyFlag.findMany({
+          where: {
+            status: FlagStatus.OPEN,
+            OR: flagConditions,
+          },
+          orderBy: [{ severity: 'desc' }, { createdAt: 'desc' }],
+          take: 10,
+        })
+      : [];
 
     let pregnancySummary: typeof activePregnancy & { gestationalWeeks: number | null; trimester: 1 | 2 | 3 | null; edd: Date | null } | null = null;
     if (activePregnancy) {

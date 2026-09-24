@@ -62,11 +62,38 @@ const MCHPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [tab, setTab] = useState<MCHTab>('overview');
-  const [overview, setOverview] = useState<MchOverview | null>(null);
-  const [pregnancies, setPregnancies] = useState<Pregnancy[]>([]);
-  const [children, setChildren] = useState<Child[]>([]);
-  const [selectedPregnancy, setSelectedPregnancy] = useState<Pregnancy | null>(null);
-  const [selectedChild, setSelectedChild] = useState<Child | null>(null);
+  const [overview, setOverview] = useState<MchOverview | null>(() => {
+    try {
+      const saved = sessionStorage.getItem('mch_overview_cache');
+      return saved ? JSON.parse(saved) : null;
+    } catch { return null; }
+  });
+  const [pregnancies, setPregnancies] = useState<Pregnancy[]>(() => {
+    try {
+      const saved = sessionStorage.getItem('mch_pregnancies_cache');
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+  const [children, setChildren] = useState<Child[]>(() => {
+    try {
+      const saved = sessionStorage.getItem('mch_children_cache');
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+  const [selectedPregnancy, setSelectedPregnancy] = useState<Pregnancy | null>(() => {
+    try {
+      const saved = sessionStorage.getItem('mch_pregnancies_cache');
+      const list = saved ? JSON.parse(saved) : [];
+      return list.length ? list[0] : null;
+    } catch { return null; }
+  });
+  const [selectedChild, setSelectedChild] = useState<Child | null>(() => {
+    try {
+      const saved = sessionStorage.getItem('mch_children_cache');
+      const list = saved ? JSON.parse(saved) : [];
+      return list.length ? list[0] : null;
+    } catch { return null; }
+  });
   const [pregnancySubTab, setPregnancySubTab] = useState<PregnancySubTab>('details');
   const [childSubTab, setChildSubTab] = useState<ChildSubTab>('vaccinations');
   const [ancVisits, setAncVisits] = useState<AncVisit[]>([]);
@@ -76,7 +103,11 @@ const MCHPage: React.FC = () => {
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [documents, setDocuments] = useState<MchDocument[]>([]);
   const [flags, setFlags] = useState<SafetyFlag[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => {
+    try {
+      return !sessionStorage.getItem('mch_overview_cache');
+    } catch { return true; }
+  });
   const [error, setError] = useState('');
 
   // Forms
@@ -99,39 +130,56 @@ const MCHPage: React.FC = () => {
   // ── Growth form state
   const [growthForm, setGrowthForm] = useState({ measurementDate: '', weightKg: '', heightCm: '', headCircCm: '', temperature: '', pulseRate: '', spo2: '', notes: '' });
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (silent = false) => {
+    if (!silent && !sessionStorage.getItem('mch_overview_cache')) {
+      setLoading(true);
+    }
     setError('');
     try {
       const [ov, preg, ch] = await Promise.all([getMchOverview(), listPregnancies(), listChildren()]);
       setOverview(ov);
       setPregnancies(preg);
       setChildren(ch);
+      try {
+        sessionStorage.setItem('mch_overview_cache', JSON.stringify(ov));
+        sessionStorage.setItem('mch_pregnancies_cache', JSON.stringify(preg));
+        sessionStorage.setItem('mch_children_cache', JSON.stringify(ch));
+      } catch {}
       if (preg.length && !selectedPregnancy) setSelectedPregnancy(preg[0]);
       if (ch.length && !selectedChild) setSelectedChild(ch[0]);
     } catch (e: any) {
-      setError(e.message || t('errorLoading'));
+      if (!sessionStorage.getItem('mch_overview_cache')) {
+        setError(e.message || t('errorLoading'));
+      }
     } finally {
       setLoading(false);
     }
-  }, [t]);
+  }, [t, selectedPregnancy, selectedChild]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { load(); }, []);
 
+  // Lazy load pregnancy records only when viewing the pregnancy tab
   useEffect(() => {
-    if (selectedPregnancy) {
+    if (!selectedPregnancy || tab !== 'pregnancy') return;
+    if (pregnancySubTab === 'anc' || pregnancySubTab === 'details') {
       listAncVisits(selectedPregnancy.id).then(setAncVisits).catch(() => { });
+    }
+    if (pregnancySubTab === 'investigations' || pregnancySubTab === 'details') {
       listInvestigations(selectedPregnancy.id).then(setInvestigations).catch(() => { });
     }
-  }, [selectedPregnancy]);
+  }, [tab, pregnancySubTab, selectedPregnancy?.id]);
 
+  // Lazy load child records only when viewing the children tab
   useEffect(() => {
-    if (selectedChild) {
+    if (!selectedChild || tab !== 'children') return;
+    if (childSubTab === 'vaccinations') {
       listVaccinations(selectedChild.id).then(setVaccinations).catch(() => { });
+    } else if (childSubTab === 'growth') {
       listGrowthMeasurements(selectedChild.id).then(setGrowth).catch(() => { });
+    } else if (childSubTab === 'milestones') {
       listMilestones(selectedChild.id).then(setMilestones).catch(() => { });
     }
-  }, [selectedChild]);
+  }, [tab, childSubTab, selectedChild?.id]);
 
   useEffect(() => {
     if (tab === 'documents') listMchDocuments().then(setDocuments).catch(() => { });
