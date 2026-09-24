@@ -41,6 +41,14 @@ const ReferralModal: React.FC<ReferralModalProps> = ({
 
   if (!isOpen) return null;
 
+  const getTodayDateString = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const handleFacilitySelect = (name: string, type: 'GOVERNMENT' | 'PRIVATE' | 'SPECIALTY') => {
     setRecommendedFacility(name);
     setFacilityType(type);
@@ -51,6 +59,14 @@ const ReferralModal: React.FC<ReferralModalProps> = ({
     if (!reason.trim()) {
       setError(t('referral.reasonRequired', 'Please provide a reason for referral'));
       return;
+    }
+
+    if (scheduledDate) {
+      const today = getTodayDateString();
+      if (scheduledDate < today) {
+        setError(t('referral.pastDateNotAllowed', 'Date cannot be in the past. Only today and future dates are allowed.'));
+        return;
+      }
     }
 
     try {
@@ -198,10 +214,24 @@ const ReferralModal: React.FC<ReferralModalProps> = ({
               </label>
               <input
                 type="date"
+                min={getTodayDateString()}
                 value={scheduledDate}
-                onChange={(e) => setScheduledDate(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const today = getTodayDateString();
+                  if (val && val < today) {
+                    setError(t('referral.pastDateNotAllowed', 'Date cannot be in the past. Only today and future dates are allowed.'));
+                    setScheduledDate(today);
+                  } else {
+                    if (error && error.includes('past')) setError('');
+                    setScheduledDate(val);
+                  }
+                }}
                 className="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-xs focus:outline-hidden focus:ring-2 focus:ring-amber-500 bg-white"
               />
+              <span className="text-[11px] text-slate-400 mt-1 block">
+                {t('referral.dateHelper', 'Only today and upcoming dates are allowed')}
+              </span>
             </div>
 
             {/* Notes */}

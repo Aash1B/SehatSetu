@@ -1,4 +1,5 @@
 import { getToken } from '../auth/authStorage';
+import { API_BASE_URL } from '../patient/utils/constants';
 
 export interface DiagnosticOrderRecord {
   id: string;
@@ -37,34 +38,86 @@ export interface CreateDiagnosticOrderInput {
   instructions?: string;
 }
 
-async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const token = getToken();
-  const res = await fetch(endpoint, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers,
-    },
-  });
+function getCandidateEndpoints(path: string): string[] {
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  const candidates: string[] = [];
 
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || `Request failed with status ${res.status}`);
+  if (API_BASE_URL) {
+    const base = API_BASE_URL.replace(/\/+$/, '');
+    if (cleanPath.startsWith('/api/')) {
+      candidates.push(`${base.slice(0, -4)}${cleanPath}`);
+    } else {
+      candidates.push(`${base}${cleanPath}`);
+      if (base.endsWith('/api')) {
+        candidates.push(`${base.slice(0, -4)}${cleanPath}`);
+      }
+    }
   }
 
-  return res.json();
+  const pathWithoutApi = cleanPath.startsWith('/api') ? cleanPath.slice(4) : cleanPath;
+  candidates.push(`/api${pathWithoutApi}`);
+  candidates.push(`http://127.0.0.1:8000/api${pathWithoutApi}`);
+  candidates.push(`http://localhost:8000/api${pathWithoutApi}`);
+
+  return [...new Set(candidates)];
+}
+
+async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const token = getToken();
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...options.headers,
+  };
+
+  const urls = getCandidateEndpoints(path);
+  let lastError: any = null;
+
+  for (const url of urls) {
+    try {
+      const res = await fetch(url, {
+        ...options,
+        headers,
+      });
+
+      if (res.status === 405 || res.status === 404) {
+        lastError = new Error(`Endpoint returned ${res.status}`);
+        continue;
+      }
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || `Request failed with status ${res.status}`);
+      }
+
+      return await res.json();
+    } catch (err: any) {
+      if (
+        err.message &&
+        !err.message.includes('405') &&
+        !err.message.includes('404') &&
+        !err.message.includes('Failed to fetch') &&
+        !err.message.includes('NetworkError') &&
+        !err.message.includes('fetch')
+      ) {
+        throw err;
+      }
+      lastError = err;
+    }
+  }
+
+  throw lastError || new Error('Unable to connect to diagnostics service.');
 }
 
 export async function createDiagnosticOrder(data: CreateDiagnosticOrderInput): Promise<DiagnosticOrderRecord> {
-  return apiRequest<DiagnosticOrderRecord>('/api/diagnostics/orders', {
+  return apiRequest<DiagnosticOrderRecord>('/diagnostics/orders', {
     method: 'POST',
     body: JSON.stringify(data),
   });
 }
 
 export async function fetchPatientDiagnosticOrders(patientId: string): Promise<DiagnosticOrderRecord[]> {
-  return apiRequest<DiagnosticOrderRecord[]>(`/api/diagnostics/orders/patient/${patientId}`);
+  return apiRequest<DiagnosticOrderRecord[]>(`/diagnostics/orders/patient/${patientId}`);
 }
 
 export async function uploadDiagnosticReport(
@@ -75,14 +128,14 @@ export async function uploadDiagnosticReport(
     resultSummary?: string;
   },
 ): Promise<DiagnosticOrderRecord> {
-  return apiRequest<DiagnosticOrderRecord>(`/api/diagnostics/orders/${orderId}/upload-report`, {
+  return apiRequest<DiagnosticOrderRecord>(`/diagnostics/orders/${orderId}/upload-report`, {
     method: 'POST',
     body: JSON.stringify(data),
   });
 }
 
 export async function reviewDiagnosticOrder(orderId: string, resultSummary: string): Promise<DiagnosticOrderRecord> {
-  return apiRequest<DiagnosticOrderRecord>(`/api/diagnostics/orders/${orderId}/review`, {
+  return apiRequest<DiagnosticOrderRecord>(`/diagnostics/orders/${orderId}/review`, {
     method: 'PATCH',
     body: JSON.stringify({ resultSummary }),
   });
@@ -90,5 +143,5 @@ export async function reviewDiagnosticOrder(orderId: string, resultSummary: stri
 
 export async function fetchAllDiagnosticOrders(status?: string): Promise<DiagnosticOrderRecord[]> {
   const queryStr = status ? `?status=${status}` : '';
-  return apiRequest<DiagnosticOrderRecord[]>(`/api/diagnostics/orders${queryStr}`);
+  return apiRequest<DiagnosticOrderRecord[]>(`/diagnostics/orders${queryStr}`);
 }
